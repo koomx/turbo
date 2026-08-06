@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Enforce turbo/ module include allow-list on staged sources.
+# Install: git config core.hooksPath scripts/git-hooks
+# Escape:  SKIP_MODULE_DEPS=1 git commit ...
+
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
+cd "$ROOT"
+
+if [[ "${SKIP_MODULE_DEPS:-}" == "1" ]]; then
+  exit 0
+fi
+
+exec python3 scripts/check_module_deps.py check --staged

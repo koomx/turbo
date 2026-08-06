@@ -1,0 +1,137 @@
+turbo_cc_library(
+  NAME
+    heterogeneous_lookup_testing
+  HDRS
+    "internal/heterogeneous_lookup_testing.h"
+  COPTS
+    ${TURBO_TEST_COPTS}
+  LINKOPTS
+    ${TURBO_DEFAULT_LINKOPTS}
+  DEPS
+    turbo::config
+    turbo::test_instance_tracker
+    GTest::gmock
+  TESTONLY
+)
+
+turbo_cc_library(
+  NAME
+    linked_hash_set
+  HDRS
+    "linked_hash_set.h"
+  COPTS
+    ${TURBO_DEFAULT_COPTS}
+  LINKOPTS
+    ${TURBO_DEFAULT_LINKOPTS}
+  DEPS
+     turbo::container_common
+     turbo::config
+     turbo::core_headers
+     turbo::flat_hash_set
+)
+
+turbo_cc_test(
+  NAME
+    linked_hash_set_test
+  SRCS
+    "linked_hash_set_test.cc"
+  COPTS
+    ${TURBO_TEST_COPTS}
+  LINKOPTS
+    ${TURBO_DEFAULT_LINKOPTS}
+  DEPS
+    turbo::linked_hash_set
+    turbo::config
+    turbo::heterogeneous_lookup_testing
+    turbo::hash_generator_testing
+    turbo::hash_policy_testing
+    std::string_view
+    turbo::test_allocator
+    turbo::test_instance_tracker
+    turbo::unordered_set_constructor_test
+    turbo::unordered_set_lookup_test
+    turbo::unordered_set_members_test
+    turbo::unordered_set_modifiers_test
+    GTest::gmock_main
+)
+
+turbo_cc_library(
+  NAME
+    linked_hash_map
+  HDRS
+    "linked_hash_map.h"
+  COPTS
+    ${TURBO_DEFAULT_COPTS}
+  LINKOPTS
+    ${TURBO_DEFAULT_LINKOPTS}
+  DEPS
+     turbo::container_common
+     turbo::config
+     turbo::core_headers
+     turbo::flat_hash_set
+     turbo::throw_delegate
+)
+
+turbo_cc_test(
+  NAME
+    linked_hash_map_test
+  SRCS
+    "linked_hash_map_test.cc"
+  COPTS
+    ${TURBO_TEST_COPTS}
+  LINKOPTS
+    ${TURBO_DEFAULT_LINKOPTS}
+  DEPS
+    turbo::linked_hash_map
+    turbo::config
+    turbo::exception_testing
+    turbo::heterogeneous_lookup_testing
+    turbo::hash_generator_testing
+    turbo::hash_policy_testing
+    std::string_view
+    turbo::test_allocator
+    turbo::test_instance_tracker
+    turbo::unordered_set_constructor_test
+    turbo::unordered_set_lookup_test
+    turbo::unordered_set_members_test
+    turbo::unordered_set_modifiers_test
+    GTest::gmock_main
+)
+
+turbo_cc_library(
+  NAME
+    chunked_queue
+  HDRS
+    "chunked_queue.h"
+    "internal/chunked_queue.h"
+  COPTS
+    ${TURBO_DEFAULT_COPTS}
+  LINKOPTS
+    ${TURBO_DEFAULT_LINKOPTS}
+  DEPS
+     turbo::config
+     turbo::core_headers
+     turbo::hardening
+     turbo::iterator_traits_internal
+     turbo::layout
+)
+
+turbo_cc_test(
+  NAME
+    chunked_queue_test
+  SRCS
+    "chunked_queue_test.cc"
+  COPTS
+    ${TURBO_TEST_COPTS}
+  LINKOPTS
+    ${TURBO_DEFAULT_LINKOPTS}
+  DEPS
+    turbo::chunked_queue
+    turbo::config
+    turbo::core_headers
+    turbo::hardening
+    turbo::strings
+    turbo::test_allocator
+    turbo::throw_delegate
+    GTest::gmock_main
+)

@@ -1,0 +1,145 @@
+#
+# Copyright 2017 The Abseil Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+turbo_cc_library(
+  NAME
+    time
+  HDRS
+    "civil_time.h"
+    "clock.h"
+    "time.h"
+  SRCS
+    "civil_time.cc"
+    "clock.cc"
+    "duration.cc"
+    "format.cc"
+    "internal/get_current_time_chrono.inc"
+    "internal/get_current_time_posix.inc"
+    "time.cc"
+  COPTS
+    ${TURBO_DEFAULT_COPTS}
+  DEPS
+    turbo::base
+    turbo::civil_time
+    turbo::core_headers
+    turbo::int128
+    turbo::raw_logging_internal
+    turbo::strings
+    turbo::time_zone
+  PUBLIC
+)
+
+turbo_cc_library(
+  NAME
+    civil_time
+  HDRS
+    "internal/cctz/include/cctz/civil_time.h"
+    "internal/cctz/include/cctz/civil_time_detail.h"
+  SRCS
+    "internal/cctz/src/civil_time_detail.cc"
+  COPTS
+    ${TURBO_DEFAULT_COPTS}
+)
+
+turbo_cc_library(
+  NAME
+    time_zone
+  HDRS
+    "internal/cctz/include/cctz/time_zone.h"
+    "internal/cctz/include/cctz/zone_info_source.h"
+  SRCS
+    "internal/cctz/src/time_zone_fixed.cc"
+    "internal/cctz/src/time_zone_fixed.h"
+    "internal/cctz/src/time_zone_format.cc"
+    "internal/cctz/src/time_zone_if.cc"
+    "internal/cctz/src/time_zone_if.h"
+    "internal/cctz/src/time_zone_impl.cc"
+    "internal/cctz/src/time_zone_impl.h"
+    "internal/cctz/src/time_zone_info.cc"
+    "internal/cctz/src/time_zone_info.h"
+    "internal/cctz/src/time_zone_libc.cc"
+    "internal/cctz/src/time_zone_libc.h"
+    "internal/cctz/src/time_zone_lookup.cc"
+    "internal/cctz/src/time_zone_posix.cc"
+    "internal/cctz/src/time_zone_posix.h"
+    "internal/cctz/src/tzfile.h"
+    "internal/cctz/src/zone_info_source.cc"
+    $<$<PLATFORM_ID:Windows>:internal/cctz/src/time_zone_name_win.cc>
+    $<$<PLATFORM_ID:Windows>:internal/cctz/src/time_zone_name_win.h>
+  COPTS
+    ${TURBO_DEFAULT_COPTS}
+  DEPS
+    Threads::Threads
+    # TODO(#1495): Use $<LINK_LIBRARY:FRAMEWORK,CoreFoundation> once our
+    # minimum CMake version >= 3.24
+    $<$<PLATFORM_ID:Darwin,iOS,tvOS,visionOS,watchOS>:-Wl,-framework,CoreFoundation>
+)
+
+# Internal-only target, do not depend on directly.
+turbo_cc_library(
+  NAME
+    time_internal_test_util
+  HDRS
+    "internal/test_util.h"
+  SRCS
+    "internal/test_util.cc"
+  COPTS
+    ${TURBO_DEFAULT_COPTS}
+  DEPS
+    turbo::time
+    turbo::config
+    turbo::raw_logging_internal
+    turbo::time_zone
+  TESTONLY
+)
+
+turbo_cc_test(
+  NAME
+    time_test
+  SRCS
+    "civil_time_test.cc"
+    "clock_test.cc"
+    "duration_test.cc"
+    "format_test.cc"
+    "time_test.cc"
+    "time_zone_test.cc"
+  COPTS
+    ${TURBO_TEST_COPTS}
+  DEPS
+    turbo::time_internal_test_util
+    turbo::time
+    turbo::config
+    turbo::core_headers
+    turbo::hash_testing
+    turbo::random_random
+    turbo::strings
+    turbo::str_format
+    turbo::time_zone
+    GTest::gmock_main
+)
+
+turbo_cc_test(
+  NAME
+    flag_test
+  SRCS
+    "flag_test.cc"
+  COPTS
+    ${TURBO_TEST_COPTS}
+  DEPS
+    turbo::flags
+    turbo::flags_reflection
+    GTest::gmock_main
+)
