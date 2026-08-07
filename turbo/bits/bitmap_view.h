@@ -16,21 +16,64 @@
 #pragma once
 
 #include <algorithm>
-#include <turbo/bits/bits.h>
 #include <bit>
+#include <turbo/bits/bits.h>
 
 #include <cstddef>
 #include <cstring>
 
-namespace fermat {
-    template<bool OverFlowAsFalse = true, typename WordType = uint64_t>
+namespace turbo {
+    /// BITSET_WORD_COUNT
+///
+/// Defines the number of words we use, based on the number of bits.
+/// nBitCount refers to the number of bits in a Bitset.
+/// WordType refers to the type of integer word which stores bitet data. By default it is BitsetWordType.
+///
+/// Note: for nBitCount == 0, returns 1!
+#if !defined(__GNUC__) || (__GNUC__ >= 3) // GCC 2.x can't handle the simpler declaration below.
+#define BITSET_WORD_COUNT(nBitCount, WordType) (nBitCount == 0 ? 1 : ((nBitCount - 1) / (8 * sizeof(WordType)) + 1))
+#else
+#define BITSET_WORD_COUNT(nBitCount, WordType) ((nBitCount - 1) / (8 * sizeof(WordType)) + 1)
+#endif
+
+    namespace detail {
+        template <typename T>
+        struct is_word_type : std::bool_constant<
+                                  !std::is_const_v<T> && !std::is_volatile_v<T> && !std::is_same_v<T, bool> && std::is_integral_v<T> && std::is_unsigned_v<T>> {
+        };
+
+        template <typename T>
+        constexpr bool is_word_type_v = is_word_type<T>::value;
+    } // namespace detail
+
+    template<typename UInt8>
+    std::enable_if_t<detail::is_word_type_v<UInt8> && sizeof(UInt8) == 1, uint32_t> GetFirstBit(UInt8 x) {
+        if (x) {
+            uint32_t n = 1;
+
+            if ((x & 0x0000000F) == 0) {
+                n += 4;
+                x >>= 4;
+            }
+            if ((x & 0x00000003) == 0) {
+                n += 2;
+                x >>= 2;
+            }
+
+            return (uint32_t) (n - (x & 1));
+        }
+
+        return 8;
+    }
+
+    template <bool OverFlowAsFalse = true, typename WordType = uint64_t>
     class BitmapView;
 
     /// BitmapViewBase
     ///
     /// This is a default implementation that works for any number of words.
     ///
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     // Templated on the number of words used to hold the BitmapView and the word type.
     struct BitmapViewBase {
         typedef WordType word_type;
@@ -41,24 +84,24 @@ namespace fermat {
             kBitsPerWord = (8 * sizeof(word_type)),
             kBitsPerWordMask = (kBitsPerWord - 1),
             kBitsPerWordShift = ((kBitsPerWord == 8)
-                                     ? 3
-                                     : ((kBitsPerWord == 16)
-                                            ? 4
-                                            : ((kBitsPerWord == 32) ? 5 : (((kBitsPerWord == 64) ? 6 : 7)))))
+                    ? 3
+                    : ((kBitsPerWord == 16)
+                              ? 4
+                              : ((kBitsPerWord == 32) ? 5 : (((kBitsPerWord == 64) ? 6 : 7)))))
         };
 
     public:
         // invariant: we keep any high bits in the last word that are unneeded set to 0
         // so that our to_ulong() conversion can simply copy the words into the target type.
-        word_type *_words{nullptr};
-        size_type _num_words{0};
+        word_type* _words { nullptr };
+        size_type _num_words { 0 };
 
     public:
-        void operator&=(const this_type &x);
+        void operator&=(const this_type& x);
 
-        void operator|=(const this_type &x);
+        void operator|=(const this_type& x);
 
-        void operator^=(const this_type &x);
+        void operator^=(const this_type& x);
 
         void operator<<=(size_type n);
 
@@ -72,26 +115,25 @@ namespace fermat {
 
         void reset();
 
-        bool operator==(const this_type &x) const;
+        bool operator==(const this_type& x) const;
 
         [[nodiscard]] bool any() const;
 
         [[nodiscard]] size_type count() const;
 
-        word_type &DoGetWord(size_type i);
+        word_type& do_getWord(size_type i);
 
-        word_type DoGetWord(size_type i) const;
+        word_type do_getWord(size_type i) const;
 
-        [[nodiscard]] size_type DoFindFirst() const;
+        [[nodiscard]] size_type do_find_first() const;
 
-        [[nodiscard]] size_type DoFindNext(size_type last_find) const;
+        [[nodiscard]] size_type do_find_next(size_type last_find) const;
 
-        [[nodiscard]] size_type DoFindLast() const; // Returns NW * kBitsPerWord (the bit count) if no bits are set.
-        [[nodiscard]] size_type DoFindPrev(size_type last_find) const;
+        [[nodiscard]] size_type do_find_last() const; // Returns NW * kBitsPerWord (the bit count) if no bits are set.
+        [[nodiscard]] size_type do_find_prev(size_type last_find) const;
 
         // Returns NW * kBitsPerWord (the bit count) if no bits are set.
     }; // class BitmapViewBase
-
 
     /// BitmapView
     ///
@@ -115,11 +157,19 @@ namespace fermat {
     ///   performance and safety. Smaller WordType sizes are not guaranteed.
     ///
     // BITSET_WORD_COUNT(N, WordType)
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     class BitmapView : private BitmapViewBase<OverFlowAsFalse, WordType> {
     public:
+        struct Span {
+            WordType* _data { nullptr };
+            size_t _size { 0 };
+            WordType* data() const { return _data; }
+            size_t size() const { return _size; }
+        };
+
+    public:
         static_assert(detail::is_word_type_v<WordType>,
-                      "Word type must be a non-cv qualified, unsigned integral other than bool.");
+            "Word type must be a non-cv qualified, unsigned integral other than bool.");
 
         typedef BitmapViewBase<OverFlowAsFalse, WordType> base_type;
         typedef BitmapView<OverFlowAsFalse, WordType> this_type;
@@ -130,24 +180,24 @@ namespace fermat {
             kBitsPerWord = (8 * sizeof(word_type)),
             kBitsPerWordMask = (kBitsPerWord - 1),
             kBitsPerWordShift = ((kBitsPerWord == 8)
-                                     ? 3
-                                     : ((kBitsPerWord == 16)
-                                            ? 4
-                                            : ((kBitsPerWord == 32) ? 5 : (((kBitsPerWord == 64) ? 6 : 7))))),
+                    ? 3
+                    : ((kBitsPerWord == 16)
+                              ? 4
+                              : ((kBitsPerWord == 32) ? 5 : (((kBitsPerWord == 64) ? 6 : 7))))),
             kWordSize = sizeof(word_type), // The size of individual words the BitmapView uses to hold the bits.
         };
 
         // internal implementation details. do not use.
-        using base_type::_words;
         using base_type::_num_words;
-        using base_type::DoGetWord;
-        using base_type::DoFindFirst;
-        using base_type::DoFindNext;
-        using base_type::DoFindLast;
-        using base_type::DoFindPrev;
+        using base_type::_words;
+        using base_type::do_find_first;
+        using base_type::do_find_last;
+        using base_type::do_find_next;
+        using base_type::do_find_prev;
+        using base_type::do_getWord;
 
-        using base_type::count;
         using base_type::any;
+        using base_type::count;
 
     public:
         /// Reference
@@ -161,26 +211,26 @@ namespace fermat {
         protected:
             friend class BitmapView<OverFlowAsFalse, WordType>;
 
-            word_type *mpBitWord;
+            word_type* mpBitWord;
             size_type mnBitIndex;
 
             Reference() = default;
 
         public:
-            Reference(const BitmapView &x, size_type i);
+            Reference(const BitmapView& x, size_type i);
 
-            Reference &operator=(bool value);
+            Reference& operator=(bool value);
 
-            Reference &operator=(const Reference &x);
+            Reference& operator=(const Reference& x);
 
             bool operator~() const;
 
-            operator bool() const // Defined inline because CodeWarrior fails to be able to compile it outside.
-            {
+            // Defined inline because CodeWarrior fails to be able to compile it outside.
+            operator bool() const {
                 return (*mpBitWord & (static_cast<word_type>(1) << (mnBitIndex & kBitsPerWordMask))) != 0;
             }
 
-            Reference &flip();
+            Reference& flip();
         };
 
     public:
@@ -188,36 +238,36 @@ namespace fermat {
 
         BitmapView() = default;
 
-        BitmapView(turbo::span<WordType> data, size_t bits_num);
+        BitmapView(Span data, size_t bits_num);
 
         // We don't define copy constructor and operator= because
         // the compiler-generated versions will suffice.
 
-        this_type &operator&=(const this_type &x);
+        this_type& operator&=(const this_type& x);
 
-        this_type &operator|=(const this_type &x);
+        this_type& operator|=(const this_type& x);
 
-        this_type &operator^=(const this_type &x);
+        this_type& operator^=(const this_type& x);
 
-        this_type &operator<<=(size_type n);
+        this_type& operator<<=(size_type n);
 
-        this_type &operator>>=(size_type n);
+        this_type& operator>>=(size_type n);
 
-        this_type &setup(turbo::span<WordType> data, size_t bits_num);
+        this_type& setup(Span data, size_t bits_num);
 
-        this_type &setup(turbo::span<WordType> data);
+        this_type& setup(Span data);
 
-        this_type &set();
+        this_type& set();
 
-        this_type &set(size_type i, bool value = true);
+        this_type& set(size_type i, bool value = true);
 
-        this_type &reset();
+        this_type& reset();
 
-        this_type &reset(size_type i);
+        this_type& reset(size_type i);
 
-        this_type &flip();
+        this_type& flip();
 
-        this_type &flip(size_type i);
+        this_type& flip(size_type i);
 
         this_type operator~() const;
 
@@ -225,22 +275,22 @@ namespace fermat {
 
         bool operator[](size_type i) const;
 
-        const word_type *data() const;
+        const word_type* data() const;
 
-        word_type *data();
+        word_type* data();
 
-        //size_type count() const;            // We inherit this from the base class.
+        // size_type count() const;            // We inherit this from the base class.
         size_type size() const;
 
         size_type word_size() const;
 
-        bool operator==(const this_type &x) const;
+        bool operator==(const this_type& x) const;
 
-        bool operator!=(const this_type &x) const;
+        bool operator!=(const this_type& x) const;
 
         bool test(size_type i) const;
 
-        //bool any() const;                   // We inherit this from the base class.
+        // bool any() const;                   // We inherit this from the base class.
         [[nodiscard]] bool all() const;
 
         [[nodiscard]] bool none() const;
@@ -262,7 +312,7 @@ namespace fermat {
         size_type find_prev(size_type last_find) const;
 
     private:
-        size_type _bits_number{0};
+        size_type _bits_number { 0 };
     }; // BitmapView
 
     ///////////////////////////////////////////////////////////////////////////
@@ -278,81 +328,73 @@ namespace fermat {
     // For our tests (~NW < 16), the latter (using []) access resulted in faster code.
     ///////////////////////////////////////////////////////////////////////////
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline void BitmapViewBase<OverFlowAsFalse, WordType>::operator&=(const this_type &x) {
+    template <bool OverFlowAsFalse, typename WordType>
+    inline void BitmapViewBase<OverFlowAsFalse, WordType>::operator&=(const this_type& x) {
         for (size_t i = 0; i < _num_words; i++)
             _words[i] &= x._words[i];
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline void BitmapViewBase<OverFlowAsFalse, WordType>::operator|=(const this_type &x) {
+    template <bool OverFlowAsFalse, typename WordType>
+    inline void BitmapViewBase<OverFlowAsFalse, WordType>::operator|=(const this_type& x) {
         for (size_t i = 0; i < _num_words; i++)
             _words[i] |= x._words[i];
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline void BitmapViewBase<OverFlowAsFalse, WordType>::operator^=(const this_type &x) {
+    template <bool OverFlowAsFalse, typename WordType>
+    inline void BitmapViewBase<OverFlowAsFalse, WordType>::operator^=(const this_type& x) {
         for (size_t i = 0; i < _num_words; i++)
             _words[i] ^= x._words[i];
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline void BitmapViewBase<OverFlowAsFalse, WordType>::operator<<=(size_type n) {
-        auto const nWordShift = (size_type) (n >> kBitsPerWordShift);
+        auto const nWordShift = (size_type)(n >> kBitsPerWordShift);
 
         if (nWordShift) {
-            for (int i = (int) (_num_words - 1); i >= 0; --i)
-                _words[i] = (nWordShift <= (size_type) i) ? _words[i - nWordShift] : (word_type) 0;
+            for (int i = (int)(_num_words - 1); i >= 0; --i)
+                _words[i] = (nWordShift <= (size_type)i) ? _words[i - nWordShift] : (word_type)0;
         }
 
         if (n &= kBitsPerWordMask) {
             for (size_t i = (_num_words - 1); i > 0; --i)
-                _words[i] = (word_type) ((_words[i] << n) | (_words[i - 1] >> (kBitsPerWord - n)));
+                _words[i] = (word_type)((_words[i] << n) | (_words[i - 1] >> (kBitsPerWord - n)));
             _words[0] <<= n;
         }
 
         // We let the parent class turn off any upper bits.
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline void BitmapViewBase<OverFlowAsFalse, WordType>::operator>>=(size_type n) {
-        auto const nWordShift = (size_type) (n >> kBitsPerWordShift);
+        auto const nWordShift = (size_type)(n >> kBitsPerWordShift);
 
         if (nWordShift) {
             for (size_t i = 0; i < _num_words; ++i)
-                _words[i] = ((nWordShift < (_num_words - i)) ? _words[i + nWordShift] : (word_type) 0);
+                _words[i] = ((nWordShift < (_num_words - i)) ? _words[i + nWordShift] : (word_type)0);
         }
 
         if (n &= kBitsPerWordMask) {
             for (size_t i = 0; i < (_num_words - 1); ++i)
-                _words[i] = (word_type) ((_words[i] >> n) | (_words[i + 1] << (kBitsPerWord - n)));
+                _words[i] = (word_type)((_words[i] >> n) | (_words[i + 1] << (kBitsPerWord - n)));
             _words[_num_words - 1] >>= n;
         }
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline void BitmapViewBase<OverFlowAsFalse, WordType>::flip() {
         for (size_t i = 0; i < _num_words; i++)
             _words[i] = ~_words[i];
         // We let the parent class turn off any upper bits.
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline void BitmapViewBase<OverFlowAsFalse, WordType>::set() {
         for (size_t i = 0; i < _num_words; i++)
             _words[i] = static_cast<word_type>(~static_cast<word_type>(0));
         // We let the parent class turn off any upper bits.
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline void BitmapViewBase<OverFlowAsFalse, WordType>::set(size_type i, bool value) {
         if (value)
             _words[i >> kBitsPerWordShift] |= (static_cast<word_type>(1) << (i & kBitsPerWordMask));
@@ -360,8 +402,7 @@ namespace fermat {
             _words[i >> kBitsPerWordShift] &= ~(static_cast<word_type>(1) << (i & kBitsPerWordMask));
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline void BitmapViewBase<OverFlowAsFalse, WordType>::reset() {
         if (_num_words > 16) // This is a constant expression and should be optimized away.
         {
@@ -373,9 +414,8 @@ namespace fermat {
         }
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline bool BitmapViewBase<OverFlowAsFalse, WordType>::operator==(const this_type &x) const {
+    template <bool OverFlowAsFalse, typename WordType>
+    inline bool BitmapViewBase<OverFlowAsFalse, WordType>::operator==(const this_type& x) const {
         for (size_t i = 0; i < _num_words; i++) {
             if (_words[i] != x._words[i])
                 return false;
@@ -383,8 +423,7 @@ namespace fermat {
         return true;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline bool BitmapViewBase<OverFlowAsFalse, WordType>::any() const {
         for (size_t i = 0; i < _num_words; i++) {
             if (_words[i])
@@ -393,8 +432,7 @@ namespace fermat {
         return false;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapViewBase<OverFlowAsFalse, WordType>::size_type
     BitmapViewBase<OverFlowAsFalse, WordType>::count() const {
         size_type n = 0;
@@ -403,24 +441,21 @@ namespace fermat {
         return n;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline typename BitmapViewBase<OverFlowAsFalse, WordType>::word_type &
-    BitmapViewBase<OverFlowAsFalse, WordType>::DoGetWord(size_type i) {
+    template <bool OverFlowAsFalse, typename WordType>
+    inline typename BitmapViewBase<OverFlowAsFalse, WordType>::word_type&
+    BitmapViewBase<OverFlowAsFalse, WordType>::do_getWord(size_type i) {
         return _words[i >> kBitsPerWordShift];
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapViewBase<OverFlowAsFalse, WordType>::word_type
-    BitmapViewBase<OverFlowAsFalse, WordType>::DoGetWord(size_type i) const {
+    BitmapViewBase<OverFlowAsFalse, WordType>::do_getWord(size_type i) const {
         return _words[i >> kBitsPerWordShift];
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapViewBase<OverFlowAsFalse, WordType>::size_type
-    BitmapViewBase<OverFlowAsFalse, WordType>::DoFindFirst() const {
+    BitmapViewBase<OverFlowAsFalse, WordType>::do_find_first() const {
         for (size_type word_index = 0; word_index < _num_words; ++word_index) {
             const size_type fbiw = turbo::countr_zero(_words[word_index]);
 
@@ -428,13 +463,12 @@ namespace fermat {
                 return (word_index * kBitsPerWord) + fbiw;
         }
 
-        return (size_type) _num_words * kBitsPerWord;
+        return (size_type)_num_words * kBitsPerWord;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapViewBase<OverFlowAsFalse, WordType>::size_type
-    BitmapViewBase<OverFlowAsFalse, WordType>::DoFindNext(size_type last_find) const {
+    BitmapViewBase<OverFlowAsFalse, WordType>::do_find_next(size_type last_find) const {
         // Start looking from the next bit.
         ++last_find;
 
@@ -460,26 +494,25 @@ namespace fermat {
             }
         }
 
-        return (size_type) _num_words * kBitsPerWord;
+        return (size_type)_num_words * kBitsPerWord;
     }
 
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapViewBase<OverFlowAsFalse, WordType>::size_type
-    BitmapViewBase<OverFlowAsFalse, WordType>::DoFindLast() const {
-        for (auto word_index = (size_type) _num_words; word_index > 0; --word_index) {
+    BitmapViewBase<OverFlowAsFalse, WordType>::do_find_last() const {
+        for (auto word_index = (size_type)_num_words; word_index > 0; --word_index) {
             const size_type lbiw = GetLastBit(_words[word_index - 1]);
 
             if (lbiw != kBitsPerWord)
                 return ((word_index - 1) * kBitsPerWord) + lbiw;
         }
 
-        return (size_type) _num_words * kBitsPerWord;
+        return (size_type)_num_words * kBitsPerWord;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapViewBase<OverFlowAsFalse, WordType>::size_type
-    BitmapViewBase<OverFlowAsFalse, WordType>::DoFindPrev(size_type last_find) const {
+    BitmapViewBase<OverFlowAsFalse, WordType>::do_find_prev(size_type last_find) const {
         if (last_find > 0) {
             // Set initial state based on last find.
             auto word_index = static_cast<size_type>(last_find >> kBitsPerWordShift);
@@ -490,8 +523,7 @@ namespace fermat {
             //
             // Note: operator~() is an arithmetic operator and performs integral promotions, ie. small integrals are promoted to an int.
             // Because the promotion is before applying operator~() we need to cast back to our word type otherwise we end up with extraneous set bits.
-            word_type mask = (static_cast<word_type>(~static_cast<word_type>(0)) >> (kBitsPerWord - 1 - bit_index)) >>
-                             1;
+            word_type mask = (static_cast<word_type>(~static_cast<word_type>(0)) >> (kBitsPerWord - 1 - bit_index)) >> 1;
             word_type this_word = _words[word_index] & mask;
 
             for (;;) {
@@ -507,25 +539,23 @@ namespace fermat {
             }
         }
 
-        return (size_type) _num_words * kBitsPerWord;
+        return (size_type)_num_words * kBitsPerWord;
     }
-
 
     ///////////////////////////////////////////////////////////////////////////
     // BitmapView::Reference
     ///////////////////////////////////////////////////////////////////////////
 
-    template<bool OverFlowAsFalse, typename WordType>
-    inline BitmapView<OverFlowAsFalse, WordType>::Reference::Reference(const BitmapView &x, size_type i)
-        : mpBitWord(&const_cast<BitmapView &>(x).DoGetWord(i)),
-          mnBitIndex(i & kBitsPerWordMask) {
+    template <bool OverFlowAsFalse, typename WordType>
+    inline BitmapView<OverFlowAsFalse, WordType>::Reference::Reference(const BitmapView& x, size_type i)
+        : mpBitWord(&const_cast<BitmapView&>(x).do_getWord(i))
+        , mnBitIndex(i & kBitsPerWordMask) {
         // We have an issue here because the above is casting away the const-ness of the source BitmapView.
         // Empty
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline typename BitmapView<OverFlowAsFalse, WordType>::Reference &
+    template <bool OverFlowAsFalse, typename WordType>
+    inline typename BitmapView<OverFlowAsFalse, WordType>::Reference&
     BitmapView<OverFlowAsFalse, WordType>::Reference::operator=(bool value) {
         if (value)
             *mpBitWord |= (static_cast<word_type>(1) << (mnBitIndex & kBitsPerWordMask));
@@ -534,10 +564,9 @@ namespace fermat {
         return *this;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline typename BitmapView<OverFlowAsFalse, WordType>::Reference &
-    BitmapView<OverFlowAsFalse, WordType>::Reference::operator=(const Reference &x) {
+    template <bool OverFlowAsFalse, typename WordType>
+    inline typename BitmapView<OverFlowAsFalse, WordType>::Reference&
+    BitmapView<OverFlowAsFalse, WordType>::Reference::operator=(const Reference& x) {
         if (TURBO_UNLIKELY(this == &x)) {
             return *this;
         }
@@ -548,73 +577,64 @@ namespace fermat {
         return *this;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline bool BitmapView<OverFlowAsFalse, WordType>::Reference::operator~() const {
         return (*mpBitWord & (static_cast<word_type>(1) << (mnBitIndex & kBitsPerWordMask))) == 0;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline typename BitmapView<OverFlowAsFalse, WordType>::Reference &
+    template <bool OverFlowAsFalse, typename WordType>
+    inline typename BitmapView<OverFlowAsFalse, WordType>::Reference&
     BitmapView<OverFlowAsFalse, WordType>::Reference::flip() {
         *mpBitWord ^= static_cast<word_type>(1) << (mnBitIndex & kBitsPerWordMask);
         return *this;
     }
 
-
     ///////////////////////////////////////////////////////////////////////////
     // BitmapView
     ///////////////////////////////////////////////////////////////////////////
 
-    template<bool OverFlowAsFalse, typename WordType>
-    inline BitmapView<OverFlowAsFalse, WordType>::BitmapView(
-        turbo::span<WordType> data, size_t bits_num) {
+    template <bool OverFlowAsFalse, typename WordType>
+    inline BitmapView<OverFlowAsFalse, WordType>::BitmapView(Span data, size_t bits_num) {
         setup(data, bits_num);
     }
 
-    template<bool OverFlowAsFalse, typename WordType>
-    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type &
-    BitmapView<OverFlowAsFalse, WordType>::operator&=(const this_type &x) {
+    template <bool OverFlowAsFalse, typename WordType>
+    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type&
+    BitmapView<OverFlowAsFalse, WordType>::operator&=(const this_type& x) {
         base_type::operator&=(x);
         return *this;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type &
-    BitmapView<OverFlowAsFalse, WordType>::operator|=(const this_type &x) {
+    template <bool OverFlowAsFalse, typename WordType>
+    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type&
+    BitmapView<OverFlowAsFalse, WordType>::operator|=(const this_type& x) {
         base_type::operator|=(x);
         return *this;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type &
-    BitmapView<OverFlowAsFalse, WordType>::operator^=(const this_type &x) {
+    template <bool OverFlowAsFalse, typename WordType>
+    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type&
+    BitmapView<OverFlowAsFalse, WordType>::operator^=(const this_type& x) {
         base_type::operator^=(x);
         return *this;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type &
+    template <bool OverFlowAsFalse, typename WordType>
+    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type&
     BitmapView<OverFlowAsFalse, WordType>::operator<<=(size_type n) {
-        if (TURBO_LIKELY((intptr_t) n < (intptr_t) _bits_number)) {
+        if (KUMO_LIKELY((intptr_t)n < (intptr_t)_bits_number)) {
             base_type::operator<<=(n);
             if ((_bits_number & kBitsPerWordMask) || (_bits_number == 0))
                 // If there are any high bits to clear... (If we didn't have this check, then the code below would do the wrong thing when _bits_number == 32.
-                _words[_num_words - 1] &= ~(static_cast<word_type>(~static_cast<word_type>(0)) << (
-                                                _bits_number & kBitsPerWordMask));
+                _words[_num_words - 1] &= ~(static_cast<word_type>(~static_cast<word_type>(0)) << (_bits_number & kBitsPerWordMask));
             // This clears any high unused bits. We need to do this so that shift operations proceed correctly.
         } else
             base_type::reset();
         return *this;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type &
+    template <bool OverFlowAsFalse, typename WordType>
+    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type&
     BitmapView<OverFlowAsFalse, WordType>::operator>>=(size_type n) {
         if (TURBO_LIKELY(n < _bits_number))
             base_type::operator>>=(n);
@@ -623,207 +643,189 @@ namespace fermat {
         return *this;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type &
+    template <bool OverFlowAsFalse, typename WordType>
+    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type&
     BitmapView<OverFlowAsFalse, WordType>::set() {
         base_type::set(); // This sets all bits.
         if ((_bits_number & kBitsPerWordMask) || (_bits_number == 0))
             // If there are any high bits to clear... (If we didn't have this check, then the code below would do the wrong thing when _bits_number == 32.
-            _words[_num_words - 1] &= ~(static_cast<word_type>(~static_cast<word_type>(0)) << (
-                                            _bits_number & kBitsPerWordMask));
+            _words[_num_words - 1] &= ~(static_cast<word_type>(~static_cast<word_type>(0)) << (_bits_number & kBitsPerWordMask));
         // This clears any high unused bits. We need to do this so that shift operations proceed correctly.
         return *this;
     }
 
-    template<bool OverFlowAsFalse, typename WordType>
-    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type &BitmapView<OverFlowAsFalse, WordType>::setup(
-        turbo::span<WordType> data, size_t bits_num) {
+    template <bool OverFlowAsFalse, typename WordType>
+    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type& BitmapView<OverFlowAsFalse, WordType>::setup(
+        Span data, size_t bits_num) {
         _bits_number = bits_num;
         _num_words = BITSET_WORD_COUNT(bits_num, WordType);
         _words = data.data();
-        KCHECK(_num_words<=data.size());
+        KCHECK(_num_words <= data.size());
         return *this;
     }
 
-    template<bool OverFlowAsFalse, typename WordType>
-    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type &BitmapView<OverFlowAsFalse, WordType>::setup(
-        turbo::span<WordType> data) {
+    template <bool OverFlowAsFalse, typename WordType>
+    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type& BitmapView<OverFlowAsFalse, WordType>::setup(
+        Span data) {
         return setup(data, data.size() * kBitsPerWord);
     }
 
-    template<bool OverFlowAsFalse, typename WordType>
-    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type &
+    template <bool OverFlowAsFalse, typename WordType>
+    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type&
     BitmapView<OverFlowAsFalse, WordType>::set(size_type i, bool value) {
         if (TURBO_LIKELY(i < _bits_number)) {
             base_type::set(i, value);
         } else {
             if constexpr (!OverFlowAsFalse) {
-                KCHECK(false) << "BitmapView::set -- out of range";
+                KUMO_ASSERT(false && "BitmapView::set -- out of range");
             }
         }
 
         return *this;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type &
+    template <bool OverFlowAsFalse, typename WordType>
+    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type&
     BitmapView<OverFlowAsFalse, WordType>::reset() {
         base_type::reset();
         return *this;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type &
+    template <bool OverFlowAsFalse, typename WordType>
+    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type&
     BitmapView<OverFlowAsFalse, WordType>::reset(size_type i) {
         if (TURBO_LIKELY(i < _bits_number)) {
-            DoGetWord(i) &= ~(static_cast<word_type>(1) << (i & kBitsPerWordMask));
+            do_getWord(i) &= ~(static_cast<word_type>(1) << (i & kBitsPerWordMask));
         } else {
             if constexpr (!OverFlowAsFalse) {
-                KCHECK(false) << "BitmapView::reset -- out of range";
+                KUMO_ASSERT(false && "BitmapView::reset -- out of range");
             }
         }
 
         return *this;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type &
+    template <bool OverFlowAsFalse, typename WordType>
+    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type&
     BitmapView<OverFlowAsFalse, WordType>::flip() {
         base_type::flip();
         if ((_bits_number & kBitsPerWordMask) || (_bits_number == 0))
             // If there are any high bits to clear... (If we didn't have this check, then the code below would do the wrong thing when _bits_number == 32.
-            _words[_num_words - 1] &= ~(static_cast<word_type>(~static_cast<word_type>(0)) << (
-                                            _bits_number & kBitsPerWordMask));
+            _words[_num_words - 1] &= ~(static_cast<word_type>(~static_cast<word_type>(0)) << (_bits_number & kBitsPerWordMask));
         // This clears any high unused bits. We need to do this so that shift operations proceed correctly.
         return *this;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type &
+    template <bool OverFlowAsFalse, typename WordType>
+    inline typename BitmapView<OverFlowAsFalse, WordType>::this_type&
     BitmapView<OverFlowAsFalse, WordType>::flip(size_type i) {
         if (TURBO_LIKELY(i < _bits_number))
-            DoGetWord(i) ^= (static_cast<word_type>(1) << (i & kBitsPerWordMask));
+            do_getWord(i) ^= (static_cast<word_type>(1) << (i & kBitsPerWordMask));
         else {
             if constexpr (!OverFlowAsFalse) {
-                KCHECK(false) << "BitmapView::flip -- out of range";
+                KUMO_ASSERT(false && "BitmapView::flip -- out of range");
             }
         }
         return *this;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapView<OverFlowAsFalse, WordType>::this_type
     BitmapView<OverFlowAsFalse, WordType>::operator~() const {
         return this_type(*this).flip();
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapView<OverFlowAsFalse, WordType>::Reference
     BitmapView<OverFlowAsFalse, WordType>::operator[](size_type i) {
         if (TURBO_LIKELY(i < _bits_number)) {
             return Reference(*this, i);
         }
-        KCHECK(false) << "BitmapView::operator[] -- out of range";
-        TURBO_UNREACHABLE();
+        KUMO_ASSERT(false && "BitmapView::operator[] -- out of range");
+        KUMO_UNREACHABLE();
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline bool BitmapView<OverFlowAsFalse, WordType>::operator[](size_type i) const {
         if (TURBO_LIKELY(i < _bits_number))
-            return (DoGetWord(i) & (static_cast<word_type>(1) << (i & kBitsPerWordMask))) != 0;
+            return (do_getWord(i) & (static_cast<word_type>(1) << (i & kBitsPerWordMask))) != 0;
         if constexpr (!OverFlowAsFalse) {
-            KCHECK(false) << "BitmapView::operator[] -- out of range";
+            KUMO_ASSERT(false && "BitmapView::operator[] -- out of range");
         }
         return false;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline const typename BitmapView<OverFlowAsFalse, WordType>::word_type *BitmapView<OverFlowAsFalse,
+    template <bool OverFlowAsFalse, typename WordType>
+    inline const typename BitmapView<OverFlowAsFalse, WordType>::word_type* BitmapView<OverFlowAsFalse,
         WordType>::data() const {
         return base_type::_words;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline typename BitmapView<OverFlowAsFalse, WordType>::word_type *BitmapView<OverFlowAsFalse, WordType>::data() {
+    template <bool OverFlowAsFalse, typename WordType>
+    inline typename BitmapView<OverFlowAsFalse, WordType>::word_type* BitmapView<OverFlowAsFalse, WordType>::data() {
         return base_type::_words;
     }
 
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapView<OverFlowAsFalse, WordType>::size_type
     BitmapView<OverFlowAsFalse, WordType>::size() const {
-        return (size_type) _bits_number;
+        return (size_type)_bits_number;
     }
 
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapView<OverFlowAsFalse, WordType>::size_type
     BitmapView<OverFlowAsFalse, WordType>::word_size() const {
-        return (size_type) _num_words;
+        return (size_type)_num_words;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
-    inline bool BitmapView<OverFlowAsFalse, WordType>::operator==(const this_type &x) const {
+    template <bool OverFlowAsFalse, typename WordType>
+    inline bool BitmapView<OverFlowAsFalse, WordType>::operator==(const this_type& x) const {
         return base_type::operator==(x);
     }
 
-    template<bool OverFlowAsFalse, typename WordType>
-    inline bool BitmapView<OverFlowAsFalse, WordType>::operator!=(const this_type &x) const {
+    template <bool OverFlowAsFalse, typename WordType>
+    inline bool BitmapView<OverFlowAsFalse, WordType>::operator!=(const this_type& x) const {
         return !base_type::operator==(x);
     }
 
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline bool BitmapView<OverFlowAsFalse, WordType>::test(size_type i) const {
         if (TURBO_LIKELY(i < _bits_number))
-            return (DoGetWord(i) & (static_cast<word_type>(1) << (i & kBitsPerWordMask))) != 0;
+            return (do_getWord(i) & (static_cast<word_type>(1) << (i & kBitsPerWordMask))) != 0;
 
         if constexpr (!OverFlowAsFalse) {
-            KCHECK(false) << "BitmapView::test -- out of range";
+            KUMO_ASSERT(false && "BitmapView::test -- out of range");
         }
 
         return false;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline bool BitmapView<OverFlowAsFalse, WordType>::all() const {
         return count() == size();
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline bool BitmapView<OverFlowAsFalse, WordType>::none() const {
         return !base_type::any();
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapView<OverFlowAsFalse, WordType>::this_type
     BitmapView<OverFlowAsFalse, WordType>::operator<<(size_type n) const {
         return this_type(*this).operator<<=(n);
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapView<OverFlowAsFalse, WordType>::this_type
     BitmapView<OverFlowAsFalse, WordType>::operator>>(size_type n) const {
         return this_type(*this).operator>>=(n);
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapView<OverFlowAsFalse, WordType>::size_type
     BitmapView<OverFlowAsFalse, WordType>::find_first() const {
-        const size_type i = base_type::DoFindFirst();
+        const size_type i = base_type::do_find_first();
 
         if (i < _bits_number)
             return i;
@@ -832,11 +834,10 @@ namespace fermat {
         return _bits_number;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapView<OverFlowAsFalse, WordType>::size_type
     BitmapView<OverFlowAsFalse, WordType>::find_next(size_type last_find) const {
-        const size_type i = base_type::DoFindNext(last_find);
+        const size_type i = base_type::do_find_next(last_find);
 
         if (i < _bits_number)
             return i;
@@ -845,11 +846,10 @@ namespace fermat {
         return _bits_number;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapView<OverFlowAsFalse, WordType>::size_type
     BitmapView<OverFlowAsFalse, WordType>::find_last() const {
-        const size_type i = base_type::DoFindLast();
+        const size_type i = base_type::do_find_last();
 
         if (i < _bits_number)
             return i;
@@ -858,11 +858,10 @@ namespace fermat {
         return _bits_number;
     }
 
-
-    template<bool OverFlowAsFalse, typename WordType>
+    template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapView<OverFlowAsFalse, WordType>::size_type
     BitmapView<OverFlowAsFalse, WordType>::find_prev(size_type last_find) const {
-        const size_type i = base_type::DoFindPrev(last_find);
+        const size_type i = base_type::do_find_prev(last_find);
 
         if (i < _bits_number)
             return i;
@@ -871,4 +870,4 @@ namespace fermat {
         return _bits_number;
     }
 
-} // namespace fermat
+} // namespace turbo
