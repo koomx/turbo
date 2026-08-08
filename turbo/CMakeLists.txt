@@ -213,23 +213,6 @@ set(FORMAT_SRC
 )
 
 
-set(SYNC_SRC
-        synchronization/barrier.cc
-        synchronization/blocking_counter.cc
-        synchronization/internal/create_thread_identity.cc
-        synchronization/internal/futex_waiter.cc
-        synchronization/internal/graphcycles.cc
-        synchronization/internal/kernel_timeout.cc
-        synchronization/internal/per_thread_sem.cc
-        synchronization/internal/pthread_waiter.cc
-        synchronization/internal/sem_waiter.cc
-        synchronization/internal/stdcpp_waiter.cc
-        synchronization/internal/waiter_base.cc
-        synchronization/internal/win32_waiter.cc
-        synchronization/mutex.cc
-        synchronization/notification.cc
-)
-
 set(TIME_SRC
         time/civil_time.cc
         time/clock.cc
@@ -270,7 +253,6 @@ set(TURBO_SRC
         ${RANDOM_SRC}
         ${STATUS_SRC}
         ${STRINGS_SRC}
-        ${SYNC_SRC}
         ${TIME_SRC}
         ${CCTZ_SRC}
         ${TYPES_SRC}

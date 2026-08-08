@@ -15,6 +15,8 @@
 
 #include <tests/log/scoped_mock_log.h>
 
+#include <atomic>
+#include <barrier>
 #include <memory>
 #include <thread>  // NOLINT(build/c++11)
 
@@ -30,8 +32,6 @@
 #include <turbo/memory/memory.h>
 #include <turbo/strings/match.h>
 #include <string_view>
-#include <turbo/synchronization/barrier.h>
-#include <turbo/synchronization/notification.h>
 
 namespace {
 
@@ -225,13 +225,13 @@ TEST(ScopedMockLogTest, LogFromMultipleThreads) {
 
   log.StartCapturingLogs();
 
-  turbo::Barrier barrier(2);
+  std::barrier barrier(2);
   std::thread thread1([&barrier]() {
-    barrier.Block();
+    barrier.arrive_and_wait();
     KLOG(INFO) << "Thread 1";
   });
   std::thread thread2([&barrier]() {
-    barrier.Block();
+    barrier.arrive_and_wait();
     KLOG(INFO) << "Thread 2";
   });
 
@@ -245,10 +245,10 @@ TEST(ScopedMockLogTest, LogFromMultipleThreads) {
 TEST(ScopedMockLogTest, NoSequenceWithMultipleThreads) {
   turbo::ScopedMockLog log;
 
-  turbo::Barrier barrier(2);
+  std::barrier barrier(2);
   EXPECT_CALL(log, Log(turbo::LogSeverity::kInfo, _, _))
       .Times(2)
-      .WillRepeatedly([&barrier]() { barrier.Block(); });
+      .WillRepeatedly([&barrier]() { barrier.arrive_and_wait(); });
 
   log.StartCapturingLogs();
 
@@ -267,16 +267,19 @@ TEST(ScopedMockLogTsanTest,
 
   log->StartCapturingLogs();
 
-  turbo::Notification logging_started;
+  std::atomic<bool> logging_started{false};
 
   std::thread thread([&logging_started]() {
     for (int i = 0; i < 100; ++i) {
-      if (i == 50) logging_started.Notify();
+      if (i == 50) {
+        logging_started.store(true);
+        logging_started.notify_one();
+      }
       KLOG(INFO) << "Thread log";
     }
   });
 
-  logging_started.WaitForNotification();
+  logging_started.wait(false);
   log.reset();
   thread.join();
 }

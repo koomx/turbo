@@ -73,13 +73,11 @@ crc = "base, bits, format, macros, memory"
 strings = "base, bits, format, macros, meta, numeric, types"
 
 #######################################
-# L8 — time / status / random / sync
+# L8 — time / status / random / cord
 #######################################
 time = "base, bits, cctz, macros, numeric, strings"
 status = "base, debugging, format, functional, hash, macros, meta, strings, time, types, utility"
 random = "algorithm, base, bits, macros, meta, numeric, strings, types, utility"
-# timeouts only; time does not depend on sync
-synchronization = "base, debugging, functional, macros, meta, time"
 # uses memory/container_memory (lifted out of container; no cord↔container cycle)
 cord = "algorithm, base, bits, crc, functional, hash, macros, memory, meta, strings, types"
 

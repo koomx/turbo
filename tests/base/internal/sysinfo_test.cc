@@ -19,13 +19,13 @@
 #include <unistd.h>
 #endif
 
+#include <barrier>
+#include <mutex>
 #include <thread>  // NOLINT(build/c++11)
 #include <unordered_set>
 #include <vector>
 
 #include <gtest/gtest.h>
-#include <turbo/synchronization/barrier.h>
-#include <turbo/synchronization/mutex.h>
 
 namespace turbo {
 
@@ -43,24 +43,24 @@ TEST(SysinfoTest, GetTID) {
   // Uses a few loops to exercise implementations that reallocate IDs.
   for (int i = 0; i < 10; ++i) {
     constexpr int kNumThreads = 10;
-    Barrier all_threads_done(kNumThreads);
+    std::barrier all_threads_done(kNumThreads);
     std::vector<std::thread> threads;
 
-    Mutex mutex;
+    std::mutex mutex;
     std::unordered_set<pid_t> tids;
 
     for (int j = 0; j < kNumThreads; ++j) {
       threads.push_back(std::thread([&]() {
         pid_t id = GetTID();
         {
-          MutexLock lock(mutex);
+          std::lock_guard lock(mutex);
           ASSERT_TRUE(tids.find(id) == tids.end());
           tids.insert(id);
         }
         // We can't simply join the threads here. The threads need to
         // be alive otherwise the TID might have been reallocated to
         // another live thread.
-        all_threads_done.Block();
+        all_threads_done.arrive_and_wait();
       }));
     }
     for (auto& thread : threads) {

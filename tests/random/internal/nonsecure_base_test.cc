@@ -29,7 +29,7 @@
 #include <turbo/container/flat_hash_set.h>
 #include <turbo/random/distributions.h>
 #include <turbo/random/random.h>
-#include <turbo/synchronization/mutex.h>
+#include <mutex>
 
 namespace {
 
@@ -206,7 +206,7 @@ TEST(NonsecureURBGBase, DistinctSequencesPerThread) {
   // Acquire initial sequences from multiple threads.
   std::vector<std::vector<result_type>> data;
   {
-    turbo::Mutex mu;
+    std::mutex mu;
     std::vector<std::thread> threads;
     for (int i = 0; i < kNumThreads; i++) {
       threads.emplace_back([&]() {
@@ -214,7 +214,7 @@ TEST(NonsecureURBGBase, DistinctSequencesPerThread) {
 
         std::vector<result_type> v(kValuesPerThread);
         turbo::c_generate(v, [&]() { return gen(); });
-        turbo::MutexLock l(mu);
+        std::lock_guard lock(mu);
         data.push_back(std::move(v));
       });
     }

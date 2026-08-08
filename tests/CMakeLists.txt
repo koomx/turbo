@@ -43,7 +43,6 @@ add_subdirectory(numeric)
 add_subdirectory(random)
 add_subdirectory(status)
 add_subdirectory(strings)
-#add_subdirectory(synchronization)
 add_subdirectory(time)
 add_subdirectory(types)
 

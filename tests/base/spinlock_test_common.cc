@@ -16,7 +16,9 @@
 // spinlock.  If the spinlock is working properly, all elements of the
 // array should be equal at the end of the test.
 
+#include <atomic>
 #include <cstdint>
+#include <latch>
 #include <limits>
 #include <mutex>  // NOLINT(build/c++11)
 #include <random>
@@ -31,8 +33,6 @@
 #include <turbo/base/internal/scheduling_mode.h>
 #include <turbo/base/internal/spinlock.h>
 #include <turbo/base/internal/sysinfo.h>
-#include <turbo/synchronization/blocking_counter.h>
-#include <turbo/synchronization/notification.h>
 
 constexpr uint32_t kNumThreads = 10;
 constexpr int32_t kIters = 1000;
@@ -238,23 +238,24 @@ TEST(SpinLockWithThreads, StaticNonCooperativeSpinLock) {
 
 TEST(SpinLockWithThreads, DoesNotDeadlock) {
   struct Helper {
-    static void NotifyThenLock(Notification* locked, SpinLock* spinlock,
-                               BlockingCounter* b) {
-      locked->WaitForNotification();  // Wait for LockThenWait() to hold "s".
-      b->DecrementCount();
+    static void NotifyThenLock(std::atomic<bool>* locked, SpinLock* spinlock,
+                               std::latch* b) {
+      locked->wait(false);  // Wait for LockThenWait() to hold "s".
+      b->count_down();
       SpinLockHolder l(*spinlock);
     }
 
-    static void LockThenWait(Notification* locked, SpinLock* spinlock,
-                             BlockingCounter* b) {
+    static void LockThenWait(std::atomic<bool>* locked, SpinLock* spinlock,
+                             std::latch* b) {
       SpinLockHolder l(*spinlock);
-      locked->Notify();
-      b->Wait();
+      locked->store(true);
+      locked->notify_all();
+      b->wait();
     }
 
     static void DeadlockTest(SpinLock* spinlock, int num_spinners) {
-      Notification locked;
-      BlockingCounter counter(num_spinners);
+      std::atomic<bool> locked{false};
+      std::latch counter(static_cast<std::ptrdiff_t>(num_spinners));
       std::vector<std::thread> threads;
 
       threads.push_back(

@@ -15,9 +15,9 @@
 #include <turbo/macros/config.h>
 
 #include <cstdint>
+#include <thread>
 
 #include <gtest/gtest.h>
-#include <turbo/synchronization/internal/thread_pool.h>
 
 namespace {
 
@@ -46,12 +46,12 @@ TEST(ConfigTest, ThreadLocal) {
   static thread_local int mine_mine_mine = 16;
   EXPECT_EQ(16, mine_mine_mine);
   {
-    turbo::synchronization_internal::ThreadPool pool(1);
-    pool.Schedule([&] {
+    std::thread t([] {
       EXPECT_EQ(16, mine_mine_mine);
       mine_mine_mine = 32;
       EXPECT_EQ(32, mine_mine_mine);
     });
+    t.join();
   }
   EXPECT_EQ(16, mine_mine_mine);
 }

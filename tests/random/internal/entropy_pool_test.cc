@@ -22,9 +22,10 @@
 #include <utility>
 #include <vector>
 
+#include <mutex>
+
 #include "gtest/gtest.h"
 #include <turbo/container/flat_hash_set.h>
-#include <turbo/synchronization/mutex.h>
 
 namespace {
 
@@ -38,13 +39,13 @@ TEST(EntropyPoolTest, DistinctSequencesPerThread) {
   // Acquire entropy from multiple threads.
   std::vector<std::vector<result_type>> data;
   {
-    turbo::Mutex mu;
+    std::mutex mu;
     std::vector<std::thread> threads;
     for (int i = 0; i < kNumThreads; i++) {
       threads.emplace_back([&]() {
         std::vector<result_type> v(kValuesPerThread);
         GetEntropyFromRandenPool(v.data(), sizeof(result_type) * v.size());
-        turbo::MutexLock l(mu);
+        std::lock_guard lock(mu);
         data.push_back(std::move(v));
       });
     }

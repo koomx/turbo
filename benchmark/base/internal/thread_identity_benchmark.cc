@@ -13,19 +13,9 @@
 // limitations under the License.
 
 #include <turbo/base/internal/thread_identity.h>
-#include <turbo/synchronization/internal/create_thread_identity.h>
-#include <turbo/synchronization/internal/per_thread_sem.h>
 #include "benchmark/benchmark.h"
 
 namespace {
-
-void BM_SafeCurrentThreadIdentity(benchmark::State& state) {
-  for (auto _ : state) {
-    benchmark::DoNotOptimize(
-        turbo::synchronization_internal::GetOrCreateCurrentThreadIdentity());
-  }
-}
-BENCHMARK(BM_SafeCurrentThreadIdentity);
 
 void BM_UnsafeCurrentThreadIdentity(benchmark::State& state) {
   for (auto _ : state) {
