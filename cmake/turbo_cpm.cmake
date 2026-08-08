@@ -18,21 +18,35 @@
 # CPM.cmake is vendored at kmcmake/tools/CPM.cmake (official release, unmodified).
 # Enable with: -DKMCMAKE_USE_CPM=ON  or set(KMCMAKE_USE_CPM ON) in *_user_option.cmake
 #
-# Template ships a minimal fmt package as the CPM smoke example (used by CI).
-# Replace/extend for real projects. Prefer kmpkg depend-info order when mirroring.
+# Test/benchmark-only packages — do not list(APPEND KMCMAKE_DEPS_LINK ...).
 #
 # See docs/AI.md (CPM section) and https://github.com/cpm-cmake/CPM.cmake
 # ------------------------------------------------------------------------------
 
 include(CPM)
 
-CPMAddPackage(
-        NAME fmt
-        GITHUB_REPOSITORY fmtlib/fmt
-        VERSION 10.2.1
-        GIT_TAG 10.2.1
-        OPTIONS
-        "FMT_TEST OFF"
-        "FMT_DOC OFF"
-)
-list(APPEND KMCMAKE_DEPS_LINK fmt::fmt)
+if (KMCMAKE_BUILD_TEST)
+    CPMAddPackage(
+            NAME googletest
+            GITHUB_REPOSITORY google/googletest
+            VERSION 1.17.0
+            GIT_TAG v1.17.0
+            OPTIONS
+            "INSTALL_GTEST OFF"
+            "BUILD_GMOCK ON"
+            "gtest_force_shared_crt ON"
+    )
+endif ()
+
+if (KMCMAKE_BUILD_BENCHMARK)
+    CPMAddPackage(
+            NAME benchmark
+            GITHUB_REPOSITORY google/benchmark
+            VERSION 1.9.5
+            GIT_TAG v1.9.5
+            OPTIONS
+            "BENCHMARK_ENABLE_TESTING OFF"
+            "BENCHMARK_ENABLE_GTEST_TESTS OFF"
+            "BENCHMARK_ENABLE_INSTALL OFF"
+    )
+endif ()

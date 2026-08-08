@@ -29,3 +29,8 @@
 # list(APPEND KMCMAKE_CXX_OPTIONS "-fopenmp")
 # ------------------------------------------------------------------------------
 
+# C++ standard must be set before CPMAddPackage so fetched deps inherit it.
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(KMCMAKE_USE_CPM ON CACHE BOOL "" FORCE)

@@ -17,7 +17,10 @@
 
 configure_file(${PROJECT_SOURCE_DIR}/tests/config.h.in ${PROJECT_SOURCE_DIR}/tests/config.h @ONLY)
 
-find_package(GTest REQUIRED)
+if (NOT TARGET GTest::gtest)
+    find_package(GTest REQUIRED)
+endif ()
+
 
 add_subdirectory(algorithm)
 add_subdirectory(base)

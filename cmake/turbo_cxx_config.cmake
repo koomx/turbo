@@ -26,6 +26,12 @@
 include(kmcmake_compiler_flags)
 include(kmcmake_arch)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif ()
+
 set(KMCMAKE_CXX_OPTIONS
     ${KMCMAKE_BASE_CXX_FLAGS}
     ${KMCMAKE_SIMD_CXX_FLAGS}
