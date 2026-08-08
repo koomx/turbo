@@ -24,7 +24,18 @@
 #include <turbo/log/vlog_is_on.h>
 #include "benchmark/benchmark.h"
 
+#include <thread>
+
 namespace {
+
+// Cap threaded benches to avoid oversubscribing small CI runners (e.g. 4-core ARM).
+int MaxBenchThreads() {
+  unsigned hc = std::thread::hardware_concurrency();
+  if (hc == 0) {
+    hc = 1;
+  }
+  return static_cast<int>(2 * hc);
+}
 
 void EnsureLogInitialized() {
   static const bool once = [] {
@@ -125,7 +136,7 @@ static void BM_VlogIsOnOverhead(benchmark::State& state) {
     benchmark::DoNotOptimize(VKLOG_IS_ON(0));  // 10
   }
 }
-BENCHMARK(BM_VlogIsOnOverhead)->ThreadRange(1, 64);
+BENCHMARK(BM_VlogIsOnOverhead)->ThreadRange(1, MaxBenchThreads());
 
 static void BM_VlogIsNotOnOverhead(benchmark::State& state) {
   EnsureLogInitialized();
@@ -148,7 +159,7 @@ static void BM_VlogIsNotOnOverhead(benchmark::State& state) {
     benchmark::DoNotOptimize(VKLOG_IS_ON(1));  // 10
   }
 }
-BENCHMARK(BM_VlogIsNotOnOverhead)->ThreadRange(1, 64);
+BENCHMARK(BM_VlogIsNotOnOverhead)->ThreadRange(1, MaxBenchThreads());
 
 static void BM_LogEveryNOverhead(benchmark::State& state) {
   EnsureLogInitialized();
@@ -170,7 +181,7 @@ static void BM_LogEveryNOverhead(benchmark::State& state) {
     KLOG_EVERY_N_SEC(INFO, 100);
   }
 }
-BENCHMARK(BM_LogEveryNOverhead)->ThreadRange(1, 64);
+BENCHMARK(BM_LogEveryNOverhead)->ThreadRange(1, MaxBenchThreads());
 
 }  // namespace
 

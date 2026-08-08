@@ -1,12 +1,15 @@
 # Log benchmarks
 
-CI runs `log_log_benchmark`, plots results, and publishes PNGs to the
+CI runs `log_log_benchmark` and `log_zlog_benchmark`, plots results, and
+publishes PNGs to the
 [`benchmark-results`](https://github.com/koomx/turbo/tree/benchmark-results)
 branch. Images below refresh on push / `workflow_dispatch` (not on PR).
 
-Dependencies (gtest / google-benchmark) are fetched via **CPM**, not vcpkg.
-The CI workflow still uses `koomx/x-ci` `vcpkg-template` only for the
-runner/matrix/publish plumbing.
+Dependencies (gtest / google-benchmark) are fetched via **CPM**.
+The CI workflow uses `koomx/x-ci` `vcpkg-template` only for runner / matrix /
+publish plumbing.
+
+Threaded log benches use `ThreadRange(1, 2 * hardware_concurrency())`.
 
 ## Gallery
 
@@ -18,11 +21,19 @@ runner/matrix/publish plumbing.
 
 ![std20-ubuntu24-arm64](https://raw.githubusercontent.com/koomx/turbo/benchmark-results/latest/std20-ubuntu24-arm64/plots/summary.png)
 
+#### `macos-arm64`
+
+![macos-arm64](https://raw.githubusercontent.com/koomx/turbo/benchmark-results/latest/macos-arm64/plots/summary.png)
+
+#### `windows`
+
+![windows](https://raw.githubusercontent.com/koomx/turbo/benchmark-results/latest/windows/plots/summary.png)
+
 ## Local
 
 ```bash
 cmake --preset=ci
-cmake --build build-ninja -j
+cmake --build build-ninja --parallel
 python3 scripts/run_log_bench.py
 python3 scripts/plot_log_bench.py
 # → benchmark-results/plots/summary.png

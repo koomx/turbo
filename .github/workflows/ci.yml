@@ -15,10 +15,12 @@ jobs:
     with:
       enable-std20-ubuntu24-amd64: true
       enable-std20-ubuntu24-arm64: true
+      enable-macos-arm64: true
+      enable-windows: true
       config-command: |
         cmake --preset=ci -DCMAKE_BUILD_TYPE=Release
       build-command: |
-        cmake --build build-ninja -j$(nproc)
+        cmake --build build-ninja --parallel
       test-command: |
         ctest --test-dir build-ninja --output-on-failure -j1
       benchmark-command: |
