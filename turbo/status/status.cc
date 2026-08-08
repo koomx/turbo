@@ -29,7 +29,7 @@
 #include <turbo/status/internal/status_internal.h>
 #include <turbo/strings/str_cat.h>
 #include <string_view>
-#include <turbo/types/source_location.h>
+#include <source_location>
 
 namespace turbo {
     static_assert(
@@ -104,7 +104,7 @@ namespace turbo {
 
     template<typename StringOrView>
     uintptr_t MakeStatusRepImpl(uintptr_t inlined_rep, StringOrView msg,
-                                turbo::SourceLocation loc) {
+                                std::source_location loc) {
         static_assert(std::is_same_v<StringOrView, std::string_view> ||
                       std::is_same_v<StringOrView, std::string &&>);
         bool ok = inlined_rep == Status::CodeToInlinedRep(turbo::StatusCode::kOk);
@@ -124,18 +124,18 @@ namespace turbo {
 
     uintptr_t Status::MakeRepFromStringView(uintptr_t inlined_rep,
                                             std::string_view msg,
-                                            turbo::SourceLocation loc) {
+                                            std::source_location loc) {
         return MakeStatusRepImpl<std::string_view>(inlined_rep, msg, loc);
     }
 
     uintptr_t Status::MakeRepFromStringRvalue(uintptr_t inlined_rep,
                                               std::string &&msg,
-                                              turbo::SourceLocation loc) {
+                                              std::source_location loc) {
         return MakeStatusRepImpl<std::string &&>(inlined_rep, std::move(msg), loc);
     }
 
     uintptr_t Status::AddSourceLocationImpl(uintptr_t rep,
-                                            turbo::SourceLocation loc) {
+                                            std::source_location loc) {
         if (IsInlined(rep)) return rep;
         if (loc.file_name()[0] == '\0') return rep;
         status_internal::StatusRep *rep_ptr = PrepareToModify(rep);
@@ -167,7 +167,7 @@ namespace turbo {
     namespace status_internal {
         // We use an int in the template parameter to shorten mangled names.
         template<int error_code>
-        Status MakeErrorImpl(std::string_view message, SourceLocation loc) {
+        Status MakeErrorImpl(std::string_view message, std::source_location loc) {
             return Status(static_cast<StatusCode>(error_code), message, loc);
         }
 
@@ -175,39 +175,39 @@ namespace turbo {
         // If we add more error code, we need to add their values on this list.
         // Using ints here instead of static_cast<int>(StatusCode::kFoo) makes it easier
         // to see that the list is complete.
-        template Status MakeErrorImpl<0>(std::string_view, SourceLocation);
+        template Status MakeErrorImpl<0>(std::string_view, std::source_location);
 
-        template Status MakeErrorImpl<1>(std::string_view, SourceLocation);
+        template Status MakeErrorImpl<1>(std::string_view, std::source_location);
 
-        template Status MakeErrorImpl<2>(std::string_view, SourceLocation);
+        template Status MakeErrorImpl<2>(std::string_view, std::source_location);
 
-        template Status MakeErrorImpl<3>(std::string_view, SourceLocation);
+        template Status MakeErrorImpl<3>(std::string_view, std::source_location);
 
-        template Status MakeErrorImpl<4>(std::string_view, SourceLocation);
+        template Status MakeErrorImpl<4>(std::string_view, std::source_location);
 
-        template Status MakeErrorImpl<5>(std::string_view, SourceLocation);
+        template Status MakeErrorImpl<5>(std::string_view, std::source_location);
 
-        template Status MakeErrorImpl<6>(std::string_view, SourceLocation);
+        template Status MakeErrorImpl<6>(std::string_view, std::source_location);
 
-        template Status MakeErrorImpl<7>(std::string_view, SourceLocation);
+        template Status MakeErrorImpl<7>(std::string_view, std::source_location);
 
-        template Status MakeErrorImpl<8>(std::string_view, SourceLocation);
+        template Status MakeErrorImpl<8>(std::string_view, std::source_location);
 
-        template Status MakeErrorImpl<9>(std::string_view, SourceLocation);
+        template Status MakeErrorImpl<9>(std::string_view, std::source_location);
 
-        template Status MakeErrorImpl<10>(std::string_view, SourceLocation);
+        template Status MakeErrorImpl<10>(std::string_view, std::source_location);
 
-        template Status MakeErrorImpl<11>(std::string_view, SourceLocation);
+        template Status MakeErrorImpl<11>(std::string_view, std::source_location);
 
-        template Status MakeErrorImpl<12>(std::string_view, SourceLocation);
+        template Status MakeErrorImpl<12>(std::string_view, std::source_location);
 
-        template Status MakeErrorImpl<13>(std::string_view, SourceLocation);
+        template Status MakeErrorImpl<13>(std::string_view, std::source_location);
 
-        template Status MakeErrorImpl<14>(std::string_view, SourceLocation);
+        template Status MakeErrorImpl<14>(std::string_view, std::source_location);
 
-        template Status MakeErrorImpl<15>(std::string_view, SourceLocation);
+        template Status MakeErrorImpl<15>(std::string_view, std::source_location);
 
-        template Status MakeErrorImpl<16>(std::string_view, SourceLocation);
+        template Status MakeErrorImpl<16>(std::string_view, std::source_location);
     } // namespace status_internal
 
     bool IsAborted(const Status &status) {
@@ -419,7 +419,7 @@ namespace turbo {
     } // namespace
 
     Status ErrnoToStatus(int error_number, std::string_view message,
-                         turbo::SourceLocation loc) {
+                         std::source_location loc) {
         return Status(ErrnoToStatusCode(error_number),
                       MessageForErrnoToStatus(error_number, message), loc);
     }

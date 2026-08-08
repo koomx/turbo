@@ -32,7 +32,7 @@
 #include <turbo/status/status_matchers.h>
 #include <turbo/status/statusor.h>
 #include <string_view>
-#include <turbo/types/source_location.h>
+#include <source_location>
 
 namespace turbo {
     namespace {
@@ -56,7 +56,7 @@ namespace turbo {
 
         void CheckSourceLocation(
             const turbo::Status &status, std::vector<int> lines = {},
-            turbo::SourceLocation loc = turbo::SourceLocation::current()) {
+            std::source_location loc = std::source_location::current()) {
             ASSERT_EQ(status.GetSourceLocations().size(), lines.size())
       << "Size check failed at " << loc.line();
             for (size_t i = 0; i < lines.size(); ++i) {
@@ -79,7 +79,7 @@ namespace turbo {
         }
 
         TEST_F(StatusBuilderTest, ExplicitSourceLocation) {
-            const turbo::SourceLocation kLocation = turbo::SourceLocation::current();
+            const std::source_location kLocation = std::source_location::current();
 
             {
                 const StatusBuilder builder(turbo::OkStatus(), kLocation);
@@ -91,7 +91,7 @@ namespace turbo {
 
         TEST_F(StatusBuilderTest, ImplicitSourceLocation) {
             const StatusBuilder builder(turbo::OkStatus());
-            auto loc = turbo::SourceLocation::current();
+            auto loc = std::source_location::current();
             EXPECT_THAT(builder.source_location().file_name(),
                         AnyOf(Eq(std::string_view(loc.file_name())),
                             Eq(std::string_view("<source_location>"))));
@@ -99,22 +99,22 @@ namespace turbo {
                         AnyOf(Eq(1), Eq(loc.line() - 1)));
         }
 
-        testing::Matcher<turbo::SourceLocation> SourceLocationIs(
-            turbo::SourceLocation loc) {
+        testing::Matcher<std::source_location> SourceLocationIs(
+            std::source_location loc) {
             return AnyOf(
-                AllOf(Property(&turbo::SourceLocation::file_name, Eq(loc.file_name())),
-                      Property(&turbo::SourceLocation::line, Eq(loc.line()))),
+                AllOf(Property(&std::source_location::file_name, Eq(loc.file_name())),
+                      Property(&std::source_location::line, Eq(loc.line()))),
                 // Fallback for platforms that don't support source locations.
-                AllOf(Property(&turbo::SourceLocation::file_name, Eq("<source_location>")),
-                      Property(&turbo::SourceLocation::line, Eq(1))));
+                AllOf(Property(&std::source_location::file_name, Eq("<source_location>")),
+                      Property(&std::source_location::line, Eq(1))));
         }
 
         TEST_F(StatusBuilderTest, GetPreviousSourceLocations) {
-            const turbo::SourceLocation loc0 = turbo::SourceLocation::current();
+            const std::source_location loc0 = std::source_location::current();
             turbo::Status status = turbo::InvalidArgumentError("hi", loc0);
-            const turbo::SourceLocation loc1 = turbo::SourceLocation::current();
+            const std::source_location loc1 = std::source_location::current();
             status.AddSourceLocation(loc1);
-            const turbo::SourceLocation loc2 = turbo::SourceLocation::current();
+            const std::source_location loc2 = std::source_location::current();
             status.AddSourceLocation(loc2);
 
             // The builder's location is not included.
@@ -145,31 +145,31 @@ namespace turbo {
         }
 
         TEST_F(StatusBuilderTest, OkIgnoresStuff) {
-            EXPECT_THAT(ToStatus(StatusBuilder(turbo::OkStatus(), turbo::SourceLocation())
+            EXPECT_THAT(ToStatus(StatusBuilder(turbo::OkStatus(), std::source_location())
                             << "booyah"),
                         Eq(turbo::OkStatus()));
         }
 
         TEST_F(StatusBuilderTest, Streaming) {
             EXPECT_THAT(
-                ToStatus(StatusBuilder(turbo::CancelledError(), turbo::SourceLocation())
+                ToStatus(StatusBuilder(turbo::CancelledError(), std::source_location())
                     << "booyah"),
                 Eq(turbo::CancelledError("booyah")));
             EXPECT_THAT(
                 ToStatus(
-                    StatusBuilder(turbo::AbortedError("hello"), turbo::SourceLocation())
+                    StatusBuilder(turbo::AbortedError("hello"), std::source_location())
                     << "world"),
                 Eq(turbo::AbortedError("hello; world")));
         }
 
         TEST_F(StatusBuilderTest, PrependLvalue) {
             {
-                StatusBuilder builder(turbo::CancelledError(), turbo::SourceLocation());
+                StatusBuilder builder(turbo::CancelledError(), std::source_location());
                 EXPECT_THAT(ToStatus(builder.SetPrepend() << "booyah"),
                             Eq(turbo::CancelledError("booyah")));
             }
             {
-                StatusBuilder builder(turbo::AbortedError(" hello"), turbo::SourceLocation());
+                StatusBuilder builder(turbo::AbortedError(" hello"), std::source_location());
                 EXPECT_THAT(ToStatus(builder.SetPrepend() << "world"),
                             Eq(turbo::AbortedError("world hello")));
             }
@@ -177,12 +177,12 @@ namespace turbo {
 
         TEST_F(StatusBuilderTest, PrependRvalue) {
             EXPECT_THAT(
-                ToStatus(StatusBuilder(turbo::CancelledError(), turbo::SourceLocation())
+                ToStatus(StatusBuilder(turbo::CancelledError(), std::source_location())
                     .SetPrepend()
                     << "booyah"),
                 Eq(turbo::CancelledError("booyah")));
             EXPECT_THAT(ToStatus(StatusBuilder(turbo::AbortedError(" hello"),
-                                turbo::SourceLocation())
+                                std::source_location())
                             .SetPrepend()
                             << "world"),
                         Eq(turbo::AbortedError("world hello")));
@@ -190,12 +190,12 @@ namespace turbo {
 
         TEST_F(StatusBuilderTest, AppendLvalue) {
             {
-                StatusBuilder builder(turbo::CancelledError(), turbo::SourceLocation());
+                StatusBuilder builder(turbo::CancelledError(), std::source_location());
                 EXPECT_THAT(ToStatus(builder.SetAppend() << "booyah"),
                             Eq(turbo::CancelledError("booyah")));
             }
             {
-                StatusBuilder builder(turbo::AbortedError("hello"), turbo::SourceLocation());
+                StatusBuilder builder(turbo::AbortedError("hello"), std::source_location());
                 EXPECT_THAT(ToStatus(builder.SetAppend() << " world"),
                             Eq(turbo::AbortedError("hello world")));
             }
@@ -203,12 +203,12 @@ namespace turbo {
 
         TEST_F(StatusBuilderTest, AppendRvalue) {
             EXPECT_THAT(
-                ToStatus(StatusBuilder(turbo::CancelledError(), turbo::SourceLocation())
+                ToStatus(StatusBuilder(turbo::CancelledError(), std::source_location())
                     .SetAppend()
                     << "booyah"),
                 Eq(turbo::CancelledError("booyah")));
             EXPECT_THAT(ToStatus(StatusBuilder(turbo::AbortedError("hello"),
-                                turbo::SourceLocation())
+                                std::source_location())
                             .SetAppend()
                             << " world"),
                         Eq(turbo::AbortedError("hello world")));
@@ -217,14 +217,14 @@ namespace turbo {
         TEST_F(StatusBuilderTest, WithRvalueRef) {
             auto policy = [](StatusBuilder sb) { return sb << "policy"; };
             EXPECT_THAT(ToStatus(StatusBuilder(turbo::AbortedError("hello"),
-                                turbo::SourceLocation())
+                                std::source_location())
                             .With(policy)),
                         Eq(turbo::AbortedError("hello; policy")));
         }
 
         TEST_F(StatusBuilderTest, WithRef) {
             auto policy = [](StatusBuilder sb) { return sb << "policy"; };
-            StatusBuilder sb(turbo::AbortedError("zomg"), turbo::SourceLocation());
+            StatusBuilder sb(turbo::AbortedError("zomg"), std::source_location());
             EXPECT_THAT(ToStatus(sb.With(policy)),
                         Eq(turbo::AbortedError("zomg; policy")));
         }
@@ -233,11 +233,11 @@ namespace turbo {
             auto policy = [](StatusBuilder sb) -> std::string {
                 return sb.ok() ? "true" : "false";
             };
-            EXPECT_EQ(StatusBuilder(turbo::CancelledError(), turbo::SourceLocation())
+            EXPECT_EQ(StatusBuilder(turbo::CancelledError(), std::source_location())
                       .With(policy),
                       "false");
             EXPECT_EQ(
-                StatusBuilder(turbo::OkStatus(), turbo::SourceLocation()).With(policy),
+                StatusBuilder(turbo::OkStatus(), std::source_location()).With(policy),
                 "true");
         }
 
@@ -250,10 +250,10 @@ namespace turbo {
         };
 
         TEST_F(StatusBuilderTest, WithMoveOnlyAdaptor) {
-            StatusBuilder sb(turbo::AbortedError("zomg"), turbo::SourceLocation());
+            StatusBuilder sb(turbo::AbortedError("zomg"), std::source_location());
             EXPECT_THAT(sb.With(MoveOnlyAdaptor{std::make_unique<int>(100)}),
                         Pointee(100));
-            EXPECT_THAT(StatusBuilder(turbo::AbortedError("zomg"), turbo::SourceLocation())
+            EXPECT_THAT(StatusBuilder(turbo::AbortedError("zomg"), std::source_location())
                         .With(MoveOnlyAdaptor{std::make_unique<int>(100)}),
                         Pointee(100));
         }
@@ -276,31 +276,31 @@ namespace turbo {
             // The policy simply calls operator<< on the builder; the following examples
             // demonstrate that, without duplicating all of the above tests.
             EXPECT_THAT(ToStatus(StatusBuilder(turbo::AbortedError("hello"),
-                                turbo::SourceLocation())
+                                std::source_location())
                             .With(ExtraMessage("world"))),
                         Eq(turbo::AbortedError("hello; world")));
             EXPECT_THAT(ToStatus(StatusBuilder(turbo::AbortedError("hello"),
-                                turbo::SourceLocation())
+                                std::source_location())
                             .With(ExtraMessage() << "world")),
                         Eq(turbo::AbortedError("hello; world")));
             EXPECT_THAT(ToStatus(StatusBuilder(turbo::AbortedError("hello"),
-                                turbo::SourceLocation())
+                                std::source_location())
                             .With(ExtraMessage("world"))
                             .With(ExtraMessage("!"))),
                         Eq(turbo::AbortedError("hello; world!")));
             EXPECT_THAT(ToStatus(StatusBuilder(turbo::AbortedError("hello"),
-                                turbo::SourceLocation())
+                                std::source_location())
                             .With(ExtraMessage("world, "))
                             .SetPrepend()),
                         Eq(turbo::AbortedError("world, hello")));
             EXPECT_THAT(ToStatus(StatusBuilder(turbo::AbortedError("hello"),
-                                turbo::SourceLocation())
+                                std::source_location())
                             .With(ExtraMessage() << StringifiableType{"world"})),
                         Eq(turbo::AbortedError("hello; world")));
 
             // The above examples use temporary StatusBuilder rvalues; verify things also
             // work fine when StatusBuilder is an lvalue.
-            StatusBuilder builder(turbo::AbortedError("hello"), turbo::SourceLocation());
+            StatusBuilder builder(turbo::AbortedError("hello"), std::source_location());
             EXPECT_THAT(
                 ToStatus(builder.With(ExtraMessage("world")).With(ExtraMessage("!"))),
                 Eq(turbo::AbortedError("hello; world!")));
@@ -316,47 +316,47 @@ namespace turbo {
             {
                 turbo::Status src = turbo::OkStatus();
                 CheckSourceLocation(src);
-                CheckSourceLocation(ToStatus(StatusBuilder(src, turbo::SourceLocation())));
+                CheckSourceLocation(ToStatus(StatusBuilder(src, std::source_location())));
                 CheckSourceLocation(
-                    ToStatus(StatusBuilder(src, turbo::SourceLocation::current())));
+                    ToStatus(StatusBuilder(src, std::source_location::current())));
                 CheckSourceLocation(
-                    ToStatus(StatusBuilder(src, turbo::SourceLocation::current()) << "hmm"));
+                    ToStatus(StatusBuilder(src, std::source_location::current()) << "hmm"));
             }
             {
                 turbo::Status src = turbo::Status(turbo::StatusCode::kCancelled, "");
                 CheckSourceLocation(src);
-                CheckSourceLocation(ToStatus(StatusBuilder(src, turbo::SourceLocation())));
+                CheckSourceLocation(ToStatus(StatusBuilder(src, std::source_location())));
                 CheckSourceLocation(
-                    ToStatus(StatusBuilder(src, turbo::SourceLocation::current())));
+                    ToStatus(StatusBuilder(src, std::source_location::current())));
                 CheckSourceLocation(
-                    ToStatus(StatusBuilder(src, turbo::SourceLocation::current()) << ""));
+                    ToStatus(StatusBuilder(src, std::source_location::current()) << ""));
                 CheckSourceLocation(
-                    ToStatus(StatusBuilder(src, turbo::SourceLocation::current()) << "hmm"),
+                    ToStatus(StatusBuilder(src, std::source_location::current()) << "hmm"),
                     {__builtin_LINE() - 1});
             }
             {
                 turbo::Status src = turbo::Status(turbo::StatusCode::kCancelled, "msg",
-                                                  turbo::SourceLocation());
+                                                  std::source_location());
                 CheckSourceLocation(src);
-                CheckSourceLocation(ToStatus(StatusBuilder(src, turbo::SourceLocation())));
+                CheckSourceLocation(ToStatus(StatusBuilder(src, std::source_location())));
                 CheckSourceLocation(
-                    ToStatus(StatusBuilder(src, turbo::SourceLocation::current())),
+                    ToStatus(StatusBuilder(src, std::source_location::current())),
                     {__builtin_LINE() - 1});
                 CheckSourceLocation(
-                    ToStatus(StatusBuilder(src, turbo::SourceLocation::current()) << "hmm"),
+                    ToStatus(StatusBuilder(src, std::source_location::current()) << "hmm"),
                     {__builtin_LINE() - 1});
             }
             {
                 turbo::Status src = turbo::Status(turbo::StatusCode::kCancelled, "msg");
                 int src_line = __builtin_LINE() - 1;
                 CheckSourceLocation(src, {src_line});
-                CheckSourceLocation(ToStatus(StatusBuilder(src, turbo::SourceLocation())),
+                CheckSourceLocation(ToStatus(StatusBuilder(src, std::source_location())),
                                     {src_line});
                 CheckSourceLocation(
-                    ToStatus(StatusBuilder(src, turbo::SourceLocation::current())),
+                    ToStatus(StatusBuilder(src, std::source_location::current())),
                     {src_line, __builtin_LINE() - 1});
                 CheckSourceLocation(
-                    ToStatus(StatusBuilder(src, turbo::SourceLocation::current()) << "hmm"),
+                    ToStatus(StatusBuilder(src, std::source_location::current()) << "hmm"),
                     {src_line, __builtin_LINE() - 1});
             }
         }

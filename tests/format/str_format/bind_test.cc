@@ -146,7 +146,7 @@ TEST_F(FormatBindTest, FormatPack) {
     SCOPED_TRACE(e.fmt);
     UntypedFormatSpecImpl format(fmt);
     EXPECT_EQ(e.summary,
-              str_format_internal::Summarize(format, turbo::MakeSpan(args)))
+              str_format_internal::Summarize(format, turbo::make_span(args)))
         << "line:" << e.line;
   }
 }

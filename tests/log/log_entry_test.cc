@@ -82,7 +82,7 @@ class LogEntryTestPeer {
         << "Failed to parse time " << timestamp_bits.first;
     ci_.subsecond = turbo::Nanoseconds(nanos);
 
-    turbo::Span<char> view = turbo::MakeSpan(buf_);
+    turbo::Span<char> view = turbo::make_span(buf_);
     view.remove_suffix(2);
     entry_.prefix_len_ =
         entry_.prefix_
@@ -99,7 +99,7 @@ class LogEntryTestPeer {
     view[1] = '\0';
     view.remove_prefix(2);
     buf_.resize(static_cast<size_t>(view.data() - buf_.data()));
-    entry_.text_message_with_prefix_and_newline_and_nul_ = turbo::MakeSpan(buf_);
+    entry_.text_message_with_prefix_and_newline_and_nul_ = turbo::make_span(buf_);
   }
   LogEntryTestPeer(const LogEntryTestPeer&) = delete;
   LogEntryTestPeer& operator=(const LogEntryTestPeer&) = delete;

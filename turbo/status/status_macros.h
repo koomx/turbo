@@ -29,7 +29,7 @@
 #include <turbo/status/status.h>
 #include <turbo/status/status_builder.h>  // IWYU pragma: export
 #include <turbo/status/statusor.h>
-#include <turbo/types/source_location.h>
+#include <source_location>
 
 // Evaluates an expression that produces a `turbo::Status`. If the status is not
 // ok, returns it from the current function.
@@ -160,7 +160,7 @@
   TURBO_INTERNAL_STATUS_MACROS_IMPL_ELSE_BLOCKER_                          \
   if (auto status_macro_internal_adaptor =                                \
           turbo::status_macro_internal::MacroAdaptor(                      \
-              (expr), turbo::SourceLocation::current())) {                 \
+              (expr), std::source_location::current())) {                 \
   } else /* NOLINT */                                                     \
     return_keyword status_macro_internal_adaptor.Consume()
 
@@ -222,7 +222,7 @@ namespace turbo {
           std::move(TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_(_status_or_value, \
                                                              __LINE__))        \
               .status(),                                                       \
-          turbo::SourceLocation::current()))
+          std::source_location::current()))
 
 #define TURBO_INTERNAL_STATUS_MACROS_IMPL_ASSIGN_OR_RETURN_3_(                  \
     return_keyword, lhs, rexpr, error_expression)                              \
@@ -233,7 +233,7 @@ namespace turbo {
           std::move(TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_(_status_or_value, \
                                                              __LINE__))        \
               .status(),                                                       \
-          turbo::SourceLocation::current());                                    \
+          std::source_location::current());                                    \
       (void)_; /* error_expression is allowed to not use this variable */      \
       return_keyword(error_expression))
 
@@ -354,23 +354,23 @@ namespace turbo {
         public:
             StatusAdaptorForMacros(
                 const turbo::Status &status,
-                turbo::SourceLocation loc = turbo::SourceLocation::current())
+                std::source_location loc = std::source_location::current())
                 : builder_(status, loc) {
             }
 
             StatusAdaptorForMacros(
                 turbo::Status &&status,
-                turbo::SourceLocation loc = turbo::SourceLocation::current())
+                std::source_location loc = std::source_location::current())
                 : builder_(std::move(status), loc) {
             }
 
             StatusAdaptorForMacros(const StatusBuilder &builder,
-                                   turbo::SourceLocation = turbo::SourceLocation())
+                                   std::source_location = std::source_location())
                 : builder_(builder) {
             }
 
             StatusAdaptorForMacros(StatusBuilder &&builder,
-                                   turbo::SourceLocation = turbo::SourceLocation())
+                                   std::source_location = std::source_location())
                 : builder_(std::move(builder)) {
             }
 
@@ -394,13 +394,13 @@ namespace turbo {
         public:
             explicit ReturnIfErrorAdaptor(
                 const turbo::Status &status,
-                turbo::SourceLocation loc = turbo::SourceLocation::current())
+                std::source_location loc = std::source_location::current())
                 : status_(status), loc_(loc) {
             }
 
             explicit ReturnIfErrorAdaptor(
                 turbo::Status &&status,
-                turbo::SourceLocation loc = turbo::SourceLocation::current())
+                std::source_location loc = std::source_location::current())
                 : status_(std::move(status)), loc_(loc) {
             }
 
@@ -430,7 +430,7 @@ namespace turbo {
                 char nothing_[1];
             };
 
-            turbo::SourceLocation loc_;
+            std::source_location loc_;
         };
 
         // Overloads of MacroAdaptor that pick the right adaptor class
@@ -439,22 +439,22 @@ namespace turbo {
         // TODO(b/501387693): Replace these with deduction guides of template
         // specializations once the bug is fixed. (See prior file revision.)
         inline ReturnIfErrorAdaptor MacroAdaptor(const turbo::Status &s,
-                                                 turbo::SourceLocation loc) {
+                                                 std::source_location loc) {
             return ReturnIfErrorAdaptor(s, loc);
         }
 
         inline ReturnIfErrorAdaptor MacroAdaptor(turbo::Status &&s,
-                                                 turbo::SourceLocation loc) {
+                                                 std::source_location loc) {
             return ReturnIfErrorAdaptor(std::move(s), loc);
         }
 
         inline StatusAdaptorForMacros MacroAdaptor(const StatusBuilder &s,
-                                                   turbo::SourceLocation loc) {
+                                                   std::source_location loc) {
             return StatusAdaptorForMacros(s, loc);
         }
 
         inline StatusAdaptorForMacros MacroAdaptor(StatusBuilder &&s,
-                                                   turbo::SourceLocation loc) {
+                                                   std::source_location loc) {
             return StatusAdaptorForMacros(std::move(s), loc);
         }
     } // namespace status_macro_internal

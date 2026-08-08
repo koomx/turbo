@@ -83,7 +83,7 @@ SeedSeq CreateSeedSeqFrom(URBG* urbg) {
   SeedSeq::result_type seed_material[random_internal::kEntropyBlocksNeeded];
 
   if (!random_internal::ReadSeedMaterialFromURBG(
-          urbg, turbo::MakeSpan(seed_material))) {
+          urbg, turbo::make_span(seed_material))) {
     random_internal::ThrowSeedGenException();
   }
   return SeedSeq(std::begin(seed_material), std::end(seed_material));

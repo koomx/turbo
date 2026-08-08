@@ -37,7 +37,7 @@
 #include <turbo/status/status_matchers.h>
 #include <turbo/strings/str_cat.h>
 #include <string_view>
-#include <turbo/types/source_location.h>
+#include <source_location>
 
 namespace {
 
@@ -1854,7 +1854,7 @@ TEST(StatusOr, ErrorPrinting) {
 template <typename T>
 void CheckSourceLocation(
     const turbo::StatusOr<T>& status_or, std::vector<int> lines = {},
-    turbo::SourceLocation loc = turbo::SourceLocation::current()) {
+    std::source_location loc = std::source_location::current()) {
   ASSERT_EQ(status_or.GetSourceLocations().size(), lines.size())
       << "Size check failed at " << loc.line();
   for (size_t i = 0; i < lines.size(); ++i) {
@@ -1874,31 +1874,31 @@ TEST(StatusOr, AddSourceLocation) {
         123, turbo::Status(turbo::StatusCode::kInternal, "")};
     for (turbo::StatusOr<int>& s : status_ignores_source_location) {
       for (int i = 0; i < kMaxIter; ++i) {
-        s.AddSourceLocation(turbo::SourceLocation::current());
-        s.AddSourceLocation(turbo::SourceLocation());
+        s.AddSourceLocation(std::source_location::current());
+        s.AddSourceLocation(std::source_location());
       }
       CheckSourceLocation(s);
     }
   }
   {
-    // Default SourceLocation is not added.
+    // Default std::source_location is not added.
     turbo::StatusOr<int> status = turbo::Status(
-        turbo::StatusCode::kInternal, "foo", turbo::SourceLocation::current());
+        turbo::StatusCode::kInternal, "foo", std::source_location::current());
     int line = GET_SOURCE_LOCATION(1);
     for (int i = 0; i < kMaxIter; ++i) {
-      status.AddSourceLocation(turbo::SourceLocation());
+      status.AddSourceLocation(std::source_location());
     }
     CheckSourceLocation(status, {line});
   }
   {
-    // Default SourceLocation is not added.
+    // Default std::source_location is not added.
     turbo::StatusOr<int> status = turbo::Status(
-        turbo::StatusCode::kInternal, "foo", turbo::SourceLocation::current());
+        turbo::StatusCode::kInternal, "foo", std::source_location::current());
     int line = GET_SOURCE_LOCATION(1);
     std::vector<int> lines = {line};
     lines.reserve(1 + kMaxIter);
     for (int i = 0; i < kMaxIter; ++i) {
-      status.AddSourceLocation(turbo::SourceLocation::current());
+      status.AddSourceLocation(std::source_location::current());
       lines.push_back(GET_SOURCE_LOCATION(1));
     }
     CheckSourceLocation(status, lines);
@@ -1911,11 +1911,11 @@ turbo::StatusOr<int>&& IsRvalueStatus(turbo::StatusOr<int>&& s) {
 
 TEST(StatusOr, WithSourceLocationMove) {
   turbo::StatusOr<int> original = turbo::Status(
-      turbo::StatusCode::kInternal, "message", turbo::SourceLocation::current());
+      turbo::StatusCode::kInternal, "message", std::source_location::current());
   int line = GET_SOURCE_LOCATION(1);
 
   const turbo::StatusOr<int> status_or = IsRvalueStatus(
-      std::move(original).WithSourceLocation(turbo::SourceLocation::current()));
+      std::move(original).WithSourceLocation(std::source_location::current()));
   int line2 = GET_SOURCE_LOCATION(1);
 
   CheckSourceLocation(status_or, {line, line2});
@@ -1923,9 +1923,9 @@ TEST(StatusOr, WithSourceLocationMove) {
 }
 
 TEST(StatusOr, WithSourceLocationReturn) {
-  turbo::SourceLocation loc1 = turbo::SourceLocation::current();
+  std::source_location loc1 = std::source_location::current();
   int line1 = GET_SOURCE_LOCATION(1);
-  turbo::SourceLocation loc2 = turbo::SourceLocation::current();
+  std::source_location loc2 = std::source_location::current();
   int line2 = GET_SOURCE_LOCATION(1);
 
   const auto return_error = [&loc1]() -> turbo::StatusOr<int> {

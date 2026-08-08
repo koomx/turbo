@@ -54,7 +54,7 @@
 #include <turbo/format/has_turbo_stringify.h>
 #include <turbo/strings/has_ostream_operator.h>
 #include <turbo/format/str_format.h>
-#include <turbo/types/source_location.h>
+#include <source_location>
 #include <turbo/types/span.h>
 #include <turbo/types/variant.h>
 #include <turbo/utility/utility.h>
@@ -511,14 +511,14 @@ namespace turbo {
 
         Status status() &&;
 
-        turbo::Span<const turbo::SourceLocation> GetSourceLocations() const {
+        turbo::Span<const std::source_location> GetSourceLocations() const {
             return this->status_.GetSourceLocations();
         }
 
         // Appends the `loc` to the current location chain inside the status, iff the
         // status-or is non-ok and contains a non-empty message.
         void AddSourceLocation(
-            turbo::SourceLocation loc = turbo::SourceLocation::current()) {
+            std::source_location loc = std::source_location::current()) {
             this->status_.AddSourceLocation(loc);
         }
 
@@ -537,7 +537,7 @@ namespace turbo {
         //     return Finalize().WithSourceLocation();
         //   }
         KUMO_MUST_USE_RESULT StatusOr<T> &&WithSourceLocation(
-            turbo::SourceLocation loc = turbo::SourceLocation::current()) && {
+            std::source_location loc = std::source_location::current()) && {
             AddSourceLocation(loc);
             return std::move(*this);
         }

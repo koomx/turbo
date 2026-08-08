@@ -64,7 +64,7 @@ namespace turbo {
                 template<size_t steps>
   KUMO_ATTRIBUTE_NOINLINE static void RunWithCapacityImpl(Func f) {
                     uint32_t values[steps * kStep]{};
-                    f(turbo::MakeSpan(values));
+                    f(turbo::make_span(values));
                 }
 
             public:

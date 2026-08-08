@@ -64,7 +64,7 @@
 #include <turbo/functional/function_ref.h>
 #include <turbo/status/internal/status_internal.h>
 #include <string_view>
-#include <turbo/types/source_location.h>
+#include <source_location>
 #include <turbo/types/span.h>
 
 namespace turbo {
@@ -454,10 +454,10 @@ namespace turbo {
         // The `msg` string must be in UTF-8. The implementation may complain (e.g.,
         // by printing a warning) if it is not.
         //
-        // The `loc` is the SourceLocation of the callsite. It will be stored in the
+        // The `loc` is the std::source_location of the callsite. It will be stored in the
         // Status iff `code != turbo::StatusCode::kOk` and `!msg.empty()`.
         Status(turbo::StatusCode code, std::string_view msg,
-               turbo::SourceLocation loc = SourceLocation::current());
+               std::source_location loc = std::source_location::current());
 
         // Same as above but for rvalue string.
         // Note: using a template to disambiguate the case of matching std::string_view and
@@ -465,17 +465,17 @@ namespace turbo {
         template<typename String,
             typename = std::enable_if_t<std::is_same_v<String, std::string> > >
         Status(turbo::StatusCode code, String &&msg,
-               turbo::SourceLocation loc = SourceLocation::current());
+               std::source_location loc = std::source_location::current());
 
         // Create a status from a `base_status` and a `loc`. The `loc` will be
         // appended to the location chain of the new status, iff the `base_status` is
         // not ok and has non-empty msg.
-        Status(const Status &base_status, turbo::SourceLocation loc)
+        Status(const Status &base_status, std::source_location loc)
             : Status(base_status) {
             AddSourceLocation(loc);
         }
 
-        Status(Status &&base_status, turbo::SourceLocation loc)
+        Status(Status &&base_status, std::source_location loc)
             : Status(std::move(base_status)) {
             AddSourceLocation(loc);
         }
@@ -647,7 +647,7 @@ namespace turbo {
             turbo::FunctionRef<void(std::string_view, const std::string &)> visitor)
         const;
 
-        turbo::Span<const turbo::SourceLocation> GetSourceLocations() const {
+        turbo::Span<const std::source_location> GetSourceLocations() const {
             if (IsInlined(rep_)) return {};
             return RepToPointer(rep_)->GetSourceLocations();
         }
@@ -655,7 +655,7 @@ namespace turbo {
         // Appends the `loc` to the current location chain inside the status, iff the
         // status is non-ok and contains a non-empty message.
         void AddSourceLocation(
-            turbo::SourceLocation loc = turbo::SourceLocation::current()) {
+            std::source_location loc = std::source_location::current()) {
             if (ok()) return;
             rep_ = AddSourceLocationImpl(rep_, loc);
             [[maybe_unused]] bool okay = ok();
@@ -677,7 +677,7 @@ namespace turbo {
         //     return status.WithSourceLocation();
         //   }
         Status WithSourceLocation(
-            turbo::SourceLocation loc = turbo::SourceLocation::current()) const & {
+            std::source_location loc = std::source_location::current()) const & {
             return Status(*this, loc);
         }
 
@@ -696,7 +696,7 @@ namespace turbo {
         //     return Finalize().WithSourceLocation();
         //   }
         KUMO_MUST_USE_RESULT Status &&WithSourceLocation(
-            turbo::SourceLocation loc = turbo::SourceLocation::current()) && {
+            std::source_location loc = std::source_location::current()) && {
             AddSourceLocation(loc);
             return std::move(*this);
         }
@@ -725,16 +725,16 @@ namespace turbo {
         // where possible.
         static uintptr_t MakeRepFromStringView(uintptr_t inlined_rep,
                                                std::string_view msg,
-                                               turbo::SourceLocation loc);
+                                               std::source_location loc);
 
         // Same as above but for rvalue string.
         static uintptr_t MakeRepFromStringRvalue(uintptr_t inlined_rep,
                                                  std::string &&msg,
-                                                 turbo::SourceLocation loc);
+                                                 std::source_location loc);
 
         template<typename StringOrView>
         friend uintptr_t MakeStatusRepImpl(uintptr_t inlined_rep, StringOrView msg,
-                                           turbo::SourceLocation loc);
+                                           std::source_location loc);
 
         // Underlying constructor for status from a rep_.
         explicit Status(uintptr_t rep) : rep_(rep) {
@@ -742,7 +742,7 @@ namespace turbo {
 
         // An out-of-line AddSourceLocation that mutates rep directly.
         static uintptr_t AddSourceLocationImpl(uintptr_t rep,
-                                               turbo::SourceLocation loc);
+                                               std::source_location loc);
 
         static void Ref(uintptr_t rep);
 
@@ -882,58 +882,58 @@ namespace turbo {
     // code as indicated by the associated function name, using the error message
     // passed in `message`.
     Status AbortedError(std::string_view message,
-                        turbo::SourceLocation loc = SourceLocation::current());
+                        std::source_location loc = std::source_location::current());
 
     Status AlreadyExistsError(std::string_view message,
-                              turbo::SourceLocation loc = SourceLocation::current());
+                              std::source_location loc = std::source_location::current());
 
     Status CancelledError(std::string_view message,
-                          turbo::SourceLocation loc = SourceLocation::current());
+                          std::source_location loc = std::source_location::current());
 
     Status DataLossError(std::string_view message,
-                         turbo::SourceLocation loc = SourceLocation::current());
+                         std::source_location loc = std::source_location::current());
 
     Status DeadlineExceededError(
         std::string_view message,
-        turbo::SourceLocation loc = SourceLocation::current());
+        std::source_location loc = std::source_location::current());
 
     Status FailedPreconditionError(
         std::string_view message,
-        turbo::SourceLocation loc = SourceLocation::current());
+        std::source_location loc = std::source_location::current());
 
     Status InternalError(std::string_view message,
-                         turbo::SourceLocation loc = SourceLocation::current());
+                         std::source_location loc = std::source_location::current());
 
     Status InvalidArgumentError(
         std::string_view message,
-        turbo::SourceLocation loc = SourceLocation::current());
+        std::source_location loc = std::source_location::current());
 
     Status NotFoundError(std::string_view message,
-                         turbo::SourceLocation loc = SourceLocation::current());
+                         std::source_location loc = std::source_location::current());
 
     Status OutOfRangeError(std::string_view message,
-                           turbo::SourceLocation loc = SourceLocation::current());
+                           std::source_location loc = std::source_location::current());
 
     Status PermissionDeniedError(
         std::string_view message,
-        turbo::SourceLocation loc = SourceLocation::current());
+        std::source_location loc = std::source_location::current());
 
     Status ResourceExhaustedError(
         std::string_view message,
-        turbo::SourceLocation loc = SourceLocation::current());
+        std::source_location loc = std::source_location::current());
 
     Status UnauthenticatedError(
         std::string_view message,
-        turbo::SourceLocation loc = SourceLocation::current());
+        std::source_location loc = std::source_location::current());
 
     Status UnavailableError(std::string_view message,
-                            turbo::SourceLocation loc = SourceLocation::current());
+                            std::source_location loc = std::source_location::current());
 
     Status UnimplementedError(std::string_view message,
-                              turbo::SourceLocation loc = SourceLocation::current());
+                              std::source_location loc = std::source_location::current());
 
     Status UnknownError(std::string_view message,
-                        turbo::SourceLocation loc = SourceLocation::current());
+                        std::source_location loc = std::source_location::current());
 
     // ErrnoToStatusCode()
     //
@@ -947,7 +947,7 @@ namespace turbo {
     // Convenience function that creates a `turbo::Status` using an `error_number`,
     // which should be an `errno` value.
     Status ErrnoToStatus(int error_number, std::string_view message,
-                         turbo::SourceLocation loc = SourceLocation::current());
+                         std::source_location loc = std::source_location::current());
 
     //------------------------------------------------------------------------------
     // Implementation details follow
@@ -960,13 +960,13 @@ namespace turbo {
     }
 
     inline Status::Status(turbo::StatusCode code, std::string_view msg,
-                          turbo::SourceLocation loc)
+                          std::source_location loc)
         : Status(MakeRepFromStringView(CodeToInlinedRep(code), msg, loc)) {
     }
 
     template<typename String, typename>
     inline Status::Status(turbo::StatusCode code, String &&msg,
-                          turbo::SourceLocation loc)
+                          std::source_location loc)
         : Status(MakeRepFromStringRvalue(CodeToInlinedRep(code),
                                          std::forward<String>(msg), loc)) {
     }
@@ -1139,45 +1139,45 @@ namespace turbo {
     namespace status_internal {
         // We use an int in the template parameter to shorten mangled names.
         template<int error_code>
-        Status MakeErrorImpl(std::string_view message, SourceLocation loc);
+        Status MakeErrorImpl(std::string_view message, std::source_location loc);
 
         // Make the instantiations extern to reduce bloat on callers.
-        extern template Status MakeErrorImpl<0>(std::string_view, SourceLocation);
+        extern template Status MakeErrorImpl<0>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<1>(std::string_view, SourceLocation);
+        extern template Status MakeErrorImpl<1>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<2>(std::string_view, SourceLocation);
+        extern template Status MakeErrorImpl<2>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<3>(std::string_view, SourceLocation);
+        extern template Status MakeErrorImpl<3>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<4>(std::string_view, SourceLocation);
+        extern template Status MakeErrorImpl<4>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<5>(std::string_view, SourceLocation);
+        extern template Status MakeErrorImpl<5>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<6>(std::string_view, SourceLocation);
+        extern template Status MakeErrorImpl<6>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<7>(std::string_view, SourceLocation);
+        extern template Status MakeErrorImpl<7>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<8>(std::string_view, SourceLocation);
+        extern template Status MakeErrorImpl<8>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<9>(std::string_view, SourceLocation);
+        extern template Status MakeErrorImpl<9>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<10>(std::string_view, SourceLocation);
+        extern template Status MakeErrorImpl<10>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<11>(std::string_view, SourceLocation);
+        extern template Status MakeErrorImpl<11>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<12>(std::string_view, SourceLocation);
+        extern template Status MakeErrorImpl<12>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<13>(std::string_view, SourceLocation);
+        extern template Status MakeErrorImpl<13>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<14>(std::string_view, SourceLocation);
+        extern template Status MakeErrorImpl<14>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<15>(std::string_view, SourceLocation);
+        extern template Status MakeErrorImpl<15>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<16>(std::string_view, SourceLocation);
+        extern template Status MakeErrorImpl<16>(std::string_view, std::source_location);
 
         template<StatusCode error_code>
-        Status MakeError(std::string_view message, SourceLocation loc) {
+        Status MakeError(std::string_view message, std::source_location loc) {
             Status out = MakeErrorImpl<static_cast<int>(error_code)>(message, loc);
             // -Wassume warning complains about potential side effects of `ok()`, so use a
             // local to avoid that.
@@ -1190,86 +1190,86 @@ namespace turbo {
     // Inline implementations to give the compiler static knowledge about the
     // objects.
     inline Status AbortedError(std::string_view message,
-                               turbo::SourceLocation loc) {
+                               std::source_location loc) {
         return status_internal::MakeError<StatusCode::kAborted>(message, loc);
     }
 
     inline Status AlreadyExistsError(std::string_view message,
-                                     turbo::SourceLocation loc) {
+                                     std::source_location loc) {
         return status_internal::MakeError<StatusCode::kAlreadyExists>(message, loc);
     }
 
     inline Status CancelledError(std::string_view message,
-                                 turbo::SourceLocation loc) {
+                                 std::source_location loc) {
         return status_internal::MakeError<StatusCode::kCancelled>(message, loc);
     }
 
     inline Status DataLossError(std::string_view message,
-                                turbo::SourceLocation loc) {
+                                std::source_location loc) {
         return status_internal::MakeError<StatusCode::kDataLoss>(message, loc);
     }
 
     inline Status DeadlineExceededError(std::string_view message,
-                                        turbo::SourceLocation loc) {
+                                        std::source_location loc) {
         return status_internal::MakeError<StatusCode::kDeadlineExceeded>(message,
                                                                          loc);
     }
 
     inline Status FailedPreconditionError(std::string_view message,
-                                          turbo::SourceLocation loc) {
+                                          std::source_location loc) {
         return status_internal::MakeError<StatusCode::kFailedPrecondition>(message,
                                                                            loc);
     }
 
     inline Status InternalError(std::string_view message,
-                                turbo::SourceLocation loc) {
+                                std::source_location loc) {
         return status_internal::MakeError<StatusCode::kInternal>(message, loc);
     }
 
     inline Status InvalidArgumentError(std::string_view message,
-                                       turbo::SourceLocation loc) {
+                                       std::source_location loc) {
         return status_internal::MakeError<StatusCode::kInvalidArgument>(message, loc);
     }
 
     inline Status NotFoundError(std::string_view message,
-                                turbo::SourceLocation loc) {
+                                std::source_location loc) {
         return status_internal::MakeError<StatusCode::kNotFound>(message, loc);
     }
 
     inline Status OutOfRangeError(std::string_view message,
-                                  turbo::SourceLocation loc) {
+                                  std::source_location loc) {
         return status_internal::MakeError<StatusCode::kOutOfRange>(message, loc);
     }
 
     inline Status PermissionDeniedError(std::string_view message,
-                                        turbo::SourceLocation loc) {
+                                        std::source_location loc) {
         return status_internal::MakeError<StatusCode::kPermissionDenied>(message,
                                                                          loc);
     }
 
     inline Status ResourceExhaustedError(std::string_view message,
-                                         turbo::SourceLocation loc) {
+                                         std::source_location loc) {
         return status_internal::MakeError<StatusCode::kResourceExhausted>(message,
                                                                           loc);
     }
 
     inline Status UnauthenticatedError(std::string_view message,
-                                       turbo::SourceLocation loc) {
+                                       std::source_location loc) {
         return status_internal::MakeError<StatusCode::kUnauthenticated>(message, loc);
     }
 
     inline Status UnavailableError(std::string_view message,
-                                   turbo::SourceLocation loc) {
+                                   std::source_location loc) {
         return status_internal::MakeError<StatusCode::kUnavailable>(message, loc);
     }
 
     inline Status UnimplementedError(std::string_view message,
-                                     turbo::SourceLocation loc) {
+                                     std::source_location loc) {
         return status_internal::MakeError<StatusCode::kUnimplemented>(message, loc);
     }
 
     inline Status UnknownError(std::string_view message,
-                               turbo::SourceLocation loc) {
+                               std::source_location loc) {
         return status_internal::MakeError<StatusCode::kUnknown>(message, loc);
     }
 } // namespace turbo

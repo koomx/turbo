@@ -526,7 +526,7 @@ H TurboHashValue(H hash_state, T (&)[N]) {
       sizeof(T) == -1,
       "Hashing C arrays is not allowed. For string literals, wrap the literal "
       "in std::string_view(). To hash the array contents, use "
-      "turbo::MakeSpan() or make the array an std::array. To hash the array "
+      "turbo::make_span() or make the array an std::array. To hash the array "
       "address, use &array[0].");
   return hash_state;
 }

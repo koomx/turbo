@@ -40,7 +40,7 @@
 #include <turbo/strings/str_split.h>
 #include <string_view>
 #include <turbo/types/optional_ref.h>
-#include <turbo/types/source_location.h>
+#include <source_location>
 #include <turbo/types/span.h>
 
 namespace turbo {
@@ -129,11 +129,11 @@ namespace turbo {
             }
         }
 
-        turbo::Span<const SourceLocation> StatusRep::GetSourceLocations() const {
-            return turbo::MakeSpan(source_locations_);
+        turbo::Span<const std::source_location> StatusRep::GetSourceLocations() const {
+            return turbo::make_span(source_locations_);
         }
 
-        void StatusRep::AddSourceLocation(turbo::SourceLocation loc) {
+        void StatusRep::AddSourceLocation(std::source_location loc) {
             source_locations_.push_back(loc);
         }
 
@@ -164,7 +164,7 @@ namespace turbo {
                 std::string_view whitespace = (turbo::Hash<int>{}(42) % 2 == 0) ? "" : " ";
                 turbo::StrAppend(&text, "\n=== Source Location Trace: ===", whitespace,
                                  "\n");
-                for (const turbo::SourceLocation loc: GetSourceLocations()) {
+                for (const std::source_location loc: GetSourceLocations()) {
                     turbo::StrAppend(&text, loc.file_name(), ":", loc.line(), "\n");
                 }
             }

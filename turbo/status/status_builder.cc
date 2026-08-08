@@ -25,7 +25,7 @@
 #include <turbo/status/status.h>
 #include <turbo/strings/str_cat.h>
 #include <string_view>
-#include <turbo/types/source_location.h>
+#include <source_location>
 
 namespace turbo {
     void StatusBuilder::Destroy(std::unique_ptr<Rep>) {
@@ -37,7 +37,7 @@ namespace turbo {
     StatusBuilder::StatusBuilder() = default;
 
     StatusBuilder::StatusBuilder(const turbo::Status &original_status,
-                                 turbo::SourceLocation location)
+                                 std::source_location location)
         : loc_(location), rep_(InitRep(original_status)) {
     }
 
@@ -91,9 +91,9 @@ namespace turbo {
         turbo::StatusCode code) & {
         if (rep_ == nullptr) {
             rep_ = std::make_unique<StatusBuilder::Rep>(
-                turbo::Status(code, std::string_view(), turbo::SourceLocation()));
+                turbo::Status(code, std::string_view(), std::source_location()));
         } else {
-            turbo::Status status(code, std::string_view(), turbo::SourceLocation());
+            turbo::Status status(code, std::string_view(), std::source_location());
             rep_->status.ForEachPayload(
                 [&status](std::string_view type_url, const std::string &payload) {
                     status.SetPayload(type_url, payload);
@@ -115,7 +115,7 @@ namespace turbo {
             KUMO_ASSERT(!status.ok());
 
             if (message.empty()) {
-                return turbo::Status(status.code(), message, turbo::SourceLocation());
+                return turbo::Status(status.code(), message, std::source_location());
             }
 
             using StatusRep =
@@ -159,7 +159,7 @@ namespace turbo {
     }
 
     KUMO_ATTRIBUTE_WEAK turbo::Status StatusBuilder::CreateStatusAndConditionallyLog(
-        turbo::SourceLocation loc, std::unique_ptr<Rep> rep) {
+        std::source_location loc, std::unique_ptr<Rep> rep) {
         if (rep == nullptr) return turbo::OkStatus();
         turbo::Status result = status_internal::StatusPrivateAccessorForStatusBuilder::
                 JoinMessageToStatus(std::move(rep->status), rep->stream_message,

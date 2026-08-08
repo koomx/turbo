@@ -16,7 +16,7 @@
 #include <utility>
 
 #include <turbo/status/status.h>
-#include <turbo/types/source_location.h>
+#include <source_location>
 #include "benchmark/benchmark.h"
 
 namespace {
@@ -41,7 +41,7 @@ void BM_AppendSourceLocation(benchmark::State& state) {
   for (auto _ : state) {
     turbo::Status s(turbo::StatusCode::kInvalidArgument, "message");
     benchmark::DoNotOptimize(s);
-    turbo::Status s2(std::move(s), turbo::SourceLocation::current());
+    turbo::Status s2(std::move(s), std::source_location::current());
     benchmark::DoNotOptimize(s2);
   }
 }

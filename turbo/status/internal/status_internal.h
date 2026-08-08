@@ -30,7 +30,7 @@
 #include <turbo/types/inlined_vector.h>
 #include <string_view>
 #include <turbo/types/optional_ref.h>
-#include <turbo/types/source_location.h>
+#include <source_location>
 #include <turbo/types/span.h>
 #include <turbo/functional/function_ref.h>
 
@@ -120,9 +120,9 @@ namespace turbo {
                 turbo::FunctionRef<void(std::string_view, const std::string &)> visitor)
             const;
 
-            turbo::Span<const SourceLocation> GetSourceLocations() const;
+            turbo::Span<const std::source_location> GetSourceLocations() const;
 
-            void AddSourceLocation(turbo::SourceLocation loc);
+            void AddSourceLocation(std::source_location loc);
 
             std::string ToString(StatusToStringMode mode) const;
 
@@ -160,7 +160,7 @@ namespace turbo {
             // string might save memory at scale.
             std::string message_;
 
-            turbo::InlinedVector<turbo::SourceLocation, 1> source_locations_;
+            turbo::InlinedVector<std::source_location, 1> source_locations_;
             std::unique_ptr<status_internal::Payloads> payloads_;
         };
 

@@ -17,7 +17,6 @@
 set(TYPES_TESTS
         any_span_test
         optional_ref_test
-        source_location_test
         span_test
         variant_test
         fixed_array_exception_safety_test

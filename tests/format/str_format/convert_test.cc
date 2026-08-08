@@ -309,7 +309,7 @@ void TestStringConvert(const T& str) {
   };
   for (const Expectation &e : kExpect) {
     UntypedFormatSpecImpl format(e.fmt);
-    EXPECT_EQ(e.out, FormatPack(format, turbo::MakeSpan(args)));
+    EXPECT_EQ(e.out, FormatPack(format, turbo::make_span(args)));
   }
 }
 
@@ -435,7 +435,7 @@ TEST_F(FormatConvertTest, Pointer) {
       FormatArgImpl(fnil),  FormatArgImpl(vcp),    FormatArgImpl(vwcp),
       FormatArgImpl(vcnil), FormatArgImpl(vwcnil),
   };
-  auto args = turbo::MakeConstSpan(args_array);
+  auto args = turbo::make_const_span(args_array);
 
   EXPECT_THAT(FormatPack(UntypedFormatSpecImpl("%p"), args),
               MatchesPointerString(&x));
@@ -516,8 +516,8 @@ TEST_F(FormatConvertTest, Enum) {
   const FormatArgImpl args[] = {FormatArgImpl(k3), FormatArgImpl(km3)};
   UntypedFormatSpecImpl format("%1$d");
   UntypedFormatSpecImpl format2("%2$d");
-  EXPECT_EQ("3", FormatPack(format, turbo::MakeSpan(args)));
-  EXPECT_EQ("-3", FormatPack(format2, turbo::MakeSpan(args)));
+  EXPECT_EQ("3", FormatPack(format, turbo::make_span(args)));
+  EXPECT_EQ("-3", FormatPack(format2, turbo::make_span(args)));
 }
 
 template <typename T>
@@ -619,7 +619,7 @@ TYPED_TEST_P(TypedFormatConvertTest, AllIntsWithFlags) {
                          " new_fmt: \"" +
                          new_fmt + "\"");
             UntypedFormatSpecImpl format(new_fmt);
-            EXPECT_EQ(old_result, FormatPack(format, turbo::MakeSpan(args)));
+            EXPECT_EQ(old_result, FormatPack(format, turbo::make_span(args)));
           }
         }
       }
@@ -702,7 +702,7 @@ TYPED_TEST_P(TypedFormatConvertTest, Char) {
     UntypedFormatSpecImpl format("%c");
     std::optional<std::string> result = StrPrintChar(c);
     if (result.has_value()) {
-      EXPECT_EQ(result.value(), FormatPack(format, turbo::MakeSpan(args)));
+      EXPECT_EQ(result.value(), FormatPack(format, turbo::make_span(args)));
     }
 
     // Also test that if the format specifier is "%lc", the argument is treated
@@ -716,7 +716,7 @@ TYPED_TEST_P(TypedFormatConvertTest, Char) {
     result = StrPrintChar(static_cast<wchar_t>(wc));
     if (result.has_value()) {
       EXPECT_EQ(result.value(),
-                FormatPack(wide_format, turbo::MakeSpan(wide_args)));
+                FormatPack(wide_format, turbo::make_span(wide_args)));
     }
   }
 }
@@ -755,7 +755,7 @@ TEST_F(FormatConvertTest, UnicodeWideString) {
   char output[sizeof kOutputUtf8];
   std::memcpy(output, kOutputUtf8, sizeof kOutputUtf8);
   EXPECT_EQ(output,
-            FormatPack(UntypedFormatSpecImpl("%ls"), turbo::MakeSpan(args)));
+            FormatPack(UntypedFormatSpecImpl("%ls"), turbo::make_span(args)));
 }
 
 TEST_F(FormatConvertTest, Int128) {
@@ -789,7 +789,7 @@ TEST_F(FormatConvertTest, Int128) {
 
   for (auto c : cases) {
     UntypedFormatSpecImpl format(c.format);
-    EXPECT_EQ(c.expected, FormatPack(format, turbo::MakeSpan(args)));
+    EXPECT_EQ(c.expected, FormatPack(format, turbo::make_span(args)));
   }
 }
 
@@ -814,7 +814,7 @@ TEST_F(FormatConvertTest, Uint128) {
 
   for (auto c : cases) {
     UntypedFormatSpecImpl format(c.format);
-    EXPECT_EQ(c.expected, FormatPack(format, turbo::MakeSpan(args)));
+    EXPECT_EQ(c.expected, FormatPack(format, turbo::make_span(args)));
   }
 }
 
@@ -857,7 +857,7 @@ void TestWithMultipleFormatsHelper(Floating tested_float) {
         str_format_result.clear();
 
         {
-          AppendPack(&str_format_result, format, turbo::MakeSpan(args));
+          AppendPack(&str_format_result, format, turbo::make_span(args));
         }
 
         // For values that we know won't match the standard library
@@ -993,7 +993,7 @@ TEST_F(FormatConvertTest, DoubleRound) {
   const auto format = [&](const char *fmt, double d) -> std::string & {
     s.clear();
     FormatArgImpl args[1] = {FormatArgImpl(d)};
-    AppendPack(&s, UntypedFormatSpecImpl(fmt), turbo::MakeSpan(args));
+    AppendPack(&s, UntypedFormatSpecImpl(fmt), turbo::make_span(args));
 #if !defined(_MSC_VER)
     // MSVC has a different rounding policy than us so we can't test our
     // implementation against the native one there.
@@ -1117,7 +1117,7 @@ TEST_F(FormatConvertTest, DoubleRoundA) {
   const auto format = [&](const char *fmt, double d) -> std::string & {
     s.clear();
     FormatArgImpl args[1] = {FormatArgImpl(d)};
-    AppendPack(&s, UntypedFormatSpecImpl(fmt), turbo::MakeSpan(args));
+    AppendPack(&s, UntypedFormatSpecImpl(fmt), turbo::make_span(args));
     if (native_traits.hex_float_has_glibc_rounding) {
       EXPECT_EQ(StrPrint(fmt, d), s);
     }
@@ -1228,7 +1228,7 @@ TEST_F(FormatConvertTest, LongDoubleRoundA) {
   const auto format = [&](const char *fmt, long double d) -> std::string & {
     s.clear();
     FormatArgImpl args[1] = {FormatArgImpl(d)};
-    AppendPack(&s, UntypedFormatSpecImpl(fmt), turbo::MakeSpan(args));
+    AppendPack(&s, UntypedFormatSpecImpl(fmt), turbo::make_span(args));
     if (native_traits.hex_float_has_glibc_rounding &&
         native_traits.hex_float_optimizes_leading_digit_bit_count) {
       EXPECT_EQ(StrPrint(fmt, d), s);
@@ -1308,7 +1308,7 @@ template <typename... T>
 bool FormatWithNullSink(std::string_view fmt, const T &... a) {
   NullSink sink;
   FormatArgImpl args[] = {FormatArgImpl(a)...};
-  return str_printf_untyped_to(&sink, UntypedFormatSpecImpl(fmt), turbo::MakeSpan(args));
+  return str_printf_untyped_to(&sink, UntypedFormatSpecImpl(fmt), turbo::make_span(args));
 }
 
 TEST_F(FormatConvertTest, ExtremeWidthPrecision) {
@@ -1427,7 +1427,7 @@ TEST_F(FormatConvertTest, IntAsDouble) {
       SCOPED_TRACE(e.line);
       SCOPED_TRACE(e.fmt);
       UntypedFormatSpecImpl format(e.fmt);
-      EXPECT_EQ(e.out, FormatPack(format, turbo::MakeSpan(args)));
+      EXPECT_EQ(e.out, FormatPack(format, turbo::make_span(args)));
     }
   }
 }
@@ -1439,9 +1439,9 @@ bool FormatFails(const char* test_format, T value) {
 
   int one = 1;
   const FormatArgImpl args[] = {FormatArgImpl(value), FormatArgImpl(one)};
-  EXPECT_EQ(FormatPack(format, turbo::MakeSpan(args)), "")
+  EXPECT_EQ(FormatPack(format, turbo::make_span(args)), "")
       << "format=" << test_format << " value=" << value;
-  return FormatPack(format, turbo::MakeSpan(args)).empty();
+  return FormatPack(format, turbo::make_span(args)).empty();
 }
 
 TEST_F(FormatConvertTest, ExpectedFailures) {

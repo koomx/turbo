@@ -28,7 +28,7 @@
 #include <turbo/strings/match.h>
 #include <string_view>
 #include <turbo/time/time.h>
-#include <turbo/types/source_location.h>
+#include <source_location>
 
 namespace {
 #if GTEST_HAS_DEATH_TEST
@@ -94,7 +94,7 @@ TEST(TailCallsModifiesTest, AtLocationSourceLocation) {
   EXPECT_CALL(test_sink, send).Times(0);
 
   const int log_line = __LINE__ + 1;
-  constexpr turbo::SourceLocation loc = turbo::SourceLocation::current();
+  constexpr std::source_location loc = std::source_location::current();
   auto do_log = [loc] { KLOG(INFO).at_location(loc) << "hello world"; };
 
   EXPECT_CALL(test_sink,

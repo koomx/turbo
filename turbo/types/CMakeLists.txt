@@ -173,35 +173,6 @@ turbo_cc_test(
 
 turbo_cc_library(
   NAME
-    source_location
-  HDRS
-    "source_location.h"
-  SRCS
-    "source_location.cc"
-  COPTS
-    ${TURBO_DEFAULT_COPTS}
-  DEPS
-    turbo::config
-    turbo::core_headers
-    turbo::nullability
-  PUBLIC
-)
-
-turbo_cc_test(
-  NAME
-    source_location_test
-  SRCS
-    "source_location_test.cc"
-  COPTS
-    ${TURBO_TEST_COPTS}
-  DEPS
-    turbo::config
-    turbo::source_location
-    GTest::gmock_main
-)
-
-turbo_cc_library(
-  NAME
     compare
   HDRS
     "compare.h"

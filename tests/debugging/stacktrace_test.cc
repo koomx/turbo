@@ -136,8 +136,8 @@ KUMO_ATTRIBUTE_NOINLINE static void FixupNoFixupEquivalenceNoInline() {
   g_enable_fixup = !g_enable_fixup;
   b.depth = turbo::GetStackTrace(b.result, kStackCount, kSkip);
   EXPECT_THAT(
-      turbo::MakeSpan(a.result, static_cast<size_t>(a.depth)),
-      ContainerEq(turbo::MakeSpan(b.result, static_cast<size_t>(b.depth))));
+      turbo::make_span(a.result, static_cast<size_t>(a.depth)),
+      ContainerEq(turbo::make_span(b.result, static_cast<size_t>(b.depth))));
   EXPECT_GT(g_should_fixup_calls, 0);
   EXPECT_GE(g_should_fixup_calls, g_fixup_calls);
 
@@ -149,11 +149,11 @@ KUMO_ATTRIBUTE_NOINLINE static void FixupNoFixupEquivalenceNoInline() {
   g_enable_fixup = !g_enable_fixup;
   b.depth = turbo::GetStackFrames(b.result, b.sizes, kStackCount, kSkip);
   EXPECT_THAT(
-      turbo::MakeSpan(a.result, static_cast<size_t>(a.depth)),
-      ContainerEq(turbo::MakeSpan(b.result, static_cast<size_t>(b.depth))));
+      turbo::make_span(a.result, static_cast<size_t>(a.depth)),
+      ContainerEq(turbo::make_span(b.result, static_cast<size_t>(b.depth))));
   EXPECT_THAT(
-      turbo::MakeSpan(a.sizes, static_cast<size_t>(a.depth)),
-      ContainerEq(turbo::MakeSpan(b.sizes, static_cast<size_t>(b.depth))));
+      turbo::make_span(a.sizes, static_cast<size_t>(a.depth)),
+      ContainerEq(turbo::make_span(b.sizes, static_cast<size_t>(b.depth))));
   EXPECT_GT(g_should_fixup_calls, 0);
   EXPECT_GE(g_should_fixup_calls, g_fixup_calls);
 
@@ -167,8 +167,8 @@ KUMO_ATTRIBUTE_NOINLINE static void FixupNoFixupEquivalenceNoInline() {
   b.depth = turbo::GetStackTraceWithContext(b.result, kStackCount, kSkip,
                                            nullptr, nullptr);
   EXPECT_THAT(
-      turbo::MakeSpan(a.result, static_cast<size_t>(a.depth)),
-      ContainerEq(turbo::MakeSpan(b.result, static_cast<size_t>(b.depth))));
+      turbo::make_span(a.result, static_cast<size_t>(a.depth)),
+      ContainerEq(turbo::make_span(b.result, static_cast<size_t>(b.depth))));
   EXPECT_GT(g_should_fixup_calls, 0);
   EXPECT_GE(g_should_fixup_calls, g_fixup_calls);
 
@@ -182,11 +182,11 @@ KUMO_ATTRIBUTE_NOINLINE static void FixupNoFixupEquivalenceNoInline() {
   b.depth = turbo::GetStackFramesWithContext(b.result, b.sizes, kStackCount,
                                             kSkip, nullptr, nullptr);
   EXPECT_THAT(
-      turbo::MakeSpan(a.result, static_cast<size_t>(a.depth)),
-      ContainerEq(turbo::MakeSpan(b.result, static_cast<size_t>(b.depth))));
+      turbo::make_span(a.result, static_cast<size_t>(a.depth)),
+      ContainerEq(turbo::make_span(b.result, static_cast<size_t>(b.depth))));
   EXPECT_THAT(
-      turbo::MakeSpan(a.sizes, static_cast<size_t>(a.depth)),
-      ContainerEq(turbo::MakeSpan(b.sizes, static_cast<size_t>(b.depth))));
+      turbo::make_span(a.sizes, static_cast<size_t>(a.depth)),
+      ContainerEq(turbo::make_span(b.sizes, static_cast<size_t>(b.depth))));
   EXPECT_GT(g_should_fixup_calls, 0);
   EXPECT_GE(g_should_fixup_calls, g_fixup_calls);
 }
@@ -320,12 +320,12 @@ void SigUsr2Handler(int, siginfo_t*, void* uc) {
       turbo::GetStackTraceWithContext(result, kMaxStackDepth, 0, uc, nullptr);
   // Verify we can unwind past the nested signal handlers.
   if (support_is_expected) {
-    EXPECT_THAT(turbo::MakeSpan(result, static_cast<size_t>(depth)),
+    EXPECT_THAT(turbo::make_span(result, static_cast<size_t>(depth)),
                 Contains(g_return_address).Times(1));
   }
   depth = turbo::GetStackTrace(result, kMaxStackDepth, 0);
   if (support_is_expected) {
-    EXPECT_THAT(turbo::MakeSpan(result, static_cast<size_t>(depth)),
+    EXPECT_THAT(turbo::make_span(result, static_cast<size_t>(depth)),
                 Contains(g_return_address).Times(1));
   }
   g_sigusr2_raised = true;

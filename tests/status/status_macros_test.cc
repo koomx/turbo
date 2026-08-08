@@ -28,7 +28,7 @@
 #include <turbo/status/status_builder.h>
 #include <turbo/status/statusor.h>
 #include <string_view>
-#include <turbo/types/source_location.h>
+#include <source_location>
 
 namespace {
 
@@ -83,7 +83,7 @@ turbo::StatusOr<std::unique_ptr<int>> ReturnStatusOrPtrValue(int v) {
 }
 void CheckSourceLocation(
     const turbo::Status& status, std::vector<int> lines = {},
-    turbo::SourceLocation loc = turbo::SourceLocation::current()) {
+    std::source_location loc = std::source_location::current()) {
   ASSERT_EQ(status.GetSourceLocations().size(), lines.size())
       << "Size check failed at " << loc.line();
   for (size_t i = 0; i < lines.size(); ++i) {

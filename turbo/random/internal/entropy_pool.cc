@@ -156,13 +156,13 @@ void InitPoolURBG() {
       RandenTraits::kStateBytes / sizeof(uint32_t);
   // Read OS entropy once, and use it to initialize each pool entry.
   uint32_t seed_material[kPoolSize * kSeedSize];
-  if (!ReadSeedMaterialFromOSEntropy(turbo::MakeSpan(seed_material))) {
+  if (!ReadSeedMaterialFromOSEntropy(turbo::make_span(seed_material))) {
     ThrowSeedGenException();
   }
   for (size_t i = 0; i < kPoolSize; i++) {
     shared_pools[i] = new RandenPoolEntry();
     shared_pools[i]->Init(
-        turbo::MakeSpan(&seed_material[i * kSeedSize], kSeedSize));
+        turbo::make_span(&seed_material[i * kSeedSize], kSeedSize));
   }
 }
 

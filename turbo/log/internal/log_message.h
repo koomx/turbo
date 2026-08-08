@@ -48,7 +48,7 @@
 #include <turbo/format/has_turbo_stringify.h>
 #include <string_view>
 #include <turbo/time/time.h>
-#include <turbo/types/source_location.h>
+#include <source_location>
 #include <turbo/types/span.h>
 
 namespace turbo {
@@ -98,9 +98,9 @@ namespace turbo {
             // by `file` must be valid until the end of the statement.
             LogMessage &at_location(std::string_view file, int line);
 
-            // `loc` doesn't default to `turbo::SourceLocation::current()` here since the
+            // `loc` doesn't default to `std::source_location::current()` here since the
             // callsite is already the default location for `LOG` statements.
-            LogMessage &at_location(turbo::SourceLocation loc) {
+            LogMessage &at_location(std::source_location loc) {
                 return at_location(loc.file_name(), static_cast<int>(loc.line()));
             }
 
@@ -207,8 +207,8 @@ namespace turbo {
 
             LogMessage &operator<<(wchar_t v);
 
-            // Overload for turbo::SourceLocation or the std::source_location alias.
-            LogMessage &operator<<(const turbo::SourceLocation &loc) {
+            // Overload for std::source_location.
+            LogMessage &operator<<(const std::source_location &loc) {
                 OstreamView view(*data_);
                 view.stream() << loc.file_name() << ':' << loc.line();
                 return *this;

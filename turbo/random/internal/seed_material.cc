@@ -232,7 +232,7 @@ std::optional<uint32_t> GetSaltMaterial() {
   static const auto salt_material = []() -> std::optional<uint32_t> {
     uint32_t salt_value = 0;
 
-    if (ReadSeedMaterialFromOSEntropy(turbo::MakeSpan(&salt_value, 1))) {
+    if (ReadSeedMaterialFromOSEntropy(turbo::make_span(&salt_value, 1))) {
       return salt_value;
     }
 

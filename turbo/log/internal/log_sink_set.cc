@@ -204,7 +204,7 @@ namespace turbo {
                             // scope even in case of exceptions.
                             auto status_cleanup =
                                     turbo::MakeCleanup([] { thread_is_logging_status() = false; });
-                            send_to_sinks(entry, turbo::MakeSpan(sinks_));
+                            send_to_sinks(entry, turbo::make_span(sinks_));
                         }
                     }
                 }

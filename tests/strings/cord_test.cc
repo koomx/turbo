@@ -728,7 +728,7 @@ static void VerifyCopyToSpan(const turbo::Cord& cord) {
   // Test with span exactly the same size as the cord.
   {
     std::string dst(cord.size(), '\0');
-    size_t copied = turbo::CopyCordToSpan(cord, turbo::MakeSpan(dst));
+    size_t copied = turbo::CopyCordToSpan(cord, turbo::make_span(dst));
     EXPECT_EQ(copied, cord.size());
     EXPECT_EQ(dst, cord);
   }
@@ -736,7 +736,7 @@ static void VerifyCopyToSpan(const turbo::Cord& cord) {
   // Test with span larger than the cord.
   {
     std::string dst(cord.size() + 10, 'x');
-    size_t copied = turbo::CopyCordToSpan(cord, turbo::MakeSpan(dst));
+    size_t copied = turbo::CopyCordToSpan(cord, turbo::make_span(dst));
     EXPECT_EQ(copied, cord.size());
     EXPECT_EQ(std::string_view(dst).substr(0, copied), cord);
     if (cord.size() < dst.size()) {
@@ -749,7 +749,7 @@ static void VerifyCopyToSpan(const turbo::Cord& cord) {
   {
     size_t target_size = cord.size() / 2;
     std::string dst(target_size, '\0');
-    size_t copied = turbo::CopyCordToSpan(cord, turbo::MakeSpan(dst));
+    size_t copied = turbo::CopyCordToSpan(cord, turbo::make_span(dst));
     EXPECT_EQ(copied, target_size);
     EXPECT_EQ(dst, std::string(cord).substr(0, target_size));
   }
@@ -757,7 +757,7 @@ static void VerifyCopyToSpan(const turbo::Cord& cord) {
   // Test with empty span.
   {
     char c = 'x';
-    size_t copied = turbo::CopyCordToSpan(cord, turbo::MakeSpan(&c, 0));
+    size_t copied = turbo::CopyCordToSpan(cord, turbo::make_span(&c, 0));
     EXPECT_EQ(copied, 0);
     EXPECT_EQ(c, 'x');
   }

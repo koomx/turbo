@@ -34,7 +34,7 @@
 #include <turbo/log/turbo_log.h>
 #include <turbo/format/ostringstream.h>
 #include <string_view>
-#include <turbo/types/source_location.h>
+#include <source_location>
 #include <turbo/utility/utility.h>
 
 namespace turbo {
@@ -88,7 +88,7 @@ namespace turbo {
 
         explicit LogStreamer(
             turbo::LogSeverity severity,
-            turbo::SourceLocation loc = turbo::SourceLocation::current())
+            std::source_location loc = std::source_location::current())
             : LogStreamer(severity, loc.file_name(), static_cast<int>(loc.line())) {
         }
 
@@ -182,27 +182,27 @@ namespace turbo {
     }
 
     inline LogStreamer log_info_streamer(
-        turbo::SourceLocation loc = turbo::SourceLocation::current()) {
+        std::source_location loc = std::source_location::current()) {
         return turbo::LogStreamer(turbo::LogSeverity::kInfo, loc);
     }
 
     inline LogStreamer log_warning_streamer(
-        turbo::SourceLocation loc = turbo::SourceLocation::current()) {
+        std::source_location loc = std::source_location::current()) {
         return turbo::LogStreamer(turbo::LogSeverity::kWarning, loc);
     }
 
     inline LogStreamer log_error_streamer(
-        turbo::SourceLocation loc = turbo::SourceLocation::current()) {
+        std::source_location loc = std::source_location::current()) {
         return turbo::LogStreamer(turbo::LogSeverity::kError, loc);
     }
 
     inline LogStreamer log_fatal_streamer(
-        turbo::SourceLocation loc = turbo::SourceLocation::current()) {
+        std::source_location loc = std::source_location::current()) {
         return turbo::LogStreamer(turbo::LogSeverity::kFatal, loc);
     }
 
     inline LogStreamer log_debug_fatal_streamer(
-        turbo::SourceLocation loc = turbo::SourceLocation::current()) {
+        std::source_location loc = std::source_location::current()) {
         return turbo::LogStreamer(turbo::kLogDebugFatal, loc);
     }
 } // namespace turbo

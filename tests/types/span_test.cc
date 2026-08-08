@@ -301,127 +301,127 @@ TEST(IntSpan, RemovePrefixAndSuffix) {
 
 TEST(IntSpan, Subspan) {
   std::vector<int> empty;
-  EXPECT_EQ(turbo::MakeSpan(empty).subspan(), empty);
-  EXPECT_THAT(turbo::MakeSpan(empty).subspan(0, 0), SpanIs(empty));
-  EXPECT_THAT(turbo::MakeSpan(empty).subspan(0, turbo::Span<const int>::npos),
+  EXPECT_EQ(turbo::make_span(empty).subspan(), empty);
+  EXPECT_THAT(turbo::make_span(empty).subspan(0, 0), SpanIs(empty));
+  EXPECT_THAT(turbo::make_span(empty).subspan(0, turbo::Span<const int>::npos),
               SpanIs(empty));
 
   auto ramp = MakeRamp(10);
-  EXPECT_THAT(turbo::MakeSpan(ramp).subspan(), SpanIs(ramp));
-  EXPECT_THAT(turbo::MakeSpan(ramp).subspan(0, 10), SpanIs(ramp));
-  EXPECT_THAT(turbo::MakeSpan(ramp).subspan(0, turbo::Span<const int>::npos),
+  EXPECT_THAT(turbo::make_span(ramp).subspan(), SpanIs(ramp));
+  EXPECT_THAT(turbo::make_span(ramp).subspan(0, 10), SpanIs(ramp));
+  EXPECT_THAT(turbo::make_span(ramp).subspan(0, turbo::Span<const int>::npos),
               SpanIs(ramp));
-  EXPECT_THAT(turbo::MakeSpan(ramp).subspan(0, 3), SpanIs(ramp.data(), 3));
-  EXPECT_THAT(turbo::MakeSpan(ramp).subspan(5, turbo::Span<const int>::npos),
+  EXPECT_THAT(turbo::make_span(ramp).subspan(0, 3), SpanIs(ramp.data(), 3));
+  EXPECT_THAT(turbo::make_span(ramp).subspan(5, turbo::Span<const int>::npos),
               SpanIs(ramp.data() + 5, 5));
-  EXPECT_THAT(turbo::MakeSpan(ramp).subspan(3, 3), SpanIs(ramp.data() + 3, 3));
-  EXPECT_THAT(turbo::MakeSpan(ramp).subspan(10, 5), SpanIs(ramp.data() + 10, 0));
+  EXPECT_THAT(turbo::make_span(ramp).subspan(3, 3), SpanIs(ramp.data() + 3, 3));
+  EXPECT_THAT(turbo::make_span(ramp).subspan(10, 5), SpanIs(ramp.data() + 10, 0));
 
 #if KUMO_HAVE_EXCEPTIONS
-  EXPECT_THROW(turbo::MakeSpan(ramp).subspan(11, 5), std::out_of_range);
+  EXPECT_THROW(turbo::make_span(ramp).subspan(11, 5), std::out_of_range);
 #else
-  EXPECT_DEATH_IF_SUPPORTED(turbo::MakeSpan(ramp).subspan(11, 5), "");
+  EXPECT_DEATH_IF_SUPPORTED(turbo::make_span(ramp).subspan(11, 5), "");
 #endif
 }
 
 TEST(IntSpan, First) {
   std::vector<int> empty;
-  EXPECT_THAT(turbo::MakeSpan(empty).first(0), SpanIs(empty));
+  EXPECT_THAT(turbo::make_span(empty).first(0), SpanIs(empty));
 
   auto ramp = MakeRamp(10);
-  EXPECT_THAT(turbo::MakeSpan(ramp).first(0), SpanIs(ramp.data(), 0));
-  EXPECT_THAT(turbo::MakeSpan(ramp).first(10), SpanIs(ramp));
-  EXPECT_THAT(turbo::MakeSpan(ramp).first(3), SpanIs(ramp.data(), 3));
+  EXPECT_THAT(turbo::make_span(ramp).first(0), SpanIs(ramp.data(), 0));
+  EXPECT_THAT(turbo::make_span(ramp).first(10), SpanIs(ramp));
+  EXPECT_THAT(turbo::make_span(ramp).first(3), SpanIs(ramp.data(), 3));
 
 #if KUMO_HAVE_EXCEPTIONS
-  EXPECT_THROW(turbo::MakeSpan(ramp).first(11), std::out_of_range);
+  EXPECT_THROW(turbo::make_span(ramp).first(11), std::out_of_range);
 #else
-  EXPECT_DEATH_IF_SUPPORTED(turbo::MakeSpan(ramp).first(11), "");
+  EXPECT_DEATH_IF_SUPPORTED(turbo::make_span(ramp).first(11), "");
 #endif
 }
 
 TEST(IntSpan, Last) {
   std::vector<int> empty;
-  EXPECT_THAT(turbo::MakeSpan(empty).last(0), SpanIs(empty));
+  EXPECT_THAT(turbo::make_span(empty).last(0), SpanIs(empty));
 
   auto ramp = MakeRamp(10);
-  EXPECT_THAT(turbo::MakeSpan(ramp).last(0), SpanIs(ramp.data() + 10, 0));
-  EXPECT_THAT(turbo::MakeSpan(ramp).last(10), SpanIs(ramp));
-  EXPECT_THAT(turbo::MakeSpan(ramp).last(3), SpanIs(ramp.data() + 7, 3));
+  EXPECT_THAT(turbo::make_span(ramp).last(0), SpanIs(ramp.data() + 10, 0));
+  EXPECT_THAT(turbo::make_span(ramp).last(10), SpanIs(ramp));
+  EXPECT_THAT(turbo::make_span(ramp).last(3), SpanIs(ramp.data() + 7, 3));
 
 #if KUMO_HAVE_EXCEPTIONS
-  EXPECT_THROW(turbo::MakeSpan(ramp).last(11), std::out_of_range);
+  EXPECT_THROW(turbo::make_span(ramp).last(11), std::out_of_range);
 #else
-  EXPECT_DEATH_IF_SUPPORTED(turbo::MakeSpan(ramp).last(11), "");
+  EXPECT_DEATH_IF_SUPPORTED(turbo::make_span(ramp).last(11), "");
 #endif
 }
 
 TEST(IntSpan, MakeSpanPtrLength) {
   std::vector<int> empty;
-  auto s_empty = turbo::MakeSpan(empty.data(), empty.size());
+  auto s_empty = turbo::make_span(empty.data(), empty.size());
   EXPECT_THAT(s_empty, SpanIs(empty));
 
   std::array<int, 3> a{{1, 2, 3}};
-  auto s = turbo::MakeSpan(a.data(), a.size());
+  auto s = turbo::make_span(a.data(), a.size());
   EXPECT_THAT(s, SpanIs(a));
 
-  EXPECT_THAT(turbo::MakeConstSpan(empty.data(), empty.size()), SpanIs(s_empty));
-  EXPECT_THAT(turbo::MakeConstSpan(a.data(), a.size()), SpanIs(s));
+  EXPECT_THAT(turbo::make_const_span(empty.data(), empty.size()), SpanIs(s_empty));
+  EXPECT_THAT(turbo::make_const_span(a.data(), a.size()), SpanIs(s));
 }
 
 TEST(IntSpan, MakeSpanTwoPtrs) {
   std::vector<int> empty;
-  auto s_empty = turbo::MakeSpan(empty.data(), empty.data());
+  auto s_empty = turbo::make_span(empty.data(), empty.data());
   EXPECT_THAT(s_empty, SpanIs(empty));
 
   std::vector<int> v{1, 2, 3};
-  auto s = turbo::MakeSpan(v.data(), v.data() + 1);
+  auto s = turbo::make_span(v.data(), v.data() + 1);
   EXPECT_THAT(s, SpanIs(v.data(), 1));
 
-  EXPECT_THAT(turbo::MakeConstSpan(empty.data(), empty.data()), SpanIs(s_empty));
-  EXPECT_THAT(turbo::MakeConstSpan(v.data(), v.data() + 1), SpanIs(s));
+  EXPECT_THAT(turbo::make_const_span(empty.data(), empty.data()), SpanIs(s_empty));
+  EXPECT_THAT(turbo::make_const_span(v.data(), v.data() + 1), SpanIs(s));
 }
 
 TEST(IntSpan, MakeSpanContainer) {
   std::vector<int> empty;
-  auto s_empty = turbo::MakeSpan(empty);
+  auto s_empty = turbo::make_span(empty);
   EXPECT_THAT(s_empty, SpanIs(empty));
 
   std::vector<int> v{1, 2, 3};
-  auto s = turbo::MakeSpan(v);
+  auto s = turbo::make_span(v);
   EXPECT_THAT(s, SpanIs(v));
 
-  EXPECT_THAT(turbo::MakeConstSpan(empty), SpanIs(s_empty));
-  EXPECT_THAT(turbo::MakeConstSpan(v), SpanIs(s));
+  EXPECT_THAT(turbo::make_const_span(empty), SpanIs(s_empty));
+  EXPECT_THAT(turbo::make_const_span(v), SpanIs(s));
 
-  EXPECT_THAT(turbo::MakeSpan(s), SpanIs(s));
-  EXPECT_THAT(turbo::MakeConstSpan(s), SpanIs(s));
+  EXPECT_THAT(turbo::make_span(s), SpanIs(s));
+  EXPECT_THAT(turbo::make_const_span(s), SpanIs(s));
 }
 
 TEST(CharSpan, MakeSpanString) {
   std::string empty = "";
-  auto s_empty = turbo::MakeSpan(empty);
+  auto s_empty = turbo::make_span(empty);
   EXPECT_THAT(s_empty, SpanIs(empty));
 
   std::string str = "abc";
-  auto s_str = turbo::MakeSpan(str);
+  auto s_str = turbo::make_span(str);
   EXPECT_THAT(s_str, SpanIs(str));
 
-  EXPECT_THAT(turbo::MakeConstSpan(empty), SpanIs(s_empty));
-  EXPECT_THAT(turbo::MakeConstSpan(str), SpanIs(s_str));
+  EXPECT_THAT(turbo::make_const_span(empty), SpanIs(s_empty));
+  EXPECT_THAT(turbo::make_const_span(str), SpanIs(s_str));
 }
 
 TEST(IntSpan, MakeSpanArray) {
   int a[] = {1, 2, 3};
-  auto s = turbo::MakeSpan(a);
+  auto s = turbo::make_span(a);
   EXPECT_THAT(s, SpanIs(a, 3));
 
   const int ca[] = {1, 2, 3};
-  auto s_ca = turbo::MakeSpan(ca);
+  auto s_ca = turbo::make_span(ca);
   EXPECT_THAT(s_ca, SpanIs(ca, 3));
 
-  EXPECT_THAT(turbo::MakeConstSpan(a), SpanIs(s));
-  EXPECT_THAT(turbo::MakeConstSpan(ca), SpanIs(s_ca));
+  EXPECT_THAT(turbo::make_const_span(a), SpanIs(s));
+  EXPECT_THAT(turbo::make_const_span(ca), SpanIs(s_ca));
 }
 
 // Compile-asserts that the argument has the expected decayed type.
@@ -439,20 +439,20 @@ TEST(IntSpan, MakeSpanTypes) {
   const int* cip = ca;
   std::string s = "";
   const std::string cs = "";
-  CheckType<turbo::Span<int>>(turbo::MakeSpan(vec));
-  CheckType<turbo::Span<const int>>(turbo::MakeSpan(cvec));
-  CheckType<turbo::Span<int>>(turbo::MakeSpan(ip, ip + 1));
-  CheckType<turbo::Span<int>>(turbo::MakeSpan(ip, 1));
-  CheckType<turbo::Span<const int>>(turbo::MakeSpan(cip, cip + 1));
-  CheckType<turbo::Span<const int>>(turbo::MakeSpan(cip, 1));
-  CheckType<turbo::Span<int>>(turbo::MakeSpan(a));
-  CheckType<turbo::Span<int>>(turbo::MakeSpan(a, a + 1));
-  CheckType<turbo::Span<int>>(turbo::MakeSpan(a, 1));
-  CheckType<turbo::Span<const int>>(turbo::MakeSpan(ca));
-  CheckType<turbo::Span<const int>>(turbo::MakeSpan(ca, ca + 1));
-  CheckType<turbo::Span<const int>>(turbo::MakeSpan(ca, 1));
-  CheckType<turbo::Span<char>>(turbo::MakeSpan(s));
-  CheckType<turbo::Span<const char>>(turbo::MakeSpan(cs));
+  CheckType<turbo::Span<int>>(turbo::make_span(vec));
+  CheckType<turbo::Span<const int>>(turbo::make_span(cvec));
+  CheckType<turbo::Span<int>>(turbo::make_span(ip, ip + 1));
+  CheckType<turbo::Span<int>>(turbo::make_span(ip, 1));
+  CheckType<turbo::Span<const int>>(turbo::make_span(cip, cip + 1));
+  CheckType<turbo::Span<const int>>(turbo::make_span(cip, 1));
+  CheckType<turbo::Span<int>>(turbo::make_span(a));
+  CheckType<turbo::Span<int>>(turbo::make_span(a, a + 1));
+  CheckType<turbo::Span<int>>(turbo::make_span(a, 1));
+  CheckType<turbo::Span<const int>>(turbo::make_span(ca));
+  CheckType<turbo::Span<const int>>(turbo::make_span(ca, ca + 1));
+  CheckType<turbo::Span<const int>>(turbo::make_span(ca, 1));
+  CheckType<turbo::Span<char>>(turbo::make_span(s));
+  CheckType<turbo::Span<const char>>(turbo::make_span(cs));
 }
 
 TEST(ConstIntSpan, MakeConstSpanTypes) {
@@ -464,16 +464,16 @@ TEST(ConstIntSpan, MakeConstSpanTypes) {
   const int* cptr = carray;
   std::string s = "";
   std::string cs = "";
-  CheckType<turbo::Span<const int>>(turbo::MakeConstSpan(vec));
-  CheckType<turbo::Span<const int>>(turbo::MakeConstSpan(cvec));
-  CheckType<turbo::Span<const int>>(turbo::MakeConstSpan(ptr, ptr + 1));
-  CheckType<turbo::Span<const int>>(turbo::MakeConstSpan(ptr, 1));
-  CheckType<turbo::Span<const int>>(turbo::MakeConstSpan(cptr, cptr + 1));
-  CheckType<turbo::Span<const int>>(turbo::MakeConstSpan(cptr, 1));
-  CheckType<turbo::Span<const int>>(turbo::MakeConstSpan(array));
-  CheckType<turbo::Span<const int>>(turbo::MakeConstSpan(carray));
-  CheckType<turbo::Span<const char>>(turbo::MakeConstSpan(s));
-  CheckType<turbo::Span<const char>>(turbo::MakeConstSpan(cs));
+  CheckType<turbo::Span<const int>>(turbo::make_const_span(vec));
+  CheckType<turbo::Span<const int>>(turbo::make_const_span(cvec));
+  CheckType<turbo::Span<const int>>(turbo::make_const_span(ptr, ptr + 1));
+  CheckType<turbo::Span<const int>>(turbo::make_const_span(ptr, 1));
+  CheckType<turbo::Span<const int>>(turbo::make_const_span(cptr, cptr + 1));
+  CheckType<turbo::Span<const int>>(turbo::make_const_span(cptr, 1));
+  CheckType<turbo::Span<const int>>(turbo::make_const_span(array));
+  CheckType<turbo::Span<const int>>(turbo::make_const_span(carray));
+  CheckType<turbo::Span<const char>>(turbo::make_const_span(s));
+  CheckType<turbo::Span<const char>>(turbo::make_const_span(cs));
 }
 
 TEST(IntSpan, Equality) {
@@ -761,14 +761,14 @@ TEST(IntSpan, NoexceptTest) {
   EXPECT_TRUE(noexcept(turbo::Span<const int>(v)));
   EXPECT_TRUE(noexcept(turbo::Span<int>(v)));
   EXPECT_TRUE(noexcept(turbo::Span<const int>({1, 2, 3})));
-  EXPECT_TRUE(noexcept(turbo::MakeSpan(v)));
-  EXPECT_TRUE(noexcept(turbo::MakeSpan(a)));
-  EXPECT_TRUE(noexcept(turbo::MakeSpan(a, 2)));
-  EXPECT_TRUE(noexcept(turbo::MakeSpan(a, a + 1)));
-  EXPECT_TRUE(noexcept(turbo::MakeConstSpan(v)));
-  EXPECT_TRUE(noexcept(turbo::MakeConstSpan(a)));
-  EXPECT_TRUE(noexcept(turbo::MakeConstSpan(a, 2)));
-  EXPECT_TRUE(noexcept(turbo::MakeConstSpan(a, a + 1)));
+  EXPECT_TRUE(noexcept(turbo::make_span(v)));
+  EXPECT_TRUE(noexcept(turbo::make_span(a)));
+  EXPECT_TRUE(noexcept(turbo::make_span(a, 2)));
+  EXPECT_TRUE(noexcept(turbo::make_span(a, a + 1)));
+  EXPECT_TRUE(noexcept(turbo::make_const_span(v)));
+  EXPECT_TRUE(noexcept(turbo::make_const_span(a)));
+  EXPECT_TRUE(noexcept(turbo::make_const_span(a, 2)));
+  EXPECT_TRUE(noexcept(turbo::make_const_span(a, a + 1)));
 
   turbo::Span<int> s(v);
   EXPECT_TRUE(noexcept(s.data()));
@@ -816,12 +816,12 @@ TEST(ConstIntSpan, ConstexprTest) {
   TURBO_TEST_CONSTEXPR(turbo::Span<const int>(a, 2));
   TURBO_TEST_CONSTEXPR(turbo::Span<const int>(sized_arr));
   TURBO_TEST_CONSTEXPR(turbo::Span<const int>(c));
-  TURBO_TEST_CONSTEXPR(turbo::MakeSpan(&a[0], 1));
-  TURBO_TEST_CONSTEXPR(turbo::MakeSpan(c));
-  TURBO_TEST_CONSTEXPR(turbo::MakeSpan(a));
-  TURBO_TEST_CONSTEXPR(turbo::MakeConstSpan(&a[0], 1));
-  TURBO_TEST_CONSTEXPR(turbo::MakeConstSpan(c));
-  TURBO_TEST_CONSTEXPR(turbo::MakeConstSpan(a));
+  TURBO_TEST_CONSTEXPR(turbo::make_span(&a[0], 1));
+  TURBO_TEST_CONSTEXPR(turbo::make_span(c));
+  TURBO_TEST_CONSTEXPR(turbo::make_span(a));
+  TURBO_TEST_CONSTEXPR(turbo::make_const_span(&a[0], 1));
+  TURBO_TEST_CONSTEXPR(turbo::make_const_span(c));
+  TURBO_TEST_CONSTEXPR(turbo::make_const_span(a));
 
   constexpr turbo::Span<const int> span = c;
   TURBO_TEST_CONSTEXPR(span.data());
@@ -842,8 +842,8 @@ TEST(ConstIntSpan, ConstexprRelOpsTest) {
   static constexpr int lhs_data[] = {1, 2, 3};
   static constexpr int rhs_data[] = {1, 2, 3};
 
-  constexpr turbo::Span<const int> lhs = turbo::MakeConstSpan(lhs_data, 3);
-  constexpr turbo::Span<const int> rhs = turbo::MakeConstSpan(rhs_data, 3);
+  constexpr turbo::Span<const int> lhs = turbo::make_const_span(lhs_data, 3);
+  constexpr turbo::Span<const int> rhs = turbo::make_const_span(rhs_data, 3);
 
   TURBO_TEST_CONSTEXPR(lhs_data == rhs);
   TURBO_TEST_CONSTEXPR(lhs_data != rhs);

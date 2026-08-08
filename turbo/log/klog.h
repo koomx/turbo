@@ -56,7 +56,7 @@
 // the statement supports some chainable methods:
 //
 //   * .at_location(std::string_view file, int line)
-//     .at_location(turbo::SourceLocation loc)
+//     .at_location(std::source_location loc)
 //     Overrides the location inferred from the callsite.  The string pointed to
 //     by `file` must be valid until the end of the statement.
 //   * .no_prefix()

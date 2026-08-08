@@ -32,7 +32,7 @@
 #include <turbo/format/ostringstream.h>
 #include <turbo/format/internal/stringify_stream.h>
 #include <string_view>
-#include <turbo/types/source_location.h>
+#include <source_location>
 #include <turbo/time/time.h>
 
 namespace turbo {
@@ -158,10 +158,10 @@ class KUMO_MUST_USE_RESULT StatusBuilder {
   // to the current location.
   explicit StatusBuilder(
       const turbo::Status& original_status,
-      turbo::SourceLocation location = turbo::SourceLocation::current());
+      std::source_location location = std::source_location::current());
   explicit StatusBuilder(
       turbo::Status&& original_status,
-      turbo::SourceLocation location = turbo::SourceLocation::current());
+      std::source_location location = std::source_location::current());
 
   // Creates a `StatusBuilder` from a status code.  If logging is enabled, it
   // will use `location` as the location from which the log message occurs.  A
@@ -169,7 +169,7 @@ class KUMO_MUST_USE_RESULT StatusBuilder {
   // current location.
   explicit StatusBuilder(
       turbo::StatusCode code,
-      turbo::SourceLocation location = turbo::SourceLocation::current());
+      std::source_location location = std::source_location::current());
 
   StatusBuilder(const StatusBuilder& sb);
   StatusBuilder& operator=(const StatusBuilder& sb);
@@ -536,7 +536,7 @@ class KUMO_MUST_USE_RESULT StatusBuilder {
   // Returns the source location used to create this builder. This differs from
   // `GetPreviousSourceLocations()` as this location is the single location for
   // the creation of this builder.
-  KUMO_MUST_USE_RESULT turbo::SourceLocation source_location() const;
+  KUMO_MUST_USE_RESULT std::source_location source_location() const;
 
   // Returns the source locations previously recorded in the status. This will
   // not include the source location of the `StatusBuilder` itself (which is
@@ -593,7 +593,7 @@ class KUMO_MUST_USE_RESULT StatusBuilder {
   // configured to log itself.
   // NOTE: This function is `static` to prevent escaping the `this` pointer. We
   //       transfer the `Rep` to delegate the destruction.
-  static turbo::Status CreateStatusAndConditionallyLog(turbo::SourceLocation loc,
+  static turbo::Status CreateStatusAndConditionallyLog(std::source_location loc,
                                                       std::unique_ptr<Rep> rep);
 
   // Infrequently set builder options, instantiated lazily. This reduces
@@ -681,7 +681,7 @@ class KUMO_MUST_USE_RESULT StatusBuilder {
   static Rep* InitRepImpl(turbo::Status s);
 
   // The location to record if this status is logged.
-  turbo::SourceLocation loc_;
+  std::source_location loc_;
 
   // nullptr if the result status will be OK.  Extra fields moved to the heap to
   // minimize stack space.
@@ -758,7 +758,7 @@ class ExtraMessage {
 // Implementation details follow; clients should ignore.
 
 inline StatusBuilder::StatusBuilder(turbo::StatusCode code,
-                                    turbo::SourceLocation location)
+                                    std::source_location location)
     : loc_(location), rep_(InitRep(turbo::Status(code, ""))) {}
 
 inline StatusBuilder::StatusBuilder(const StatusBuilder& sb) : loc_(sb.loc_) {
@@ -768,7 +768,7 @@ inline StatusBuilder::StatusBuilder(const StatusBuilder& sb) : loc_(sb.loc_) {
 }
 
 inline StatusBuilder::StatusBuilder(turbo::Status&& original_status,
-                                    turbo::SourceLocation location)
+                                    std::source_location location)
     : loc_(location), rep_(InitRep(std::move(original_status))) {}
 
 inline StatusBuilder::~StatusBuilder() {
@@ -953,7 +953,7 @@ inline StatusBuilder::operator turbo::Status() && {
   return result;
 }
 
-inline turbo::SourceLocation StatusBuilder::source_location() const {
+inline std::source_location StatusBuilder::source_location() const {
   return loc_;
 }
 

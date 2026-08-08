@@ -235,9 +235,6 @@ set(CCTZ_SRC
         cctz/zone_info_source.cc
 )
 
-set(TYPES_SRC
-        types/source_location.cc
-)
 set(TURBO_SRC
         ${BASE_SRC}
         ${BITS_SRC}
@@ -255,7 +252,6 @@ set(TURBO_SRC
         ${STRINGS_SRC}
         ${TIME_SRC}
         ${CCTZ_SRC}
-        ${TYPES_SRC}
 )
 
 kmcmake_cc_library(

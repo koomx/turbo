@@ -102,7 +102,7 @@ class SaltedSeedSeq {
     seq_->generate(begin, end);
     const uint32_t salt = turbo::random_internal::GetSaltMaterial().value_or(0);
     auto span = turbo::Span<uint32_t>(&*begin, n);
-    MixIntoSeedMaterial(turbo::MakeConstSpan(&salt, 1), span);
+    MixIntoSeedMaterial(turbo::make_const_span(&salt, 1), span);
   }
 
   // The uncommon case for generate is that it is called with iterators over

@@ -41,7 +41,7 @@
 #include <turbo/strings/str_cat.h>
 #include <turbo/format/str_format.h>
 #include <string_view>
-#include <turbo/types/source_location.h>
+#include <source_location>
 
 namespace {
 using ::turbo::log_internal::AsString;
@@ -296,7 +296,7 @@ TEST(SourceLocationTest, str_printf_to) {
   turbo::ScopedMockLog test_sink(turbo::MockLogDefault::kDisallowUnexpected);
   EXPECT_CALL(test_sink, send).Times(0);
 
-  turbo::SourceLocation loc = turbo::SourceLocation::current();
+  std::source_location loc = std::source_location::current();
   std::string expected = turbo::StrCat(__FILE__, ":", __LINE__ - 1);
 
   EXPECT_CALL(test_sink, send(AllOf(TextMessage(Eq(expected)),

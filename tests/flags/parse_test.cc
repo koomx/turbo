@@ -705,14 +705,14 @@ TEST_F(ParseTest, TestSimpleValidFlagfile) {
 
   const char* in_args1[] = {
       "testbin",
-      GetFlagfileFlag({{"parse_test.ff1", turbo::MakeConstSpan(ff1_data)}},
+      GetFlagfileFlag({{"parse_test.ff1", turbo::make_const_span(ff1_data)}},
                       flagfile_flag),
   };
   TestParse(in_args1, -1, 0.1, "q2w2  ", true);
 
   const char* in_args2[] = {
       "testbin",
-      GetFlagfileFlag({{"parse_test.ff2", turbo::MakeConstSpan(ff2_data)}},
+      GetFlagfileFlag({{"parse_test.ff2", turbo::make_const_span(ff2_data)}},
                       flagfile_flag),
   };
   TestParse(in_args2, 100, 0.1, "q2w2  ", false);
@@ -725,8 +725,8 @@ TEST_F(ParseTest, TestValidMultiFlagfile) {
 
   const char* in_args1[] = {
       "testbin",
-      GetFlagfileFlag({{"parse_test.ff2", turbo::MakeConstSpan(ff2_data)},
-                       {"parse_test.ff1", turbo::MakeConstSpan(ff1_data)}},
+      GetFlagfileFlag({{"parse_test.ff2", turbo::make_const_span(ff2_data)},
+                       {"parse_test.ff1", turbo::make_const_span(ff1_data)}},
                       flagfile_flag),
   };
   TestParse(in_args1, -1, 0.1, "q2w2  ", true);
@@ -739,7 +739,7 @@ TEST_F(ParseTest, TestFlagfileMixedWithRegularFlags) {
 
   const char* in_args1[] = {
       "testbin", "--int_flag=3",
-      GetFlagfileFlag({{"parse_test.ff1", turbo::MakeConstSpan(ff1_data)}},
+      GetFlagfileFlag({{"parse_test.ff1", turbo::make_const_span(ff1_data)}},
                       flagfile_flag),
       "-double_flag=0.2"};
   TestParse(in_args1, -1, 0.2, "q2w2  ", true);
@@ -755,13 +755,13 @@ TEST_F(ParseTest, TestFlagfileInFlagfile) {
       "--flagfile=$0/parse_test.ff2",
   };
 
-  GetFlagfileFlag({{"parse_test.ff2", turbo::MakeConstSpan(ff2_data)},
-                   {"parse_test.ff1", turbo::MakeConstSpan(ff1_data)}},
+  GetFlagfileFlag({{"parse_test.ff2", turbo::make_const_span(ff2_data)},
+                   {"parse_test.ff1", turbo::make_const_span(ff1_data)}},
                       flagfile_flag);
 
   const char* in_args1[] = {
       "testbin",
-      GetFlagfileFlag({{"parse_test.ff3", turbo::MakeConstSpan(ff3_data)}},
+      GetFlagfileFlag({{"parse_test.ff3", turbo::make_const_span(ff3_data)}},
                       flagfile_flag),
   };
   TestParse(in_args1, 100, 0.1, "q2w2  ", false);
@@ -779,7 +779,7 @@ TEST_F(ParseDeathTest, TestInvalidFlagfiles) {
   const char* in_args1[] = {
       "testbin",
       GetFlagfileFlag({{"parse_test.ff4",
-                        turbo::MakeConstSpan(ff4_data)}}, flagfile_flag),
+                        turbo::make_const_span(ff4_data)}}, flagfile_flag),
   };
   EXPECT_DEATH_IF_SUPPORTED(InvokeParse(in_args1),
                "Unknown command line flag 'unknown_flag'");
@@ -791,7 +791,7 @@ TEST_F(ParseDeathTest, TestInvalidFlagfiles) {
   const char* in_args2[] = {
       "testbin",
       GetFlagfileFlag({{"parse_test.ff5",
-                        turbo::MakeConstSpan(ff5_data)}}, flagfile_flag),
+                        turbo::make_const_span(ff5_data)}}, flagfile_flag),
   };
   EXPECT_DEATH_IF_SUPPORTED(InvokeParse(in_args2),
                "Unknown command line flag 'int_flag 10'");
@@ -802,7 +802,7 @@ TEST_F(ParseDeathTest, TestInvalidFlagfiles) {
 
   const char* in_args3[] = {
       "testbin",
-      GetFlagfileFlag({{"parse_test.ff6", turbo::MakeConstSpan(ff6_data)}},
+      GetFlagfileFlag({{"parse_test.ff6", turbo::make_const_span(ff6_data)}},
                       flagfile_flag),
   };
   EXPECT_DEATH_IF_SUPPORTED(InvokeParse(in_args3),
@@ -823,7 +823,7 @@ TEST_F(ParseDeathTest, TestInvalidFlagfiles) {
 
   const char* in_args5[] = {
       "testbin",
-      GetFlagfileFlag({{"parse_test.ff7", turbo::MakeConstSpan(ff7_data)}},
+      GetFlagfileFlag({{"parse_test.ff7", turbo::make_const_span(ff7_data)}},
                       flagfile_flag),
   };
   EXPECT_DEATH_IF_SUPPORTED(InvokeParse(in_args5),

@@ -207,7 +207,7 @@ TEST_F(FormatEntryPointTest, FormatCountCaptureWrongType) {
 
   EXPECT_EQ("", str_format_internal::FormatPack(
                     str_format_internal::UntypedFormatSpecImpl::Extract(format),
-                    turbo::MakeSpan(args)));
+                    turbo::make_span(args)));
 }
 
 TEST_F(FormatEntryPointTest, FormatCountCaptureWrongTypeWithV) {
@@ -219,7 +219,7 @@ TEST_F(FormatEntryPointTest, FormatCountCaptureWrongTypeWithV) {
 
   EXPECT_EQ("", str_format_internal::FormatPack(
                     str_format_internal::UntypedFormatSpecImpl::Extract(format),
-                    turbo::MakeSpan(args)));
+                    turbo::make_span(args)));
 }
 
 TEST_F(FormatEntryPointTest, FormatCountCaptureMultiple) {
