@@ -9,7 +9,9 @@ Dependencies (gtest / google-benchmark) are fetched via **CPM**.
 The CI workflow uses `koomx/x-ci` `vcpkg-template` only for runner / matrix /
 publish plumbing.
 
-Threaded log benches use `ThreadRange(1, 2 * hardware_concurrency())`.
+Threaded log benches use `ThreadRange(1, 2 * hardware_concurrency())`
+locally. On GitHub Actions, `scripts/run_log_bench.py` filters to single-thread
+cases only (`BM_*` without `/threads:` or `/threads:1`) to avoid runner hangs.
 
 ## Gallery
 

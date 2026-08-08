@@ -72,6 +72,9 @@ def run_one(label: str, binary: Path, raw_path: Path) -> tuple[list[dict], str]:
         f"--benchmark_out={raw_path}",
         "--benchmark_out_format=json",
     ]
+    # CI runners (esp. small ARM) hang under ThreadRange(1..2*N); keep single-thread only.
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        cmd.append(r"--benchmark_filter=(^BM_[^/]+$|/threads:1$)")
     print("running:", " ".join(cmd), flush=True)
     subprocess.check_call(cmd)
     gbench = json.loads(raw_path.read_text(encoding="utf-8"))
