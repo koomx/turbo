@@ -1,0 +1,66 @@
+{
+  "title": "turbo log + zlog benchmark",
+  "unit": "ns",
+  "samples": [
+    {
+      "name": "log:BM_SuccessfulBinaryCheck",
+      "value": 0.045
+    },
+    {
+      "name": "log:BM_SuccessfulUnaryCheck",
+      "value": 0.039
+    },
+    {
+      "name": "log:BM_DisabledLogOverhead",
+      "value": 126.571
+    },
+    {
+      "name": "log:BM_EnabledLogOverhead",
+      "value": 304.499
+    },
+    {
+      "name": "log:BM_VlogIsOnOverhead",
+      "value": 1.168
+    },
+    {
+      "name": "log:BM_VlogIsNotOnOverhead",
+      "value": 0.251
+    },
+    {
+      "name": "log:BM_LogEveryNOverhead",
+      "value": 32.67
+    },
+    {
+      "name": "zlog:BM_StreamEnabled",
+      "value": 564.095
+    },
+    {
+      "name": "zlog:BM_ZlogEnabled",
+      "value": 391.069
+    },
+    {
+      "name": "zlog:BM_StreamEnabledNum",
+      "value": 613.509
+    },
+    {
+      "name": "zlog:BM_ZlogEnabledNum",
+      "value": 408.554
+    },
+    {
+      "name": "zlog:BM_StreamDisabled",
+      "value": 282.026
+    },
+    {
+      "name": "zlog:BM_ZlogDisabled",
+      "value": 221.883
+    },
+    {
+      "name": "zlog:BM_StreamWarmDisabled",
+      "value": 425.041
+    },
+    {
+      "name": "zlog:BM_ZlogWarmDisabled",
+      "value": 378.603
+    }
+  ]
+}
