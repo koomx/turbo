@@ -1,0 +1,155 @@
+{
+  "context": {
+    "date": "2026-08-08T18:06:26+00:00",
+    "host_name": "7b7c7f21116f",
+    "executable": "/__w/turbo/turbo/build-ninja/benchmark/log/log_zlog_benchmark",
+    "num_cpus": 4,
+    "mhz_per_cpu": 4200,
+    "cpu_scaling_enabled": false,
+    "aslr_enabled": true,
+    "caches": [
+      {
+        "type": "Data",
+        "level": 1,
+        "size": 49152,
+        "num_sharing": 2
+      },
+      {
+        "type": "Instruction",
+        "level": 1,
+        "size": 65536,
+        "num_sharing": 2
+      },
+      {
+        "type": "Unified",
+        "level": 2,
+        "size": 2097152,
+        "num_sharing": 2
+      },
+      {
+        "type": "Unified",
+        "level": 3,
+        "size": 503316480,
+        "num_sharing": 4
+      }
+    ],
+    "load_avg": [237.082,174.392,81.8447],
+    "library_version": "v1.9.5",
+    "library_build_type": "release",
+    "json_schema_version": 1
+  },
+  "benchmarks": [
+    {
+      "name": "BM_StreamEnabled",
+      "family_index": 0,
+      "per_family_instance_index": 0,
+      "run_name": "BM_StreamEnabled",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 1223776,
+      "real_time": 4.9216034306920534e+02,
+      "cpu_time": 4.5361371198650744e+02,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_ZlogEnabled",
+      "family_index": 1,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ZlogEnabled",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 1791894,
+      "real_time": 3.5292095514579205e+02,
+      "cpu_time": 3.3371212415466539e+02,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_StreamEnabledNum",
+      "family_index": 2,
+      "per_family_instance_index": 0,
+      "run_name": "BM_StreamEnabledNum",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 1382155,
+      "real_time": 8.4659145247813979e+02,
+      "cpu_time": 6.8078545676859687e+02,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_ZlogEnabledNum",
+      "family_index": 3,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ZlogEnabledNum",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 1519782,
+      "real_time": 4.7023166612040222e+02,
+      "cpu_time": 4.4514668485348579e+02,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_StreamDisabled",
+      "family_index": 4,
+      "per_family_instance_index": 0,
+      "run_name": "BM_StreamDisabled",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 2415973,
+      "real_time": 2.2641238126426450e+02,
+      "cpu_time": 2.2464596044740546e+02,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_ZlogDisabled",
+      "family_index": 5,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ZlogDisabled",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 4047670,
+      "real_time": 1.6835451778430888e+02,
+      "cpu_time": 1.6280017738600216e+02,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_StreamWarmDisabled",
+      "family_index": 6,
+      "per_family_instance_index": 0,
+      "run_name": "BM_StreamWarmDisabled",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 2195558,
+      "real_time": 4.4972141751657040e+02,
+      "cpu_time": 4.0034218362712329e+02,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_ZlogWarmDisabled",
+      "family_index": 7,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ZlogWarmDisabled",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 2439834,
+      "real_time": 3.0453115129962987e+02,
+      "cpu_time": 2.8760832622219402e+02,
+      "time_unit": "ns"
+    }
+  ]
+}
