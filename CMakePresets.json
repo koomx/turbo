@@ -26,7 +26,6 @@
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build-ninja",
       "cacheVariables": {
-        "KMCMAKE_USE_CPM": "OFF",
         "KMCMAKE_BUILD_TEST": "ON",
         "KMCMAKE_BUILD_BENCHMARK": "ON"
       }

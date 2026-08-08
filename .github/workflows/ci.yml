@@ -16,7 +16,7 @@ jobs:
       enable-std20-ubuntu24-amd64: true
       enable-std20-ubuntu24-arm64: true
       config-command: |
-        cmake --preset=ci -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$VCPKG_CMAKE
+        cmake --preset=ci -DCMAKE_BUILD_TYPE=Release
       build-command: |
         cmake --build build-ninja -j$(nproc)
       test-command: |
