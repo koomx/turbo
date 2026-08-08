@@ -17,19 +17,21 @@
 
 #include <string>
 
-#include <turbo/macros/config.h>
-#include <turbo/flags/internal/commandlineflag.h>
 #include <string_view>
+#include <turbo/flags/internal/commandlineflag.h>
+#include <turbo/macros/config.h>
 
 namespace turbo {
 
+    std::string_view CommandLineFlag::TypeName() const {
+        return "";
+    }
+    bool CommandLineFlag::IsRetired() const {
+        return false;
+    }
+    bool CommandLineFlag::ParseFrom(std::string_view value, std::string* error) {
+        return ParseFrom(value, flags_internal::SET_FLAGS_VALUE,
+            flags_internal::kProgrammaticChange, *error);
+    }
 
-std::string_view CommandLineFlag::TypeName() const { return ""; }
-bool CommandLineFlag::IsRetired() const { return false; }
-bool CommandLineFlag::ParseFrom(std::string_view value, std::string* error) {
-  return ParseFrom(value, flags_internal::SET_FLAGS_VALUE,
-                   flags_internal::kProgrammaticChange, *error);
-}
-
-
-}  // namespace turbo
+} // namespace turbo

@@ -62,3 +62,6 @@ _skbuild
 cpm-package-lock.cmake
 refs
 
+
+# Local reference checkouts (e.g. historical tags)
+_ref/

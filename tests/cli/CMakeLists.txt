@@ -41,7 +41,7 @@ set(CLI_TESTS
         option_group_test
         extra_validators_test
         encoding_test
-        flags_test
+        flag_bind_test
 )
 
 foreach (T ${CLI_TESTS})

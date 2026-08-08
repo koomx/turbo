@@ -19,22 +19,22 @@
 #pragma once
 
 /// @defgroup project_summary Project Summary
-/// @brief xcli — header-only C++ CLI library, derived from CLI11 with gflags-compatible global flags
+/// @brief xcli — header-only C++ CLI library (CLI11 fork), binds local T& or turbo::Flag
 
 /// @brief What is xcli
 /// AI: xcli is a header-only C++ command-line parsing library forked from CLI11 (v2.6.2).
 /// AI: It inherits CLI11's full API (App, Option, subcommands, validators, formatters, config)
-/// AI: and adds a gflags-compatible global flag system (XDEFINE / XDECLARE / FlagRegistry).
+/// AI: and binds turbo::Flag<T> for process startup parameters (TURBO_FLAG / FLAGS_*).
 /// AI:
 /// AI: Key design principles:
 /// AI:   - Single `#include <turbo/cli/cli.h>` to use everything
-/// AI:   - Two API styles: local variables (CLI11-style) and global flags (gflags-style)
-/// AI:   - Zero type erasure — parsing uses templates and SFINAE
+/// AI:   - Local T& for app-local options; TURBO_FLAG for shared startup params
+/// AI:   - Flag binding writes via ParseFrom (on_validate applies)
 /// AI:   - No exceptions disabled — errors are reported via ParseError (catchable)
 /// AI:   - Header-only, no .cc to compile
 
 /// @defgroup public_api Public API Overview
-/// AI: All public types are in namespace `xcli`. Include `<xcli/cli.h>` for everything.
+/// AI: All public types are in namespace `xcli`. Include `<turbo/cli/cli.h>` for everything.
 /// @{
 
 /// @brief xcli::App — the main program / subcommand
@@ -64,6 +64,7 @@
 /// AI:   int port = 8080;
 /// AI:   app.add_option("--port,-p", port, "listening port");
 /// AI: Works with any type that supports streaming >> / <<.
+/// AI: Also binds turbo::Flag<T> (see turbo_flag_binding below).
 
 /// @brief xcli::add_flag — boolean / counter flag
 /// AI:   bool verbose = false;
@@ -103,91 +104,49 @@
 /// AI: Reads options from a config file before CLI args (CLI args win).
 /// @}
 
-/// @defgroup gflags_api GFlags Layer (XDEFINE / XDECLARE)
-/// @brief Global flag system, inspired by Google Flags (gflags).
-/// AI: Use XDEFINE/XFLAGS for flags shared across translation units.
-/// AI: Use XDECLARE to access a flag defined in another .cc file.
-///
-/// AI: The gflags layer is designed for large projects where multiple
-/// AI: translation units need to read/write the same flag. For simple
-/// AI: single-file programs, prefer `app.add_flag(local_var)` instead.
+/// @defgroup turbo_flag_binding turbo::Flag binding
+/// @brief Bind TURBO_FLAG / FLAGS_* as startup parameters.
 /// @{
 
-/// @brief XDEFINE_bool / XDEFINE_int32 / XDEFINE_uint32 / XDEFINE_int64 / XDEFINE_uint64 / XDEFINE_double / XDEFINE_string
-/// AI: Define a global flag. Each macro registers the flag in FlagRegistry at static init time.
-/// AI:   XDEFINE_bool(verbose, false, "enable verbose output");
-/// AI:   XDEFINE_string(output, "", "output file path");
-/// AI:   XDEFINE_int32(port, 8080, "listening port");
-/// AI:
-/// AI: Access the value via XFLAGS_<name>:
-/// AI:   if (XFLAGS_verbose) { ... }
-/// AI:   std::cout << XFLAGS_port;
-
-/// @brief XDECLARE_bool / XDECLARE_int32 / XDECLARE_uint32 / XDECLARE_int64 / XDECLARE_uint64 / XDECLARE_double / XDECLARE_string
-/// AI: Declare a flag defined in another .cc file:
-/// AI:   // file1.cc:
-/// AI:   XDEFINE_string(output, "", "output path");
-/// AI:
-/// AI:   // file2.cc:
-/// AI:   XDECLARE_string(output);
-/// AI:   void log() { std::ofstream out(XFLAGS_output); ... }
-/// AI:
-/// AI: Type mismatches are caught at link time (per-type namespaces).
-
-/// @brief XFLAGS_<name> — access a gflags global variable
-/// AI: Each XDEFINE creates a global variable XFLAGS_<name>.
-/// AI: Read or write it like any variable:
-/// AI:   XFLAGS_verbose = true;
-/// AI:   std::string out = XFLAGS_output;
-
-/// @brief xcli::detail::FlagRegistry — runtime flag introspection
-/// AI: Singleton map of name -> CommandFlag. Query or set flags programmatically:
-/// AI:   auto *reg = &xcli::detail::FlagRegistry::global_registry();
-/// AI:   auto *flag = reg->find("verbose");
-/// AI:   flag->set_value("true");
-/// AI:   auto all = reg->get_all_flags();
-/// AI:
-/// AI: Free function: xcli::detail::set_flag("verbose", "true");
-
-/// @brief Binding gflags to App options
-/// AI: XFLAGS_ globals can be bound to App options for CLI parsing:
-/// AI:   app.add_flag("--verbose,-V", XFLAGS_verbose, "enable verbose output");
-/// AI:   app.add_option("--port,-p", XFLAGS_port, "listening port");
-/// AI:
-/// AI: The same XFLAGS can be bound on multiple subcommands.
-/// AI: When the help text is the same, it's redundant with XDEFINE's desc;
-/// AI: you can pass "" to add_flag and the flag still works.
+/// @brief Binding turbo::Flag to App options
+/// AI:   TURBO_FLAG(int, port, 8080, "listening port");
+/// AI:   TURBO_FLAG(bool, verbose, false, "enable verbose");
+/// AI:   app.add_option("--port,-p", FLAGS_port);       // names like T&; desc/default from flag
+/// AI:   app.add_flag("--verbose,-V", FLAGS_verbose);
+/// AI: Empty description uses flag.Help(); default_str uses flag.DefaultValue().
+/// AI: Parse writes via Flag ParseFrom (on_validate applies). Local T& binding remains.
+/// AI: Read values with turbo::GetFlag(FLAGS_port).
+/// AI: App::parse(argc,argv) also sets FLAGS_argv (full argv including argv[0]).
+/// AI: ShortProgramInvocationName() is Basename(FLAGS_argv[0]).
 /// @}
 
 /// @defgroup api_reference API Reference (all public headers)
-/// @brief Single-include: `<xcli/cli.h>`
+/// @brief Single-include: `<turbo/cli/cli.h>`
 /// AI: The library is organized into these headers:
 /// AI:
-/// AI:   xcli/cli.h              — aggregator, includes everything below
-/// AI:   xcli/app.h              — App class (main entry point)
-/// AI:   xcli/option.h           — Option class and OptionDefaults
-/// AI:   xcli/flags.h            — XDEFINE/XDECLARE/FlagRegistry (gflags layer)
-/// AI:   xcli/validators.h       — Validator class + built-in validators
-/// AI:   xcli/extra_validators.h — additional validators
-/// AI:   xcli/formatter.h        — Formatter for help output
-/// AI:   xcli/config.h           — TOML/INI config file parser
-/// AI:   xcli/error.h            — Error types (ParseError, Success, etc.)
-/// AI:   xcli/split.h            — String splitting utilities
-/// AI:   xcli/string_tools.h     — String utilities
-/// AI:   xcli/type_tools.h       — Type traits
-/// AI:   xcli/macros.h           — Utility macros (XCLI_INLINE, etc.)
-/// AI:   xcli/encoding.h         — Encoding utilities
-/// AI:   xcli/argv.h             — Argument vector handling
-/// AI:   xcli/version_cli.h      — CLI version (2.6.2, tracks CLI11)
-/// AI:   xcli/version.h          — Generated build info + SIMD macros
-/// AI:   xcli/timer.h            — Simple timer utility
+/// AI:   turbo/cli/cli.h          — aggregator, includes everything below
+/// AI:   turbo/cli/app.h          — App class (main entry point; Flag binding)
+/// AI:   turbo/cli/option.h       — Option class and OptionDefaults
+/// AI:   turbo/cli/validators.h   — Validator class + built-in validators
+/// AI:   turbo/cli/extra_validators.h — additional validators
+/// AI:   turbo/cli/formatter.h    — Formatter for help output
+/// AI:   turbo/cli/config.h       — TOML/INI config file parser
+/// AI:   turbo/cli/error.h        — Error types (ParseError, Success, etc.)
+/// AI:   turbo/cli/split.h        — String splitting utilities
+/// AI:   turbo/cli/string_tools.h — String utilities
+/// AI:   turbo/cli/type_tools.h   — Type traits
+/// AI:   turbo/cli/macros.h       — Utility macros (XCLI_INLINE, etc.)
+/// AI:   turbo/cli/encoding.h     — Encoding utilities
+/// AI:   turbo/cli/argv.h         — Windows UTF-8 argv helpers (ensure_utf8)
+/// AI:   turbo/cli/version_cli.h  — CLI version (2.6.2, tracks CLI11)
+/// AI:   turbo/cli/version.h      — Generated build info + SIMD macros
+/// AI:   turbo/cli/timer.h        — Simple timer utility
 
 /// @defgroup examples Examples
 /// @brief See examples/ directory for runnable demos
 /// AI:
 /// AI:   examples/cli/simple.cc              — basic add_flag + add_option
 /// AI:   examples/cli/subcommands.cc         — nested subcommands
-/// AI:   examples/cli/xflags.cc              — gflags XDEFINE + App binding
 /// AI:   examples/cli/validators.cc          — input validation
 /// AI:   examples/cli/custom_validator.cc    — custom validator function
 /// AI:   examples/cli/formatter.cc           — custom help formatter
@@ -213,7 +172,6 @@
 /// AI:   examples/cli/modhelp.cc             — modular help
 /// AI:   examples/cli/array_option.cc        — array options
 /// AI:   examples/cli/subcom_help.cc         — subcommand help
-/// AI:   examples/cli/string_tools.cc        — (not present)
 /// AI:   examples/cli/shapes.cc              — shape example
 /// AI:   examples/cli/testEXE.cc             — test example
 /// AI:   examples/cli/minimal.cc             — minimal example
@@ -222,17 +180,14 @@
 /// AI: Build all examples:
 /// AI:   cmake -B build -DKMCMAKE_BUILD_EXAMPLES=ON
 /// AI:   cmake --build build
-/// AI:   ./build/examples/cli/xflags --verbose --port=9090
 
 /// @defgroup key_conventions Key Conventions
 /// AI:
 /// AI: - ALWAYS use `XCLI_PARSE(app, argc, argv)` instead of raw `app.parse()`
 /// AI:   to get proper error handling and exit codes.
-/// AI: - Use `XDEFINE_*` + `XFLAGS_*` when the same flag is needed in
-/// AI:   multiple .cc files. Otherwise, use local variables with add_flag().
-/// AI: - The library is namespace-clean: everything is in `xcli::`.
-/// AI: - Only `XFLAGS_*` globals leak into the global namespace (by design,
-/// AI:   matching gflags behavior).
+/// AI: - Shared startup params: `TURBO_FLAG` + `app.add_option("--x", FLAGS_x)`.
+/// AI: - Local-only params: `app.add_option("--x", local_var)`.
+/// AI: - The library is namespace-clean: CLI types are in `xcli::`; flags are `FLAGS_*`.
 /// AI: - Single include: `#include <turbo/cli/cli.h>` provides everything.
 ///
 /// @}

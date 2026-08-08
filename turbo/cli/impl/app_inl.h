@@ -12,6 +12,8 @@
 #include <turbo/cli/app.h>
 
 #include <turbo/cli/argv.h>
+#include <turbo/flags/argv.h>
+#include <turbo/flags/flag.h>
 #include <turbo/cli/encoding.h>
 
 // [CLI11:public_includes:set]
@@ -591,10 +593,7 @@ XCLI_INLINE void App::clear() {
     }
 }
 
-XCLI_INLINE void App::parse(int argc, const char *const *argv) {
-    save_parsed_args(argc, argv);
-    parse_char_t(argc, argv);
-}
+XCLI_INLINE void App::parse(int argc, const char *const *argv) { parse_char_t(argc, argv); }
 XCLI_INLINE void App::parse(int argc, const wchar_t *const *argv) { parse_char_t(argc, argv); }
 
 namespace detail {
@@ -606,16 +605,24 @@ XCLI_INLINE std::string maybe_narrow(const wchar_t *str) { return narrow(str); }
 }  // namespace detail
 
 template <class CharT> XCLI_INLINE void App::parse_char_t(int argc, const CharT *const *argv) {
+    std::vector<std::string> full_argv;
+    full_argv.reserve(static_cast<std::size_t>(argc));
+    for(int i = 0; i < argc; ++i) {
+        full_argv.emplace_back(detail::maybe_narrow(argv[i]));
+    }
+    turbo::SetFlag(&FLAGS_argv, full_argv);
+
     // If the name is not set, read from command line
     if(name_.empty() || has_automatic_name_) {
         has_automatic_name_ = true;
-        name_ = detail::maybe_narrow(argv[0]);
+        name_ = full_argv.empty() ? std::string{} : full_argv.front();
     }
 
     std::vector<std::string> args;
-    args.reserve(static_cast<std::size_t>(argc) - 1U);
-    for(auto i = static_cast<std::size_t>(argc) - 1U; i > 0U; --i)
-        args.emplace_back(detail::maybe_narrow(argv[i]));
+    args.reserve(full_argv.empty() ? 0U : full_argv.size() - 1U);
+    for(auto i = full_argv.size(); i > 1U; --i) {
+        args.emplace_back(std::move(full_argv[i - 1U]));
+    }
 
     parse(std::move(args));
 }

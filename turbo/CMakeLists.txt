@@ -90,12 +90,9 @@ set(FLAGS_SRC
         flags/internal/commandlineflag.cc
         flags/internal/flag.cc
         flags/internal/private_handle_accessor.cc
-        flags/internal/program_name.cc
-        flags/internal/usage.cc
+        flags/argv.cc
         flags/marshalling.cc
-        flags/parse.cc
         flags/reflection.cc
-        flags/usage.cc
         flags/usage_config.cc
 )
 

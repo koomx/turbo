@@ -33,6 +33,8 @@
 #include <turbo/cli/split.h>
 #include <turbo/cli/string_tools.h>
 #include <turbo/cli/type_tools.h>
+#include <turbo/flags/flag.h>
+#include <turbo/flags/reflection.h>
 
 namespace xcli {
 // [CLI11:app_hpp:verbatim]
@@ -105,6 +107,12 @@ template <typename T, enable_if_t<std::is_integral<T>::value && (sizeof(T) > 1U)
 Option *default_flag_modifiers(Option *opt) {
     return opt->multi_option_policy(MultiOptionPolicy::Sum)->default_str("0")->force_callback();
 }
+
+template <typename T>
+struct is_turbo_flag : std::false_type {};
+
+template <typename U>
+struct is_turbo_flag<turbo::flags_internal::Flag<U>> : std::true_type {};
 
 }  // namespace detail
 
@@ -590,7 +598,8 @@ class App {
     /// Add option for assigning to a variable
     template <typename AssignTo,
               typename ConvertTo = AssignTo,
-              enable_if_t<!std::is_const<ConvertTo>::value, detail::enabler> = detail::dummy>
+              enable_if_t<!std::is_const<ConvertTo>::value && !detail::is_turbo_flag<AssignTo>::value,
+                          detail::enabler> = detail::dummy>
     Option *add_option(std::string option_name,
                        AssignTo &variable,  ///< The variable to set
                        std::string option_description = "") {
@@ -610,6 +619,37 @@ class App {
         opt->type_size(detail::type_count_min<ConvertTo>::value, (std::max)(Tcount, XCcount));
         opt->expected(detail::expected_count<ConvertTo>::value);
         opt->run_callback_for_default();
+        return opt;
+    }
+
+    /// Bind a turbo::Flag<T>; names like T&, description/default from the flag when desc is empty.
+    template <typename T>
+    Option *add_option(std::string option_name,
+                       turbo::Flag<T> &flag,
+                       std::string option_description = "") {
+        const turbo::CommandLineFlag &handle = turbo::GetFlagReflectionHandle(flag);
+        if(option_description.empty()) {
+            option_description = handle.Help();
+        }
+        Option *opt = add_option(
+            option_name,
+            [&flag](const xcli::results_t &res) {
+                std::string error;
+                const std::string value = res.empty() ? std::string{} : detail::join(res, ",");
+                turbo::CommandLineFlag *cl =
+                    turbo::FindCommandLineFlag(turbo::GetFlagReflectionHandle(flag).Name());
+                if(cl == nullptr) {
+                    return false;
+                }
+                return cl->ParseFrom(value, &error);
+            },
+            option_description,
+            false,
+            [&flag]() { return std::string(turbo::GetFlagReflectionHandle(flag).CurrentValue()); });
+        opt->default_str(std::string(turbo::GetFlagReflectionHandle(flag).DefaultValue()));
+        opt->type_name(detail::type_name<T>());
+        opt->type_size(1);
+        opt->expected(1);
         return opt;
     }
 
@@ -706,6 +746,7 @@ class App {
     /// that can be converted from a string
     template <typename T,
               enable_if_t<!detail::is_mutable_container<T>::value && !std::is_const<T>::value &&
+                              !detail::is_turbo_flag<T>::value &&
                               !std::is_constructible<std::function<void(int)>, T>::value,
                           detail::enabler> = detail::dummy>
     Option *add_flag(std::string flag_name,
@@ -717,6 +758,36 @@ class App {
             return lexical_cast(res[0], flag_result);
         };
         auto *opt = _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
+        return detail::default_flag_modifiers<T>(opt);
+    }
+
+    /// Bind a turbo::Flag; description/default from the flag when desc is empty.
+    template <typename T>
+    Option *add_flag(std::string flag_name,
+                     turbo::Flag<T> &flag,
+                     std::string flag_description = "") {
+        const turbo::CommandLineFlag &handle = turbo::GetFlagReflectionHandle(flag);
+        if(flag_description.empty()) {
+            flag_description = handle.Help();
+        }
+        xcli::callback_t fun = [&flag](const xcli::results_t &res) {
+            std::string error;
+            // Presence with no token -> true for bool-like flags; otherwise use last/joined tokens.
+            std::string value;
+            if(res.empty()) {
+                value = "true";
+            } else {
+                value = detail::join(res, ",");
+            }
+            turbo::CommandLineFlag *cl =
+                turbo::FindCommandLineFlag(turbo::GetFlagReflectionHandle(flag).Name());
+            if(cl == nullptr) {
+                return false;
+            }
+            return cl->ParseFrom(value, &error);
+        };
+        auto *opt = _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
+        opt->default_str(std::string(turbo::GetFlagReflectionHandle(flag).DefaultValue()));
         return detail::default_flag_modifiers<T>(opt);
     }
 

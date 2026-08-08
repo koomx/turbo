@@ -31,8 +31,8 @@ set(FLAGS_TESTS
         commandlineflag_test
         config_test
         flag_test
+        flags_validate_test
         marshalling_test
-        parse_test
         reflection_test
         usage_config_test
 )

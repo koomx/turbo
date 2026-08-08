@@ -20,8 +20,8 @@
 #include <vector>
 
 #include <turbo/flags/flag.h>
+#include <turbo/flags/internal/registry.h>
 #include <turbo/flags/marshalling.h>
-#include <turbo/flags/parse.h>
 #include <turbo/flags/reflection.h>
 #include <string_view>
 #include <turbo/time/time.h>
@@ -225,11 +225,8 @@ void Accumulate(bool& a, const UDT& f) {
 BENCHMARKED_TYPES(BM_ManyGetFlag)
 
 void BM_ThreadedFindCommandLineFlag(benchmark::State& state) {
-  char dummy[] = "dummy";
-  char* argv[] = {dummy};
-  // We need to ensure that flags have been parsed. That is where the registry
-  // is finalized.
-  turbo::ParseCommandLine(1, argv);
+  // Finalize registry for the fast lookup path used after startup.
+  turbo::flags_internal::FinalizeRegistry();
 
   while (state.KeepRunningBatch(kNumFlags)) {
     for (auto* flag_ptr : FlagPtrs_bool) {

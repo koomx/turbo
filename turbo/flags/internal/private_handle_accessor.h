@@ -19,46 +19,46 @@
 #include <memory>
 #include <string>
 
-#include <turbo/macros/config.h>
+#include <string_view>
 #include <turbo/flags/commandlineflag.h>
 #include <turbo/flags/internal/commandlineflag.h>
-#include <string_view>
+#include <turbo/macros/config.h>
 
 namespace turbo {
 
-namespace flags_internal {
+    namespace flags_internal {
 
-// This class serves as a trampoline to access private methods of
-// CommandLineFlag. This class is intended for use exclusively internally inside
-// of the Abseil Flags implementation.
-class PrivateHandleAccessor {
- public:
-  // Access to CommandLineFlag::TypeId.
-  static FlagFastTypeId TypeId(const CommandLineFlag& flag);
+        // This class serves as a trampoline to access private methods of
+        // CommandLineFlag. This class is intended for use exclusively internally inside
+        // of the Abseil Flags implementation.
+        class PrivateHandleAccessor {
+        public:
+            // Access to CommandLineFlag::TypeId.
+            static FlagFastTypeId TypeId(const CommandLineFlag& flag);
 
-  // Access to CommandLineFlag::SaveState.
-  static std::unique_ptr<FlagStateInterface> SaveState(CommandLineFlag& flag);
+            // Access to CommandLineFlag::SaveState.
+            static std::unique_ptr<FlagStateInterface> SaveState(CommandLineFlag& flag);
 
-  // Access to CommandLineFlag::IsSpecifiedOnCommandLine.
-  static bool IsSpecifiedOnCommandLine(const CommandLineFlag& flag);
+            // Access to CommandLineFlag::IsSpecifiedOnCommandLine.
+            static bool IsSpecifiedOnCommandLine(const CommandLineFlag& flag);
 
-  // Access to CommandLineFlag::ValidateInputValue.
-  static bool ValidateInputValue(const CommandLineFlag& flag,
-                                 std::string_view value);
+            // Access to CommandLineFlag::ValidateInputValue.
+            static bool ValidateInputValue(const CommandLineFlag& flag,
+                std::string_view value);
 
-  // Access to CommandLineFlag::CheckDefaultValueParsingRoundtrip.
-  static void CheckDefaultValueParsingRoundtrip(const CommandLineFlag& flag);
+            // Access to CommandLineFlag::CheckDefaultValueParsingRoundtrip.
+            static void CheckDefaultValueParsingRoundtrip(const CommandLineFlag& flag);
 
-  static bool ParseFrom(CommandLineFlag& flag, std::string_view value,
-                        flags_internal::FlagSettingMode set_mode,
-                        flags_internal::ValueSource source, std::string& error);
+            static bool ParseFrom(CommandLineFlag& flag, std::string_view value,
+                flags_internal::FlagSettingMode set_mode,
+                flags_internal::ValueSource source, std::string& error);
 
-  // Access to CommandLineFlag::TypeName.
-  static std::string_view TypeName(const CommandLineFlag& flag);
-};
+            // Access to CommandLineFlag::TypeName.
+            static std::string_view TypeName(const CommandLineFlag& flag);
+        };
 
-}  // namespace flags_internal
+    } // namespace flags_internal
 
-}  // namespace turbo
+} // namespace turbo
 
-#endif  // TURBO_FLAGS_INTERNAL_PRIVATE_HANDLE_ACCESSOR_H_
+#endif // TURBO_FLAGS_INTERNAL_PRIVATE_HANDLE_ACCESSOR_H_

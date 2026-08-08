@@ -50,7 +50,7 @@
 #include <gtest/gtest.h>
 #include <turbo/base/internal/strerror.h>
 #include <turbo/base/log_severity.h>
-#include <turbo/flags/internal/program_name.h>
+#include <turbo/flags/argv.h>
 #include <turbo/log/kcheck.h>
 #include <tests/log/internal/test_helpers.h>
 #include <turbo/log/klog.h>

@@ -17,7 +17,6 @@ set(FLAGS_INTERNAL_TESTS
         path_util_test
         program_name_test
         sequence_lock_test
-        usage_test
 )
 
 foreach (case IN LISTS FLAGS_INTERNAL_TESTS)

@@ -30,7 +30,6 @@
 #include <turbo/flags/declare.h>
 #include <turbo/flags/internal/flag.h>
 #include <turbo/flags/marshalling.h>
-#include <turbo/flags/parse.h>
 #include <turbo/flags/reflection.h>
 #include <turbo/flags/usage_config.h>
 #include <turbo/numeric/int128.h>
@@ -178,7 +177,7 @@ bool TestConstructionFor(const turbo::Flag<T>& f1, turbo::Flag<T>& f2) {
   EXPECT_EQ(turbo::GetFlagReflectionHandle(f1).Filename(), "file");
 
   flags::FlagRegistrar<T, false>(TURBO_FLAG_IMPL_FLAG_PTR(f2), nullptr)
-      .OnUpdate(TestCallback);
+      .on_update(TestCallback);
 
   EXPECT_EQ(turbo::GetFlagReflectionHandle(f2).Name(), "f2");
   EXPECT_EQ(turbo::GetFlagReflectionHandle(f2).Help(), "dynamic help");
@@ -266,7 +265,7 @@ TEST_F(FlagTest, TestFlagDeclaration) {
 #if TURBO_FLAGS_STRIP_NAMES
 // The intent of this helper struct and an expression below is to make sure that
 // in the configuration where TURBO_FLAGS_STRIP_NAMES=1 registrar construction
-// (in cases of no Tail calls like OnUpdate) is constexpr and thus can and
+// (in cases of no Tail calls like on_update) is constexpr and thus can and
 // should be completely optimized away, thus avoiding the cost/overhead of
 // static initializers.
 struct VerifyConsteval {
@@ -740,9 +739,9 @@ void TestFlagCB();
 
 }  // namespace
 
-TURBO_FLAG(int, test_flag_with_cb, 100, "").OnUpdate(TestFlagCB);
+TURBO_FLAG(int, test_flag_with_cb, 100, "").on_update(TestFlagCB);
 
-TURBO_FLAG(int, test_flag_with_lambda_cb, 200, "").OnUpdate([]() {
+TURBO_FLAG(int, test_flag_with_lambda_cb, 200, "").on_update([]() {
   cb_test_value = turbo::GetFlag(FLAGS_test_flag_with_lambda_cb) +
                   turbo::GetFlag(FLAGS_test_flag_with_cb);
 });
@@ -1089,8 +1088,10 @@ TEST_F(FlagTest, TestNonTriviallyCopyableGetSetSet) {
 TEST_F(FlagTest, TestNonTriviallyCopyableParseSet) {
   TestExpectedLeaks<2>(
       [&] {
-        const char* in_argv[] = {"testbin", "--test_flag_ntc_udt2=A"};
-        turbo::ParseCommandLine(2, const_cast<char**>(in_argv));
+        std::string error;
+        auto* cl = turbo::FindCommandLineFlag("test_flag_ntc_udt2");
+        ASSERT_NE(cl, nullptr);
+        ASSERT_TRUE(cl->ParseFrom("A", &error)) << error;
       },
       0);
 
@@ -1124,8 +1125,10 @@ auto premain_utd4_get =
 TEST_F(FlagTest, TestNonTriviallyCopyableGetBeforeMainParseGet) {
   TestExpectedLeaks<4>(
       [&] {
-        const char* in_argv[] = {"testbin", "--test_flag_ntc_udt4=C"};
-        turbo::ParseCommandLine(2, const_cast<char**>(in_argv));
+        std::string error;
+        auto* cl = turbo::FindCommandLineFlag("test_flag_ntc_udt4");
+        ASSERT_NE(cl, nullptr);
+        ASSERT_TRUE(cl->ParseFrom("C", &error)) << error;
       },
       1);
 
@@ -1152,8 +1155,10 @@ auto premain_utd5_set = (TestExpectedLeaks<5>(
 TEST_F(FlagTest, TestNonTriviallyCopyableSetParseGet) {
   TestExpectedLeaks<5>(
       [&] {
-        const char* in_argv[] = {"testbin", "--test_flag_ntc_udt5=C"};
-        turbo::ParseCommandLine(2, const_cast<char**>(in_argv));
+        std::string error;
+        auto* cl = turbo::FindCommandLineFlag("test_flag_ntc_udt5");
+        ASSERT_NE(cl, nullptr);
+        ASSERT_TRUE(cl->ParseFrom("C", &error)) << error;
       },
       0);
 

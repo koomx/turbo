@@ -33,109 +33,112 @@
 #include <string>
 #include <type_traits>
 
-#include <turbo/macros/config.h>
+#include <string_view>
 #include <turbo/base/nullability.h>
 #include <turbo/flags/commandlineflag.h>
 #include <turbo/flags/config.h>
 #include <turbo/flags/internal/flag.h>
 #include <turbo/flags/internal/registry.h>
-#include <string_view>
+#include <turbo/macros/config.h>
 
 namespace turbo {
 
+    // Flag
+    //
+    // An `turbo::Flag` holds a command-line flag value, providing a runtime
+    // parameter to a binary. Such flags should be defined in the global namespace
+    // and (preferably) in the module containing the binary's `main()` function.
+    //
+    // You should not construct and cannot use the `turbo::Flag` type directly;
+    // instead, you should declare flags using the `TURBO_DECLARE_FLAG()` macro
+    // within a header file, and define your flag using `TURBO_FLAG()` within your
+    // header's associated `.cc` file. Such flags will be named `FLAGS_name`.
+    //
+    // Example:
+    //
+    //    .h file
+    //
+    //      // Declares usage of a flag named "FLAGS_count"
+    //      TURBO_DECLARE_FLAG(int, count);
+    //
+    //    .cc file
+    //
+    //      // Defines a flag named "FLAGS_count" with a default `int` value of 0.
+    //      TURBO_FLAG(int, count, 0, "Count of items to process");
+    //
+    // No public methods of `turbo::Flag<T>` are part of the Abseil Flags API.
+    //
+    // For type support of Abseil Flags, see the marshalling.h header file, which
+    // discusses supported standard types, optional flags, and additional Abseil
+    // type support.
 
-// Flag
-//
-// An `turbo::Flag` holds a command-line flag value, providing a runtime
-// parameter to a binary. Such flags should be defined in the global namespace
-// and (preferably) in the module containing the binary's `main()` function.
-//
-// You should not construct and cannot use the `turbo::Flag` type directly;
-// instead, you should declare flags using the `TURBO_DECLARE_FLAG()` macro
-// within a header file, and define your flag using `TURBO_FLAG()` within your
-// header's associated `.cc` file. Such flags will be named `FLAGS_name`.
-//
-// Example:
-//
-//    .h file
-//
-//      // Declares usage of a flag named "FLAGS_count"
-//      TURBO_DECLARE_FLAG(int, count);
-//
-//    .cc file
-//
-//      // Defines a flag named "FLAGS_count" with a default `int` value of 0.
-//      TURBO_FLAG(int, count, 0, "Count of items to process");
-//
-// No public methods of `turbo::Flag<T>` are part of the Abseil Flags API.
-//
-// For type support of Abseil Flags, see the marshalling.h header file, which
-// discusses supported standard types, optional flags, and additional Abseil
-// type support.
+    template <typename T>
+    using Flag = flags_internal::Flag<T>;
 
-template <typename T>
-using Flag = flags_internal::Flag<T>;
+    // GetFlag()
+    //
+    // Returns the value (of type `T`) of an `turbo::Flag<T>` instance, by value. Do
+    // not construct an `turbo::Flag<T>` directly and call `turbo::GetFlag()`;
+    // instead, refer to flag's constructed variable name (e.g. `FLAGS_name`).
+    // Because this function returns by value and not by reference, it is
+    // thread-safe, but note that the operation may be expensive; as a result, avoid
+    // `turbo::GetFlag()` within any tight loops.
+    //
+    // Example:
+    //
+    //   // FLAGS_count is a Flag of type `int`
+    //   int my_count = turbo::GetFlag(FLAGS_count);
+    //
+    //   // FLAGS_firstname is a Flag of type `std::string`
+    //   std::string first_name = turbo::GetFlag(FLAGS_firstname);
+    template <typename T>
+    [[nodiscard]] T GetFlag(const turbo::Flag<T>& flag) {
+        return flags_internal::FlagImplPeer::InvokeGet<T>(flag);
+    }
 
-// GetFlag()
-//
-// Returns the value (of type `T`) of an `turbo::Flag<T>` instance, by value. Do
-// not construct an `turbo::Flag<T>` directly and call `turbo::GetFlag()`;
-// instead, refer to flag's constructed variable name (e.g. `FLAGS_name`).
-// Because this function returns by value and not by reference, it is
-// thread-safe, but note that the operation may be expensive; as a result, avoid
-// `turbo::GetFlag()` within any tight loops.
-//
-// Example:
-//
-//   // FLAGS_count is a Flag of type `int`
-//   int my_count = turbo::GetFlag(FLAGS_count);
-//
-//   // FLAGS_firstname is a Flag of type `std::string`
-//   std::string first_name = turbo::GetFlag(FLAGS_firstname);
-template <typename T>
-[[nodiscard]] T GetFlag(const turbo::Flag<T>& flag) {
-  return flags_internal::FlagImplPeer::InvokeGet<T>(flag);
-}
+    // SetFlag()
+    //
+    // Sets the value of an `turbo::Flag` to the value `v`. Do not construct an
+    // `turbo::Flag<T>` directly and call `turbo::SetFlag()`; instead, use the
+    // flag's variable name (e.g. `FLAGS_name`). This function is
+    // thread-safe, but is potentially expensive. Avoid setting flags in general,
+    // but especially within performance-critical code.
+    //
+    // Returns false if a user `on_validate` callback rejects `v`; the flag is
+    // left unchanged. When `error` is non-null, a failure message may be written.
+    // Omitting `error` (default nullptr) skips error text output.
+    template <typename T>
+    bool SetFlag(turbo::Flag<T>* turbo_nonnull flag, const T& v,
+                 std::string* error) {
+        return flags_internal::FlagImplPeer::InvokeSet(*flag, v, error);
+    }
 
-// SetFlag()
-//
-// Sets the value of an `turbo::Flag` to the value `v`. Do not construct an
-// `turbo::Flag<T>` directly and call `turbo::SetFlag()`; instead, use the
-// flag's variable name (e.g. `FLAGS_name`). This function is
-// thread-safe, but is potentially expensive. Avoid setting flags in general,
-// but especially within performance-critical code.
-template <typename T>
-void SetFlag(turbo::Flag<T>* turbo_nonnull flag, const T& v) {
-  flags_internal::FlagImplPeer::InvokeSet(*flag, v);
-}
+    // Overload of `SetFlag()` to allow callers to pass in a value that is
+    // convertible to `T`. E.g., use this overload to pass a "const char*" when `T`
+    // is `std::string`.
+    template <typename T, typename V>
+    bool SetFlag(turbo::Flag<T>* turbo_nonnull flag, const V& v,
+                 std::string* error) {
+        T value(v);
+        return flags_internal::FlagImplPeer::InvokeSet(*flag, value, error);
+    }
 
-// Overload of `SetFlag()` to allow callers to pass in a value that is
-// convertible to `T`. E.g., use this overload to pass a "const char*" when `T`
-// is `std::string`.
-template <typename T, typename V>
-void SetFlag(turbo::Flag<T>* turbo_nonnull flag, const V& v) {
-  T value(v);
-  flags_internal::FlagImplPeer::InvokeSet(*flag, value);
-}
+    // GetFlagReflectionHandle()
+    //
+    // Returns the reflection handle corresponding to specified Abseil Flag
+    // instance. Use this handle to access flag's reflection information, like name,
+    // location, default value etc.
+    //
+    // Example:
+    //
+    //   std::string = turbo::GetFlagReflectionHandle(FLAGS_count).DefaultValue();
 
-// GetFlagReflectionHandle()
-//
-// Returns the reflection handle corresponding to specified Abseil Flag
-// instance. Use this handle to access flag's reflection information, like name,
-// location, default value etc.
-//
-// Example:
-//
-//   std::string = turbo::GetFlagReflectionHandle(FLAGS_count).DefaultValue();
+    template <typename T>
+    const CommandLineFlag& GetFlagReflectionHandle(const turbo::Flag<T>& f) {
+        return flags_internal::FlagImplPeer::InvokeReflect(f);
+    }
 
-template <typename T>
-const CommandLineFlag& GetFlagReflectionHandle(const turbo::Flag<T>& f) {
-  return flags_internal::FlagImplPeer::InvokeReflect(f);
-}
-
-
-}  // namespace turbo
-
+} // namespace turbo
 
 // TURBO_FLAG()
 //
@@ -165,13 +168,13 @@ const CommandLineFlag& GetFlagReflectionHandle(const turbo::Flag<T>& f) {
 // Note: do not construct objects of type `turbo::Flag<T>` directly. Only use the
 // `TURBO_FLAG()` macro for such construction.
 #define TURBO_FLAG(Type, name, default_value, help) \
-  TURBO_FLAG_IMPL(Type, name, default_value, help)
+    TURBO_FLAG_IMPL(Type, name, default_value, help)
 
-// TURBO_FLAG().OnUpdate()
+// TURBO_FLAG().on_update()
 //
 // Defines a flag of type `T` with a callback attached:
 //
-//   TURBO_FLAG(T, name, default_value, help).OnUpdate(callback);
+//   TURBO_FLAG(T, name, default_value, help).on_update(callback);
 //
 // `callback` should be convertible to `void (*)()`.
 //
@@ -186,7 +189,22 @@ const CommandLineFlag& GetFlagReflectionHandle(const turbo::Flag<T>& f) {
 // that eventually the flag value and the derived data structure will be
 // consistent.
 //
-// Note: TURBO_FLAG.OnUpdate() does not have a public definition. Hence, this
+// Note: TURBO_FLAG.on_update() does not have a public definition. Hence, this
+// comment serves as its API documentation.
+
+// TURBO_FLAG().on_validate()
+//
+// Defines a flag of type `T` with a typed validator attached:
+//
+//   TURBO_FLAG(T, name, default_value, help).on_validate(validator);
+//
+// `validator` should be convertible to
+// `bool (*)(const T&, std::string*) noexcept`.
+//
+// Invoked for both string sets (ParseFrom / command line, after parsing to T)
+// and typed SetFlag. If `validator` returns false, the flag is left unchanged.
+//
+// Note: TURBO_FLAG.on_validate() does not have a public definition. Hence, this
 // comment serves as its API documentation.
 
 // -----------------------------------------------------------------------------
@@ -195,26 +213,26 @@ const CommandLineFlag& GetFlagReflectionHandle(const turbo::Flag<T>& f) {
 
 // TURBO_FLAG_IMPL macro definition conditional on TURBO_FLAGS_STRIP_NAMES
 #define TURBO_FLAG_IMPL_FLAG_PTR(flag) flag
-#define TURBO_FLAG_IMPL_HELP_ARG(name)                      \
-  turbo::flags_internal::HelpArg<TurboFlagHelpGenFor##name>( \
-      FLAGS_help_storage_##name)
+#define TURBO_FLAG_IMPL_HELP_ARG(name)                         \
+    turbo::flags_internal::HelpArg<TurboFlagHelpGenFor##name>( \
+        FLAGS_help_storage_##name)
 #define TURBO_FLAG_IMPL_DEFAULT_ARG(Type, name) \
-  turbo::flags_internal::DefaultArg<Type, TurboFlagDefaultGenFor##name>(0)
+    turbo::flags_internal::DefaultArg<Type, TurboFlagDefaultGenFor##name>(0)
 
 #if TURBO_FLAGS_STRIP_NAMES
 #define TURBO_FLAG_IMPL_FLAGNAME(txt) ""
 #define TURBO_FLAG_IMPL_TYPENAME(txt) ""
 #define TURBO_FLAG_IMPL_FILENAME() ""
-#define TURBO_FLAG_IMPL_REGISTRAR(T, flag)                                      \
-  turbo::flags_internal::FlagRegistrar<T, false>(TURBO_FLAG_IMPL_FLAG_PTR(flag), \
-                                                nullptr)
+#define TURBO_FLAG_IMPL_REGISTRAR(T, flag)                                         \
+    turbo::flags_internal::FlagRegistrar<T, false>(TURBO_FLAG_IMPL_FLAG_PTR(flag), \
+        nullptr)
 #else
 #define TURBO_FLAG_IMPL_FLAGNAME(txt) txt
 #define TURBO_FLAG_IMPL_TYPENAME(txt) txt
 #define TURBO_FLAG_IMPL_FILENAME() __FILE__
-#define TURBO_FLAG_IMPL_REGISTRAR(T, flag)                                     \
-  turbo::flags_internal::FlagRegistrar<T, true>(TURBO_FLAG_IMPL_FLAG_PTR(flag), \
-                                               __FILE__)
+#define TURBO_FLAG_IMPL_REGISTRAR(T, flag)                                        \
+    turbo::flags_internal::FlagRegistrar<T, true>(TURBO_FLAG_IMPL_FLAG_PTR(flag), \
+        __FILE__)
 #endif
 
 // TURBO_FLAG_IMPL macro definition conditional on TURBO_FLAGS_STRIP_HELP
@@ -233,48 +251,46 @@ const CommandLineFlag& GetFlagReflectionHandle(const turbo::Flag<T>& f) {
 // TODO(rogeeff): place these generated structs into local namespace and apply
 // TURBO_INTERNAL_UNIQUE_SHORT_NAME.
 // TODO(rogeeff): Apply __attribute__((nodebug)) to FLAGS_help_storage_##name
-#define TURBO_FLAG_IMPL_DECLARE_HELP_WRAPPER(name, txt)                       \
-  struct TurboFlagHelpGenFor##name {                                          \
-    /* The expression is run in the caller as part of the   */               \
-    /* default value argument. That keeps temporaries alive */               \
-    /* long enough for NonConst to work correctly.          */               \
-    static constexpr std::string_view Value(                                \
-        std::string_view turbo_flag_help KUMO_ATTRIBUTE_LIFETIME_BOUND  =     \
-            TURBO_FLAG_IMPL_FLAGHELP(txt)) {                                  \
-      return turbo_flag_help;                                                 \
-    }                                                                        \
-    static std::string NonConst() { return std::string(Value()); }           \
-  };                                                                         \
-  constexpr auto FLAGS_help_storage_##name KUMO_UNIQUE_SMALL_NAME() \
-      KUMO_ATTRIBUTE_SECTION_VARIABLE(flags_help_cold) =                     \
-          turbo::flags_internal::HelpStringAsArray<TurboFlagHelpGenFor##name>( \
-              0);
+#define TURBO_FLAG_IMPL_DECLARE_HELP_WRAPPER(name, txt)                                                                         \
+    struct TurboFlagHelpGenFor##name {                                                                                          \
+        /* The expression is run in the caller as part of the   */                                                              \
+        /* default value argument. That keeps temporaries alive */                                                              \
+        /* long enough for NonConst to work correctly.          */                                                              \
+        static constexpr std::string_view Value(                                                                                \
+            std::string_view turbo_flag_help KUMO_ATTRIBUTE_LIFETIME_BOUND = TURBO_FLAG_IMPL_FLAGHELP(txt)) {                   \
+            return turbo_flag_help;                                                                                             \
+        }                                                                                                                       \
+        static std::string NonConst() { return std::string(Value()); }                                                          \
+    };                                                                                                                          \
+    constexpr auto FLAGS_help_storage_##name KUMO_UNIQUE_SMALL_NAME()                                                           \
+        KUMO_ATTRIBUTE_SECTION_VARIABLE(flags_help_cold) = turbo::flags_internal::HelpStringAsArray<TurboFlagHelpGenFor##name>( \
+            0);
 
-#define TURBO_FLAG_IMPL_DECLARE_DEF_VAL_WRAPPER(name, Type, default_value)     \
-  struct TurboFlagDefaultGenFor##name {                                        \
-    Type value = turbo::flags_internal::InitDefaultValue<Type>(default_value); \
-    static void Gen(void* turbo_flag_default_loc) {                            \
-      new (turbo_flag_default_loc) Type(TurboFlagDefaultGenFor##name{}.value);  \
-    }                                                                         \
-  };
+#define TURBO_FLAG_IMPL_DECLARE_DEF_VAL_WRAPPER(name, Type, default_value)             \
+    struct TurboFlagDefaultGenFor##name {                                              \
+        Type value = turbo::flags_internal::InitDefaultValue<Type>(default_value);     \
+        static void Gen(void* turbo_flag_default_loc) {                                \
+            new (turbo_flag_default_loc) Type(TurboFlagDefaultGenFor##name { }.value); \
+        }                                                                              \
+    };
 
 // TURBO_FLAG_IMPL
 //
 // Note: Name of registrar object is not arbitrary. It is used to "grab"
 // global name for FLAGS_no<flag_name> symbol, thus preventing the possibility
 // of defining two flags with names foo and nofoo.
-#define TURBO_FLAG_IMPL(Type, name, default_value, help)               \
-  extern ::turbo::Flag<Type> FLAGS_##name;                             \
-  namespace turbo /* block flags in namespaces */ {}                   \
-  TURBO_FLAG_IMPL_DECLARE_DEF_VAL_WRAPPER(name, Type, default_value)   \
-  TURBO_FLAG_IMPL_DECLARE_HELP_WRAPPER(name, help)                     \
-  KUMO_CONST_INIT turbo::Flag<Type> FLAGS_##name{                      \
-      TURBO_FLAG_IMPL_FLAGNAME(#name), TURBO_FLAG_IMPL_TYPENAME(#Type), \
-      TURBO_FLAG_IMPL_FILENAME(), TURBO_FLAG_IMPL_HELP_ARG(name),       \
-      TURBO_FLAG_IMPL_DEFAULT_ARG(Type, name)};                        \
-  extern turbo::flags_internal::FlagRegistrarEmpty FLAGS_no##name;     \
-  turbo::flags_internal::FlagRegistrarEmpty FLAGS_no##name =           \
-      TURBO_FLAG_IMPL_REGISTRAR(Type, FLAGS_##name)
+#define TURBO_FLAG_IMPL(Type, name, default_value, help)                  \
+    extern ::turbo::Flag<Type> FLAGS_##name;                              \
+    namespace turbo /* block flags in namespaces */ { }                   \
+    TURBO_FLAG_IMPL_DECLARE_DEF_VAL_WRAPPER(name, Type, default_value)    \
+    TURBO_FLAG_IMPL_DECLARE_HELP_WRAPPER(name, help)                      \
+    KUMO_CONST_INIT turbo::Flag<Type> FLAGS_##name {                      \
+        TURBO_FLAG_IMPL_FLAGNAME(#name), TURBO_FLAG_IMPL_TYPENAME(#Type), \
+        TURBO_FLAG_IMPL_FILENAME(), TURBO_FLAG_IMPL_HELP_ARG(name),       \
+        TURBO_FLAG_IMPL_DEFAULT_ARG(Type, name)                           \
+    };                                                                    \
+    extern turbo::flags_internal::FlagRegistrarEmpty FLAGS_no##name;      \
+    turbo::flags_internal::FlagRegistrarEmpty FLAGS_no##name = TURBO_FLAG_IMPL_REGISTRAR(Type, FLAGS_##name)
 
 // TURBO_RETIRED_FLAG
 //
@@ -296,10 +312,9 @@ const CommandLineFlag& GetFlagReflectionHandle(const turbo::Flag<T>& f) {
 // `default_value` and `explanation` are unused.
 // TODO(rogeeff): replace RETIRED_FLAGS with FLAGS once forward declarations of
 // retired flags are cleaned up.
-#define TURBO_RETIRED_FLAG(type, name, default_value, explanation)      \
-  static turbo::flags_internal::RetiredFlag<type> RETIRED_FLAGS_##name; \
-  KUMO_ATTRIBUTE_UNUSED static const auto RETIRED_FLAGS_REG_##name =   \
-      (RETIRED_FLAGS_##name.Retire(#name),                             \
-       ::turbo::flags_internal::FlagRegistrarEmpty{})
+#define TURBO_RETIRED_FLAG(type, name, default_value, explanation)                                          \
+    static turbo::flags_internal::RetiredFlag<type> RETIRED_FLAGS_##name;                                   \
+    KUMO_ATTRIBUTE_UNUSED static const auto RETIRED_FLAGS_REG_##name = (RETIRED_FLAGS_##name.Retire(#name), \
+        ::turbo::flags_internal::FlagRegistrarEmpty { })
 
-#endif  // TURBO_FLAGS_FLAG_H_
+#endif // TURBO_FLAGS_FLAG_H_

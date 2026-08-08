@@ -17,23 +17,22 @@
 #include <string>
 #include <vector>
 
-#include <gtest/gtest.h>
 #include <turbo/flags/flag.h>
-#include <turbo/flags/reflection.h>
+#include <turbo/flags/internal/path_util.h>
 
-namespace {
+TURBO_FLAG(std::vector<std::string>, argv, {},
+           "Process argv (set by xcli::App::parse or manually)");
 
-TEST(ArgvFlagTest, ShortNameFromArgv) {
-  turbo::FlagSaver fs;
-  EXPECT_EQ(turbo::flags_internal::ShortProgramInvocationName(), "UNKNOWN");
+namespace turbo {
+namespace flags_internal {
 
-  turbo::SetFlag(&FLAGS_argv, std::vector<std::string>{"a/b/my_test", "--x"});
-  EXPECT_EQ(turbo::flags_internal::ShortProgramInvocationName(), "my_test");
-  EXPECT_EQ(turbo::GetFlag(FLAGS_argv).size(), 2u);
-  EXPECT_EQ(turbo::GetFlag(FLAGS_argv)[0], "a/b/my_test");
-
-  turbo::SetFlag(&FLAGS_argv, std::vector<std::string>{"urbo/aaa/b"});
-  EXPECT_EQ(turbo::flags_internal::ShortProgramInvocationName(), "b");
+std::string ShortProgramInvocationName() {
+    const auto& args = turbo::GetFlag(FLAGS_argv);
+    if (args.empty()) {
+        return "UNKNOWN";
+    }
+    return std::string(flags_internal::Basename(args[0]));
 }
 
-}  // namespace
+}  // namespace flags_internal
+}  // namespace turbo

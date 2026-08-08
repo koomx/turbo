@@ -86,6 +86,11 @@ cord = "algorithm, base, bits, crc, functional, hash, macros, memory, meta, stri
 flags = "algorithm, base, bits, format, macros, memory, meta, numeric, strings, utility"
 log = "base, bits, cleanup, debugging, format, functional, hash, macros, meta, strings, time, types, utility"
 
+#######################################
+# L10 — CLI (command-line frontend; binds turbo::Flag)
+#######################################
+cli = "base, flags, format, macros, strings, utility"
+
 # Modules temporarily skipped by `check` (still visible to `list`).
 [unchecked]
 # (none)
