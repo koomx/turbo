@@ -1,0 +1,34 @@
+{
+  "title": "turbo log benchmark",
+  "unit": "ns",
+  "samples": [
+    {
+      "name": "BM_SuccessfulBinaryCheck",
+      "value": 0.057
+    },
+    {
+      "name": "BM_SuccessfulUnaryCheck",
+      "value": 0.058
+    },
+    {
+      "name": "BM_DisabledLogOverhead",
+      "value": 145.068
+    },
+    {
+      "name": "BM_EnabledLogOverhead",
+      "value": 410.272
+    },
+    {
+      "name": "BM_VlogIsOnOverhead",
+      "value": 2.818
+    },
+    {
+      "name": "BM_VlogIsNotOnOverhead",
+      "value": 0.229
+    },
+    {
+      "name": "BM_LogEveryNOverhead",
+      "value": 9.909
+    }
+  ]
+}
