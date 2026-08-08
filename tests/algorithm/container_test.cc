@@ -40,7 +40,6 @@
 #include <turbo/macros/config.h>
 #include <turbo/memory/memory.h>
 #include <turbo/meta/type_traits.h>
-#include <turbo/random/random.h>
 #include <turbo/types/span.h>
 
 #ifdef __cpp_lib_span
@@ -1503,14 +1502,14 @@ TEST(MutatingTest, RotateCopy) {
 
 TEST(MutatingTest, Shuffle) {
   std::vector<int> actual = {1, 2, 3, 4, 5};
-  turbo::c_shuffle(actual, turbo::InsecureBitGen());
+  turbo::c_shuffle(actual, std::mt19937());
   EXPECT_THAT(actual, UnorderedElementsAre(1, 2, 3, 4, 5));
 }
 
 TEST(MutatingTest, Sample) {
   std::vector<int> actual;
   turbo::c_sample(std::vector<int>{1, 2, 3, 4, 5}, std::back_inserter(actual), 3,
-                 turbo::InsecureBitGen());
+                 std::mt19937());
   EXPECT_THAT(actual, IsSubsetOf({1, 2, 3, 4, 5}));
   EXPECT_THAT(actual, SizeIs(3));
 }

@@ -43,7 +43,6 @@
 #include <turbo/cleanup/cleanup.h>
 #include <turbo/log/klog.h>
 #include <turbo/numeric/int128.h>
-#include <turbo/random/random.h>
 #include <tests/strings/internal/numbers_test_common.h>
 #include <turbo/format/ostringstream.h>
 #include <turbo/strings/internal/pow10_helper.h>
@@ -1442,7 +1441,7 @@ const size_t kNumRandomTests = 10000;
 template <typename IntType,
           bool parse_func(std::string_view, IntType* value, int base)>
 void test_random_integer_parse_base() {
-  turbo::InsecureBitGen rng;
+  std::mt19937 rng;
   std::uniform_int_distribution<IntType> random_int(
       std::numeric_limits<IntType>::min());
   std::uniform_int_distribution<int> random_base(2, 36);
@@ -1499,7 +1498,7 @@ TEST(stringtest, safe_strtou128_random) {
   using IntType = turbo::uint128;
   constexpr auto parse_func = &turbo::numbers_internal::safe_strtou128_base;
 
-  turbo::InsecureBitGen rng;
+  std::mt19937 rng;
   std::uniform_int_distribution<uint64_t> random_uint64(
       std::numeric_limits<uint64_t>::min());
   std::uniform_int_distribution<int> random_base(2, 36);
@@ -1533,7 +1532,7 @@ TEST(stringtest, safe_strto128_random) {
   using IntType = turbo::int128;
   constexpr auto parse_func = &turbo::numbers_internal::safe_strto128_base;
 
-  turbo::InsecureBitGen rng;
+  std::mt19937 rng;
   std::uniform_int_distribution<int64_t> random_int64(
       std::numeric_limits<int64_t>::min());
   std::uniform_int_distribution<uint64_t> random_uint64(
@@ -2354,11 +2353,10 @@ TEST(FastHexToBufferZeroPad16, Smoke) {
   TestFastHexToBufferZeroPad16(std::numeric_limits<uint64_t>::max());
   TestFastHexToBufferZeroPad16(std::numeric_limits<int64_t>::min());
   TestFastHexToBufferZeroPad16(std::numeric_limits<int64_t>::max());
-  turbo::BitGen rng;
+  std::mt19937 rng;
+  std::uniform_int_distribution<uint64_t> dist;
   for (int i = 0; i < 100000; ++i) {
-    TestFastHexToBufferZeroPad16(
-        turbo::LogUniform(rng, std::numeric_limits<uint64_t>::min(),
-                         std::numeric_limits<uint64_t>::max()));
+    TestFastHexToBufferZeroPad16(dist(rng));
   }
 }
 

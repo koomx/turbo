@@ -18,7 +18,7 @@
 #include <cstddef>
 #include <string>
 
-#include <turbo/random/random.h>
+#include <random>
 #include <turbo/strings/ascii.h>
 #include "benchmark/benchmark.h"
 
@@ -27,7 +27,7 @@ namespace {
 std::array<unsigned char, 256> MakeShuffledBytes() {
   std::array<unsigned char, 256> bytes;
   for (size_t i = 0; i < 256; ++i) bytes[i] = static_cast<unsigned char>(i);
-  turbo::InsecureBitGen gen;
+  std::mt19937 gen;
   std::shuffle(bytes.begin(), bytes.end(), gen);
   return bytes;
 }

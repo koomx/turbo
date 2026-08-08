@@ -32,10 +32,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <turbo/macros/config.h>
-#include <turbo/container/btree_map.h>
-#include <turbo/container/btree_set.h>
-#include <turbo/container/flat_hash_map.h>
-#include <turbo/container/node_hash_map.h>
 #include <turbo/hash/hash.h>
 #include <string_view>
 
@@ -418,10 +414,6 @@ TEST(Splitter, ConversionOperator) {
   TestConversionOperator<std::set<std::string>>(splitter);
   TestConversionOperator<std::multiset<std::string_view>>(splitter);
   TestConversionOperator<std::multiset<std::string>>(splitter);
-  TestConversionOperator<turbo::btree_set<std::string_view>>(splitter);
-  TestConversionOperator<turbo::btree_set<std::string>>(splitter);
-  TestConversionOperator<turbo::btree_multiset<std::string_view>>(splitter);
-  TestConversionOperator<turbo::btree_multiset<std::string>>(splitter);
   TestConversionOperator<std::unordered_set<std::string>>(splitter);
   TestConversionOperator<
       std::unordered_set<std::string_view, turbo::Hash<std::string_view>>>(
@@ -441,22 +433,6 @@ TEST(Splitter, ConversionOperator) {
   TestMapConversionOperator<std::multimap<std::string, std::string_view>>(
       splitter);
   TestMapConversionOperator<std::multimap<std::string, std::string>>(splitter);
-  TestMapConversionOperator<
-      turbo::btree_map<std::string_view, std::string_view>>(splitter);
-  TestMapConversionOperator<turbo::btree_map<std::string_view, std::string>>(
-      splitter);
-  TestMapConversionOperator<turbo::btree_map<std::string, std::string_view>>(
-      splitter);
-  TestMapConversionOperator<turbo::btree_map<std::string, std::string>>(
-      splitter);
-  TestMapConversionOperator<
-      turbo::btree_multimap<std::string_view, std::string_view>>(splitter);
-  TestMapConversionOperator<
-      turbo::btree_multimap<std::string_view, std::string>>(splitter);
-  TestMapConversionOperator<
-      turbo::btree_multimap<std::string, std::string_view>>(splitter);
-  TestMapConversionOperator<turbo::btree_multimap<std::string, std::string>>(
-      splitter);
   TestMapConversionOperator<std::unordered_map<std::string, std::string>>(
       splitter);
   TestMapConversionOperator<std::unordered_map<
@@ -468,18 +444,6 @@ TEST(Splitter, ConversionOperator) {
   TestMapConversionOperator<std::unordered_map<std::string, std::string_view,
                                                turbo::Hash<std::string_view>>>(
       splitter);
-  TestMapConversionOperator<
-      turbo::node_hash_map<std::string_view, std::string_view>>(splitter);
-  TestMapConversionOperator<
-      turbo::node_hash_map<std::string_view, std::string>>(splitter);
-  TestMapConversionOperator<
-      turbo::node_hash_map<std::string, std::string_view>>(splitter);
-  TestMapConversionOperator<
-      turbo::flat_hash_map<std::string_view, std::string_view>>(splitter);
-  TestMapConversionOperator<
-      turbo::flat_hash_map<std::string_view, std::string>>(splitter);
-  TestMapConversionOperator<
-      turbo::flat_hash_map<std::string, std::string_view>>(splitter);
 
   // Tests conversion to std::pair
 

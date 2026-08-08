@@ -35,7 +35,7 @@
 #include <turbo/macros/config.h>
 #include <turbo/macros/config.h>
 #include <turbo/cleanup/cleanup.h>
-#include <turbo/container/flat_hash_map.h>
+#include <unordered_map>
 #include <turbo/status/status.h>
 #include <turbo/status/statusor.h>
 #include <turbo/strings/str_cat.h>
@@ -311,8 +311,8 @@ TEST(GenericPrinterTest, StreamableVector) {
 }
 
 TEST(GenericPrinterTest, Map) {
-  turbo::flat_hash_map<
-      std::string, turbo::flat_hash_map<std::string, std::pair<double, double>>>
+  std::unordered_map<
+      std::string, std::unordered_map<std::string, std::pair<double, double>>>
       v = {{"A", {{"B", {.5, .25}}}}};
 
   EXPECT_THAT(GenericPrintToString(v), R"([<"A", [<"B", <0.5, 0.25>>]>])");

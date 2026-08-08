@@ -45,7 +45,6 @@
 #include <tests/hash/hash_testing.h>
 #include <turbo/log/kcheck.h>
 #include <turbo/log/klog.h>
-#include <turbo/random/random.h>
 #include <turbo/cord/cord_buffer.h>
 #include <tests/cord/cord_test_helpers.h>
 #include <turbo/cord/internal/cord_internal.h>
@@ -2833,7 +2832,7 @@ TEST_P(CordTest, Hardening) {
 // in that node. As this happens with some probability on each level of the
 // tree, this will quickly grow the tree until it reaches maximum height.
 TEST_P(CordTest, BtreeHostileSplitInsertJoin) {
-  turbo::BitGen bitgen;
+  std::mt19937 bitgen;
 
   // Start with about 1GB of data
   std::string data(1 << 10, 'x');
@@ -2845,8 +2844,8 @@ TEST_P(CordTest, BtreeHostileSplitInsertJoin) {
 
   for (int j = 0; j < 1000; ++j) {
     MaybeHarden(cord);
-    size_t offset = turbo::Uniform(bitgen, 0u, cord.size());
-    size_t length = turbo::Uniform(bitgen, 100u, data.size());
+    size_t offset = std::uniform_int_distribution<size_t>(0u, cord.size())(bitgen);
+    size_t length = std::uniform_int_distribution<size_t>(100u, data.size())(bitgen);
     if (cord.size() == offset) {
       cord.Append(std::string_view(data.data(), length));
     } else {

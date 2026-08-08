@@ -15,7 +15,6 @@
 
 set(LOG_INTERNAL_BENCHMARKS
         fnmatch_benchmark
-        vlog_config_benchmark
 )
 
 foreach (case IN LISTS LOG_INTERNAL_BENCHMARKS)

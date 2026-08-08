@@ -17,7 +17,7 @@
 
 #include <turbo/macros/config.h>
 #include <turbo/bits/bits.h>
-#include <turbo/random/random.h>
+#include <random>
 #include "benchmark/benchmark.h"
 
 namespace turbo {
@@ -27,11 +27,11 @@ template <typename T>
 static void BM_bit_width(benchmark::State& state) {
   const auto count = static_cast<size_t>(state.range(0));
 
-  turbo::BitGen rng;
+  std::mt19937 rng;
   std::vector<T> values;
   values.reserve(count);
   for (size_t i = 0; i < count; ++i) {
-    values.push_back(turbo::Uniform<T>(rng, 0, std::numeric_limits<T>::max()));
+    values.push_back(std::uniform_int_distribution<T>(0, std::numeric_limits<T>::max())(rng));
   }
 
   while (state.KeepRunningBatch(static_cast<int64_t>(count))) {
@@ -49,11 +49,11 @@ template <typename T>
 static void BM_bit_width_nonzero(benchmark::State& state) {
   const auto count = static_cast<size_t>(state.range(0));
 
-  turbo::BitGen rng;
+  std::mt19937 rng;
   std::vector<T> values;
   values.reserve(count);
   for (size_t i = 0; i < count; ++i) {
-    values.push_back(turbo::Uniform<T>(rng, 1, std::numeric_limits<T>::max()));
+    values.push_back(std::uniform_int_distribution<T>(1, std::numeric_limits<T>::max())(rng));
   }
 
   while (state.KeepRunningBatch(static_cast<int64_t>(count))) {

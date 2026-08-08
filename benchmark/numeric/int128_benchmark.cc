@@ -23,7 +23,7 @@
 
 #include <turbo/macros/config.h>
 #include <turbo/numeric/int128.h>
-#include <turbo/random/random.h>
+#include <random>
 #include "benchmark/benchmark.h"
 
 namespace {
@@ -34,7 +34,7 @@ template <typename T, typename H = std::conditional_t<
                           std::numeric_limits<T>::is_signed, int64_t, uint64_t>>
 std::vector<std::pair<T, T>> GetRandomClass128SampleUniformDivisor() {
   std::vector<std::pair<T, T>> values;
-  turbo::InsecureBitGen random;
+  std::mt19937 random;
   std::uniform_int_distribution<H> uniform_h;
   values.reserve(kSampleSize);
   for (size_t i = 0; i < kSampleSize; ++i) {
@@ -73,7 +73,7 @@ template <typename T, typename H = std::conditional_t<
                           std::numeric_limits<T>::is_signed, int64_t, uint64_t>>
 std::vector<std::pair<T, H>> GetRandomClass128SampleSmallDivisor() {
   std::vector<std::pair<T, H>> values;
-  turbo::InsecureBitGen random;
+  std::mt19937 random;
   std::uniform_int_distribution<H> uniform_h;
   values.reserve(kSampleSize);
   for (size_t i = 0; i < kSampleSize; ++i) {
@@ -110,7 +110,7 @@ BENCHMARK_TEMPLATE(BM_RemainderClass128SmallDivisor, turbo::int128);
 
 std::vector<std::pair<turbo::uint128, turbo::uint128>> GetRandomClass128Sample() {
   std::vector<std::pair<turbo::uint128, turbo::uint128>> values;
-  turbo::InsecureBitGen random;
+  std::mt19937 random;
   std::uniform_int_distribution<uint64_t> uniform_uint64;
   values.reserve(kSampleSize);
   for (size_t i = 0; i < kSampleSize; ++i) {
@@ -163,7 +163,7 @@ template <typename T, typename H = std::conditional_t<
                           std::is_same_v<T, __int128>, int64_t, uint64_t>>
 std::vector<std::pair<T, T>> GetRandomIntrinsic128SampleUniformDivisor() {
   std::vector<std::pair<T, T>> values;
-  turbo::InsecureBitGen random;
+  std::mt19937 random;
   UniformIntDistribution128<T> uniform_128;
   values.reserve(kSampleSize);
   for (size_t i = 0; i < kSampleSize; ++i) {
@@ -203,7 +203,7 @@ template <typename T, typename H = std::conditional_t<
                           std::is_same_v<T, __int128>, int64_t, uint64_t>>
 std::vector<std::pair<T, H>> GetRandomIntrinsic128SampleSmallDivisor() {
   std::vector<std::pair<T, H>> values;
-  turbo::InsecureBitGen random;
+  std::mt19937 random;
   UniformIntDistribution128<T> uniform_int128;
   std::uniform_int_distribution<H> uniform_int64;
   values.reserve(kSampleSize);
@@ -242,7 +242,7 @@ BENCHMARK_TEMPLATE(BM_RemainderIntrinsic128SmallDivisor, __int128);
 std::vector<std::pair<unsigned __int128, unsigned __int128>>
 GetRandomIntrinsic128Sample() {
   std::vector<std::pair<unsigned __int128, unsigned __int128>> values;
-  turbo::InsecureBitGen random;
+  std::mt19937 random;
   UniformIntDistribution128<unsigned __int128> uniform_uint128;
   values.reserve(kSampleSize);
   for (size_t i = 0; i < kSampleSize; ++i) {

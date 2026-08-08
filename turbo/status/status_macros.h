@@ -125,7 +125,7 @@
 // Example: Initializing a map. Because of C++ preprocessor limitations,
 // the type used in TURBO_ASSIGN_OR_RETURN cannot contain commas, so wrap the
 // lhs in parentheses:
-//   TURBO_ASSIGN_OR_RETURN((turbo::flat_hash_map<Foo, Bar> my_map), GetMap());
+//   TURBO_ASSIGN_OR_RETURN((std::unordered_map<Foo, Bar> my_map), GetMap());
 // Or use `auto` if the type is obvious enough:
 //   TURBO_ASSIGN_OR_RETURN(auto my_map, GetMap());
 //

@@ -24,9 +24,10 @@
 #define TURBO_FLAGS_REFLECTION_H_
 
 #include <string>
+#include <string_view>
+#include <unordered_map>
 
 #include <turbo/macros/config.h>
-#include <turbo/container/flat_hash_map.h>
 #include <turbo/flags/commandlineflag.h>
 #include <turbo/flags/internal/commandlineflag.h>
 
@@ -45,7 +46,7 @@ turbo::CommandLineFlag* FindCommandLineFlag(std::string_view name);
 
 // Returns current state of the Flags registry in a form of mapping from flag
 // name to a flag reflection handle.
-turbo::flat_hash_map<std::string_view, turbo::CommandLineFlag*> GetAllFlags();
+std::unordered_map<std::string_view, turbo::CommandLineFlag*> GetAllFlags();
 
 //------------------------------------------------------------------------------
 // FlagSaver

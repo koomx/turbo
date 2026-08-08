@@ -49,13 +49,12 @@
 #include <turbo/macros/arch/e2k.h>
 #include <turbo/macros/arch/wasm.h>
 
-// Alias used by turbo/random (TURBO_ARCH_AARCH64).
+// Alias used by some internal modules (TURBO_ARCH_AARCH64).
 #ifndef KUMO_ARCH_AARCH64
 #define KUMO_ARCH_AARCH64 KUMO_ARCH_ARM64
 #endif
 
-// Compat with turbo/random/internal/platform.h TURBO_HAVE_ACCELERATED_AES:
-// x86_64 treats AVX as a stand-in in the old code; keep that OR with AES-NI.
+// Accelerated AES detection (x86_64 treats AVX as a stand-in; keep that OR with AES-NI).
 #if KUMO_SIMD_AES || (KUMO_ARCH_X86_64 && KUMO_SIMD_AVX)
 #define KUMO_HAVE_ACCELERATED_AES 1
 #else

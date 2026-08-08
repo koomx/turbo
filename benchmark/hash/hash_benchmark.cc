@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <algorithm>
+#include <random>
 #include <bitset>
 #include <cassert>
 #include <cstddef>
@@ -26,9 +27,8 @@
 #include <vector>
 
 #include <turbo/macros/config.h>
-#include <turbo/container/flat_hash_set.h>
+#include <unordered_set>
 #include <turbo/hash/hash.h>
-#include <turbo/random/random.h>
 #include <turbo/cord/cord.h>
 #include <tests/cord/cord_test_helpers.h>
 #include <string_view>
@@ -139,8 +139,8 @@ struct FastUnorderedSet {
 };
 
 template <typename T>
-turbo::flat_hash_set<T> FlatHashSet(size_t count) {
-  turbo::flat_hash_set<T> result;
+std::unordered_set<T> FlatHashSet(size_t count) {
+  std::unordered_set<T> result;
   for (size_t v = 0; v < count; ++v) {
     result.insert(v);
   }
@@ -343,10 +343,11 @@ namespace {
 static constexpr size_t kEntropySize = 16 << 10;
 static char entropy[kEntropySize + 1024];
 KUMO_ATTRIBUTE_UNUSED static const bool kInitialized = [] {
-  turbo::BitGen gen;
+  std::mt19937 gen;
   static_assert(sizeof(entropy) % sizeof(uint64_t) == 0, "");
+  std::uniform_int_distribution<uint64_t> dist;
   for (int i = 0; i != sizeof(entropy); i += sizeof(uint64_t)) {
-    auto rand = turbo::Uniform<uint64_t>(gen);
+    auto rand = dist(gen);
     memcpy(&entropy[i], &rand, sizeof(uint64_t));
   }
   return true;

@@ -46,10 +46,6 @@ set(BITS_SRC
 )
 
 
-set(CONTAINER_SRC
-        container/internal/raw_hash_set.cc
-)
-
 set(CRC_SRC
         crc/crc32c.cc
         crc/internal/crc.cc
@@ -145,21 +141,6 @@ set(NUM_SRC
 )
 
 
-set(RANDOM_SRC
-        random/discrete_distribution.cc
-        random/gaussian_distribution.cc
-        random/internal/entropy_pool.cc
-        random/internal/gaussian_distribution_gentables.cc
-        random/internal/nanobenchmark.cc
-        random/internal/randen.cc
-        random/internal/randen_detect.cc
-        random/internal/randen_hwaes.cc
-        random/internal/randen_round_keys.cc
-        random/internal/randen_slow.cc
-        random/internal/seed_material.cc
-        random/seed_gen_exception.cc
-        random/seed_sequences.cc
-)
 
 set(STATUS_SRC
         status/internal/status_internal.cc
@@ -238,7 +219,6 @@ set(CCTZ_SRC
 set(TURBO_SRC
         ${BASE_SRC}
         ${BITS_SRC}
-        ${CONTAINER_SRC}
         ${CORD_SRC}
         ${CRC_SRC}
         ${DBG_SRC}
@@ -247,7 +227,6 @@ set(TURBO_SRC
         ${HASH_SRC}
         ${LOG_SRC}
         ${NUM_SRC}
-        ${RANDOM_SRC}
         ${STATUS_SRC}
         ${STRINGS_SRC}
         ${TIME_SRC}

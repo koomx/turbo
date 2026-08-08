@@ -33,7 +33,7 @@
 #include <tests/base/internal/exception_testing.h>
 #include <turbo/base/internal/hardening.h>
 #include <tests/meta/internal/iterator_traits_test_helper.h>
-#include <tests/container/internal/test_allocator.h>
+#include <tests/test_utils/test_allocator.h>
 #include <tests/hash/hash_testing.h>
 #include <turbo/memory/memory.h>
 

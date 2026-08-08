@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <random>
 #include <turbo/bits/bits.h>
 
 #include <cstdint>
@@ -20,7 +21,6 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <turbo/random/random.h>
 
 namespace turbo {
 
@@ -200,41 +200,33 @@ TEST(Rotate, Right) {
 
 TEST(Rotate, Symmetry) {
   // rotr(x, s) is equivalent to rotl(x, -s)
-  turbo::BitGen rng;
+  std::mt19937 rng;
   constexpr int kTrials = 100;
 
   for (int i = 0; i < kTrials; ++i) {
-    uint8_t value = turbo::Uniform(rng, std::numeric_limits<uint8_t>::min(),
-                                  std::numeric_limits<uint8_t>::max());
-    int shift = turbo::Uniform(rng, -2 * std::numeric_limits<uint8_t>::digits,
-                              2 * std::numeric_limits<uint8_t>::digits);
+    uint8_t value = std::uniform_int_distribution<uint8_t>()(rng);
+    int shift = std::uniform_int_distribution<int>(-2 * std::numeric_limits<uint8_t>::digits, 2 * std::numeric_limits<uint8_t>::digits)(rng);
 
     EXPECT_EQ(rotl(value, shift), rotr(value, -shift));
   }
 
   for (int i = 0; i < kTrials; ++i) {
-    uint16_t value = turbo::Uniform(rng, std::numeric_limits<uint16_t>::min(),
-                                   std::numeric_limits<uint16_t>::max());
-    int shift = turbo::Uniform(rng, -2 * std::numeric_limits<uint16_t>::digits,
-                              2 * std::numeric_limits<uint16_t>::digits);
+    uint16_t value = std::uniform_int_distribution<uint16_t>()(rng);
+    int shift = std::uniform_int_distribution<int>(-2 * std::numeric_limits<uint16_t>::digits, 2 * std::numeric_limits<uint16_t>::digits)(rng);
 
     EXPECT_EQ(rotl(value, shift), rotr(value, -shift));
   }
 
   for (int i = 0; i < kTrials; ++i) {
-    uint32_t value = turbo::Uniform(rng, std::numeric_limits<uint32_t>::min(),
-                                   std::numeric_limits<uint32_t>::max());
-    int shift = turbo::Uniform(rng, -2 * std::numeric_limits<uint32_t>::digits,
-                              2 * std::numeric_limits<uint32_t>::digits);
+    uint32_t value = std::uniform_int_distribution<uint32_t>()(rng);
+    int shift = std::uniform_int_distribution<int>(-2 * std::numeric_limits<uint32_t>::digits, 2 * std::numeric_limits<uint32_t>::digits)(rng);
 
     EXPECT_EQ(rotl(value, shift), rotr(value, -shift));
   }
 
   for (int i = 0; i < kTrials; ++i) {
-    uint64_t value = turbo::Uniform(rng, std::numeric_limits<uint64_t>::min(),
-                                   std::numeric_limits<uint64_t>::max());
-    int shift = turbo::Uniform(rng, -2 * std::numeric_limits<uint64_t>::digits,
-                              2 * std::numeric_limits<uint64_t>::digits);
+    uint64_t value = std::uniform_int_distribution<uint64_t>()(rng);
+    int shift = std::uniform_int_distribution<int>(-2 * std::numeric_limits<uint64_t>::digits, 2 * std::numeric_limits<uint64_t>::digits)(rng);
 
     EXPECT_EQ(rotl(value, shift), rotr(value, -shift));
   }
@@ -405,10 +397,10 @@ struct PopcountInput {
 };
 
 template <typename T>
-PopcountInput<T> GeneratePopcountInput(turbo::BitGen& gen) {
+PopcountInput<T> GeneratePopcountInput(std::mt19937& gen) {
   PopcountInput<T> ret;
   for (int i = 0; i < std::numeric_limits<T>::digits; i++) {
-    bool coin = turbo::Bernoulli(gen, 0.2);
+    bool coin = std::bernoulli_distribution(0.2)(gen);
     if (coin) {
       ret.value |= T{1} << i;
       ret.expected++;
@@ -418,7 +410,7 @@ PopcountInput<T> GeneratePopcountInput(turbo::BitGen& gen) {
 }
 
 TEST(Counting, PopcountFuzz) {
-  turbo::BitGen rng;
+  std::mt19937 rng;
   constexpr int kTrials = 100;
 
   for (int i = 0; i < kTrials; ++i) {

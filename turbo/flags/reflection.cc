@@ -19,12 +19,13 @@
 
 #include <atomic>
 #include <string>
+#include <string_view>
+#include <unordered_map>
 #include <utility>
 
 #include <turbo/macros/config.h>
 #include <turbo/base/no_destructor.h>
 #include <turbo/base/thread_annotations.h>
-#include <turbo/container/flat_hash_map.h>
 #include <turbo/flags/commandlineflag.h>
 #include <turbo/flags/internal/private_handle_accessor.h>
 #include <turbo/flags/internal/registry.h>
@@ -73,7 +74,7 @@ class FlagRegistry {
   friend void FinalizeRegistry();
 
   // The map from name to flag, for FindFlag().
-  using FlagMap = turbo::flat_hash_map<std::string_view, CommandLineFlag*>;
+  using FlagMap = std::unordered_map<std::string_view, CommandLineFlag*>;
   using FlagIterator = FlagMap::iterator;
   using FlagConstIterator = FlagMap::const_iterator;
   FlagMap flags_;
@@ -356,8 +357,8 @@ CommandLineFlag* FindCommandLineFlag(std::string_view name) {
 
 // --------------------------------------------------------------------
 
-turbo::flat_hash_map<std::string_view, turbo::CommandLineFlag*> GetAllFlags() {
-  turbo::flat_hash_map<std::string_view, turbo::CommandLineFlag*> res;
+std::unordered_map<std::string_view, turbo::CommandLineFlag*> GetAllFlags() {
+  std::unordered_map<std::string_view, turbo::CommandLineFlag*> res;
   flags_internal::ForEachFlag([&](CommandLineFlag& flag) {
     if (!flag.IsRetired()) res.insert({flag.Name(), &flag});
   });

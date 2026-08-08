@@ -34,8 +34,8 @@
 #include <turbo/base/internal/hardening.h>
 #include <tests/meta/internal/iterator_traits_test_helper.h>
 #include <turbo/macros/config.h>
-#include <tests/container/internal/test_allocator.h>
-#include <tests/container/internal/test_instance_tracker.h>
+#include <tests/test_utils/test_allocator.h>
+#include <tests/test_utils/test_instance_tracker.h>
 #include <tests/hash/hash_testing.h>
 #include <turbo/log/kcheck.h>
 #include <turbo/memory/memory.h>

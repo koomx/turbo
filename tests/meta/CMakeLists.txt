@@ -30,7 +30,7 @@ foreach (case IN LISTS META_TESTS)
             GTest::gtest
             GTest::gmock
             GTest::gtest_main
-            turbo::container_testing_static
+            turbo::test_utils_static
             turbo::turbo_static
             ${KMCMAKE_DEPS_LINK}
     )

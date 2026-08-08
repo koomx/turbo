@@ -21,8 +21,7 @@
 #include <tuple>
 #include <utility>
 
-#include <turbo/random/log_uniform_int_distribution.h>
-#include <turbo/random/random.h>
+#include <random>
 #include <turbo/strings/str_cat.h>
 #include <turbo/format/str_format.h>
 #include <string_view>
@@ -218,8 +217,8 @@ void BM_StrAppendStr(benchmark::State& state) {
 
 template <typename T>
 void BM_StrAppendInt(benchmark::State& state) {
-  turbo::BitGen rng;
-  turbo::log_uniform_int_distribution<T> dist;
+  std::mt19937 rng;
+  std::uniform_int_distribution<T> dist;
   std::array<std::tuple<T, T, T, T, T, T, T, T>, (1 << 7)> table;
   for (size_t i = 0; i < table.size(); ++i) {
     table[i] = {dist(rng), dist(rng), dist(rng), dist(rng),
