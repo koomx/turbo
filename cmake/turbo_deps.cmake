@@ -21,9 +21,18 @@ if (KMCMAKE_USE_CPM)
     include(${PROJECT_NAME}_cpm)
 endif ()
 
+# When CPM is off (e.g. CI + vcpkg toolchain), resolve test/bench packages.
+if (KMCMAKE_BUILD_TEST AND NOT TARGET GTest::gtest)
+    find_package(GTest CONFIG REQUIRED)
+endif ()
+if (KMCMAKE_BUILD_BENCHMARK AND NOT TARGET benchmark::benchmark)
+    find_package(benchmark CONFIG REQUIRED)
+endif ()
+
 ############################################################
 # system pthread and rt, dl
 ############################################################
+
 set(KMCMAKE_CONFIG_PRIVATE_FIND_SNIPPETS "")
 
 # Record a private find_package(...) call for generated <Project>Config.cmake.

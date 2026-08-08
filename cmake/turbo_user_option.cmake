@@ -33,4 +33,8 @@
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(KMCMAKE_USE_CPM ON CACHE BOOL "" FORCE)
+# Default ON via CMakePresets "base"; CI preset sets OFF and uses vcpkg.
+# Do not FORCE so -D / preset can override.
+if (NOT DEFINED CACHE{KMCMAKE_USE_CPM})
+    set(KMCMAKE_USE_CPM ON CACHE BOOL "fetch dependencies via CPM.cmake")
+endif ()

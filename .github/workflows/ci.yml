@@ -2,22 +2,28 @@ name: CI
 
 on:
   push:
-    branches: [master, plateform_dev]
+    branches: [main, std20_dev]
   pull_request:
-    branches: [master]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   ci:
-    uses: kumose/kmpkgcore/.github/workflows/ci-template.yml@master
+    permissions:
+      contents: write
+    uses: koomx/x-ci/.github/workflows/vcpkg-template.yml@main
     with:
+      enable-std20-ubuntu24-amd64: true
+      enable-std20-ubuntu24-arm64: true
       config-command: |
-        cmake --preset=default -DKMCMAKE_BUILD_TEST=ON -DCMAKE_BUILD_TYPE=Debug
+        cmake --preset=ci -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$VCPKG_CMAKE
       build-command: |
-        cmake --build build -j$(nproc)
+        cmake --build build-ninja -j$(nproc)
       test-command: |
-        ctest --test-dir build --output-on-failure -j1
-      deps-ubuntu: libssl-dev
-      deps-alpine: openssl-dev
-      deps-centos: openssl-devel
-      deps-windows: openssl
+        ctest --test-dir build-ninja --output-on-failure -j1
+      benchmark-command: |
+        python3 scripts/run_log_bench.py
+      plot-command: |
+        python3 scripts/plot_log_bench.py
+      benchmark-publish-branch: benchmark-results
+      benchmark-publish-job: ''

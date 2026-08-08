@@ -65,3 +65,11 @@ refs
 
 # Local reference checkouts (e.g. historical tags)
 _ref/
+
+# Benchmark CI outputs (published on branch benchmark-results)
+benchmark-results/
+.bench-py/
+
+# Generated from benchmark/config.h.in
+benchmark/config.h
+

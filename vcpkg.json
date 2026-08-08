@@ -1,0 +1,8 @@
+{
+  "name": "turbo",
+  "version-string": "0.0.5",
+  "dependencies": [
+    "gtest",
+    "benchmark"
+  ]
+}
