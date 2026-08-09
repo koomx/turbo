@@ -4,63 +4,63 @@
   "samples": [
     {
       "name": "log:BM_SuccessfulBinaryCheck",
-      "value": 0.077
+      "value": 0.08
     },
     {
       "name": "log:BM_SuccessfulUnaryCheck",
-      "value": 0.077
+      "value": 0.082
     },
     {
       "name": "log:BM_DisabledLogOverhead",
-      "value": 187.324
+      "value": 220.685
     },
     {
       "name": "log:BM_EnabledLogOverhead",
-      "value": 548.586
+      "value": 694.759
     },
     {
       "name": "log:BM_VlogIsOnOverhead",
-      "value": 2.824
+      "value": 3.452
     },
     {
       "name": "log:BM_VlogIsNotOnOverhead",
-      "value": 0.306
+      "value": 0.327
     },
     {
       "name": "log:BM_LogEveryNOverhead",
-      "value": 12.895
+      "value": 12.263
     },
     {
       "name": "zlog:BM_StreamEnabled",
-      "value": 1014.708
+      "value": 1237.607
     },
     {
       "name": "zlog:BM_ZlogEnabled",
-      "value": 759.95
+      "value": 931.204
     },
     {
       "name": "zlog:BM_StreamEnabledNum",
-      "value": 1465.527
+      "value": 1733.777
     },
     {
       "name": "zlog:BM_ZlogEnabledNum",
-      "value": 881.733
+      "value": 1071.623
     },
     {
       "name": "zlog:BM_StreamDisabled",
-      "value": 527.859
+      "value": 631.831
     },
     {
       "name": "zlog:BM_ZlogDisabled",
-      "value": 376.04
+      "value": 438.625
     },
     {
       "name": "zlog:BM_StreamWarmDisabled",
-      "value": 842.541
+      "value": 984.75
     },
     {
       "name": "zlog:BM_ZlogWarmDisabled",
-      "value": 720.418
+      "value": 851.02
     }
   ]
 }
