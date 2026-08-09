@@ -204,7 +204,9 @@ TEST(Rotate, Symmetry) {
   constexpr int kTrials = 100;
 
   for (int i = 0; i < kTrials; ++i) {
-    uint8_t value = std::uniform_int_distribution<uint8_t>()(rng);
+    // MSVC rejects uniform_int_distribution<uint8_t> (C++20 [rand.req.genl]/1.5).
+    uint8_t value = static_cast<uint8_t>(
+        std::uniform_int_distribution<unsigned int>(0, 255)(rng));
     int shift = std::uniform_int_distribution<int>(-2 * std::numeric_limits<uint8_t>::digits, 2 * std::numeric_limits<uint8_t>::digits)(rng);
 
     EXPECT_EQ(rotl(value, shift), rotr(value, -shift));

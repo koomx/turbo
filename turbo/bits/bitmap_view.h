@@ -636,7 +636,7 @@ namespace turbo {
     template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapView<OverFlowAsFalse, WordType>::this_type&
     BitmapView<OverFlowAsFalse, WordType>::operator>>=(size_type n) {
-        if (TURBO_LIKELY(n < _bits_number))
+        if (KUMO_LIKELY(n < _bits_number))
             base_type::operator>>=(n);
         else
             base_type::reset();
@@ -673,7 +673,7 @@ namespace turbo {
     template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapView<OverFlowAsFalse, WordType>::this_type&
     BitmapView<OverFlowAsFalse, WordType>::set(size_type i, bool value) {
-        if (TURBO_LIKELY(i < _bits_number)) {
+        if (KUMO_LIKELY(i < _bits_number)) {
             base_type::set(i, value);
         } else {
             if constexpr (!OverFlowAsFalse) {
@@ -694,7 +694,7 @@ namespace turbo {
     template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapView<OverFlowAsFalse, WordType>::this_type&
     BitmapView<OverFlowAsFalse, WordType>::reset(size_type i) {
-        if (TURBO_LIKELY(i < _bits_number)) {
+        if (KUMO_LIKELY(i < _bits_number)) {
             do_getWord(i) &= ~(static_cast<word_type>(1) << (i & kBitsPerWordMask));
         } else {
             if constexpr (!OverFlowAsFalse) {
@@ -719,7 +719,7 @@ namespace turbo {
     template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapView<OverFlowAsFalse, WordType>::this_type&
     BitmapView<OverFlowAsFalse, WordType>::flip(size_type i) {
-        if (TURBO_LIKELY(i < _bits_number))
+        if (KUMO_LIKELY(i < _bits_number))
             do_getWord(i) ^= (static_cast<word_type>(1) << (i & kBitsPerWordMask));
         else {
             if constexpr (!OverFlowAsFalse) {
@@ -738,7 +738,7 @@ namespace turbo {
     template <bool OverFlowAsFalse, typename WordType>
     inline typename BitmapView<OverFlowAsFalse, WordType>::Reference
     BitmapView<OverFlowAsFalse, WordType>::operator[](size_type i) {
-        if (TURBO_LIKELY(i < _bits_number)) {
+        if (KUMO_LIKELY(i < _bits_number)) {
             return Reference(*this, i);
         }
         KUMO_ASSERT(false && "BitmapView::operator[] -- out of range");
@@ -747,7 +747,7 @@ namespace turbo {
 
     template <bool OverFlowAsFalse, typename WordType>
     inline bool BitmapView<OverFlowAsFalse, WordType>::operator[](size_type i) const {
-        if (TURBO_LIKELY(i < _bits_number))
+        if (KUMO_LIKELY(i < _bits_number))
             return (do_getWord(i) & (static_cast<word_type>(1) << (i & kBitsPerWordMask))) != 0;
         if constexpr (!OverFlowAsFalse) {
             KUMO_ASSERT(false && "BitmapView::operator[] -- out of range");
@@ -790,7 +790,7 @@ namespace turbo {
 
     template <bool OverFlowAsFalse, typename WordType>
     inline bool BitmapView<OverFlowAsFalse, WordType>::test(size_type i) const {
-        if (TURBO_LIKELY(i < _bits_number))
+        if (KUMO_LIKELY(i < _bits_number))
             return (do_getWord(i) & (static_cast<word_type>(1) << (i & kBitsPerWordMask))) != 0;
 
         if constexpr (!OverFlowAsFalse) {
