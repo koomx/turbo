@@ -104,7 +104,8 @@ TEST_P(EngineParamTest, SmallCorrectnessCheckSourceAlignment) {
       char* base_data = static_cast<char*>(source_.get()) + source_alignment;
       for (size_t i = 0; i < size; i++) {
         *(base_data + i) =
-            static_cast<char>(std::uniform_int_distribution<unsigned char>(0, 255)(gen_));
+            static_cast<char>(
+                std::uniform_int_distribution<unsigned int>(0, 255)(gen_));
       }
       SCOPED_TRACE(turbo::StrCat("engine=<", GetParam().vector_lanes, ",",
                                 GetParam().integer_lanes, ">, ", "size=", size,
@@ -138,7 +139,8 @@ TEST_P(EngineParamTest, SmallCorrectnessCheckDestAlignment) {
       char* base_data = static_cast<char*>(source_.get());
       for (size_t i = 0; i < size; i++) {
         *(base_data + i) =
-            static_cast<char>(std::uniform_int_distribution<unsigned char>(0, 255)(gen_));
+            static_cast<char>(
+                std::uniform_int_distribution<unsigned int>(0, 255)(gen_));
       }
       SCOPED_TRACE(turbo::StrCat("engine=<", GetParam().vector_lanes, ",",
                                 GetParam().integer_lanes, ">, ", "size=", size,
