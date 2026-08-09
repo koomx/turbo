@@ -479,8 +479,17 @@ template <typename H, typename Float>
 std::enable_if_t<std::is_same_v<Float, float> || std::is_same_v<Float, double>,
                  H>
 TurboHashValue(H hash_state, Float value) {
-  return hash_internal::hash_bytes(std::move(hash_state),
-                                   value == 0 ? 0 : value);
+  // +0 and -0 compare equal but differ only in the sign bit. Hash the integer
+  // bit pattern after forcing ±0 -> +0. A pure integer mask avoids MSVC /O2
+  // eliding the Abseil-style `value == 0 ? 0 : value` canonicalize.
+  using Bits =
+      std::conditional_t<sizeof(Float) == sizeof(uint32_t), uint32_t, uint64_t>;
+  static_assert(sizeof(Float) == sizeof(Bits));
+  Bits bits;
+  std::memcpy(&bits, &value, sizeof(bits));
+  constexpr Bits kSign = Bits{1} << (sizeof(Bits) * 8 - 1);
+  bits &= -static_cast<Bits>((bits & ~kSign) != 0);
+  return hash_internal::hash_bytes(std::move(hash_state), bits);
 }
 
 // Long double has the property that it might have extra unused bytes in it.
