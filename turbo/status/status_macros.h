@@ -25,11 +25,11 @@
 #include <type_traits>
 #include <utility>
 
+#include <source_location>
 #include <turbo/macros/config.h>
 #include <turbo/status/status.h>
-#include <turbo/status/status_builder.h>  // IWYU pragma: export
+#include <turbo/status/status_builder.h> // IWYU pragma: export
 #include <turbo/status/statusor.h>
-#include <source_location>
 
 // Evaluates an expression that produces a `turbo::Status`. If the status is not
 // ok, returns it from the current function.
@@ -85,7 +85,7 @@
 //     return turbo::OkStatus();
 //   }
 #define TURBO_RETURN_IF_ERROR(expr) \
-  TURBO_INTERNAL_STATUS_MACROS_RETURN_IF_ERROR_IMPL_(return, expr)
+    TURBO_INTERNAL_STATUS_MACROS_RETURN_IF_ERROR_IMPL_(return, expr)
 
 // Executes an expression `rexpr` that returns an `turbo::StatusOr<T>`. On OK,
 // moves its value into the variable defined by `lhs`, otherwise returns
@@ -149,30 +149,29 @@
 //   TURBO_ASSIGN_OR_RETURN(ValueType value, MaybeGetValue(query), _.LogError());
 //
 #define TURBO_ASSIGN_OR_RETURN(...) \
-  TURBO_INTERNAL_STATUS_MACROS_ASSIGN_OR_RETURN_IMPL_(return, __VA_ARGS__)
+    TURBO_INTERNAL_STATUS_MACROS_ASSIGN_OR_RETURN_IMPL_(return, __VA_ARGS__)
 
 // =================================================================
 // == Implementation details, do not rely on anything below here. ==
 // =================================================================
 
-#define TURBO_INTERNAL_STATUS_MACROS_RETURN_IF_ERROR_IMPL_(return_keyword, \
-    expr)           \
-  TURBO_INTERNAL_STATUS_MACROS_IMPL_ELSE_BLOCKER_                          \
-  if (auto status_macro_internal_adaptor =                                \
-          turbo::status_macro_internal::MacroAdaptor(                      \
-              (expr), std::source_location::current())) {                 \
-  } else /* NOLINT */                                                     \
-    return_keyword status_macro_internal_adaptor.Consume()
+#define TURBO_INTERNAL_STATUS_MACROS_RETURN_IF_ERROR_IMPL_(return_keyword,               \
+    expr)                                                                                \
+    TURBO_INTERNAL_STATUS_MACROS_IMPL_ELSE_BLOCKER_                                      \
+    if (auto status_macro_internal_adaptor = turbo::status_macro_internal::MacroAdaptor( \
+            (expr), std::source_location::current())) {                                  \
+    } else /* NOLINT */                                                                  \
+        return_keyword status_macro_internal_adaptor.Consume()
 
 #define TURBO_INTERNAL_STATUS_MACROS_ASSIGN_OR_RETURN_IMPL_(return_keyword, \
-    ...)            \
-  TURBO_INTERNAL_STATUS_MACROS_IMPL_GET_VARIADIC_(                          \
-      (return_keyword, __VA_ARGS__,                                        \
-       TURBO_INTERNAL_STATUS_MACROS_IMPL_ASSIGN_OR_RETURN_3_,               \
-       TURBO_INTERNAL_STATUS_MACROS_IMPL_ASSIGN_OR_RETURN_2_))              \
-  (return_keyword, __VA_ARGS__)
+    ...)                                                                    \
+    TURBO_INTERNAL_STATUS_MACROS_IMPL_GET_VARIADIC_(                        \
+        (return_keyword, __VA_ARGS__,                                       \
+            TURBO_INTERNAL_STATUS_MACROS_IMPL_ASSIGN_OR_RETURN_3_,          \
+            TURBO_INTERNAL_STATUS_MACROS_IMPL_ASSIGN_OR_RETURN_2_))         \
+    (return_keyword, __VA_ARGS__)
 
-constexpr bool HasPotentialConditionalOperator(const char *lhs, int size) {
+constexpr bool HasPotentialConditionalOperator(const char* lhs, int size) {
     for (int i = 0; i < size; ++i) {
         if (lhs[i] == '?') {
             return true;
@@ -181,7 +180,7 @@ constexpr bool HasPotentialConditionalOperator(const char *lhs, int size) {
     return false;
 }
 
-template<std::size_t N>
+template <std::size_t N>
 constexpr bool IsEnclosedByParentheses(const char (&lhs)[N]) {
     if (N < 2) {
         return false;
@@ -191,15 +190,14 @@ constexpr bool IsEnclosedByParentheses(const char (&lhs)[N]) {
 
 namespace turbo {
     namespace status_macro_internal {
-        template<typename T, typename EnableIf = void>
+        template <typename T, typename EnableIf = void>
         struct IsAllowedStatusOrMacroType : std::false_type {
         };
 
-        template<typename T>
+        template <typename T>
         struct IsAllowedStatusOrMacroType<
-                    T, std::enable_if_t<std::is_convertible_v<
-                        T *, typename turbo::StatusOr<typename T::value_type> *> > >
-                : std::true_type {
+            T, std::enable_if_t<std::is_convertible_v<T*, typename turbo::StatusOr<typename T::value_type>*>>>
+            : std::true_type {
         };
     } // namespace status_macro_internal
 } // namespace turbo
@@ -207,57 +205,55 @@ namespace turbo {
 // MSVC incorrectly expands variadic macros, splice together a macro call to
 // work around the bug.
 #define TURBO_INTERNAL_STATUS_MACROS_IMPL_GET_VARIADIC_HELPER_(_1, _2, _3, _4, \
-    NAME, ...)      \
-  NAME
+    NAME, ...)                                                                 \
+    NAME
 #define TURBO_INTERNAL_STATUS_MACROS_IMPL_GET_VARIADIC_(args) \
-  /* NOLINTNEXTLINE(clang-diagnostic-pre-c++20-compat) */    \
-  TURBO_INTERNAL_STATUS_MACROS_IMPL_GET_VARIADIC_HELPER_ args
+    /* NOLINTNEXTLINE(clang-diagnostic-pre-c++20-compat) */   \
+    TURBO_INTERNAL_STATUS_MACROS_IMPL_GET_VARIADIC_HELPER_ args
 
-#define TURBO_INTERNAL_STATUS_MACROS_IMPL_ASSIGN_OR_RETURN_2_(return_keyword,   \
-    lhs, rexpr)       \
-  TURBO_INTERNAL_STATUS_MACROS_IMPL_ASSIGN_OR_RETURN_(                          \
-      TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_(_status_or_value, __LINE__),    \
-      lhs, rexpr,                                                              \
-      return_keyword turbo::Status(                                             \
-          std::move(TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_(_status_or_value, \
-                                                             __LINE__))        \
-              .status(),                                                       \
-          std::source_location::current()))
+#define TURBO_INTERNAL_STATUS_MACROS_IMPL_ASSIGN_OR_RETURN_2_(return_keyword,     \
+    lhs, rexpr)                                                                   \
+    TURBO_INTERNAL_STATUS_MACROS_IMPL_ASSIGN_OR_RETURN_(                          \
+        TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_(_status_or_value, __LINE__),    \
+        lhs, rexpr,                                                               \
+        return_keyword turbo::Status(                                             \
+            std::move(TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_(_status_or_value, \
+                          __LINE__))                                              \
+                .status(),                                                        \
+            std::source_location::current()))
 
-#define TURBO_INTERNAL_STATUS_MACROS_IMPL_ASSIGN_OR_RETURN_3_(                  \
-    return_keyword, lhs, rexpr, error_expression)                              \
-  TURBO_INTERNAL_STATUS_MACROS_IMPL_ASSIGN_OR_RETURN_(                          \
-      TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_(_status_or_value, __LINE__),    \
-      lhs, rexpr, /* NOLINTNEXTLINE(misc-const-correctness) */                 \
-      turbo::StatusBuilder _(                                                   \
-          std::move(TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_(_status_or_value, \
-                                                             __LINE__))        \
-              .status(),                                                       \
-          std::source_location::current());                                    \
-      (void)_; /* error_expression is allowed to not use this variable */      \
-      return_keyword(error_expression))
+#define TURBO_INTERNAL_STATUS_MACROS_IMPL_ASSIGN_OR_RETURN_3_(                    \
+    return_keyword, lhs, rexpr, error_expression)                                 \
+    TURBO_INTERNAL_STATUS_MACROS_IMPL_ASSIGN_OR_RETURN_(                          \
+        TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_(_status_or_value, __LINE__),    \
+        lhs, rexpr, /* NOLINTNEXTLINE(misc-const-correctness) */                  \
+        turbo::StatusBuilder _(                                                   \
+            std::move(TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_(_status_or_value, \
+                          __LINE__))                                              \
+                .status(),                                                        \
+            std::source_location::current());                                     \
+        (void)_; /* error_expression is allowed to not use this variable */       \
+        return_keyword(error_expression))
 
-#define TURBO_INTERNAL_STATUS_MACROS_IMPL_ASSIGN_OR_RETURN_(                 \
-    statusor, lhs, rexpr, error_expression)                                 \
-  auto statusor = (rexpr);                                                  \
-  if (KUMO_UNLIKELY(!statusor.ok())) {                                 \
-    error_expression;                                                       \
-  }                                                                         \
-  {                                                                         \
-    static_assert(                                                          \
-        !IsEnclosedByParentheses(#lhs) ||                                   \
-            !HasPotentialConditionalOperator(#lhs, sizeof(#lhs) - 2),       \
-        "Identified potential conditional operator, consider not "          \
-        "using TURBO_ASSIGN_OR_RETURN");                                     \
-  }                                                                         \
-  {                                                                         \
-    static_assert(                                                          \
-        turbo::status_macro_internal::IsAllowedStatusOrMacroType<            \
-            std::remove_const_t<decltype(statusor)>>(),                     \
-        "TURBO_ASSIGN_OR_RETURN should only be used with turbo::StatusOr<>"); \
-  }                                                                         \
-  TURBO_INTERNAL_STATUS_MACROS_IMPL_UNPARENTHESIZE_IF_PARENTHESIZED(lhs) =   \
-      (*std::move(statusor))
+#define TURBO_INTERNAL_STATUS_MACROS_IMPL_ASSIGN_OR_RETURN_(                                            \
+    statusor, lhs, rexpr, error_expression)                                                             \
+    auto statusor = (rexpr);                                                                            \
+    if (KUMO_UNLIKELY(!statusor.ok())) {                                                                \
+        error_expression;                                                                               \
+    }                                                                                                   \
+    {                                                                                                   \
+        static_assert(                                                                                  \
+            !IsEnclosedByParentheses(#lhs) || !HasPotentialConditionalOperator(#lhs, sizeof(#lhs) - 2), \
+            "Identified potential conditional operator, consider not "                                  \
+            "using TURBO_ASSIGN_OR_RETURN");                                                            \
+    }                                                                                                   \
+    {                                                                                                   \
+        static_assert(                                                                                  \
+            turbo::status_macro_internal::IsAllowedStatusOrMacroType<                                   \
+                std::remove_const_t<decltype(statusor)>>(),                                             \
+            "TURBO_ASSIGN_OR_RETURN should only be used with turbo::StatusOr<>");                       \
+    }                                                                                                   \
+    TURBO_INTERNAL_STATUS_MACROS_IMPL_UNPARENTHESIZE_IF_PARENTHESIZED(lhs) = (*std::move(statusor))
 
 // Internal helpers for macro expansion.
 #define TURBO_INTERNAL_STATUS_MACROS_IMPL_EAT(...)
@@ -266,8 +262,8 @@ namespace turbo {
 #define TURBO_INTERNAL_STATUS_MACROS_IMPL_ARG_3(a, b, c, ...) c
 
 #define TURBO_INTERNAL_STATUS_MACROS_IMPL_HAS_COMMA(...) \
-  TURBO_INTERNAL_STATUS_MACROS_IMPL_REM(                 \
-      TURBO_INTERNAL_STATUS_MACROS_IMPL_ARG_3(__VA_ARGS__, 1, 10))
+    TURBO_INTERNAL_STATUS_MACROS_IMPL_REM(               \
+        TURBO_INTERNAL_STATUS_MACROS_IMPL_ARG_3(__VA_ARGS__, 1, 10))
 
 // Concatenates five macro arguments.
 #define TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_5(a, b, c, d, e) a##b##c##d##e
@@ -277,27 +273,27 @@ namespace turbo {
 
 // Evaluates to 1 if the arguments concatenate to 1010101, and 10 otherwise.
 #define TURBO_INTERNAL_STATUS_MACROS_1_IF_1010101_ELSE_10(a, b, c, d) \
-  TURBO_INTERNAL_STATUS_MACROS_IMPL_HAS_COMMA(                        \
-      TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_5(                     \
-          TURBO_INTERNAL_STATUS_MACROS_IMPL_IS_EMPTY_CASE_, a, b, c, d))
+    TURBO_INTERNAL_STATUS_MACROS_IMPL_HAS_COMMA(                      \
+        TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_5(                   \
+            TURBO_INTERNAL_STATUS_MACROS_IMPL_IS_EMPTY_CASE_, a, b, c, d))
 
 // Evaluates to 1 if __VA_OPT__ is supported and the argument list is non-empty,
 // and 0 otherwise.
 #define TURBO_INTERNAL_STATUS_MACROS_IMPL_HAVE_VA_OPT(...) \
-  TURBO_INTERNAL_STATUS_MACROS_IMPL_ARG_3(__VA_OPT__(, ), 1, 0, )
+    TURBO_INTERNAL_STATUS_MACROS_IMPL_ARG_3(__VA_OPT__(, ), 1, 0, )
 
 #if TURBO_INTERNAL_STATUS_MACROS_IMPL_HAVE_VA_OPT(.)
 // Evaluates to 1 if the argument list is empty, and 10 otherwise.
 #define TURBO_INTERNAL_STATUS_MACROS_1_IF_EMPTY_ELSE_10(...) 1##__VA_OPT__(0)
 #else
-#define TURBO_INTERNAL_STATUS_MACROS_1_IF_EMPTY_ELSE_10(...)      \
-  TURBO_INTERNAL_STATUS_MACROS_1_IF_1010101_ELSE_10(              \
-      TURBO_INTERNAL_STATUS_MACROS_IMPL_HAS_COMMA(__VA_ARGS__),   \
-      TURBO_INTERNAL_STATUS_MACROS_IMPL_HAS_COMMA(                \
-          TURBO_INTERNAL_STATUS_MACROS_IMPL_COMMA __VA_ARGS__),   \
-      TURBO_INTERNAL_STATUS_MACROS_IMPL_HAS_COMMA(__VA_ARGS__()), \
-      TURBO_INTERNAL_STATUS_MACROS_IMPL_HAS_COMMA(                \
-          TURBO_INTERNAL_STATUS_MACROS_IMPL_COMMA __VA_ARGS__()))
+#define TURBO_INTERNAL_STATUS_MACROS_1_IF_EMPTY_ELSE_10(...)        \
+    TURBO_INTERNAL_STATUS_MACROS_1_IF_1010101_ELSE_10(              \
+        TURBO_INTERNAL_STATUS_MACROS_IMPL_HAS_COMMA(__VA_ARGS__),   \
+        TURBO_INTERNAL_STATUS_MACROS_IMPL_HAS_COMMA(                \
+            TURBO_INTERNAL_STATUS_MACROS_IMPL_COMMA __VA_ARGS__),   \
+        TURBO_INTERNAL_STATUS_MACROS_IMPL_HAS_COMMA(__VA_ARGS__()), \
+        TURBO_INTERNAL_STATUS_MACROS_IMPL_HAS_COMMA(                \
+            TURBO_INTERNAL_STATUS_MACROS_IMPL_COMMA __VA_ARGS__()))
 
 #endif
 
@@ -308,27 +304,27 @@ namespace turbo {
 // this is only called when the input is fully parenthesized to avoid this
 // issue.
 #define TURBO_INTERNAL_STATUS_MACROS_IMPL_UNPARENTHESIZE_IF_PARENTHESIZED_1(x) \
-  TURBO_INTERNAL_STATUS_MACROS_IMPL_REM x
+    TURBO_INTERNAL_STATUS_MACROS_IMPL_REM x
 
 // Unparenthesized case: evaluates to the argument list as-is.
 #define TURBO_INTERNAL_STATUS_MACROS_IMPL_UNPARENTHESIZE_IF_PARENTHESIZED_10(x) \
-  TURBO_INTERNAL_STATUS_MACROS_IMPL_REM(x)
+    TURBO_INTERNAL_STATUS_MACROS_IMPL_REM(x)
 
 // If the input is parenthesized, removes the parentheses. Otherwise expands to
 // the input unchanged.
-#define TURBO_INTERNAL_STATUS_MACROS_IMPL_UNPARENTHESIZE_IF_PARENTHESIZED(...) \
-  TURBO_INTERNAL_STATUS_MACROS_IMPL_REM(                                       \
-      TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_(                               \
-          TURBO_INTERNAL_STATUS_MACROS_IMPL_UNPARENTHESIZE_IF_PARENTHESIZED_,  \
-          TURBO_INTERNAL_STATUS_MACROS_1_IF_EMPTY_ELSE_10(                     \
-              TURBO_INTERNAL_STATUS_MACROS_IMPL_EAT __VA_ARGS__))(             \
-          TURBO_INTERNAL_STATUS_MACROS_IMPL_REM(__VA_ARGS__)))
+#define TURBO_INTERNAL_STATUS_MACROS_IMPL_UNPARENTHESIZE_IF_PARENTHESIZED(...)  \
+    TURBO_INTERNAL_STATUS_MACROS_IMPL_REM(                                      \
+        TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_(                              \
+            TURBO_INTERNAL_STATUS_MACROS_IMPL_UNPARENTHESIZE_IF_PARENTHESIZED_, \
+            TURBO_INTERNAL_STATUS_MACROS_1_IF_EMPTY_ELSE_10(                    \
+                TURBO_INTERNAL_STATUS_MACROS_IMPL_EAT __VA_ARGS__))(            \
+            TURBO_INTERNAL_STATUS_MACROS_IMPL_REM(__VA_ARGS__)))
 
 // Internal helper for concatenating macro values.
 #define TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_INNER_(x, y) x##y
 
 #define TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_(x, y) \
-  TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_INNER_(x, y)
+    TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_INNER_(x, y)
 
 // The GNU compiler emits a warning for code like:
 //
@@ -342,9 +338,9 @@ namespace turbo {
 //
 // The "switch (0) case 0:" idiom is used to suppress this.
 #define TURBO_INTERNAL_STATUS_MACROS_IMPL_ELSE_BLOCKER_ \
-  switch (0)                                           \
-  case 0:                                              \
-  default:  // NOLINT
+    switch (0)                                          \
+    case 0:                                             \
+    default: // NOLINT
 
 namespace turbo {
     namespace status_macro_internal {
@@ -353,34 +349,34 @@ namespace turbo {
         class StatusAdaptorForMacros {
         public:
             StatusAdaptorForMacros(
-                const turbo::Status &status,
+                const turbo::Status& status,
                 std::source_location loc = std::source_location::current())
                 : builder_(status, loc) {
             }
 
             StatusAdaptorForMacros(
-                turbo::Status &&status,
+                turbo::Status&& status,
                 std::source_location loc = std::source_location::current())
                 : builder_(std::move(status), loc) {
             }
 
-            StatusAdaptorForMacros(const StatusBuilder &builder,
-                                   std::source_location = std::source_location())
+            StatusAdaptorForMacros(const StatusBuilder& builder,
+                std::source_location = std::source_location())
                 : builder_(builder) {
             }
 
-            StatusAdaptorForMacros(StatusBuilder &&builder,
-                                   std::source_location = std::source_location())
+            StatusAdaptorForMacros(StatusBuilder&& builder,
+                std::source_location = std::source_location())
                 : builder_(std::move(builder)) {
             }
 
-            StatusAdaptorForMacros(const StatusAdaptorForMacros &) = delete;
+            StatusAdaptorForMacros(const StatusAdaptorForMacros&) = delete;
 
-            StatusAdaptorForMacros &operator=(const StatusAdaptorForMacros &) = delete;
+            StatusAdaptorForMacros& operator=(const StatusAdaptorForMacros&) = delete;
 
             explicit operator bool() const { return KUMO_LIKELY(builder_.ok()); }
 
-            StatusBuilder &&Consume() { return std::move(builder_); }
+            StatusBuilder&& Consume() { return std::move(builder_); }
 
         private:
             StatusBuilder builder_;
@@ -393,15 +389,17 @@ namespace turbo {
         class ReturnIfErrorAdaptor {
         public:
             explicit ReturnIfErrorAdaptor(
-                const turbo::Status &status,
+                const turbo::Status& status,
                 std::source_location loc = std::source_location::current())
-                : status_(status), loc_(loc) {
+                : status_(status)
+                , loc_(loc) {
             }
 
             explicit ReturnIfErrorAdaptor(
-                turbo::Status &&status,
+                turbo::Status&& status,
                 std::source_location loc = std::source_location::current())
-                : status_(std::move(status)), loc_(loc) {
+                : status_(std::move(status))
+                , loc_(loc) {
             }
 
             ~ReturnIfErrorAdaptor() {
@@ -438,23 +436,23 @@ namespace turbo {
         //
         // TODO(b/501387693): Replace these with deduction guides of template
         // specializations once the bug is fixed. (See prior file revision.)
-        inline ReturnIfErrorAdaptor MacroAdaptor(const turbo::Status &s,
-                                                 std::source_location loc) {
+        inline ReturnIfErrorAdaptor MacroAdaptor(const turbo::Status& s,
+            std::source_location loc) {
             return ReturnIfErrorAdaptor(s, loc);
         }
 
-        inline ReturnIfErrorAdaptor MacroAdaptor(turbo::Status &&s,
-                                                 std::source_location loc) {
+        inline ReturnIfErrorAdaptor MacroAdaptor(turbo::Status&& s,
+            std::source_location loc) {
             return ReturnIfErrorAdaptor(std::move(s), loc);
         }
 
-        inline StatusAdaptorForMacros MacroAdaptor(const StatusBuilder &s,
-                                                   std::source_location loc) {
+        inline StatusAdaptorForMacros MacroAdaptor(const StatusBuilder& s,
+            std::source_location loc) {
             return StatusAdaptorForMacros(s, loc);
         }
 
-        inline StatusAdaptorForMacros MacroAdaptor(StatusBuilder &&s,
-                                                   std::source_location loc) {
+        inline StatusAdaptorForMacros MacroAdaptor(StatusBuilder&& s,
+            std::source_location loc) {
             return StatusAdaptorForMacros(std::move(s), loc);
         }
     } // namespace status_macro_internal
@@ -480,7 +478,7 @@ namespace turbo {
 #ifdef TURBO_DEFINE_UNQUALIFIED_STATUS_MACROS
 #define ASSIGN_OR_RETURN(...) TURBO_ASSIGN_OR_RETURN(__VA_ARGS__)
 #define RETURN_IF_ERROR(...) TURBO_RETURN_IF_ERROR(__VA_ARGS__)
-#endif  // TURBO_DEFINE_UNQUALIFIED_STATUS_MACROS
+#endif // TURBO_DEFINE_UNQUALIFIED_STATUS_MACROS
 } // namespace turbo
 
-#endif  // TURBO_STATUS_STATUS_MACROS_H_
+#endif // TURBO_STATUS_STATUS_MACROS_H_

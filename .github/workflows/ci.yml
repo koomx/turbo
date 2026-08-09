@@ -17,8 +17,10 @@ jobs:
       enable-std20-ubuntu24-arm64: true
       enable-macos-arm64: true
       enable-windows: true
+      # Windows: scripts/ci_configure.py forces MSVC (cl) via vcvarsall and
+      # refuses MinGW. Non-Windows: same as cmake --preset=ci.
       config-command: |
-        cmake --preset=ci -DCMAKE_BUILD_TYPE=Release
+        python3 scripts/ci_configure.py
       build-command: |
         cmake --build build-ninja --parallel
       test-command: |

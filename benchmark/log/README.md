@@ -10,8 +10,9 @@ The CI workflow uses `koomx/x-ci` `vcpkg-template` only for runner / matrix /
 publish plumbing.
 
 Threaded log benches use `ThreadRange(1, 2 * hardware_concurrency())`
-locally. On GitHub Actions, `scripts/run_log_bench.py` filters to single-thread
-cases only (`BM_*` without `/threads:` or `/threads:1`) to avoid runner hangs.
+locally. On GitHub Actions (`GITHUB_ACTIONS` set), `MaxBenchThreads()` is `1`
+and `scripts/run_log_bench.py` also filters to single-thread cases, so ARM CI
+does not oversubscribe / hang.
 
 ## Gallery
 

@@ -14,24 +14,19 @@
 #
 
 
-set(TYPES_TESTS
-        any_span_test
-        optional_ref_test
-        span_test
-        variant_test
-        fixed_array_exception_safety_test
-        fixed_array_test
-        inlined_vector_exception_safety_test
-        inlined_vector_test
-        expected_test
-        expected_extensions_test
-        expected_assertions_test
+set(BITS_TESTS
+        bit_cast_test
+        bits_test
+        casts_test
+        prefetch_test
+        endian_test
+        bitmap_view_test
 )
 
-foreach (case IN LISTS TYPES_TESTS)
+foreach (case IN LISTS BITS_TESTS)
     kmcmake_cc_test(
             NAME ${case}
-            MODULE types
+            MODULE bits
             SOURCES
             ${case}.cc
             CXXOPTS
@@ -40,7 +35,6 @@ foreach (case IN LISTS TYPES_TESTS)
             GTest::gtest
             GTest::gmock
             GTest::gtest_main
-            turbo::test_utils_static
             turbo::base_testing_static
             turbo::turbo_static
             ${KMCMAKE_DEPS_LINK}

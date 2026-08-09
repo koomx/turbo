@@ -72,8 +72,9 @@ def run_one(label: str, binary: Path, raw_path: Path) -> tuple[list[dict], str]:
         f"--benchmark_out={raw_path}",
         "--benchmark_out_format=json",
     ]
-    # CI runners (esp. small ARM) hang under ThreadRange(1..2*N); keep single-thread only.
-    if os.environ.get("GITHUB_ACTIONS") == "true":
+    # CI: binary already caps MaxBenchThreads()=1 when GITHUB_ACTIONS is set;
+    # filter keeps only single-thread / non-threaded cases as a second guard.
+    if os.environ.get("GITHUB_ACTIONS"):
         cmd.append(r"--benchmark_filter=(^BM_[^/]+$|/threads:1$)")
     print("running:", " ".join(cmd), flush=True)
     subprocess.check_call(cmd)

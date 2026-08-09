@@ -25,14 +25,14 @@
 #include <utility>
 #include <vector>
 
-#include <turbo/macros/config.h>
-#include <turbo/base/nullability.h>
-#include <turbo/types/inlined_vector.h>
-#include <string_view>
-#include <turbo/types/optional_ref.h>
 #include <source_location>
-#include <turbo/types/span.h>
+#include <string_view>
+#include <turbo/base/nullability.h>
 #include <turbo/functional/function_ref.h>
+#include <turbo/macros/config.h>
+#include <turbo/types/inlined_vector.h>
+#include <turbo/types/optional_ref.h>
+#include <turbo/types/span.h>
 
 #ifndef SWIG
 // Disabled for SWIG as it doesn't parse attributes correctly.
@@ -44,27 +44,27 @@ namespace turbo {
     // [[nodiscard]]. For now, just use [[nodiscard]] directly when it is available.
 #if KUMO_HAVE_CPP_ATTRIBUTE(nodiscard)
     class [[nodiscard]] KUMO_ATTRIBUTE_TRIVIAL_ABI
-    Status;
+        Status;
 #else
     class KUMO_MUST_USE_RESULT KUMO_ATTRIBUTE_TRIVIAL_ABI
-    Status;
+        Status;
 #endif
 } // namespace turbo
-#endif  // !SWIG
+#endif // !SWIG
 
 namespace turbo {
     enum class StatusCode : int;
     enum class StatusToStringMode : int;
 
     // Forward declaration of StatusOr for Status friendship.
-    template<typename T>
+    template <typename T>
     class StatusOr;
 
     namespace status_internal {
 #ifndef SWIG
         class StatusPrivateAccessor;
         class StatusPrivateAccessorForStatusBuilder;
-#endif  // !SWIG
+#endif // !SWIG
 
         // Container for status payloads.
         struct Payload {
@@ -78,25 +78,25 @@ namespace turbo {
         class StatusRep {
         public:
             StatusRep(turbo::StatusCode code_arg, std::string_view message_arg,
-                      std::unique_ptr<status_internal::Payloads> payloads_arg)
-                : ref_(int32_t{1}),
-                  code_(code_arg),
-                  message_(message_arg),
-                  payloads_(std::move(payloads_arg)) {
+                std::unique_ptr<status_internal::Payloads> payloads_arg)
+                : ref_(int32_t { 1 })
+                , code_(code_arg)
+                , message_(message_arg)
+                , payloads_(std::move(payloads_arg)) {
             }
 
-            template<typename String,
-                typename = std::enable_if_t<std::is_same_v<String, std::string> > >
-            StatusRep(turbo::StatusCode code_arg, String &&message_arg,
-                      std::unique_ptr<status_internal::Payloads> payloads_arg)
-                : ref_(int32_t{1}),
-                  code_(code_arg),
-                  message_(std::forward<String>(message_arg)),
-                  payloads_(std::move(payloads_arg)) {
+            template <typename String,
+                typename = std::enable_if_t<std::is_same_v<String, std::string>>>
+            StatusRep(turbo::StatusCode code_arg, String&& message_arg,
+                std::unique_ptr<status_internal::Payloads> payloads_arg)
+                : ref_(int32_t { 1 })
+                , code_(code_arg)
+                , message_(std::forward<String>(message_arg))
+                , payloads_(std::move(payloads_arg)) {
             }
 
             turbo::StatusCode code() const { return code_; }
-            const std::string &message() const { return message_; }
+            const std::string& message() const { return message_; }
 
             // Ref and unref are const to allow access through a const pointer, and are
             // used during copying operations.
@@ -117,8 +117,8 @@ namespace turbo {
             EraseResult ErasePayload(std::string_view type_url);
 
             void ForEachPayload(
-                turbo::FunctionRef<void(std::string_view, const std::string &)> visitor)
-            const;
+                turbo::FunctionRef<void(std::string_view, const std::string&)> visitor)
+                const;
 
             turbo::Span<const std::source_location> GetSourceLocations() const;
 
@@ -126,25 +126,25 @@ namespace turbo {
 
             std::string ToString(StatusToStringMode mode) const;
 
-            bool operator==(const StatusRep &other) const;
+            bool operator==(const StatusRep& other) const;
 
-            bool operator!=(const StatusRep &other) const { return !(*this == other); }
+            bool operator!=(const StatusRep& other) const { return !(*this == other); }
 
             // Returns an equivalent heap allocated StatusRep with refcount 1.
             //
             // If `new_message` is provided, the message will be replaced with the new
             // message.
-            StatusRep * turbo_nonnull Clone(
+            StatusRep* turbo_nonnull Clone(
                 turbo::optional_ref<std::string_view> new_message, bool include_payloads,
                 bool include_source_locations) const;
 
             // Same as Clone(), but also removes a reference to `this`. `this` is not safe
             // to be used after calling as it may have been deleted.
-            StatusRep * turbo_nonnull CloneAndUnref(
+            StatusRep* turbo_nonnull CloneAndUnref(
                 turbo::optional_ref<std::string_view> new_message, bool include_payloads,
                 bool include_source_locations) const;
 
-            StatusRep * turbo_nonnull CloneAndUnref() const;
+            StatusRep* turbo_nonnull CloneAndUnref() const;
 
         private:
             mutable std::atomic<int32_t> ref_;
@@ -171,9 +171,9 @@ namespace turbo {
         //
         // This is an internal implementation detail for Abseil logging.
         KUMO_ATTRIBUTE_PURE_FUNCTION
-        const char * turbo_nonnull make_check_fail_string(
-            const turbo::Status * turbo_nonnull status, const char * turbo_nonnull prefix);
+        const char* turbo_nonnull make_check_fail_string(
+            const turbo::Status* turbo_nonnull status, const char* turbo_nonnull prefix);
     } // namespace status_internal
 } // namespace turbo
 
-#endif  // TURBO_STATUS_INTERNAL_STATUS_INTERNAL_H_
+#endif // TURBO_STATUS_INTERNAL_STATUS_INTERNAL_H_

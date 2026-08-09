@@ -83,59 +83,58 @@
 #ifndef TURBO_STATUS_STATUS_MATCHERS_H_
 #define TURBO_STATUS_STATUS_MATCHERS_H_
 
-#include <ostream>  // NOLINT
+#include <ostream> // NOLINT
 #include <type_traits>
 #include <utility>
 
-#include <gmock/gmock.h>  // gmock_for_status_matchers.h
-#include <turbo/macros/config.h>
+#include <gmock/gmock.h> // gmock_for_status_matchers.h
 #include <tests/status/internal/status_matchers.h>
+#include <turbo/macros/config.h>
 
 namespace turbo_testing {
-
 
 // Macros for testing the results of functions that return turbo::Status or
 // turbo::StatusOr<T> (for any type T).
 #define TURBO_EXPECT_OK(expression) \
-  EXPECT_THAT(expression, ::turbo_testing::IsOk())
+    EXPECT_THAT(expression, ::turbo_testing::IsOk())
 #define TURBO_ASSERT_OK(expression) \
-  ASSERT_THAT(expression, ::turbo_testing::IsOk())
+    ASSERT_THAT(expression, ::turbo_testing::IsOk())
 
-// Returns a gMock matcher that matches a StatusOr<> whose status is
-// OK and whose value matches the inner matcher.
-template <typename InnerMatcherT>
-status_internal::IsOkAndHoldsMatcher<std::decay_t<InnerMatcherT>> IsOkAndHolds(
-    InnerMatcherT&& inner_matcher) {
-  return status_internal::IsOkAndHoldsMatcher<std::decay_t<InnerMatcherT>>(
-      std::forward<InnerMatcherT>(inner_matcher));
-}
+    // Returns a gMock matcher that matches a StatusOr<> whose status is
+    // OK and whose value matches the inner matcher.
+    template <typename InnerMatcherT>
+    status_internal::IsOkAndHoldsMatcher<std::decay_t<InnerMatcherT>> IsOkAndHolds(
+        InnerMatcherT&& inner_matcher) {
+        return status_internal::IsOkAndHoldsMatcher<std::decay_t<InnerMatcherT>>(
+            std::forward<InnerMatcherT>(inner_matcher));
+    }
 
-// Returns a gMock matcher that matches a Status or StatusOr<> whose status code
-// matches code_matcher and whose error message matches message_matcher.
-// Typically, code_matcher will be an turbo::StatusCode, e.g.
-//
-// StatusIs(turbo::StatusCode::kInvalidArgument, "...")
-template <typename StatusCodeMatcherT, typename StatusMessageMatcherT>
-status_internal::StatusIsMatcher StatusIs(
-    StatusCodeMatcherT&& code_matcher,
-    StatusMessageMatcherT&& message_matcher) {
-  return status_internal::StatusIsMatcher(
-      std::forward<StatusCodeMatcherT>(code_matcher),
-      std::forward<StatusMessageMatcherT>(message_matcher));
-}
+    // Returns a gMock matcher that matches a Status or StatusOr<> whose status code
+    // matches code_matcher and whose error message matches message_matcher.
+    // Typically, code_matcher will be an turbo::StatusCode, e.g.
+    //
+    // StatusIs(turbo::StatusCode::kInvalidArgument, "...")
+    template <typename StatusCodeMatcherT, typename StatusMessageMatcherT>
+    status_internal::StatusIsMatcher StatusIs(
+        StatusCodeMatcherT&& code_matcher,
+        StatusMessageMatcherT&& message_matcher) {
+        return status_internal::StatusIsMatcher(
+            std::forward<StatusCodeMatcherT>(code_matcher),
+            std::forward<StatusMessageMatcherT>(message_matcher));
+    }
 
-// Returns a gMock matcher that matches a Status or StatusOr<> and whose status
-// code matches code_matcher.  See above for details.
-template <typename StatusCodeMatcherT>
-status_internal::StatusIsMatcher StatusIs(StatusCodeMatcherT&& code_matcher) {
-  return turbo_testing::StatusIs(std::forward<StatusCodeMatcherT>(code_matcher),
-                                ::testing::_);
-}
+    // Returns a gMock matcher that matches a Status or StatusOr<> and whose status
+    // code matches code_matcher.  See above for details.
+    template <typename StatusCodeMatcherT>
+    status_internal::StatusIsMatcher StatusIs(StatusCodeMatcherT&& code_matcher) {
+        return turbo_testing::StatusIs(std::forward<StatusCodeMatcherT>(code_matcher),
+            ::testing::_);
+    }
 
-// Returns a gMock matcher that matches a Status or StatusOr<> which is OK.
-inline status_internal::IsOkMatcher IsOk() {
-  return status_internal::IsOkMatcher();
-}
+    // Returns a gMock matcher that matches a Status or StatusOr<> which is OK.
+    inline status_internal::IsOkMatcher IsOk() {
+        return status_internal::IsOkMatcher();
+    }
 
 // By defining TURBO_DEFINE_UNQUALIFIED_STATUS_TESTING_MACROS, this library also
 // provides unqualified versions of macros
@@ -158,9 +157,8 @@ inline status_internal::IsOkMatcher IsOk() {
 #ifdef TURBO_DEFINE_UNQUALIFIED_STATUS_TESTING_MACROS
 #define EXPECT_OK(expression) TURBO_EXPECT_OK(expression)
 #define ASSERT_OK(expression) TURBO_ASSERT_OK(expression)
-#endif  // TURBO_DEFINE_UNQUALIFIED_STATUS_TESTING_MACROS
+#endif // TURBO_DEFINE_UNQUALIFIED_STATUS_TESTING_MACROS
 
+} // namespace turbo_testing
 
-}  // namespace turbo_testing
-
-#endif  // TURBO_STATUS_STATUS_MATCHERS_H_
+#endif // TURBO_STATUS_STATUS_MATCHERS_H_

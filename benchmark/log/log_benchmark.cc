@@ -24,12 +24,18 @@
 #include <turbo/log/vlog_is_on.h>
 #include "benchmark/benchmark.h"
 
+#include <cstdlib>
 #include <thread>
 
 namespace {
 
-// Cap threaded benches to avoid oversubscribing small CI runners (e.g. 4-core ARM).
+// Local: ThreadRange up to 2*N. CI (GITHUB_ACTIONS): single-thread only — ARM
+// runners hang/oversubscribe under multi-thread log benches.
 int MaxBenchThreads() {
+  if (const char* ga = std::getenv("GITHUB_ACTIONS");
+      ga != nullptr && ga[0] != '\0') {
+    return 1;
+  }
   unsigned hc = std::thread::hardware_concurrency();
   if (hc == 0) {
     hc = 1;
