@@ -96,8 +96,8 @@ auto HasExactlyNInstancesOf(int n, std::string_view me) {
 #else
   std::string_view value_m_times = "(.*$0){$1}.*";
 
-  return AllOf(MatchesRegex(turbo::Substitute(value_m_times, me, n)),
-               Not(MatchesRegex(turbo::Substitute(value_m_times, me, n + 1))));
+  return AllOf(MatchesRegex(turbo::substitute(value_m_times, me, n)),
+               Not(MatchesRegex(turbo::substitute(value_m_times, me, n + 1))));
 #endif
 }
 

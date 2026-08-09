@@ -21,20 +21,20 @@
 #include <cstring>
 
 #include <turbo/macros/config.h>
-#include <turbo/strings/ascii.h>  // for turbo::ascii_tolower
+#include <turbo/strings/ascii.h> // for turbo::ascii_tolower
 
 namespace turbo {
 
-namespace strings_internal {
+    namespace strings_internal {
 
-// Performs a byte-by-byte comparison of `len` bytes of the strings `s1` and
-// `s2`, ignoring the case of the characters. It returns an integer less than,
-// equal to, or greater than zero if `s1` is found, respectively, to be less
-// than, to match, or be greater than `s2`.
-int memcasecmp(const char* s1, const char* s2, size_t len);
+        // Performs a byte-by-byte comparison of `len` bytes of the strings `s1` and
+        // `s2`, ignoring the case of the characters. It returns an integer less than,
+        // equal to, or greater than zero if `s1` is found, respectively, to be less
+        // than, to match, or be greater than `s2`.
+        int memcasecmp(const char* s1, const char* s2, size_t len);
 
-}  // namespace strings_internal
+    } // namespace strings_internal
 
-}  // namespace turbo
+} // namespace turbo
 
-#endif  // TURBO_STRINGS_INTERNAL_MEMUTIL_H_
+#endif // TURBO_STRINGS_INTERNAL_MEMUTIL_H_

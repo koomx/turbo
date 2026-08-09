@@ -14,11 +14,10 @@
 //
 #pragma once
 
-
 #include <string_view>
 
-#include <turbo/macros/config.h>
 #include <turbo/base/nullability.h>
+#include <turbo/macros/config.h>
 
 namespace turbo {
     // ClippedSubstr()
@@ -26,7 +25,7 @@ namespace turbo {
     // Like `s.substr(pos, n)`, but clips `pos` to an upper bound of `s.size()`.
     // Provided because std::string_view::substr throws if `pos > size()`
     inline std::string_view ClippedSubstr(std::string_view s KUMO_ATTRIBUTE_LIFETIME_BOUND,
-                                          size_t pos, size_t n = std::string_view::npos) {
+        size_t pos, size_t n = std::string_view::npos) {
         pos = (std::min)(pos, static_cast<size_t>(s.size()));
         return s.substr(pos, n);
     }
@@ -36,7 +35,7 @@ namespace turbo {
     // Creates an `std::string_view` from a pointer `p` even if it's null-valued.
     // This function should be used where an `std::string_view` can be created from
     // a possibly-null pointer.
-    constexpr std::string_view NullSafeStringView(const char * turbo_nullable p) {
+    constexpr std::string_view NullSafeStringView(const char* turbo_nullable p) {
         return p ? std::string_view(p) : std::string_view();
     }
 } // namespace turbo

@@ -1149,7 +1149,7 @@ bool IsSubstringInCordAt(turbo::Cord::CharIterator position,
     // empty. This assert will trigger if that is not true.
     assert(!haystack_chunk.empty());
     auto min_length = std::min(haystack_chunk.size(), needle.size());
-    if (!turbo::ConsumePrefix(&needle, haystack_chunk.substr(0, min_length))) {
+    if (!turbo::consume_prefix(&needle, haystack_chunk.substr(0, min_length))) {
       return false;
     }
     if (needle.empty()) {

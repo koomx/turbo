@@ -665,7 +665,7 @@ TEST(CHECKDeathTest, TestUserDefinedTurboStringify) {
   // values.
   auto expected_output = [](int lhs, std::string_view condition, int rhs) {
     return HasSubstr(
-        turbo::Substitute("Check failed: v$0 $1 v$2 (StringifiableType{$0} vs. "
+        turbo::substitute("Check failed: v$0 $1 v$2 (StringifiableType{$0} vs. "
                          "StringifiableType{$2})",
                          lhs, condition, rhs));
   };

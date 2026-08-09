@@ -15,77 +15,76 @@
 #ifndef TURBO_STRINGS_INTERNAL_APPEND_AND_OVERWRITE_H_
 #define TURBO_STRINGS_INTERNAL_APPEND_AND_OVERWRITE_H_
 
-#include <turbo/macros/config.h>
 #include <turbo/base/internal/hardening.h>
 #include <turbo/base/throw_delegate.h>
+#include <turbo/macros/config.h>
 #include <turbo/strings/resize_and_overwrite.h>
 
 namespace turbo {
 
-namespace strings_internal {
+    namespace strings_internal {
 
-// An internal-only variant similar to `turbo::StringResizeAndOverwrite()`
-// optimized for repeated appends to a string that uses exponential growth so
-// that the amortized complexity of increasing the string size by a small amount
-// is O(1), in contrast to O(str.size()) in the case of precise growth. Use of
-// this function is subtle; see https://reviews.llvm.org/D102727 to understand
-// the tradeoffs.
-//
-// Appends at most `append_n` characters to `str`, using the user-provided
-// operation `append_op` to modify the possibly indeterminate
-// contents. `append_op` must return the length of the buffer appended to `str`.
-//
-// Invalidates all iterators, pointers, and references into `str`, regardless
-// of whether reallocation occurs.
-//
-// `append_op(value_type* buf, size_t buf_size)` is allowed to write
-// `value_type{}` to `buf[buf_size]`, which facilitiates interoperation with
-// functions that write a trailing NUL.
-template <typename T, typename Op>
-void StringAppendAndOverwrite(T& str, typename T::size_type append_n,
-                              Op append_op) {
-  if (KUMO_UNLIKELY(append_n > str.max_size() - str.size())) {
-    ThrowStdLengthError("turbo::strings_internal::StringAppendAndOverwrite");
-  }
+        // An internal-only variant similar to `turbo::StringResizeAndOverwrite()`
+        // optimized for repeated appends to a string that uses exponential growth so
+        // that the amortized complexity of increasing the string size by a small amount
+        // is O(1), in contrast to O(str.size()) in the case of precise growth. Use of
+        // this function is subtle; see https://reviews.llvm.org/D102727 to understand
+        // the tradeoffs.
+        //
+        // Appends at most `append_n` characters to `str`, using the user-provided
+        // operation `append_op` to modify the possibly indeterminate
+        // contents. `append_op` must return the length of the buffer appended to `str`.
+        //
+        // Invalidates all iterators, pointers, and references into `str`, regardless
+        // of whether reallocation occurs.
+        //
+        // `append_op(value_type* buf, size_t buf_size)` is allowed to write
+        // `value_type{}` to `buf[buf_size]`, which facilitiates interoperation with
+        // functions that write a trailing NUL.
+        template <typename T, typename Op>
+        void StringAppendAndOverwrite(T& str, typename T::size_type append_n,
+            Op append_op) {
+            if (KUMO_UNLIKELY(append_n > str.max_size() - str.size())) {
+                ThrowStdLengthError("turbo::strings_internal::StringAppendAndOverwrite");
+            }
 
-  auto old_size = str.size();
-  auto resize = old_size + append_n;
+            auto old_size = str.size();
+            auto resize = old_size + append_n;
 
-  if (resize > str.capacity()) {
-    // Make sure to always grow by at least a factor of 2x.
-    const auto min_growth = str.capacity();
-    if (KUMO_UNLIKELY(str.capacity() > str.max_size() - min_growth)) {
-      str.reserve(str.max_size());
-    } else if (resize < str.capacity() + min_growth) {
-      str.reserve(str.capacity() + min_growth);
-    }
-  }
+            if (resize > str.capacity()) {
+                // Make sure to always grow by at least a factor of 2x.
+                const auto min_growth = str.capacity();
+                if (KUMO_UNLIKELY(str.capacity() > str.max_size() - min_growth)) {
+                    str.reserve(str.max_size());
+                } else if (resize < str.capacity() + min_growth) {
+                    str.reserve(str.capacity() + min_growth);
+                }
+            }
 
-  // Avoid calling StringResizeAndOverwrite() here since it does an MSAN
-  // verification on the entire string. StringResizeAndOverwriteImpl() is
-  // StringResizeAndOverwrite() without the MSAN verification.
-  StringResizeAndOverwriteImpl(
-      str, resize,
-      [old_size, append_n, do_append = std::move(append_op)](
-          typename T::value_type* data_ptr, typename T::size_type) mutable {
-        typename T::size_type num_appended = static_cast<typename T::size_type>(
-            std::move(do_append)(data_ptr + old_size, append_n));
-        turbo::base_internal::HardeningAssertGE(num_appended,
-                                               typename T::size_type{0});
-        turbo::base_internal::HardeningAssertLE(num_appended, append_n);
-        return old_size + num_appended;
-      });
+            // Avoid calling StringResizeAndOverwrite() here since it does an MSAN
+            // verification on the entire string. StringResizeAndOverwriteImpl() is
+            // StringResizeAndOverwrite() without the MSAN verification.
+            StringResizeAndOverwriteImpl(
+                str, resize,
+                [old_size, append_n, do_append = std::move(append_op)](
+                    typename T::value_type* data_ptr, typename T::size_type) mutable {
+                    typename T::size_type num_appended = static_cast<typename T::size_type>(
+                        std::move(do_append)(data_ptr + old_size, append_n));
+                    turbo::base_internal::HardeningAssertGE(num_appended,
+                        typename T::size_type { 0 });
+                    turbo::base_internal::HardeningAssertLE(num_appended, append_n);
+                    return old_size + num_appended;
+                });
 
 #if KUMO_HAVE_MEMORY_SANITIZER
-  // Only check the region appended to. Checking the entire string would cause
-  // pathological quadratic verfication on repeated small appends.
-  __msan_check_mem_is_initialized(str.data() + old_size, str.size() - old_size);
+            // Only check the region appended to. Checking the entire string would cause
+            // pathological quadratic verfication on repeated small appends.
+            __msan_check_mem_is_initialized(str.data() + old_size, str.size() - old_size);
 #endif
-}
+        }
 
-}  // namespace strings_internal
+    } // namespace strings_internal
 
-}  // namespace turbo
+} // namespace turbo
 
-
-#endif  // TURBO_STRINGS_INTERNAL_APPEND_AND_OVERWRITE_H_
+#endif // TURBO_STRINGS_INTERNAL_APPEND_AND_OVERWRITE_H_

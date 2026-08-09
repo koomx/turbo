@@ -178,7 +178,7 @@ class ConstructorTracker {
                                   const std::string& address_description,
                                   int countdown,
                                   const std::string& error_description) {
-    return turbo::Substitute(
+    return turbo::substitute(
         "With coundtown at $0:\n"
         "  $1\n"
         "  Object originally constructed by $2\n"
@@ -772,7 +772,7 @@ class ThrowingAllocator : private exceptions_internal::TrackedObject {
   void ReadStateAndMaybeThrow(std::string_view msg) const {
     if (!IsSpecified(AllocSpec::kNoThrowAllocate)) {
       exceptions_internal::MaybeThrow(
-          turbo::Substitute("Allocator id $0 threw from $1", *dummy_, msg));
+          turbo::substitute("Allocator id $0 threw from $1", *dummy_, msg));
     }
   }
 

@@ -44,7 +44,7 @@ namespace turbo {
         // TurboParseFlag specializations for boolean type.
 
         bool TurboParseFlag(std::string_view text, bool* dst, std::string*) {
-            return SimpleAtob(turbo::StripAsciiWhitespace(text), dst);
+            return SimpleAtob(turbo::trim_all(text), dst);
         }
 
         // --------------------------------------------------------------------
@@ -63,7 +63,7 @@ namespace turbo {
 
         template <typename IntType>
         inline bool ParseFlagImpl(std::string_view text, IntType& dst) {
-            text = turbo::StripAsciiWhitespace(text);
+            text = turbo::trim_all(text);
 
             return turbo::numbers_internal::safe_strtoi_base(text, &dst,
                 NumericBase(text));
@@ -115,7 +115,7 @@ namespace turbo {
         }
 
         bool TurboParseFlag(std::string_view text, turbo::int128* dst, std::string*) {
-            text = turbo::StripAsciiWhitespace(text);
+            text = turbo::trim_all(text);
 
             // check hex
             int base = NumericBase(text);
@@ -128,7 +128,7 @@ namespace turbo {
         }
 
         bool TurboParseFlag(std::string_view text, turbo::uint128* dst, std::string*) {
-            text = turbo::StripAsciiWhitespace(text);
+            text = turbo::trim_all(text);
 
             // check hex
             int base = NumericBase(text);
@@ -170,7 +170,7 @@ namespace turbo {
                 dst->clear();
                 return true;
             }
-            *dst = turbo::StrSplit(text, ',', turbo::AllowEmpty());
+            *dst = turbo::str_split(text, ',', turbo::AllowEmpty());
             return true;
         }
 
@@ -250,7 +250,7 @@ namespace turbo {
 
     bool TurboParseFlag(std::string_view text, turbo::LogSeverity* dst,
         std::string* err) {
-        text = turbo::StripAsciiWhitespace(text);
+        text = turbo::trim_all(text);
         if (text.empty()) {
             *err = "no value provided";
             return false;

@@ -26,15 +26,15 @@
 
 namespace turbo {
 
-namespace strings_internal {
+    namespace strings_internal {
 
-// Computes the precise value of 10^exp. (I.e. the nearest representable
-// double to the exact value, rounding to nearest-even in the (single) case of
-// being exactly halfway between.)
-double Pow10(int exp);
+        // Computes the precise value of 10^exp. (I.e. the nearest representable
+        // double to the exact value, rounding to nearest-even in the (single) case of
+        // being exactly halfway between.)
+        double Pow10(int exp);
 
-}  // namespace strings_internal
+    } // namespace strings_internal
 
-}  // namespace turbo
+} // namespace turbo
 
-#endif  // TURBO_STRINGS_INTERNAL_POW10_HELPER_H_
+#endif // TURBO_STRINGS_INTERNAL_POW10_HELPER_H_

@@ -126,10 +126,10 @@ TEST(StrJoin, APIExamples) {
   }
 
   {
-    // Shows turbo::StrSplit and turbo::StrJoin working together. This example is
+    // Shows turbo::str_split and turbo::StrJoin working together. This example is
     // equivalent to s/=/-/g.
     const std::string s = "a=b=c=d";
-    EXPECT_EQ("a-b-c-d", turbo::StrJoin(turbo::StrSplit(s, "="), "-"));
+    EXPECT_EQ("a-b-c-d", turbo::StrJoin(turbo::str_split(s, "="), "-"));
   }
 
   //

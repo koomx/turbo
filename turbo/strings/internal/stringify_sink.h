@@ -20,9 +20,9 @@
 #include <type_traits>
 #include <utility>
 
-#include <turbo/strings/numbers.h>
-#include <string_view>
 #include <source_location>
+#include <string_view>
+#include <turbo/strings/numbers.h>
 
 namespace turbo {
     namespace strings_internal {
@@ -33,26 +33,26 @@ namespace turbo {
             void Append(std::string_view v);
 
             // Support `turbo::str_printf_to(&sink, format, args...)`.
-            friend void TurboFormatFlush(StringifySink *sink, std::string_view v) {
+            friend void TurboFormatFlush(StringifySink* sink, std::string_view v) {
                 sink->Append(v);
             }
 
         private:
-            template<typename T>
-            friend std::string_view ExtractStringification(StringifySink &sink, const T &v);
+            template <typename T>
+            friend std::string_view ExtractStringification(StringifySink& sink, const T& v);
 
             std::string buffer_;
         };
 
-        template<typename T>
-        std::string_view ExtractStringification(StringifySink &sink, const T &v) {
+        template <typename T>
+        std::string_view ExtractStringification(StringifySink& sink, const T& v) {
             turbo_stringify(sink, v);
             return sink.buffer_;
         }
     } // namespace strings_internal
 
-    template<typename Sink>
-    void turbo_stringify(Sink &sink, std::source_location l) {
+    template <typename Sink>
+    void turbo_stringify(Sink& sink, std::source_location l) {
         sink.Append(l.file_name());
         sink.Append(":");
         std::array<char, format_internal::kFastToBufferSize> buffer;
@@ -61,4 +61,4 @@ namespace turbo {
     }
 } // namespace turbo
 
-#endif  // TURBO_STRINGS_INTERNAL_STRINGIFY_SINK_H_
+#endif // TURBO_STRINGS_INTERNAL_STRINGIFY_SINK_H_

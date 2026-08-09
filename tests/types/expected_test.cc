@@ -395,8 +395,10 @@ TEST(expecedtd, swap) {
   should_throw = 1;
 
   #ifdef _MSC_VER
-  //this seems to break catch on GCC and Clang
-  ASSERT_THROW(swap(a, b));
+  // this seems to break catch on GCC and Clang
+  // Extra parens: gtest macros split on commas in swap(a, b).
+  // willthrow_move throws int 0 when should_throw is set.
+  ASSERT_THROW((swap(a, b)), int);
   #endif
 
   ASSERT_TRUE(a->i == s1);

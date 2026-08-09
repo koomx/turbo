@@ -141,7 +141,7 @@ KUMO_CONST_INIT int global_v TURBO_GUARDED_BY(mutex) =
                         stem.remove_suffix(stem_basename.size() - sep);
                         stem_basename.remove_suffix(stem_basename.size() - sep);
                     }
-                    if (turbo::ConsumeSuffix(&stem_basename, "-inl")) {
+                    if (turbo::consume_suffix(&stem_basename, "-inl")) {
                         stem.remove_suffix(std::string_view("-inl").size());
                     }
                 }
@@ -288,7 +288,7 @@ KUMO_CONST_INIT int global_v TURBO_GUARDED_BY(mutex) =
 
         void update_vmodule(std::string_view vmodule)TURBO_LOCKS_EXCLUDED(mutex, get_update_sites_mutex()) {
             std::vector<std::pair<std::string_view, int> > glob_levels;
-            for (std::string_view glob_level: turbo::StrSplit(vmodule, ',')) {
+            for (std::string_view glob_level: turbo::str_split(vmodule, ',')) {
                 const size_t eq = glob_level.rfind('=');
                 if (eq == glob_level.npos) continue;
                 const std::string_view glob = glob_level.substr(0, eq);

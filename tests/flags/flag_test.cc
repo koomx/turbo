@@ -778,7 +778,7 @@ struct CustomUDT {
 };
 bool TurboParseFlag(std::string_view in, CustomUDT* f, std::string*) {
   std::vector<std::string_view> parts =
-      turbo::StrSplit(in, ':', turbo::SkipWhitespace());
+      turbo::str_split(in, ':', turbo::SkipWhitespace());
 
   if (parts.size() != 2) return false;
 

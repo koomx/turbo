@@ -14,7 +14,9 @@
 #
 
 
-add_executable(ensure_utf8 ensure_utf8.cc)
+add_executable(ensure_utf8 ensure_utf8.cc
+        ../../turbo/strings/algo.h
+        ../../turbo/strings/strip.cc)
 add_executable(ensure_utf8_twice ensure_utf8_twice.cc)
 target_link_libraries(ensure_utf8 PRIVATE ${PROJECT_NAME}::turbo_static)
 target_link_libraries(ensure_utf8_twice PRIVATE ${PROJECT_NAME}::turbo_static)

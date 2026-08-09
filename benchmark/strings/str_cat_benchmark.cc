@@ -125,7 +125,7 @@ BENCHMARK(BM_HexCat_By_StrFormat);
 void BM_HexCat_By_Substitute(benchmark::State& state) {
   int i = 0;
   for (auto _ : state) {
-    std::string result = turbo::Substitute(
+    std::string result = turbo::substitute(
         "$0 $1", kStringOne, reinterpret_cast<void*>(int64_t{i} + 0x10000000));
     benchmark::DoNotOptimize(result);
     i = IncrementAlternatingSign(i);

@@ -181,7 +181,7 @@
 //   bool TurboParseFlag(std::string_view text, MyFlagType* flag,
 //                      std::string* err) {
 //     std::pair<std::string_view, std::string_view> tokens =
-//         turbo::StrSplit(text, ',');
+//         turbo::str_split(text, ',');
 //     if (!turbo::ParseFlag(tokens.first, &flag->my_flag_data.first, err))
 //         return false;
 //     if (!turbo::ParseFlag(tokens.second, &flag->my_flag_data.second, err))

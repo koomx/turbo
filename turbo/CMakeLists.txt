@@ -165,6 +165,7 @@ set(STRINGS_SRC
         strings/str_replace.cc
         strings/str_split.cc
         strings/substitute.cc
+        strings/strip.cc
 )
 
 set(CORD_SRC
