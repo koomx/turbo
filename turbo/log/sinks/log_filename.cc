@@ -23,9 +23,12 @@ namespace turbo {
 
     BaseFilename::BaseFilename(std::string_view filename) {
         const std::filesystem::path path{std::string(filename)};
-        directory = path.has_parent_path() ? path.parent_path().string() : "";
-        basename = path.stem().string();
-        extension = path.extension().string();
+        // generic_string() keeps '/' so tests and logs are portable across
+        // Windows (preferred '\\') and POSIX.
+        directory =
+            path.has_parent_path() ? path.parent_path().generic_string() : "";
+        basename = path.stem().generic_string();
+        extension = path.extension().generic_string();
     }
 
     namespace {
@@ -36,7 +39,8 @@ namespace turbo {
             if (base.directory.empty()) {
                 return filename;
             }
-            return (std::filesystem::path(base.directory) / filename).string();
+            return (std::filesystem::path(base.directory) / filename)
+                .generic_string();
         }
 
         turbo::CivilSecond ToCivilSecond(turbo::Time tp, bool utc) {

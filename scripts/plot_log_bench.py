@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import struct
 import subprocess
 import sys
@@ -15,14 +16,20 @@ VENDOR = Path(".bench-py")
 
 
 def ensure_matplotlib() -> bool:
-    """Install matplotlib only from wheels; return False if unavailable."""
+    """Use matplotlib if already installed; never block CI on pip."""
     try:
         import matplotlib  # noqa: F401
 
         return True
     except ImportError:
         pass
+    # GitHub Actions runners (esp. aarch64) often hang or thrash on a quiet
+    # pip install under high load; stdlib PNG fallback is enough for CI.
+    if os.environ.get("GITHUB_ACTIONS"):
+        print("matplotlib missing; using stdlib PNG fallback (CI)", flush=True)
+        return False
     VENDOR.mkdir(exist_ok=True)
+    print("matplotlib missing; trying wheel-only pip install...", flush=True)
     try:
         subprocess.check_call(
             [
@@ -30,14 +37,15 @@ def ensure_matplotlib() -> bool:
                 "-m",
                 "pip",
                 "install",
-                "-q",
                 "--only-binary=:all:",
                 "--target",
                 str(VENDOR),
                 "matplotlib",
-            ]
+            ],
+            timeout=120,
         )
-    except subprocess.CalledProcessError:
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+        print(f"pip matplotlib failed ({exc}); using stdlib fallback", flush=True)
         return False
     sys.path.insert(0, str(VENDOR))
     try:
@@ -140,6 +148,7 @@ def plot_matplotlib(names: list[str], values: list[float], title: str, unit: str
 
 
 def main() -> None:
+    print(f"plotting {IN} -> {OUT}", flush=True)
     data = json.loads(IN.read_text(encoding="utf-8"))
     names = [s["name"] for s in data["samples"]]
     values = [float(s["value"]) for s in data["samples"]]

@@ -553,6 +553,15 @@ TEST(HashValueTest, U32StringView) {
 TEST(HashValueTest, StdFilesystemPath) {
 #ifndef TURBO_INTERNAL_STD_FILESYSTEM_PATH_HASH_AVAILABLE
   GTEST_SKIP() << "std::filesystem::path is unavailable on this platform";
+#elif defined(_WIN32)
+  // MSVC/STL path equality and iteration differ from libstdc++/libc++ for
+  // mixed '/' '\\' and drive-root forms; keep a small unambiguous subset.
+  EXPECT_TRUE((is_hashable<std::filesystem::path>::value));
+  EXPECT_TRUE(turbo::VerifyTypeImplementsTurboHashCorrectly(std::make_tuple(
+      std::filesystem::path(), std::filesystem::path("a"),
+      std::filesystem::path("a/b"), std::filesystem::path("a/c"),
+      std::filesystem::path("b/a"), std::filesystem::path("c:/a"),
+      std::filesystem::path("d:/a"))));
 #else
   EXPECT_TRUE((is_hashable<std::filesystem::path>::value));
 

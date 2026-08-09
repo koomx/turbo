@@ -51,3 +51,10 @@ foreach (case IN LISTS CCTZ_TESTS)
             ${KMCMAKE_DEPS_LINK}
     )
 endforeach ()
+
+# Windows (and any host without system tzdata) needs bundled zoneinfo.
+set(_TURBO_TEST_TZDIR "${CMAKE_CURRENT_SOURCE_DIR}/testdata/zoneinfo")
+foreach (case IN LISTS CCTZ_TESTS)
+    set_tests_properties(cctz_${case} PROPERTIES
+            ENVIRONMENT "TZDIR=${_TURBO_TEST_TZDIR}")
+endforeach ()

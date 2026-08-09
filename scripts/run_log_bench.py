@@ -75,7 +75,10 @@ def run_one(label: str, binary: Path, raw_path: Path) -> tuple[list[dict], str]:
     # CI: binary already caps MaxBenchThreads()=1 when GITHUB_ACTIONS is set;
     # filter keeps only single-thread / non-threaded cases as a second guard.
     if os.environ.get("GITHUB_ACTIONS"):
+        # Single-thread cases only; short min_time so overloaded ARM runners
+        # do not spend minutes on pathological / noisy cases.
         cmd.append(r"--benchmark_filter=(^BM_[^/]+$|/threads:1$)")
+        cmd.append("--benchmark_min_time=0.05s")
     print("running:", " ".join(cmd), flush=True)
     subprocess.check_call(cmd)
     gbench = json.loads(raw_path.read_text(encoding="utf-8"))
@@ -111,7 +114,10 @@ def main() -> None:
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(plottable, indent=2) + "\n", encoding="utf-8")
-    print(f"wrote {OUT} ({len(all_samples)} samples from {ran} binaries)")
+    print(
+        f"wrote {OUT} ({len(all_samples)} samples from {ran} binaries)",
+        flush=True,
+    )
 
 
 if __name__ == "__main__":

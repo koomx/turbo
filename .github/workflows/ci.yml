@@ -30,4 +30,5 @@ jobs:
       plot-command: |
         python3 scripts/plot_log_bench.py
       benchmark-publish-branch: benchmark-results
-      benchmark-publish-job: ''
+      # Only one job publishes; empty means every matrix job fights over the branch.
+      benchmark-publish-job: std20-ubuntu24-amd64
