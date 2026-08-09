@@ -45,16 +45,16 @@
 #include <utility>
 #include <variant>
 
-#include <turbo/macros/config.h>
+#include <source_location>
 #include <turbo/base/call_once.h>
 #include <turbo/base/nullability.h>
-#include <turbo/meta/type_traits.h>
-#include <turbo/status/internal/statusor_internal.h>
-#include <turbo/status/status.h>
 #include <turbo/format/has_turbo_stringify.h>
-#include <turbo/strings/has_ostream_operator.h>
 #include <turbo/format/str_format.h>
-#include <source_location>
+#include <turbo/macros/config.h>
+#include <turbo/meta/type_traits.h>
+#include <turbo/status/internal/result_internal.h>
+#include <turbo/status/status.h>
+#include <turbo/strings/has_ostream_operator.h>
 #include <turbo/types/span.h>
 #include <turbo/types/variant.h>
 #include <turbo/utility/utility.h>
@@ -107,7 +107,7 @@ namespace turbo {
         const turbo::Status &status() const;
 
     private:
-        void InitWhat() const;
+        void init_what() const;
 
         turbo::Status status_;
         mutable turbo::once_flag init_what_;
@@ -517,12 +517,12 @@ namespace turbo {
 
         // Appends the `loc` to the current location chain inside the status, iff the
         // status-or is non-ok and contains a non-empty message.
-        void AddSourceLocation(
+        void add_source_location(
             std::source_location loc = std::source_location::current()) {
-            this->status_.AddSourceLocation(loc);
+            this->status_.add_source_location(loc);
         }
 
-        // Result<T>::WithSourceLocation()
+        // Result<T>::with_source_location()
         //
         // Appends the `loc` to the current location chain inside the status iff the
         // status-or is non-ok and contains a non-empty message, and returns an rvalue
@@ -534,11 +534,11 @@ namespace turbo {
         //
         //   Result<int> DoSomething(...) {
         //     ...
-        //     return Finalize().WithSourceLocation();
+        //     return Finalize().with_source_location();
         //   }
-        KUMO_MUST_USE_RESULT Result<T> &&WithSourceLocation(
+        KUMO_MUST_USE_RESULT Result<T> &&with_source_location(
             std::source_location loc = std::source_location::current()) && {
-            AddSourceLocation(loc);
+            add_source_location(loc);
             return std::move(*this);
         }
 

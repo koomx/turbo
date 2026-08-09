@@ -66,7 +66,7 @@ namespace turbo {
             return std::nullopt;
         }
 
-        std::optional<std::string> StatusRep::GetPayload(
+        std::optional<std::string> StatusRep::get_payload(
             std::string_view type_url) const {
             std::optional<size_t> index =
                     status_internal::FindPayloadIndexByUrl(payloads_.get(), type_url);
@@ -75,7 +75,7 @@ namespace turbo {
             return std::nullopt;
         }
 
-        void StatusRep::SetPayload(std::string_view type_url, std::string payload) {
+        void StatusRep::set_payload(std::string_view type_url, std::string payload) {
             if (payloads_ == nullptr) {
                 payloads_ = std::make_unique<status_internal::Payloads>();
             }
@@ -90,22 +90,22 @@ namespace turbo {
             payloads_->push_back({std::string(type_url), std::move(payload)});
         }
 
-        StatusRep::EraseResult StatusRep::ErasePayload(std::string_view type_url) {
+        StatusRep::EraseResult StatusRep::erase_payload(std::string_view type_url) {
             std::optional<size_t> index =
                     status_internal::FindPayloadIndexByUrl(payloads_.get(), type_url);
-            if (!index.has_value()) return {false, Status::PointerToRep(this)};
+            if (!index.has_value()) return {false, Status::pointer_to_rep(this)};
             payloads_->erase(payloads_->begin() + index.value());
             if (payloads_->empty() && message_.empty()) {
                 // Special case: If this can be represented inlined, it MUST be inlined
                 // (== depends on this behavior).
-                EraseResult result = {true, Status::CodeToInlinedRep(code_)};
+                EraseResult result = {true, Status::code_to_inlined_rep(code_)};
                 Unref();
                 return result;
             }
-            return {true, Status::PointerToRep(this)};
+            return {true, Status::pointer_to_rep(this)};
         }
 
-        void StatusRep::ForEachPayload(
+        void StatusRep::for_each_payload(
             turbo::FunctionRef<void(std::string_view, const std::string &)> visitor)
         const {
             if (auto *payloads = payloads_.get()) {
@@ -133,13 +133,13 @@ namespace turbo {
             return turbo::make_span(source_locations_);
         }
 
-        void StatusRep::AddSourceLocation(std::source_location loc) {
+        void StatusRep::add_source_location(std::source_location loc) {
             source_locations_.push_back(loc);
         }
 
         std::string StatusRep::ToString(StatusToStringMode mode) const {
             std::string text;
-            turbo::StrAppend(&text, turbo::StatusCodeToString(code()), ": ", message());
+            turbo::StrAppend(&text, turbo::status_code_to_string(code()), ": ", message());
 
             const bool with_payload = (mode & StatusToStringMode::kWithPayload) ==
                                       StatusToStringMode::kWithPayload;
@@ -147,7 +147,7 @@ namespace turbo {
             if (with_payload) {
                 status_internal::StatusPayloadPrinter printer =
                         status_internal::GetStatusPayloadPrinter();
-                this->ForEachPayload([&](std::string_view type_url,
+                this->for_each_payload([&](std::string_view type_url,
                                          const std::string &payload) {
                     std::optional<std::string> result;
                     if (printer) result = printer(type_url, payload);

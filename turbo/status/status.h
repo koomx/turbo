@@ -28,7 +28,7 @@
 // errors in C++, and is used to represent error state in both in-process
 // library calls as well as RPC calls. Some of these errors may be recoverable,
 // but others may not. Most functions that can produce a recoverable error
-// should be designed to return an `turbo::Status` (or `turbo::StatusOr`).
+// should be designed to return an `turbo::Status` (or `turbo::Result`).
 //
 // Example:
 //
@@ -36,10 +36,10 @@
 //   ...
 //   // encounter error
 //   if (error condition) {
-//     return turbo::InvalidArgumentError("bad mode");
+//     return turbo::invalid_argument_error("bad mode");
 //   }
 //   // else, return OK
-//   return turbo::OkStatus();
+//   return turbo::ok_status();
 // }
 //
 // An `turbo::Status` is designed to either return "OK" or one of a number of
@@ -91,8 +91,8 @@ namespace turbo {
     // The string value of these RPC codes is denoted within each enum below.
     //
     // If your error handling code requires more context, you can attach payloads
-    // to your status. See `turbo::Status::SetPayload()` and
-    // `turbo::Status::GetPayload()` below.
+    // to your status. See `turbo::Status::set_payload()` and
+    // `turbo::Status::get_payload()` below.
     enum class StatusCode : int {
         // StatusCode::kOk
         //
@@ -276,19 +276,19 @@ namespace turbo {
         kDoNotUseReservedForFutureExpansionUseDefaultInSwitchInstead_ = 20
     };
 
-    // StatusCodeToString()
+    // status_code_to_string()
     //
     // Returns the name for the status code, or "" if it is an unknown value.
-    std::string StatusCodeToString(StatusCode code);
+    std::string status_code_to_string(StatusCode code);
 
-    // StatusCodeToStringView()
+    // status_code_to_string_view()
     //
-    // Same as StatusCodeToString(), but returns a std::string_view.
-    std::string_view StatusCodeToStringView(StatusCode code);
+    // Same as status_code_to_string(), but returns a std::string_view.
+    std::string_view status_code_to_string_view(StatusCode code);
 
     // operator<<
     //
-    // Streams StatusCodeToString(code) to `os`.
+    // Streams status_code_to_string(code) to `os`.
     std::ostream& operator<<(std::ostream& os, StatusCode code);
 
     // turbo::StatusToStringMode
@@ -355,10 +355,10 @@ namespace turbo {
     // across API boundaries (and in particular across RPC boundaries). Some of
     // these errors may be recoverable, but others may not. Most
     // functions which can produce a recoverable error should be designed to return
-    // either an `turbo::Status` (or the similar `turbo::StatusOr<T>`, which holds
+    // either an `turbo::Status` (or the similar `turbo::Result<T>`, which holds
     // either an object of type `T` or an error).
     //
-    // API developers should construct their functions to return `turbo::OkStatus()`
+    // API developers should construct their functions to return `turbo::ok_status()`
     // upon success, or an `turbo::StatusCode` upon another type of error (e.g
     // an `turbo::StatusCode::kInvalidArgument` error). The API provides convenience
     // functions to construct each status code.
@@ -370,10 +370,10 @@ namespace turbo {
     //   // encounter error
     //   if (error condition) {
     //     // Construct an turbo::StatusCode::kInvalidArgument error
-    //     return turbo::InvalidArgumentError("bad mode");
+    //     return turbo::invalid_argument_error("bad mode");
     //   }
     //   // else, return OK
-    //   return turbo::OkStatus();
+    //   return turbo::ok_status();
     // }
     //
     // Users handling status error codes should prefer checking for an OK status
@@ -420,13 +420,13 @@ namespace turbo {
     //   turbo::Status result = DoSomething();
     //   // Inform user to retry after 30 seconds
     //   // See more error details in googleapis/google/rpc/error_details.proto
-    //   if (turbo::IsResourceExhausted(result)) {
+    //   if (turbo::is_resource_exhausted(result)) {
     //     google::rpc::RetryInfo info;
     //     info.retry_delay().seconds() = 30;
     //     // Payloads require a unique key (a URL to ensure no collisions with
     //     // other payloads), and an `turbo::Cord` to hold the encoded data.
     //     std::string_view url = "type.googleapis.com/google.rpc.RetryInfo";
-    //     result.SetPayload(url, info.SerializeAsCord());
+    //     result.set_payload(url, info.SerializeAsCord());
     //     return result;
     //   }
     //
@@ -441,7 +441,7 @@ namespace turbo {
 
         // This default constructor creates an OK status with no message or payload.
         // Avoid this constructor and prefer explicit construction of an OK status
-        // with `turbo::OkStatus()`.
+        // with `turbo::ok_status()`.
         Status();
 
         // Creates a status in the canonical error space with the specified
@@ -469,12 +469,12 @@ namespace turbo {
         // not ok and has non-empty msg.
         Status(const Status& base_status, std::source_location loc)
             : Status(base_status) {
-            AddSourceLocation(loc);
+            add_source_location(loc);
         }
 
         Status(Status&& base_status, std::source_location loc)
             : Status(std::move(base_status)) {
-            AddSourceLocation(loc);
+            add_source_location(loc);
         }
 
         Status(const Status&);
@@ -565,12 +565,12 @@ namespace turbo {
             sink.Append(status.ToString(StatusToStringMode::kWithEverything));
         }
 
-        // Status::IgnoreError()
+        // Status::ignore_error()
         //
         // Ignores any errors. This method does nothing except potentially suppress
         // complaints from any tools that are checking that errors are not dropped on
         // the floor.
-        void IgnoreError() const;
+        void ignore_error() const;
 
         // swap()
         //
@@ -604,33 +604,33 @@ namespace turbo {
         // Users should ensure that the type URL can be mapped to a concrete
         // C++ type if they want to deserialize the payload and read it effectively.
         //
-        // To attach a payload to a status object, call `Status::SetPayload()`,
+        // To attach a payload to a status object, call `Status::set_payload()`,
         // passing it the type URL and an `turbo::Cord` of associated data. Similarly,
-        // to extract the payload from a status, call `Status::GetPayload()`. You
+        // to extract the payload from a status, call `Status::get_payload()`. You
         // may attach multiple payloads (with differing type URLs) to any given
         // status object, provided that the status is currently exhibiting an error
         // code (i.e. is not OK).
 
-        // Status::GetPayload()
+        // Status::get_payload()
         //
         // Gets the payload of a status given its unique `type_url` key, if present.
-        std::optional<std::string> GetPayload(std::string_view type_url) const;
+        std::optional<std::string> get_payload(std::string_view type_url) const;
 
-        // Status::SetPayload()
+        // Status::set_payload()
         //
         // Sets the payload for a non-ok status using a `type_url` key, overwriting
         // any existing payload for that `type_url`.
         //
         // NOTE: This function does nothing if the Status is ok.
-        void SetPayload(std::string_view type_url, std::string payload);
+        void set_payload(std::string_view type_url, std::string payload);
 
-        // Status::ErasePayload()
+        // Status::erase_payload()
         //
         // Erases the payload corresponding to the `type_url` key.  Returns `true` if
         // the payload was present.
-        bool ErasePayload(std::string_view type_url);
+        bool erase_payload(std::string_view type_url);
 
-        // Status::ForEachPayload()
+        // Status::for_each_payload()
         //
         // Iterates over the stored payloads and calls the
         // `visitor(type_key, payload)` callable for each one.
@@ -640,32 +640,32 @@ namespace turbo {
         //
         // NOTE: Any mutation on the same 'turbo::Status' object during visitation is
         // forbidden and could result in undefined behavior.
-        void ForEachPayload(
+        void for_each_payload(
             turbo::FunctionRef<void(std::string_view, const std::string&)> visitor)
             const;
 
         turbo::Span<const std::source_location> GetSourceLocations() const {
-            if (IsInlined(rep_))
+            if (is_inlined(rep_))
                 return { };
-            return RepToPointer(rep_)->GetSourceLocations();
+            return rep_to_pointer(rep_)->GetSourceLocations();
         }
 
         // Appends the `loc` to the current location chain inside the status, iff the
         // status is non-ok and contains a non-empty message.
-        void AddSourceLocation(
+        void add_source_location(
             std::source_location loc = std::source_location::current()) {
             if (ok())
                 return;
-            rep_ = AddSourceLocationImpl(rep_, loc);
+            rep_ = add_source_location_impl(rep_, loc);
             [[maybe_unused]] bool okay = ok();
             // This hint tells the optimizer that the status is still not ok after the
-            // AddSourceLocation() call. This is useful when passing a known !ok status
-            // to StatusOr. StatusOr checks for ok() on its constructor and this assume
+            // add_source_location() call. This is useful when passing a known !ok status
+            // to Result. Result checks for ok() on its constructor and this assume
             // helps the optimizer remove that check.
             KUMO_ASSUME(!okay);
         }
 
-        // Status::WithSourceLocation()
+        // Status::with_source_location()
         //
         // Returns a copy of the current status, with `loc` appended to its location
         // chain iff the status is non-ok and contains a non-empty message.
@@ -673,14 +673,14 @@ namespace turbo {
         // Example:
         //
         //   if (Status status = Foo(); !status.ok()) {
-        //     return status.WithSourceLocation();
+        //     return status.with_source_location();
         //   }
-        Status WithSourceLocation(
+        Status with_source_location(
             std::source_location loc = std::source_location::current()) const& {
             return Status(*this, loc);
         }
 
-        // Status::WithSourceLocation()
+        // Status::with_source_location()
         //
         // Appends the `loc` to the current location chain inside the status iff the
         // status is non-ok and contains a non-empty message, and returns an rvalue
@@ -692,37 +692,37 @@ namespace turbo {
         //
         //   Status DoSomething(...) {
         //     ...
-        //     return Finalize().WithSourceLocation();
+        //     return Finalize().with_source_location();
         //   }
-        KUMO_MUST_USE_RESULT Status&& WithSourceLocation(
+        KUMO_MUST_USE_RESULT Status&& with_source_location(
             std::source_location loc = std::source_location::current()) && {
-            AddSourceLocation(loc);
+            add_source_location(loc);
             return std::move(*this);
         }
 
     private:
-        friend Status CancelledError();
+        friend Status cancelled_error();
 
 #ifndef SWIG
         // Returns a `Status` object which is not `ok()` but
         // `code() == turbo::StatusCode::kOk`. This is necessary to be compatible with
         // `Status` objects created with an error code in a custom `ErrorSpace` that
         // is mapped to the canonical code `turbo::StatusCode::kOk`.
-        static Status MakeNonOkStatusWithOkCode(std::string_view message);
+        static Status make_non_ok_status_with_ok_code(std::string_view message);
 
         friend class turbo::status_internal::StatusPrivateAccessor;
         friend class turbo::status_internal::StatusPrivateAccessorForStatusBuilder;
         template <typename T>
-        friend class turbo::StatusOr;
+        friend class turbo::Result;
 #endif // !SWIG
 
         // Creates a status in the canonical error space with the specified
         // code, and an empty error message.
         explicit Status(turbo::StatusCode code);
 
-        // Delegate factory in header that ensures CodeToInlinedRep is inlined
+        // Delegate factory in header that ensures code_to_inlined_rep is inlined
         // where possible.
-        static uintptr_t MakeRepFromStringView(uintptr_t inlined_rep,
+        static uintptr_t make_rep_from_string_view(uintptr_t inlined_rep,
             std::string_view msg,
             std::source_location loc);
 
@@ -732,7 +732,7 @@ namespace turbo {
             std::source_location loc);
 
         template <typename StringOrView>
-        friend uintptr_t MakeStatusRepImpl(uintptr_t inlined_rep, StringOrView msg,
+        friend uintptr_t make_status_rep_impl(uintptr_t inlined_rep, StringOrView msg,
             std::source_location loc);
 
         // Underlying constructor for status from a rep_.
@@ -740,8 +740,8 @@ namespace turbo {
             : rep_(rep) {
         }
 
-        // An out-of-line AddSourceLocation that mutates rep directly.
-        static uintptr_t AddSourceLocationImpl(uintptr_t rep,
+        // An out-of-line add_source_location that mutates rep directly.
+        static uintptr_t add_source_location_impl(uintptr_t rep,
             std::source_location loc);
 
         static void Ref(uintptr_t rep);
@@ -762,34 +762,34 @@ namespace turbo {
 
         // Returns whether rep contains an inlined representation.
         // See rep_ for details.
-        static constexpr bool IsInlined(uintptr_t rep);
+        static constexpr bool is_inlined(uintptr_t rep);
 
         // Indicates whether this Status was the rhs of a move operation. See rep_
         // for details.
-        static constexpr bool IsMovedFrom(uintptr_t rep);
+        static constexpr bool is_moved_from(uintptr_t rep);
 
-        static constexpr uintptr_t MovedFromRep();
+        static constexpr uintptr_t moved_from_rep();
 
         // Convert between error::Code and the inlined uintptr_t representation used
         // by rep_. See rep_ for details.
-        static constexpr uintptr_t CodeToInlinedRep(turbo::StatusCode code);
+        static constexpr uintptr_t code_to_inlined_rep(turbo::StatusCode code);
 
-        static constexpr turbo::StatusCode InlinedRepToCode(uintptr_t rep);
+        static constexpr turbo::StatusCode inlined_rep_to_code(uintptr_t rep);
 
         // Converts between StatusRep* and the external uintptr_t representation used
         // by rep_. See rep_ for details.
-        static uintptr_t PointerToRep(status_internal::StatusRep* turbo_nonnull rep);
+        static uintptr_t pointer_to_rep(status_internal::StatusRep* turbo_nonnull rep);
 
-        static const status_internal::StatusRep* turbo_nonnull RepToPointer(
+        static const status_internal::StatusRep* turbo_nonnull rep_to_pointer(
             uintptr_t rep);
 
-        static std::string ToStringSlow(uintptr_t rep, StatusToStringMode mode);
+        static std::string to_string_slow(uintptr_t rep, StatusToStringMode mode);
 
         // Status supports two different representations.
         //  - When the low bit is set it is an inlined representation.
         //    It uses the canonical error space, no message or payload.
         //    The error code is (rep_ >> 2).
-        //    The (rep_ & 2) bit is the "moved from" indicator, used in IsMovedFrom().
+        //    The (rep_ & 2) bit is the "moved from" indicator, used in is_moved_from().
         //  - When the low bit is off it is an external representation.
         //    In this case all the data comes from a heap allocated Rep object.
         //    rep_ is a status_internal::StatusRep* pointer to that structure.
@@ -798,140 +798,140 @@ namespace turbo {
         friend class status_internal::StatusRep;
     };
 
-    // OkStatus()
+    // ok_status()
     //
     // Returns an OK status, equivalent to a default constructed instance. Prefer
-    // usage of `turbo::OkStatus()` when constructing such an OK status.
-    Status OkStatus();
+    // usage of `turbo::ok_status()` when constructing such an OK status.
+    Status ok_status();
 
     // operator<<()
     //
     // Prints a human-readable representation of `x` to `os`.
     std::ostream& operator<<(std::ostream& os, const Status& x);
 
-    // IsAborted()
-    // IsAlreadyExists()
-    // IsCancelled()
-    // IsDataLoss()
-    // IsDeadlineExceeded()
-    // IsFailedPrecondition()
-    // IsInternal()
-    // IsInvalidArgument()
-    // IsNotFound()
-    // IsOutOfRange()
-    // IsPermissionDenied()
-    // IsResourceExhausted()
-    // IsUnauthenticated()
-    // IsUnavailable()
-    // IsUnimplemented()
-    // IsUnknown()
+    // is_aborted()
+    // is_already_exists()
+    // is_cancelled()
+    // is_data_loss()
+    // is_deadline_exceeded()
+    // is_failed_precondition()
+    // is_internal()
+    // is_invalid_argument()
+    // is_not_found()
+    // is_out_of_range()
+    // is_permission_denied()
+    // is_resource_exhausted()
+    // is_unauthenticated()
+    // is_unavailable()
+    // is_unimplemented()
+    // is_unknown()
     //
     // These convenience functions return `true` if a given status matches the
     // `turbo::StatusCode` error code of its associated function.
-    KUMO_MUST_USE_RESULT bool IsAborted(const Status& status);
+    KUMO_MUST_USE_RESULT bool is_aborted(const Status& status);
 
-    KUMO_MUST_USE_RESULT bool IsAlreadyExists(const Status& status);
+    KUMO_MUST_USE_RESULT bool is_already_exists(const Status& status);
 
-    KUMO_MUST_USE_RESULT bool IsCancelled(const Status& status);
+    KUMO_MUST_USE_RESULT bool is_cancelled(const Status& status);
 
-    KUMO_MUST_USE_RESULT bool IsDataLoss(const Status& status);
+    KUMO_MUST_USE_RESULT bool is_data_loss(const Status& status);
 
-    KUMO_MUST_USE_RESULT bool IsDeadlineExceeded(const Status& status);
+    KUMO_MUST_USE_RESULT bool is_deadline_exceeded(const Status& status);
 
-    KUMO_MUST_USE_RESULT bool IsFailedPrecondition(const Status& status);
+    KUMO_MUST_USE_RESULT bool is_failed_precondition(const Status& status);
 
-    KUMO_MUST_USE_RESULT bool IsInternal(const Status& status);
+    KUMO_MUST_USE_RESULT bool is_internal(const Status& status);
 
-    KUMO_MUST_USE_RESULT bool IsInvalidArgument(const Status& status);
+    KUMO_MUST_USE_RESULT bool is_invalid_argument(const Status& status);
 
-    KUMO_MUST_USE_RESULT bool IsNotFound(const Status& status);
+    KUMO_MUST_USE_RESULT bool is_not_found(const Status& status);
 
-    KUMO_MUST_USE_RESULT bool IsOutOfRange(const Status& status);
+    KUMO_MUST_USE_RESULT bool is_out_of_range(const Status& status);
 
-    KUMO_MUST_USE_RESULT bool IsPermissionDenied(const Status& status);
+    KUMO_MUST_USE_RESULT bool is_permission_denied(const Status& status);
 
-    KUMO_MUST_USE_RESULT bool IsResourceExhausted(const Status& status);
+    KUMO_MUST_USE_RESULT bool is_resource_exhausted(const Status& status);
 
-    KUMO_MUST_USE_RESULT bool IsUnauthenticated(const Status& status);
+    KUMO_MUST_USE_RESULT bool is_unauthenticated(const Status& status);
 
-    KUMO_MUST_USE_RESULT bool IsUnavailable(const Status& status);
+    KUMO_MUST_USE_RESULT bool is_unavailable(const Status& status);
 
-    KUMO_MUST_USE_RESULT bool IsUnimplemented(const Status& status);
+    KUMO_MUST_USE_RESULT bool is_unimplemented(const Status& status);
 
-    KUMO_MUST_USE_RESULT bool IsUnknown(const Status& status);
+    KUMO_MUST_USE_RESULT bool is_unknown(const Status& status);
 
-    // AbortedError()
-    // AlreadyExistsError()
-    // CancelledError()
-    // DataLossError()
-    // DeadlineExceededError()
-    // FailedPreconditionError()
-    // InternalError()
-    // InvalidArgumentError()
-    // NotFoundError()
-    // OutOfRangeError()
-    // PermissionDeniedError()
-    // ResourceExhaustedError()
-    // UnauthenticatedError()
-    // UnavailableError()
-    // UnimplementedError()
-    // UnknownError()
+    // aborted_error()
+    // already_exists_error()
+    // cancelled_error()
+    // data_loss_error()
+    // deadline_exceeded_error()
+    // failed_precondition_error()
+    // internal_error()
+    // invalid_argument_error()
+    // not_found_error()
+    // outOf_range_error()
+    // permission_denied_error()
+    // resource_exhausted_error()
+    // unauthenticated_error()
+    // unavailable_error()
+    // unimplemented_error()
+    // unknown_error()
     //
     // These convenience functions create an `turbo::Status` object with an error
     // code as indicated by the associated function name, using the error message
     // passed in `message`.
-    Status AbortedError(std::string_view message,
+    Status aborted_error(std::string_view message,
         std::source_location loc = std::source_location::current());
 
-    Status AlreadyExistsError(std::string_view message,
+    Status already_exists_error(std::string_view message,
         std::source_location loc = std::source_location::current());
 
-    Status CancelledError(std::string_view message,
+    Status cancelled_error(std::string_view message,
         std::source_location loc = std::source_location::current());
 
-    Status DataLossError(std::string_view message,
+    Status data_loss_error(std::string_view message,
         std::source_location loc = std::source_location::current());
 
-    Status DeadlineExceededError(
+    Status deadline_exceeded_error(
         std::string_view message,
         std::source_location loc = std::source_location::current());
 
-    Status FailedPreconditionError(
+    Status failed_precondition_error(
         std::string_view message,
         std::source_location loc = std::source_location::current());
 
-    Status InternalError(std::string_view message,
+    Status internal_error(std::string_view message,
         std::source_location loc = std::source_location::current());
 
-    Status InvalidArgumentError(
+    Status invalid_argument_error(
         std::string_view message,
         std::source_location loc = std::source_location::current());
 
-    Status NotFoundError(std::string_view message,
+    Status not_found_error(std::string_view message,
         std::source_location loc = std::source_location::current());
 
-    Status OutOfRangeError(std::string_view message,
+    Status outOf_range_error(std::string_view message,
         std::source_location loc = std::source_location::current());
 
-    Status PermissionDeniedError(
+    Status permission_denied_error(
         std::string_view message,
         std::source_location loc = std::source_location::current());
 
-    Status ResourceExhaustedError(
+    Status resource_exhausted_error(
         std::string_view message,
         std::source_location loc = std::source_location::current());
 
-    Status UnauthenticatedError(
+    Status unauthenticated_error(
         std::string_view message,
         std::source_location loc = std::source_location::current());
 
-    Status UnavailableError(std::string_view message,
+    Status unavailable_error(std::string_view message,
         std::source_location loc = std::source_location::current());
 
-    Status UnimplementedError(std::string_view message,
+    Status unimplemented_error(std::string_view message,
         std::source_location loc = std::source_location::current());
 
-    Status UnknownError(std::string_view message,
+    Status unknown_error(std::string_view message,
         std::source_location loc = std::source_location::current());
 
     // ErrnoToStatusCode()
@@ -957,18 +957,18 @@ namespace turbo {
     }
 
     inline Status::Status(turbo::StatusCode code)
-        : Status(CodeToInlinedRep(code)) {
+        : Status(code_to_inlined_rep(code)) {
     }
 
     inline Status::Status(turbo::StatusCode code, std::string_view msg,
         std::source_location loc)
-        : Status(MakeRepFromStringView(CodeToInlinedRep(code), msg, loc)) {
+        : Status(make_rep_from_string_view(code_to_inlined_rep(code), msg, loc)) {
     }
 
     template <typename String, typename>
     inline Status::Status(turbo::StatusCode code, String&& msg,
         std::source_location loc)
-        : Status(MakeRepFromStringRvalue(CodeToInlinedRep(code),
+        : Status(MakeRepFromStringRvalue(code_to_inlined_rep(code),
               std::forward<String>(msg), loc)) {
     }
 
@@ -989,14 +989,14 @@ namespace turbo {
 
     inline Status::Status(Status&& x) noexcept
         : Status(x.rep_) {
-        x.rep_ = MovedFromRep();
+        x.rep_ = moved_from_rep();
     }
 
     inline Status& Status::operator=(Status&& x) noexcept {
         uintptr_t old_rep = rep_;
         if (x.rep_ != old_rep) {
             rep_ = x.rep_;
-            x.rep_ = MovedFromRep();
+            x.rep_ = moved_from_rep();
             Unref(old_rep);
         }
         return *this;
@@ -1019,7 +1019,7 @@ namespace turbo {
     }
 
     inline bool Status::ok() const {
-        return rep_ == CodeToInlinedRep(turbo::StatusCode::kOk);
+        return rep_ == code_to_inlined_rep(turbo::StatusCode::kOk);
     }
 
     inline turbo::StatusCode Status::code() const {
@@ -1027,15 +1027,15 @@ namespace turbo {
     }
 
     inline int Status::raw_code() const {
-        if (IsInlined(rep_))
-            return static_cast<int>(InlinedRepToCode(rep_));
-        return static_cast<int>(RepToPointer(rep_)->code());
+        if (is_inlined(rep_))
+            return static_cast<int>(inlined_rep_to_code(rep_));
+        return static_cast<int>(rep_to_pointer(rep_)->code());
     }
 
     inline std::string_view Status::message() const {
-        return !IsInlined(rep_)
-            ? RepToPointer(rep_)->message()
-            : (IsMovedFrom(rep_)
+        return !is_inlined(rep_)
+            ? rep_to_pointer(rep_)->message()
+            : (is_moved_from(rep_)
                       ? std::string_view(kMovedFromString)
                       : std::string_view());
     }
@@ -1043,11 +1043,11 @@ namespace turbo {
     inline bool operator==(const Status& lhs, const Status& rhs) {
         if (lhs.rep_ == rhs.rep_)
             return true;
-        if (Status::IsInlined(lhs.rep_))
+        if (Status::is_inlined(lhs.rep_))
             return false;
-        if (Status::IsInlined(rhs.rep_))
+        if (Status::is_inlined(rhs.rep_))
             return false;
-        return *Status::RepToPointer(lhs.rep_) == *Status::RepToPointer(rhs.rep_);
+        return *Status::rep_to_pointer(lhs.rep_) == *Status::rep_to_pointer(rhs.rep_);
     }
 
     inline bool operator!=(const Status& lhs, const Status& rhs) {
@@ -1055,10 +1055,10 @@ namespace turbo {
     }
 
     inline std::string Status::ToString(StatusToStringMode mode) const {
-        return ok() ? "OK" : ToStringSlow(rep_, mode);
+        return ok() ? "OK" : to_string_slow(rep_, mode);
     }
 
-    inline void Status::IgnoreError() const {
+    inline void Status::ignore_error() const {
         // no-op
     }
 
@@ -1067,88 +1067,88 @@ namespace turbo {
         swap(a.rep_, b.rep_);
     }
 
-    inline std::optional<std::string> Status::GetPayload(
+    inline std::optional<std::string> Status::get_payload(
         std::string_view type_url) const {
-        if (IsInlined(rep_))
+        if (is_inlined(rep_))
             return std::nullopt;
-        return RepToPointer(rep_)->GetPayload(type_url);
+        return rep_to_pointer(rep_)->get_payload(type_url);
     }
 
-    inline void Status::SetPayload(std::string_view type_url, std::string payload) {
+    inline void Status::set_payload(std::string_view type_url, std::string payload) {
         if (ok())
             return;
         status_internal::StatusRep* rep = PrepareToModify(rep_);
-        rep->SetPayload(type_url, std::move(payload));
-        rep_ = PointerToRep(rep);
+        rep->set_payload(type_url, std::move(payload));
+        rep_ = pointer_to_rep(rep);
     }
 
-    inline bool Status::ErasePayload(std::string_view type_url) {
-        if (IsInlined(rep_))
+    inline bool Status::erase_payload(std::string_view type_url) {
+        if (is_inlined(rep_))
             return false;
         status_internal::StatusRep* rep = PrepareToModify(rep_);
-        auto res = rep->ErasePayload(type_url);
+        auto res = rep->erase_payload(type_url);
         rep_ = res.new_rep;
         return res.erased;
     }
 
-    inline void Status::ForEachPayload(
+    inline void Status::for_each_payload(
         turbo::FunctionRef<void(std::string_view, const std::string&)> visitor)
         const {
-        if (IsInlined(rep_))
+        if (is_inlined(rep_))
             return;
-        RepToPointer(rep_)->ForEachPayload(visitor);
+        rep_to_pointer(rep_)->for_each_payload(visitor);
     }
 
-    constexpr bool Status::IsInlined(uintptr_t rep) {
+    constexpr bool Status::is_inlined(uintptr_t rep) {
         return (rep & 1) != 0;
     }
 
-    constexpr bool Status::IsMovedFrom(uintptr_t rep) {
+    constexpr bool Status::is_moved_from(uintptr_t rep) {
         return (rep & 2) != 0;
     }
 
-    constexpr uintptr_t Status::CodeToInlinedRep(turbo::StatusCode code) {
+    constexpr uintptr_t Status::code_to_inlined_rep(turbo::StatusCode code) {
         return (static_cast<uintptr_t>(code) << 2) + 1;
     }
 
-    constexpr turbo::StatusCode Status::InlinedRepToCode(uintptr_t rep) {
-        KUMO_ASSERT(IsInlined(rep));
+    constexpr turbo::StatusCode Status::inlined_rep_to_code(uintptr_t rep) {
+        KUMO_ASSERT(is_inlined(rep));
         return static_cast<turbo::StatusCode>(rep >> 2);
     }
 
-    constexpr uintptr_t Status::MovedFromRep() {
-        return CodeToInlinedRep(turbo::StatusCode::kInternal) | 2;
+    constexpr uintptr_t Status::moved_from_rep() {
+        return code_to_inlined_rep(turbo::StatusCode::kInternal) | 2;
     }
 
-    inline const status_internal::StatusRep* turbo_nonnull Status::RepToPointer(
+    inline const status_internal::StatusRep* turbo_nonnull Status::rep_to_pointer(
         uintptr_t rep) {
-        assert(!IsInlined(rep));
+        assert(!is_inlined(rep));
         return reinterpret_cast<const status_internal::StatusRep*>(rep);
     }
 
-    inline uintptr_t Status::PointerToRep(
+    inline uintptr_t Status::pointer_to_rep(
         status_internal::StatusRep* turbo_nonnull rep) {
         return reinterpret_cast<uintptr_t>(rep);
     }
 
     inline void Status::Ref(uintptr_t rep) {
-        if (!IsInlined(rep))
-            RepToPointer(rep)->Ref();
+        if (!is_inlined(rep))
+            rep_to_pointer(rep)->Ref();
     }
 
     inline void Status::Unref(uintptr_t rep) {
-        if (!IsInlined(rep))
-            RepToPointer(rep)->Unref();
+        if (!is_inlined(rep))
+            rep_to_pointer(rep)->Unref();
     }
 
-    inline Status OkStatus() {
+    inline Status ok_status() {
         return Status();
     }
 
     // Creates a `Status` object with the `turbo::StatusCode::kCancelled` error code
     // and an empty message. It is provided only for efficiency, given that
     // message-less kCancelled errors are common in the infrastructure.
-    inline Status CancelledError() {
+    inline Status cancelled_error() {
         return Status(turbo::StatusCode::kCancelled);
     }
 
@@ -1157,53 +1157,53 @@ namespace turbo {
     //
     // If the status's message is empty, the empty string is returned.
     //
-    // StatusMessageAsCStr exists for C support. Use `status.message()` in C++.
-    const char* turbo_nonnull StatusMessageAsCStr(
+    // status_message_as_cstr exists for C support. Use `status.message()` in C++.
+    const char* turbo_nonnull status_message_as_cstr(
         const Status& status KUMO_ATTRIBUTE_LIFETIME_BOUND);
 
     namespace status_internal {
         // We use an int in the template parameter to shorten mangled names.
         template <int error_code>
-        Status MakeErrorImpl(std::string_view message, std::source_location loc);
+        Status make_error_impl(std::string_view message, std::source_location loc);
 
         // Make the instantiations extern to reduce bloat on callers.
-        extern template Status MakeErrorImpl<0>(std::string_view, std::source_location);
+        extern template Status make_error_impl<0>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<1>(std::string_view, std::source_location);
+        extern template Status make_error_impl<1>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<2>(std::string_view, std::source_location);
+        extern template Status make_error_impl<2>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<3>(std::string_view, std::source_location);
+        extern template Status make_error_impl<3>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<4>(std::string_view, std::source_location);
+        extern template Status make_error_impl<4>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<5>(std::string_view, std::source_location);
+        extern template Status make_error_impl<5>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<6>(std::string_view, std::source_location);
+        extern template Status make_error_impl<6>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<7>(std::string_view, std::source_location);
+        extern template Status make_error_impl<7>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<8>(std::string_view, std::source_location);
+        extern template Status make_error_impl<8>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<9>(std::string_view, std::source_location);
+        extern template Status make_error_impl<9>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<10>(std::string_view, std::source_location);
+        extern template Status make_error_impl<10>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<11>(std::string_view, std::source_location);
+        extern template Status make_error_impl<11>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<12>(std::string_view, std::source_location);
+        extern template Status make_error_impl<12>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<13>(std::string_view, std::source_location);
+        extern template Status make_error_impl<13>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<14>(std::string_view, std::source_location);
+        extern template Status make_error_impl<14>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<15>(std::string_view, std::source_location);
+        extern template Status make_error_impl<15>(std::string_view, std::source_location);
 
-        extern template Status MakeErrorImpl<16>(std::string_view, std::source_location);
+        extern template Status make_error_impl<16>(std::string_view, std::source_location);
 
         template <StatusCode error_code>
-        Status MakeError(std::string_view message, std::source_location loc) {
-            Status out = MakeErrorImpl<static_cast<int>(error_code)>(message, loc);
+        Status make_error(std::string_view message, std::source_location loc) {
+            Status out = make_error_impl<static_cast<int>(error_code)>(message, loc);
             // -Wassume warning complains about potential side effects of `ok()`, so use a
             // local to avoid that.
             [[maybe_unused]] bool ok = out.ok();
@@ -1214,88 +1214,88 @@ namespace turbo {
 
     // Inline implementations to give the compiler static knowledge about the
     // objects.
-    inline Status AbortedError(std::string_view message,
+    inline Status aborted_error(std::string_view message,
         std::source_location loc) {
-        return status_internal::MakeError<StatusCode::kAborted>(message, loc);
+        return status_internal::make_error<StatusCode::kAborted>(message, loc);
     }
 
-    inline Status AlreadyExistsError(std::string_view message,
+    inline Status already_exists_error(std::string_view message,
         std::source_location loc) {
-        return status_internal::MakeError<StatusCode::kAlreadyExists>(message, loc);
+        return status_internal::make_error<StatusCode::kAlreadyExists>(message, loc);
     }
 
-    inline Status CancelledError(std::string_view message,
+    inline Status cancelled_error(std::string_view message,
         std::source_location loc) {
-        return status_internal::MakeError<StatusCode::kCancelled>(message, loc);
+        return status_internal::make_error<StatusCode::kCancelled>(message, loc);
     }
 
-    inline Status DataLossError(std::string_view message,
+    inline Status data_loss_error(std::string_view message,
         std::source_location loc) {
-        return status_internal::MakeError<StatusCode::kDataLoss>(message, loc);
+        return status_internal::make_error<StatusCode::kDataLoss>(message, loc);
     }
 
-    inline Status DeadlineExceededError(std::string_view message,
+    inline Status deadline_exceeded_error(std::string_view message,
         std::source_location loc) {
-        return status_internal::MakeError<StatusCode::kDeadlineExceeded>(message,
+        return status_internal::make_error<StatusCode::kDeadlineExceeded>(message,
             loc);
     }
 
-    inline Status FailedPreconditionError(std::string_view message,
+    inline Status failed_precondition_error(std::string_view message,
         std::source_location loc) {
-        return status_internal::MakeError<StatusCode::kFailedPrecondition>(message,
+        return status_internal::make_error<StatusCode::kFailedPrecondition>(message,
             loc);
     }
 
-    inline Status InternalError(std::string_view message,
+    inline Status internal_error(std::string_view message,
         std::source_location loc) {
-        return status_internal::MakeError<StatusCode::kInternal>(message, loc);
+        return status_internal::make_error<StatusCode::kInternal>(message, loc);
     }
 
-    inline Status InvalidArgumentError(std::string_view message,
+    inline Status invalid_argument_error(std::string_view message,
         std::source_location loc) {
-        return status_internal::MakeError<StatusCode::kInvalidArgument>(message, loc);
+        return status_internal::make_error<StatusCode::kInvalidArgument>(message, loc);
     }
 
-    inline Status NotFoundError(std::string_view message,
+    inline Status not_found_error(std::string_view message,
         std::source_location loc) {
-        return status_internal::MakeError<StatusCode::kNotFound>(message, loc);
+        return status_internal::make_error<StatusCode::kNotFound>(message, loc);
     }
 
-    inline Status OutOfRangeError(std::string_view message,
+    inline Status outOf_range_error(std::string_view message,
         std::source_location loc) {
-        return status_internal::MakeError<StatusCode::kOutOfRange>(message, loc);
+        return status_internal::make_error<StatusCode::kOutOfRange>(message, loc);
     }
 
-    inline Status PermissionDeniedError(std::string_view message,
+    inline Status permission_denied_error(std::string_view message,
         std::source_location loc) {
-        return status_internal::MakeError<StatusCode::kPermissionDenied>(message,
+        return status_internal::make_error<StatusCode::kPermissionDenied>(message,
             loc);
     }
 
-    inline Status ResourceExhaustedError(std::string_view message,
+    inline Status resource_exhausted_error(std::string_view message,
         std::source_location loc) {
-        return status_internal::MakeError<StatusCode::kResourceExhausted>(message,
+        return status_internal::make_error<StatusCode::kResourceExhausted>(message,
             loc);
     }
 
-    inline Status UnauthenticatedError(std::string_view message,
+    inline Status unauthenticated_error(std::string_view message,
         std::source_location loc) {
-        return status_internal::MakeError<StatusCode::kUnauthenticated>(message, loc);
+        return status_internal::make_error<StatusCode::kUnauthenticated>(message, loc);
     }
 
-    inline Status UnavailableError(std::string_view message,
+    inline Status unavailable_error(std::string_view message,
         std::source_location loc) {
-        return status_internal::MakeError<StatusCode::kUnavailable>(message, loc);
+        return status_internal::make_error<StatusCode::kUnavailable>(message, loc);
     }
 
-    inline Status UnimplementedError(std::string_view message,
+    inline Status unimplemented_error(std::string_view message,
         std::source_location loc) {
-        return status_internal::MakeError<StatusCode::kUnimplemented>(message, loc);
+        return status_internal::make_error<StatusCode::kUnimplemented>(message, loc);
     }
 
-    inline Status UnknownError(std::string_view message,
+    inline Status unknown_error(std::string_view message,
         std::source_location loc) {
-        return status_internal::MakeError<StatusCode::kUnknown>(message, loc);
+        return status_internal::make_error<StatusCode::kUnknown>(message, loc);
     }
 } // namespace turbo
 

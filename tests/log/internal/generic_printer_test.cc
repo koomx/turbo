@@ -32,15 +32,14 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <turbo/macros/config.h>
-#include <turbo/macros/config.h>
 #include <turbo/cleanup/cleanup.h>
-#include <unordered_map>
-#include <turbo/status/status.h>
-#include <turbo/status/statusor.h>
-#include <turbo/strings/str_cat.h>
 #include <turbo/format/str_format.h>
+#include <turbo/macros/config.h>
+#include <turbo/status/result.h>
+#include <turbo/status/status.h>
+#include <turbo/strings/str_cat.h>
 #include <turbo/strings/substitute.h>
+#include <unordered_map>
 
 namespace generic_logging_test {
 struct NotStreamable {};
@@ -461,35 +460,35 @@ TEST(GenericPrinterTest, VariantInPlace) {
                                       std::in_place_index<1>, 17)));
 }
 
-TEST(GenericPrinterTest, StatusOrLikeOkPrintsValue) {
+TEST(GenericPrinterTest, ResultLikeOkPrintsValue) {
   EXPECT_EQ(R"(<OK: "cow">)",
-            GenericPrintToString(turbo::StatusOr<std::string>("cow")));
+            GenericPrintToString(turbo::Result<std::string>("cow")));
 
-  EXPECT_EQ(R"(<OK: 1.1f>)", GenericPrintToString(turbo::StatusOr<float>(1.1F)));
+  EXPECT_EQ(R"(<OK: 1.1f>)", GenericPrintToString(turbo::Result<float>(1.1F)));
 }
 
-TEST(GenericPrinterTest, StatusOrLikeNonOkPrintsStatus) {
+TEST(GenericPrinterTest, ResultLikeNonOkPrintsStatus) {
   EXPECT_THAT(
-      GenericPrintToString(turbo::StatusOr<float>(
-          turbo::InvalidArgumentError("my error message"))),
+      GenericPrintToString(turbo::Result<float>(
+          turbo::invalid_argument_error("my error message"))),
       AllOf(HasSubstr("my error message"), HasSubstr("INVALID_ARGUMENT")));
 
   EXPECT_THAT(GenericPrintToString(
-                  turbo::StatusOr<int>(turbo::AbortedError("other message"))),
+                  turbo::Result<int>(turbo::aborted_error("other message"))),
               AllOf(HasSubstr("other message"), HasSubstr("ABORTED")));
 }
 
-TEST(GenericPrinterTest, StatusOrLikeNonStreamableValueUnprintable) {
+TEST(GenericPrinterTest, ResultLikeNonStreamableValueUnprintable) {
   EXPECT_THAT(
-      GenericPrintToString(turbo::StatusOr<generic_logging_test::NotStreamable>(
+      GenericPrintToString(turbo::Result<generic_logging_test::NotStreamable>(
           generic_logging_test::NotStreamable{})),
       IsUnprintable());
 }
 
-TEST(GenericPrinterTest, StatusOrLikeNonStreamableErrorStillPrintable) {
+TEST(GenericPrinterTest, ResultLikeNonStreamableErrorStillPrintable) {
   EXPECT_THAT(
-      GenericPrintToString(turbo::StatusOr<generic_logging_test::NotStreamable>(
-          turbo::AbortedError("other message"))),
+      GenericPrintToString(turbo::Result<generic_logging_test::NotStreamable>(
+          turbo::aborted_error("other message"))),
       AllOf(HasSubstr("other message"), HasSubstr("ABORTED")));
 }
 

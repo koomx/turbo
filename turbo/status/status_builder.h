@@ -113,11 +113,11 @@ namespace turbo {
     };
 
     // Creates a status based on an original_status, but enriched with additional
-    // information.  The builder implicitly converts to Status and StatusOr<T>
+    // information.  The builder implicitly converts to Status and Result<T>
     // allowing for it to be returned directly.
     //
     //   StatusBuilder builder(original);
-    //   builder.SetPayload(proto);
+    //   builder.set_payload(proto);
     //   builder << "info about error";
     //   return builder;
     //
@@ -280,16 +280,16 @@ namespace turbo {
         KUMO_MUST_USE_RESULT StatusBuilder&& operator<<(const T& value) &&;
 
         // Adds a payload for the status that will be returned by this StatusBuilder.
-        // Note that this is equivalent to `Status::SetPayload`, to attach protos to
+        // Note that this is equivalent to `Status::set_payload`, to attach protos to
         // the MessageSet payload, use `util::AttachPayload`. Returns '*this' to allow
         // method chaining.
-        StatusBuilder& SetPayload(std::string_view type_url, std::string payload) &;
-        KUMO_MUST_USE_RESULT StatusBuilder&& SetPayload(std::string_view type_url,
+        StatusBuilder& set_payload(std::string_view type_url, std::string payload) &;
+        KUMO_MUST_USE_RESULT StatusBuilder&& set_payload(std::string_view type_url,
             std::string payload) && {
-            return std::move(SetPayload(type_url, std::move(payload)));
+            return std::move(set_payload(type_url, std::move(payload)));
         }
 
-        std::optional<std::string> GetPayload(std::string_view type_url) const;
+        std::optional<std::string> get_payload(std::string_view type_url) const;
 
         // INTERNAL API. NOT FOR PUBLIC USE.
         template <typename MessageSetExtension, typename ExtensionIdentifier>
@@ -411,7 +411,7 @@ namespace turbo {
         // policies.  For example:
         //
         //   StatusBuilder TeamPolicy(StatusBuilder builder) {
-        //     builder.SetPayload(...);
+        //     builder.set_payload(...);
         //     return std::move(builder).Log(turbo::LogSeverity::kWarning);
         //   }
         //
@@ -541,7 +541,7 @@ namespace turbo {
         // from a status code), this will be empty.
         decltype(auto) GetPreviousSourceLocations() const {
             if (rep_ == nullptr) {
-                return turbo::OkStatus().GetSourceLocations();
+                return turbo::ok_status().GetSourceLocations();
             }
             return rep_->status.GetSourceLocations();
         }
@@ -606,7 +606,7 @@ namespace turbo {
             void InitStream();
 
             // The status that the result will be based on.  Can be modified by
-            // SetPayload().
+            // set_payload().
             turbo::Status status;
 
             enum class LoggingMode {
@@ -932,17 +932,17 @@ namespace turbo {
         return std::move(operator<<(value));
     }
 
-    inline StatusBuilder& StatusBuilder::SetPayload(std::string_view type_url,
+    inline StatusBuilder& StatusBuilder::set_payload(std::string_view type_url,
         std::string payload) & {
         if (rep_ != nullptr) {
-            rep_->status.SetPayload(type_url, std::move(payload));
+            rep_->status.set_payload(type_url, std::move(payload));
         }
         return *this;
     }
 
-    inline std::optional<std::string> StatusBuilder::GetPayload(
+    inline std::optional<std::string> StatusBuilder::get_payload(
         std::string_view type_url) const {
-        return rep_ == nullptr ? std::nullopt : rep_->status.GetPayload(type_url);
+        return rep_ == nullptr ? std::nullopt : rep_->status.get_payload(type_url);
     }
 
     inline bool StatusBuilder::ok() const {
@@ -958,7 +958,7 @@ namespace turbo {
         // it only if the compiler can determine it at compile time.
         // When it can't, we delegate this check into the out of line function.
         if (IsKnownToBeEmpty()) {
-            return turbo::OkStatus();
+            return turbo::ok_status();
         }
         turbo::Status result = CreateStatusAndConditionallyLog(loc_, std::move(rep_));
         // Tell the compiler that `rep_` was not filled again even if `this` escaped.

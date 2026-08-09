@@ -16,7 +16,7 @@
 // File: status_matchers.h
 // -----------------------------------------------------------------------------
 //
-// Testing utilities for working with `turbo::Status` and `turbo::StatusOr`.
+// Testing utilities for working with `turbo::Status` and `turbo::Result`.
 //
 // Defines the following utilities:
 //
@@ -26,7 +26,7 @@
 //   TURBO_ASSERT_OK(s)
 //   =================
 //   Convenience macros for `EXPECT_THAT(s, IsOk())`, where `s` is either
-//   a `Status` or a `StatusOr<T>`.
+//   a `Status` or a `Result<T>`.
 //
 //   There are no EXPECT_NOT_OK/ASSERT_NOT_OK macros.
 //   Prefer to check for the specific expected error:
@@ -39,14 +39,14 @@
 //   `IsOkAndHolds(m)`
 //   ===============
 //
-//   This gMock matcher matches a StatusOr<T> value whose status is OK
+//   This gMock matcher matches a Result<T> value whose status is OK
 //   and whose inner value matches matcher m.  Example:
 //
 //   ```
 //   using ::testing::MatchesRegex;
 //   using ::turbo_testing::IsOkAndHolds;
 //   ...
-//   turbo::StatusOr<string> maybe_name = ...;
+//   turbo::Result<string> maybe_name = ...;
 //   EXPECT_THAT(maybe_name, IsOkAndHolds(MatchesRegex("John .*")));
 //   ```
 //
@@ -63,7 +63,7 @@
 //   `IsOk()`
 //   ===============
 //
-//   Matches an `turbo::Status` or `turbo::StatusOr<T>` value whose status value
+//   Matches an `turbo::Status` or `turbo::Result<T>` value whose status value
 //   is `turbo::StatusCode::kOk.`
 //
 //   Equivalent to 'StatusIs(turbo::StatusCode::kOk)'.
@@ -71,7 +71,7 @@
 //   ```
 //   using ::turbo_testing::IsOk;
 //   ...
-//   turbo::StatusOr<string> maybe_name = ...;
+//   turbo::Result<string> maybe_name = ...;
 //   EXPECT_THAT(maybe_name, IsOk());
 //   Status s = ...;
 //   EXPECT_THAT(s, IsOk());
@@ -94,13 +94,13 @@
 namespace turbo_testing {
 
 // Macros for testing the results of functions that return turbo::Status or
-// turbo::StatusOr<T> (for any type T).
+// turbo::Result<T> (for any type T).
 #define TURBO_EXPECT_OK(expression) \
     EXPECT_THAT(expression, ::turbo_testing::IsOk())
 #define TURBO_ASSERT_OK(expression) \
     ASSERT_THAT(expression, ::turbo_testing::IsOk())
 
-    // Returns a gMock matcher that matches a StatusOr<> whose status is
+    // Returns a gMock matcher that matches a Result<> whose status is
     // OK and whose value matches the inner matcher.
     template <typename InnerMatcherT>
     status_internal::IsOkAndHoldsMatcher<std::decay_t<InnerMatcherT>> IsOkAndHolds(
@@ -109,7 +109,7 @@ namespace turbo_testing {
             std::forward<InnerMatcherT>(inner_matcher));
     }
 
-    // Returns a gMock matcher that matches a Status or StatusOr<> whose status code
+    // Returns a gMock matcher that matches a Status or Result<> whose status code
     // matches code_matcher and whose error message matches message_matcher.
     // Typically, code_matcher will be an turbo::StatusCode, e.g.
     //
@@ -123,7 +123,7 @@ namespace turbo_testing {
             std::forward<StatusMessageMatcherT>(message_matcher));
     }
 
-    // Returns a gMock matcher that matches a Status or StatusOr<> and whose status
+    // Returns a gMock matcher that matches a Status or Result<> and whose status
     // code matches code_matcher.  See above for details.
     template <typename StatusCodeMatcherT>
     status_internal::StatusIsMatcher StatusIs(StatusCodeMatcherT&& code_matcher) {
@@ -131,7 +131,7 @@ namespace turbo_testing {
             ::testing::_);
     }
 
-    // Returns a gMock matcher that matches a Status or StatusOr<> which is OK.
+    // Returns a gMock matcher that matches a Status or Result<> which is OK.
     inline status_internal::IsOkMatcher IsOk() {
         return status_internal::IsOkMatcher();
     }

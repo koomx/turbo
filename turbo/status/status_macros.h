@@ -27,9 +27,9 @@
 
 #include <source_location>
 #include <turbo/macros/config.h>
+#include <turbo/status/result.h>
 #include <turbo/status/status.h>
 #include <turbo/status/status_builder.h> // IWYU pragma: export
-#include <turbo/status/statusor.h>
 
 // Evaluates an expression that produces a `turbo::Status`. If the status is not
 // ok, returns it from the current function.
@@ -38,7 +38,7 @@
 //   turbo::Status MultiStepFunction() {
 //     TURBO_RETURN_IF_ERROR(Function(args...));
 //     TURBO_RETURN_IF_ERROR(foo.Method(args...));
-//     return turbo::OkStatus();
+//     return turbo::ok_status();
 //   }
 //
 // The macro ends with a `turbo::StatusBuilder` which allows the returned status
@@ -50,7 +50,7 @@
 //     TURBO_RETURN_IF_ERROR(Function(args...)) << "in MultiStepFunction";
 //     TURBO_RETURN_IF_ERROR(foo.Method(args...)).Log(turbo::LogSeverity::kError)
 //         << "while processing query: " << query.DebugString();
-//     return turbo::OkStatus();
+//     return turbo::ok_status();
 //   }
 //
 // `turbo::StatusBuilder` supports adapting the builder chain using a `With`
@@ -82,12 +82,12 @@
 //   []() -> turbo::Status {
 //     TURBO_RETURN_IF_ERROR(Function(args...));
 //     TURBO_RETURN_IF_ERROR(foo.Method(args...));
-//     return turbo::OkStatus();
+//     return turbo::ok_status();
 //   }
 #define TURBO_RETURN_IF_ERROR(expr) \
     TURBO_INTERNAL_STATUS_MACROS_RETURN_IF_ERROR_IMPL_(return, expr)
 
-// Executes an expression `rexpr` that returns an `turbo::StatusOr<T>`. On OK,
+// Executes an expression `rexpr` that returns an `turbo::Result<T>`. On OK,
 // moves its value into the variable defined by `lhs`, otherwise returns
 // from the current function. By default the error status is returned
 // unchanged, but it may be modified by an `error_expression`. If there is an
@@ -191,12 +191,12 @@ constexpr bool IsEnclosedByParentheses(const char (&lhs)[N]) {
 namespace turbo {
     namespace status_macro_internal {
         template <typename T, typename EnableIf = void>
-        struct IsAllowedStatusOrMacroType : std::false_type {
+        struct IsAllowedResultMacroType : std::false_type {
         };
 
         template <typename T>
-        struct IsAllowedStatusOrMacroType<
-            T, std::enable_if_t<std::is_convertible_v<T*, typename turbo::StatusOr<typename T::value_type>*>>>
+        struct IsAllowedResultMacroType<
+            T, std::enable_if_t<std::is_convertible_v<T*, typename turbo::Result<typename T::value_type>*>>>
             : std::true_type {
         };
     } // namespace status_macro_internal
@@ -249,9 +249,9 @@ namespace turbo {
     }                                                                                                   \
     {                                                                                                   \
         static_assert(                                                                                  \
-            turbo::status_macro_internal::IsAllowedStatusOrMacroType<                                   \
+            turbo::status_macro_internal::IsAllowedResultMacroType<                                   \
                 std::remove_const_t<decltype(statusor)>>(),                                             \
-            "TURBO_ASSIGN_OR_RETURN should only be used with turbo::StatusOr<>");                       \
+            "TURBO_ASSIGN_OR_RETURN should only be used with turbo::Result<>");                       \
     }                                                                                                   \
     TURBO_INTERNAL_STATUS_MACROS_IMPL_UNPARENTHESIZE_IF_PARENTHESIZED(lhs) = (*std::move(statusor))
 
@@ -408,9 +408,9 @@ namespace turbo {
                 // We play fast and loose here and avoid destroying status_. This should be
                 // safe because status_ will never own memory at destruction time. The two
                 // cases to consider are:
-                //  (1) OK: OkStatus() representation needs no cleanup
+                //  (1) OK: ok_status() representation needs no cleanup
                 //  (2) Not-OK: we take the else branch in TURBO_RETURN_IF_ERROR and move
-                //      status_ into StatusBuilder which leaves status_ with a MovedFromRep
+                //      status_ into StatusBuilder which leaves status_ with a moved_from_rep
                 //      that needs no cleanup.
                 // If the turbo::Status implementation changes, leaks should be caught by
                 // the various tests we have when run under lsan or debug leak checker.

@@ -477,10 +477,10 @@ TEST_F(StrippingTest, CheckOk) {
   const std::string var_needle = turbo::Base64Escape("StrippingTestCheckOkVar1");
   const std::string msg_needle = turbo::Base64Escape("StrippingTest.CheckOk");
   volatile bool x = false;
-  auto U3RyaXBwaW5nVGVzdENoZWNrT2tWYXIx = turbo::OkStatus();
+  auto U3RyaXBwaW5nVGVzdENoZWNrT2tWYXIx = turbo::ok_status();
   if (x) {
     U3RyaXBwaW5nVGVzdENoZWNrT2tWYXIx =
-        turbo::InvalidArgumentError("Stripping this is not my job!");
+        turbo::invalid_argument_error("Stripping this is not my job!");
   }
   if (kReallyDie) {
     KCHECK_OK(U3RyaXBwaW5nVGVzdENoZWNrT2tWYXIx)

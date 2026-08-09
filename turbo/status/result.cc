@@ -11,16 +11,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include <turbo/status/statusor.h>
+#include <turbo/status/result.h>
 
 #include <cstdlib>
 #include <utility>
 
 #include <turbo/base/call_once.h>
-#include <turbo/macros/config.h>
 #include <turbo/base/internal/raw_logging.h>
 #include <turbo/base/nullability.h>
-#include <turbo/status/internal/statusor_internal.h>
+#include <turbo/macros/config.h>
+#include <turbo/status/internal/result_internal.h>
 #include <turbo/status/status.h>
 #include <turbo/strings/str_cat.h>
 
@@ -35,18 +35,18 @@ namespace turbo {
 
     BadResultAccess &BadResultAccess::operator=(
         const BadResultAccess &other) {
-        // Ensure assignment is correct regardless of whether this->InitWhat() has
+        // Ensure assignment is correct regardless of whether this->init_what() has
         // already been called.
-        other.InitWhat();
+        other.init_what();
         status_ = other.status_;
         what_ = other.what_;
         return *this;
     }
 
     BadResultAccess &BadResultAccess::operator=(BadResultAccess &&other) {
-        // Ensure assignment is correct regardless of whether this->InitWhat() has
+        // Ensure assignment is correct regardless of whether this->init_what() has
         // already been called.
-        other.InitWhat();
+        other.init_what();
         status_ = std::move(other.status_);
         what_ = std::move(other.what_);
         return *this;
@@ -57,13 +57,13 @@ namespace turbo {
     }
 
     const char * turbo_nonnull BadResultAccess::what() const noexcept {
-        InitWhat();
+        init_what();
         return what_.c_str();
     }
 
     const turbo::Status &BadResultAccess::status() const { return status_; }
 
-    void BadResultAccess::InitWhat() const {
+    void BadResultAccess::init_what() const {
         turbo::call_once(init_what_, [this] {
             what_ = turbo::StrCat("Bad Result access: ", status_.ToString());
         });

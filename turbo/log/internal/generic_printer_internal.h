@@ -198,8 +198,8 @@ namespace turbo {
             return os;
         }
 
-        template<typename StatusOrLike>
-        std::ostream &PrintStatusOrLike(std::ostream &os, const StatusOrLike &v) {
+        template<typename ResultLike>
+        std::ostream &PrintResultLike(std::ostream &os, const ResultLike &v) {
             os << "<";
             if (v.ok()) {
                 os << "OK: ";
@@ -275,7 +275,7 @@ namespace turbo {
             } else if constexpr (meta_internal::Requires<const T>(
                 [&](auto &&w) -> decltype(w.ok(), w.status(), *w) {
                 })) {
-                return (PrintStatusOrLike)(os, v);
+                return (PrintResultLike)(os, v);
             } else if constexpr (meta_internal::Requires<const T>(
                 [&](auto &&w) -> decltype(w.has_value(), *w) {
                 })) {

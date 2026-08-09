@@ -56,9 +56,9 @@ namespace turbo {
     enum class StatusCode : int;
     enum class StatusToStringMode : int;
 
-    // Forward declaration of StatusOr for Status friendship.
+    // Forward declaration of Result for Status friendship.
     template <typename T>
-    class StatusOr;
+    class Result;
 
     namespace status_internal {
 #ifndef SWIG
@@ -105,24 +105,24 @@ namespace turbo {
             void Unref() const;
 
             // Payload methods correspond to the same methods in turbo::Status.
-            std::optional<std::string> GetPayload(std::string_view type_url) const;
+            std::optional<std::string> get_payload(std::string_view type_url) const;
 
-            void SetPayload(std::string_view type_url, std::string payload);
+            void set_payload(std::string_view type_url, std::string payload);
 
             struct EraseResult {
                 bool erased;
                 uintptr_t new_rep;
             };
 
-            EraseResult ErasePayload(std::string_view type_url);
+            EraseResult erase_payload(std::string_view type_url);
 
-            void ForEachPayload(
+            void for_each_payload(
                 turbo::FunctionRef<void(std::string_view, const std::string&)> visitor)
                 const;
 
             turbo::Span<const std::source_location> GetSourceLocations() const;
 
-            void AddSourceLocation(std::source_location loc);
+            void add_source_location(std::source_location loc);
 
             std::string ToString(StatusToStringMode mode) const;
 
@@ -152,7 +152,7 @@ namespace turbo {
 
             // As an internal implementation detail, we guarantee that if status.message()
             // is non-empty, then the resulting std::string_view is null terminated.
-            // This is required to implement 'StatusMessageAsCStr(...)'
+            // This is required to implement 'status_message_as_cstr(...)'
             //
             // NOTE: if most statuses are constructed with messages that are either empty
             // or so long they don't fit in the std::string's local storage (small string

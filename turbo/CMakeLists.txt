@@ -144,7 +144,7 @@ set(STATUS_SRC
         status/status.cc
         status/status_builder.cc
         status/status_payload_printer.cc
-        status/statusor.cc
+        status/result.cc
 )
 
 set(STRINGS_SRC

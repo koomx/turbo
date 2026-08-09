@@ -111,7 +111,7 @@
 // This one is tricky:
 // * We must evaluate `val` exactly once, yet we need to do two things with it:
 //   evaluate `.ok()` and (sometimes) `.ToString()`.
-// * `val` might be an `turbo::Status` or some `turbo::StatusOr<T>`.
+// * `val` might be an `turbo::Status` or some `turbo::Result<T>`.
 // * `val` might be e.g. `ATemporary().GetStatus()`, which may return a
 //   reference to a member of `ATemporary` that is only valid until the end of
 //   the full expression.
@@ -170,7 +170,7 @@
 namespace turbo {
     class Status;
     template<typename T>
-    class StatusOr;
+    class Result;
 
     namespace status_internal {
 KUMO_ATTRIBUTE_PURE_FUNCTION const char * turbo_nonnull make_check_fail_string(
@@ -178,7 +178,7 @@ KUMO_ATTRIBUTE_PURE_FUNCTION const char * turbo_nonnull make_check_fail_string(
     } // namespace status_internal
 
     namespace log_internal {
-        // Convert a Status or a StatusOr to its underlying status value.
+        // Convert a Status or a Result to its underlying status value.
         //
         // (This implementation does not require a dep on turbo::Status to work.)
         inline const turbo::Status * turbo_nonnull AsStatus(const turbo::Status &s) {
@@ -186,7 +186,7 @@ KUMO_ATTRIBUTE_PURE_FUNCTION const char * turbo_nonnull make_check_fail_string(
         }
 
         template<typename T>
-        const turbo::Status * turbo_nonnull AsStatus(const turbo::StatusOr<T> &s) {
+        const turbo::Status * turbo_nonnull AsStatus(const turbo::Result<T> &s) {
             return &s.status();
         }
 
