@@ -28,7 +28,7 @@
 #include <turbo/strings/str_cat.h>
 #include <turbo/format/str_format.h>
 #include <string_view>
-#include <source_location>
+#include <turbo/types/source_location.h>
 
 namespace {
 
@@ -49,7 +49,7 @@ TEST(StatusCode, InsertionOperator) {
 // its creator, and its classifier.
 struct ErrorTest {
   turbo::StatusCode code;
-  using Creator = turbo::Status (*)(std::string_view, std::source_location);
+  using Creator = turbo::Status (*)(std::string_view, turbo::SourceLocation);
   using Classifier = bool (*)(const turbo::Status&);
   Creator creator;
   Classifier classifier;
@@ -90,9 +90,9 @@ TEST(Status, CreateAndClassify) {
     // Ensure that the creator does, in fact, create status objects with the
     // expected error code and message.
     std::string message =
-        turbo::StrCat("error code ", test.code, " test message");
+        turbo::str_cat("error code ", test.code, " test message");
     turbo::Status status =
-        test.creator(message, std::source_location::current());
+        test.creator(message, turbo::SourceLocation::current());
     EXPECT_EQ(test.code, status.code());
     EXPECT_EQ(message, status.message());
 
@@ -202,8 +202,8 @@ TEST(Status, TestGetSetPayload) {
   EXPECT_THAT(bad_status.get_payload(kUrl1), Optional(Eq(kPayload3)));
 
   // Testing dynamically generated type_url
-  bad_status.set_payload(turbo::StrCat(kUrl1, ".1"), std::string(kPayload1));
-  EXPECT_THAT(bad_status.get_payload(turbo::StrCat(kUrl1, ".1")),
+  bad_status.set_payload(turbo::str_cat(kUrl1, ".1"), std::string(kPayload1));
+  EXPECT_THAT(bad_status.get_payload(turbo::str_cat(kUrl1, ".1")),
               Optional(Eq(kPayload1)));
 }
 
@@ -365,19 +365,19 @@ TEST(Status, OstreamOperator) {
 
 TEST(Status, turbo_stringify) {
   turbo::Status status(turbo::StatusCode::kInternal, "fail");
-  EXPECT_THAT(turbo::StrCat(status),
+  EXPECT_THAT(turbo::str_cat(status),
               AllOf(HasSubstr("INTERNAL: fail"),
                     HasSubstr("status_test.cc:")));
   EXPECT_THAT(turbo::str_sprintf("%v", status),
               AllOf(HasSubstr("INTERNAL: fail"),
                     HasSubstr("status_test.cc:")));
-  EXPECT_EQ(turbo::StrCat(status), turbo::str_sprintf("%v", status));
+  EXPECT_EQ(turbo::str_cat(status), turbo::str_sprintf("%v", status));
   status.set_payload("foo", std::string("bar"));
-  EXPECT_THAT(turbo::StrCat(status),
+  EXPECT_THAT(turbo::str_cat(status),
               AllOf(HasSubstr("INTERNAL: fail"), HasSubstr("[foo='bar']"),
                     HasSubstr("status_test.cc:")));
   status.set_payload("bar", std::string("\377"));
-  EXPECT_THAT(turbo::StrCat(status),
+  EXPECT_THAT(turbo::str_cat(status),
               AllOf(HasSubstr("INTERNAL: fail"), HasSubstr("[foo='bar']"),
                     HasSubstr("[bar='\\xff']"),
                     HasSubstr("status_test.cc:")));
@@ -388,7 +388,7 @@ TEST(Status, OstreamEqStringify) {
   status.set_payload("foo", std::string("bar"));
   std::stringstream stream;
   stream << status;
-  EXPECT_EQ(stream.str(), turbo::StrCat(status));
+  EXPECT_EQ(stream.str(), turbo::str_cat(status));
 }
 
 turbo::Status EraseAndReturn(const turbo::Status& base) {
@@ -598,7 +598,7 @@ TEST(StatusErrno, ErrnoToStatus) {
 
 void CheckSourceLocation(
     const turbo::Status& status, std::vector<int> lines = {},
-    std::source_location loc = std::source_location::current()) {
+    turbo::SourceLocation loc = turbo::SourceLocation::current()) {
   ASSERT_EQ(status.GetSourceLocations().size(), lines.size())
       << "Size check failed at " << loc.line();
   for (size_t i = 0; i < lines.size(); ++i) {
@@ -622,7 +622,7 @@ TEST(Status, ConstructorCheckSourceLocation) {
   }
   {
     const turbo::Status a(turbo::StatusCode::kInternal, "message",
-                         std::source_location::current());
+                         turbo::SourceLocation::current());
     int line = GET_SOURCE_LOCATION(1);
     const turbo::Status b = a;
     for (const turbo::Status& status : {a, b}) {
@@ -633,7 +633,7 @@ TEST(Status, ConstructorCheckSourceLocation) {
   }
   {
     const turbo::Status a(turbo::StatusCode::kInternal, "message",
-                         std::source_location());
+                         turbo::SourceLocation());
     const turbo::Status b = a;
     for (const turbo::Status& status : {a, b}) {
       EXPECT_FALSE(status.ok());
@@ -643,7 +643,7 @@ TEST(Status, ConstructorCheckSourceLocation) {
   }
   {
     const turbo::Status a(turbo::StatusCode::kInternal, "",
-                         std::source_location::current());
+                         turbo::SourceLocation::current());
     const turbo::Status b = a;
     for (const turbo::Status& status : {a, b}) {
       EXPECT_FALSE(status.ok());
@@ -653,7 +653,7 @@ TEST(Status, ConstructorCheckSourceLocation) {
   }
   {
     const turbo::Status a(turbo::StatusCode::kInternal, "",
-                         std::source_location());
+                         turbo::SourceLocation());
     const turbo::Status b = a;
     for (const turbo::Status& status : {a, b}) {
       EXPECT_FALSE(status.ok());
@@ -667,7 +667,7 @@ TEST(Status, SourceLocationConstructor) {
   {
     // OK status doesn't save source locations.
     const turbo::Status original;
-    const turbo::Status status(original, std::source_location());
+    const turbo::Status status(original, turbo::SourceLocation());
     EXPECT_TRUE(status.ok());
     EXPECT_EQ(turbo::StatusCode::kOk, status.code());
     CheckSourceLocation(status);
@@ -675,7 +675,7 @@ TEST(Status, SourceLocationConstructor) {
   {
     // OK status doesn't save source locations.
     const turbo::Status original;
-    const turbo::Status status(original, std::source_location::current());
+    const turbo::Status status(original, turbo::SourceLocation::current());
     EXPECT_TRUE(status.ok());
     EXPECT_EQ(turbo::StatusCode::kOk, status.code());
     CheckSourceLocation(status);
@@ -684,20 +684,20 @@ TEST(Status, SourceLocationConstructor) {
     // Non-ok Status with non-empty msg can save source locations with
     // non-nullptr filename.
     const turbo::Status original(turbo::StatusCode::kInternal, "message",
-                                std::source_location::current());
+                                turbo::SourceLocation::current());
     int line = GET_SOURCE_LOCATION(1);
-    // Default std::source_location cannot be saved into the chain.
-    const turbo::Status status(original, std::source_location());
+    // Default turbo::SourceLocation cannot be saved into the chain.
+    const turbo::Status status(original, turbo::SourceLocation());
     EXPECT_FALSE(status.ok());
     EXPECT_EQ(turbo::StatusCode::kInternal, status.code());
     CheckSourceLocation(status, {line});
   }
   {
     const turbo::Status original(turbo::StatusCode::kInternal, "message",
-                                std::source_location::current());
+                                turbo::SourceLocation::current());
     int line = GET_SOURCE_LOCATION(1);
 
-    const turbo::Status status(original, std::source_location::current());
+    const turbo::Status status(original, turbo::SourceLocation::current());
     int line2 = GET_SOURCE_LOCATION(1);
 
     EXPECT_FALSE(status.ok());
@@ -707,8 +707,8 @@ TEST(Status, SourceLocationConstructor) {
   {
     // Non-OK status with empty msg doesn't save source locations.
     const turbo::Status original(turbo::StatusCode::kInternal, "",
-                                std::source_location::current());
-    const turbo::Status status(original, std::source_location());
+                                turbo::SourceLocation::current());
+    const turbo::Status status(original, turbo::SourceLocation());
     EXPECT_FALSE(status.ok());
     EXPECT_EQ(turbo::StatusCode::kInternal, status.code());
     CheckSourceLocation(status);
@@ -716,8 +716,8 @@ TEST(Status, SourceLocationConstructor) {
   {
     // Non-OK status with empty msg doesn't save source locations.
     const turbo::Status original(turbo::StatusCode::kInternal, "",
-                                std::source_location::current());
-    const turbo::Status status(original, std::source_location::current());
+                                turbo::SourceLocation::current());
+    const turbo::Status status(original, turbo::SourceLocation::current());
     EXPECT_FALSE(status.ok());
     EXPECT_EQ(turbo::StatusCode::kInternal, status.code());
     CheckSourceLocation(status);
@@ -726,8 +726,8 @@ TEST(Status, SourceLocationConstructor) {
     // Non-OK status with empty msg doesn't save source locations from default
     // constructor.
     const turbo::Status original(turbo::StatusCode::kInternal, "",
-                                std::source_location());
-    const turbo::Status status(original, std::source_location());
+                                turbo::SourceLocation());
+    const turbo::Status status(original, turbo::SourceLocation());
     EXPECT_FALSE(status.ok());
     EXPECT_EQ(turbo::StatusCode::kInternal, status.code());
     CheckSourceLocation(status);
@@ -735,24 +735,24 @@ TEST(Status, SourceLocationConstructor) {
   {
     // Non-OK status with empty msg doesn't save source locations.
     const turbo::Status original(turbo::StatusCode::kInternal, "",
-                                std::source_location());
-    const turbo::Status status(original, std::source_location::current());
+                                turbo::SourceLocation());
+    const turbo::Status status(original, turbo::SourceLocation::current());
     EXPECT_FALSE(status.ok());
     EXPECT_EQ(turbo::StatusCode::kInternal, status.code());
     CheckSourceLocation(status);
   }
   {
     const turbo::Status original(turbo::StatusCode::kInternal, "message",
-                                std::source_location());
-    const turbo::Status status(original, std::source_location());
+                                turbo::SourceLocation());
+    const turbo::Status status(original, turbo::SourceLocation());
     EXPECT_FALSE(status.ok());
     EXPECT_EQ(turbo::StatusCode::kInternal, status.code());
     CheckSourceLocation(status);
   }
   {
     const turbo::Status original(turbo::StatusCode::kInternal, "message",
-                                std::source_location());
-    const turbo::Status status(original, std::source_location::current());
+                                turbo::SourceLocation());
+    const turbo::Status status(original, turbo::SourceLocation::current());
     int line = GET_SOURCE_LOCATION(1);
     EXPECT_FALSE(status.ok());
     EXPECT_EQ(turbo::StatusCode::kInternal, status.code());
@@ -764,7 +764,7 @@ TEST(Status, SourceLocationWithMoveConstructor) {
   {
     // OK status doesn't save source locations.
     turbo::Status original;
-    const turbo::Status status(std::move(original), std::source_location());
+    const turbo::Status status(std::move(original), turbo::SourceLocation());
     EXPECT_TRUE(status.ok());
     EXPECT_EQ(turbo::StatusCode::kOk, status.code());
     CheckSourceLocation(status);
@@ -773,7 +773,7 @@ TEST(Status, SourceLocationWithMoveConstructor) {
     // OK status doesn't save source locations.
     turbo::Status original;
     const turbo::Status status(std::move(original),
-                              std::source_location::current());
+                              turbo::SourceLocation::current());
     EXPECT_TRUE(status.ok());
     EXPECT_EQ(turbo::StatusCode::kOk, status.code());
     CheckSourceLocation(status);
@@ -782,21 +782,21 @@ TEST(Status, SourceLocationWithMoveConstructor) {
     // Non-ok Status with non-empty msg can save source locations with
     // non-nullptr filename.
     turbo::Status original(turbo::StatusCode::kInternal, "message",
-                          std::source_location::current());
+                          turbo::SourceLocation::current());
     int line = GET_SOURCE_LOCATION(1);
-    // Default std::source_location cannot be saved into the chain.
-    const turbo::Status status(std::move(original), std::source_location());
+    // Default turbo::SourceLocation cannot be saved into the chain.
+    const turbo::Status status(std::move(original), turbo::SourceLocation());
     EXPECT_FALSE(status.ok());
     EXPECT_EQ(turbo::StatusCode::kInternal, status.code());
     CheckSourceLocation(status, {line});
   }
   {
     turbo::Status original(turbo::StatusCode::kInternal, "message",
-                          std::source_location::current());
+                          turbo::SourceLocation::current());
     int line = GET_SOURCE_LOCATION(1);
 
     const turbo::Status status(std::move(original),
-                              std::source_location::current());
+                              turbo::SourceLocation::current());
     int line2 = GET_SOURCE_LOCATION(1);
 
     EXPECT_FALSE(status.ok());
@@ -806,8 +806,8 @@ TEST(Status, SourceLocationWithMoveConstructor) {
   {
     // Non-OK status with empty msg doesn't save source locations.
     turbo::Status original(turbo::StatusCode::kInternal, "",
-                          std::source_location::current());
-    const turbo::Status status(std::move(original), std::source_location());
+                          turbo::SourceLocation::current());
+    const turbo::Status status(std::move(original), turbo::SourceLocation());
     EXPECT_FALSE(status.ok());
     EXPECT_EQ(turbo::StatusCode::kInternal, status.code());
     CheckSourceLocation(status);
@@ -815,9 +815,9 @@ TEST(Status, SourceLocationWithMoveConstructor) {
   {
     // Non-OK status with empty msg doesn't save source locations.
     turbo::Status original(turbo::StatusCode::kInternal, "",
-                          std::source_location::current());
+                          turbo::SourceLocation::current());
     const turbo::Status status(std::move(original),
-                              std::source_location::current());
+                              turbo::SourceLocation::current());
     EXPECT_FALSE(status.ok());
     EXPECT_EQ(turbo::StatusCode::kInternal, status.code());
     CheckSourceLocation(status);
@@ -826,8 +826,8 @@ TEST(Status, SourceLocationWithMoveConstructor) {
     // Non-OK status with empty msg doesn't save source locations from default
     // constructor.
     turbo::Status original(turbo::StatusCode::kInternal, "",
-                          std::source_location());
-    const turbo::Status status(std::move(original), std::source_location());
+                          turbo::SourceLocation());
+    const turbo::Status status(std::move(original), turbo::SourceLocation());
     EXPECT_FALSE(status.ok());
     EXPECT_EQ(turbo::StatusCode::kInternal, status.code());
     CheckSourceLocation(status);
@@ -835,26 +835,26 @@ TEST(Status, SourceLocationWithMoveConstructor) {
   {
     // Non-OK status with empty msg doesn't save source locations.
     turbo::Status original(turbo::StatusCode::kInternal, "",
-                          std::source_location());
+                          turbo::SourceLocation());
     const turbo::Status status(std::move(original),
-                              std::source_location::current());
+                              turbo::SourceLocation::current());
     EXPECT_FALSE(status.ok());
     EXPECT_EQ(turbo::StatusCode::kInternal, status.code());
     CheckSourceLocation(status);
   }
   {
     turbo::Status original(turbo::StatusCode::kInternal, "message",
-                          std::source_location());
-    const turbo::Status status(std::move(original), std::source_location());
+                          turbo::SourceLocation());
+    const turbo::Status status(std::move(original), turbo::SourceLocation());
     EXPECT_FALSE(status.ok());
     EXPECT_EQ(turbo::StatusCode::kInternal, status.code());
     CheckSourceLocation(status);
   }
   {
     turbo::Status original(turbo::StatusCode::kInternal, "message",
-                          std::source_location());
+                          turbo::SourceLocation());
     const turbo::Status status(std::move(original),
-                              std::source_location::current());
+                              turbo::SourceLocation::current());
     int line = GET_SOURCE_LOCATION(1);
     EXPECT_FALSE(status.ok());
     EXPECT_EQ(turbo::StatusCode::kInternal, status.code());
@@ -871,31 +871,31 @@ TEST(Status, add_source_location) {
         turbo::Status(turbo::StatusCode::kInternal, "")};
     for (turbo::Status& s : status_ignores_source_location) {
       for (int i = 0; i < max_iter; ++i) {
-        s.add_source_location(std::source_location::current());
-        s.add_source_location(std::source_location());
+        s.add_source_location(turbo::SourceLocation::current());
+        s.add_source_location(turbo::SourceLocation());
       }
       CheckSourceLocation(s);
     }
   }
   {
-    // Default std::source_location is not added.
+    // Default turbo::SourceLocation is not added.
     turbo::Status status(turbo::StatusCode::kInternal, "foo",
-                        std::source_location::current());
+                        turbo::SourceLocation::current());
     int line = GET_SOURCE_LOCATION(1);
     for (int i = 0; i < max_iter; ++i) {
-      status.add_source_location(std::source_location());
+      status.add_source_location(turbo::SourceLocation());
     }
     CheckSourceLocation(status, {line});
   }
   {
-    // Default std::source_location is not added.
+    // Default turbo::SourceLocation is not added.
     turbo::Status status(turbo::StatusCode::kInternal, "foo",
-                        std::source_location::current());
+                        turbo::SourceLocation::current());
     int line = GET_SOURCE_LOCATION(1);
     std::vector<int> lines = {line};
     lines.reserve(1 + max_iter);
     for (int i = 0; i < max_iter; ++i) {
-      status.add_source_location(std::source_location::current());
+      status.add_source_location(turbo::SourceLocation::current());
       lines.push_back(GET_SOURCE_LOCATION(1));
     }
     CheckSourceLocation(status, lines);
@@ -904,11 +904,11 @@ TEST(Status, add_source_location) {
 
 TEST(Status, WithSourceLocationCopy) {
   turbo::Status original(turbo::StatusCode::kInternal, "message",
-                        std::source_location::current());
+                        turbo::SourceLocation::current());
   int line = GET_SOURCE_LOCATION(1);
 
   const turbo::Status status =
-      original.with_source_location(std::source_location::current());
+      original.with_source_location(turbo::SourceLocation::current());
   int line2 = GET_SOURCE_LOCATION(1);
 
   CheckSourceLocation(original, {line});
@@ -920,11 +920,11 @@ turbo::Status&& IsRvalueStatus(turbo::Status&& s) { return std::move(s); }
 
 TEST(Status, WithSourceLocationMove) {
   turbo::Status original(turbo::StatusCode::kInternal, "message",
-                        std::source_location::current());
+                        turbo::SourceLocation::current());
   int line = GET_SOURCE_LOCATION(1);
 
   const turbo::Status status = IsRvalueStatus(
-      std::move(original).with_source_location(std::source_location::current()));
+      std::move(original).with_source_location(turbo::SourceLocation::current()));
   int line2 = GET_SOURCE_LOCATION(1);
 
   CheckSourceLocation(status, {line, line2});
@@ -934,22 +934,22 @@ TEST(Status, WithSourceLocationMove) {
 
 TEST(Status, CopyOnWriteSourceLocations) {
   turbo::Status source(turbo::StatusCode::kInvalidArgument, "fail",
-                      std::source_location::current());
+                      turbo::SourceLocation::current());
   EXPECT_EQ(source.GetSourceLocations().size(), 1);
   turbo::Status copy = source;
   EXPECT_EQ(copy.GetSourceLocations().size(), 1);
-  copy.add_source_location(std::source_location::current());  // Copy rep.
+  copy.add_source_location(turbo::SourceLocation::current());  // Copy rep.
   EXPECT_EQ(copy.GetSourceLocations().size(), 2);
   EXPECT_EQ(source.GetSourceLocations().size(), 1);
 }
 
 TEST(Status, SourceLocationToStringMode) {
   turbo::Status s(turbo::StatusCode::kInternal, "fail",
-                 std::source_location::current());
+                 turbo::SourceLocation::current());
   int line = GET_SOURCE_LOCATION(1);
   std::string source_location_string = "\n=== Source Location Trace: ===";
-  std::string source_location_stack = turbo::StrCat(
-      std::source_location::current().file_name(), ":", line, "\n");
+  std::string source_location_stack = turbo::str_cat(
+      turbo::SourceLocation::current().file_name(), ":", line, "\n");
 
   s.set_payload("foo", std::string("bar"));
 

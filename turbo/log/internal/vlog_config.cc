@@ -28,7 +28,7 @@
 #include <turbo/base/internal/scheduling_mode.h>
 #include <turbo/base/internal/spinlock.h>
 #include <turbo/base/thread_annotations.h>
-#include <turbo/log/internal/fnmatch.h>
+#include <turbo/strings/match.h>
 #include <turbo/strings/numbers.h>
 #include <turbo/strings/str_split.h>
 #include <string_view>

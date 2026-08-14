@@ -45,7 +45,7 @@
 #include <utility>
 #include <variant>
 
-#include <source_location>
+#include <turbo/types/source_location.h>
 #include <turbo/base/call_once.h>
 #include <turbo/base/nullability.h>
 #include <turbo/format/has_turbo_stringify.h>
@@ -511,14 +511,14 @@ namespace turbo {
 
         Status status() &&;
 
-        turbo::Span<const std::source_location> GetSourceLocations() const {
+        turbo::Span<const turbo::SourceLocation> GetSourceLocations() const {
             return this->status_.GetSourceLocations();
         }
 
         // Appends the `loc` to the current location chain inside the status, iff the
         // status-or is non-ok and contains a non-empty message.
         void add_source_location(
-            std::source_location loc = std::source_location::current()) {
+            turbo::SourceLocation loc = turbo::SourceLocation::current()) {
             this->status_.add_source_location(loc);
         }
 
@@ -537,7 +537,7 @@ namespace turbo {
         //     return Finalize().with_source_location();
         //   }
         KUMO_MUST_USE_RESULT Result<T> &&with_source_location(
-            std::source_location loc = std::source_location::current()) && {
+            turbo::SourceLocation loc = turbo::SourceLocation::current()) && {
             add_source_location(loc);
             return std::move(*this);
         }
@@ -744,7 +744,7 @@ namespace turbo {
         return os;
     }
 
-    // As above, but supports `StrCat`, `str_sprintf`, etc.
+    // As above, but supports `str_cat`, `str_sprintf`, etc.
     //
     // Requires `T` has `turbo_stringify`.  Do not rely on the output format which
     // may change without notice.

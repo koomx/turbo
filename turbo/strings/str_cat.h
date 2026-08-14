@@ -18,7 +18,7 @@
 // -----------------------------------------------------------------------------
 //
 // This package contains functions for efficiently concatenating and appending
-// strings: `StrCat()` and `StrAppend()`. Most of the work within these routines
+// strings: `str_cat()` and `str_append()`. Most of the work within these routines
 // is actually handled through use of a special AlphaNum type, which was
 // designed to be used as a parameter type that efficiently manages conversion
 // to strings and avoids copies in the above operations.
@@ -52,7 +52,7 @@
 //
 // You can convert to hexadecimal output rather than decimal output using the
 // `Hex` type contained here. To do so, pass `Hex(my_int)` as a parameter to
-// `StrCat()` or `StrAppend()`. You may specify a minimum hex field width using
+// `str_cat()` or `str_append()`. You may specify a minimum hex field width using
 // a `PadSpec` enum.
 //
 // User-defined types can be formatted with the `turbo_stringify()` customization
@@ -77,7 +77,7 @@
 // struct Point {
 //   // To add formatting support to `Point`, we simply need to add a free
 //   // (non-member) function `turbo_stringify()`. This method specifies how
-//   // Point should be printed when turbo::StrCat() is called on it. You can add
+//   // Point should be printed when turbo::str_cat() is called on it. You can add
 //   // such a free function using a friend declaration within the body of the
 //   // class. The sink parameter is a templated type to avoid requiring
 //   // dependencies.
@@ -118,7 +118,7 @@
 
 namespace turbo {
     namespace strings_internal {
-        // AlphaNumBuffer allows a way to pass a string to StrCat without having to do
+        // AlphaNumBuffer allows a way to pass a string to str_cat without having to do
         // memory allocation.  It is simply a pair of a fixed-size character array, and
         // a size.  Please don't use outside of turbo, yet.
         template <size_t max_size>
@@ -346,8 +346,8 @@ namespace turbo {
     // AlphaNum
     // -----------------------------------------------------------------------------
     //
-    // The `AlphaNum` class acts as the main parameter type for `StrCat()` and
-    // `StrAppend()`, providing efficient conversion of numeric, boolean, decimal,
+    // The `AlphaNum` class acts as the main parameter type for `str_cat()` and
+    // `str_append()`, providing efficient conversion of numeric, boolean, decimal,
     // and hexadecimal values (through the `Dec` and `Hex` types) into strings.
     // `AlphaNum` should only be used as a function parameter. Do not instantiate
     //  `AlphaNum` directly as a stack variable.
@@ -467,32 +467,32 @@ namespace turbo {
     };
 
     // -----------------------------------------------------------------------------
-    // StrCat()
+    // str_cat()
     // -----------------------------------------------------------------------------
     //
     // Merges given strings or numbers, using no delimiter(s), returning the merged
     // result as a string.
     //
-    // `StrCat()` is designed to be the fastest possible way to construct a string
+    // `str_cat()` is designed to be the fastest possible way to construct a string
     // out of a mix of raw C strings, string_views, strings, bool values,
     // and numeric values.
     //
-    // Don't use `StrCat()` for user-visible strings. The localization process
+    // Don't use `str_cat()` for user-visible strings. The localization process
     // works poorly on strings built up out of fragments.
     //
-    // For clarity and performance, don't use `StrCat()` when appending to a
-    // string. Use `StrAppend()` instead. In particular, avoid using any of these
+    // For clarity and performance, don't use `str_cat()` when appending to a
+    // string. Use `str_append()` instead. In particular, avoid using any of these
     // (anti-)patterns:
     //
-    //   str.append(StrCat(...))
-    //   str += StrCat(...)
-    //   str = StrCat(str, ...)
+    //   str.append(str_cat(...))
+    //   str += str_cat(...)
+    //   str = str_cat(str, ...)
     //
     // The last case is the worst, with a potential to change a loop
     // from a linear time operation with O(1) dynamic allocations into a
     // quadratic time operation with O(n) dynamic allocations.
     //
-    // See `StrAppend()` below for more information.
+    // See `str_append()` below for more information.
 
     namespace strings_internal {
         // Do not call directly - this is not part of the public API.
@@ -588,31 +588,31 @@ namespace turbo {
 #undef TURBO_INTERNAL_STRCAT_ENABLE_FAST_CASE
     } // namespace strings_internal
 
-    [[nodiscard]] inline std::string StrCat() {
+    [[nodiscard]] inline std::string str_cat() {
         return std::string();
     }
 
     template <typename T>
-    [[nodiscard]] inline std::string StrCat(
+    [[nodiscard]] inline std::string str_cat(
         strings_internal::EnableIfFastCase<T> a) {
         return strings_internal::SingleArgStrCat(a);
     }
 
-    [[nodiscard]] inline std::string StrCat(const AlphaNum& a) {
+    [[nodiscard]] inline std::string str_cat(const AlphaNum& a) {
         return std::string(a.data(), a.size());
     }
 
-    [[nodiscard]] std::string StrCat(const AlphaNum& a, const AlphaNum& b);
+    [[nodiscard]] std::string str_cat(const AlphaNum& a, const AlphaNum& b);
 
-    [[nodiscard]] std::string StrCat(const AlphaNum& a, const AlphaNum& b,
+    [[nodiscard]] std::string str_cat(const AlphaNum& a, const AlphaNum& b,
         const AlphaNum& c);
 
-    [[nodiscard]] std::string StrCat(const AlphaNum& a, const AlphaNum& b,
+    [[nodiscard]] std::string str_cat(const AlphaNum& a, const AlphaNum& b,
         const AlphaNum& c, const AlphaNum& d);
 
     // Support 5 or more arguments
     template <typename... AV>
-    [[nodiscard]] inline std::string StrCat(const AlphaNum& a, const AlphaNum& b,
+    [[nodiscard]] inline std::string str_cat(const AlphaNum& a, const AlphaNum& b,
         const AlphaNum& c, const AlphaNum& d,
         const AlphaNum& e, const AV&... args) {
         return strings_internal::CatPieces(
@@ -621,14 +621,14 @@ namespace turbo {
     }
 
     // -----------------------------------------------------------------------------
-    // StrAppend()
+    // str_append()
     // -----------------------------------------------------------------------------
     //
     // Appends a string or set of strings to an existing string, in a similar
-    // fashion to `StrCat()`.
+    // fashion to `str_cat()`.
     //
-    // WARNING: `StrAppend(&str, a, b, c, ...)` requires that none of the
-    // a, b, c, parameters be a reference into str. For speed, `StrAppend()` does
+    // WARNING: `str_append(&str, a, b, c, ...)` requires that none of the
+    // a, b, c, parameters be a reference into str. For speed, `str_append()` does
     // not try to check each of its input arguments to be sure that they are not
     // a subset of the string being appended to. That is, while this will work:
     //
@@ -638,39 +638,39 @@ namespace turbo {
     // This output is undefined:
     //
     //   std::string s = "foo";
-    //   StrAppend(&s, s);
+    //   str_append(&s, s);
     //
     // This output is undefined as well, since `std::string_view` does not own its
     // data:
     //
     //   std::string s = "foobar";
     //   std::string_view p = s;
-    //   StrAppend(&s, p);
+    //   str_append(&s, p);
 
-    inline void StrAppend(std::string* turbo_nonnull) {
+    inline void str_append(std::string* turbo_nonnull) {
     }
 
-    void StrAppend(std::string* turbo_nonnull dest, const AlphaNum& a);
+    void str_append(std::string* turbo_nonnull dest, const AlphaNum& a);
 
-    void StrAppend(std::string* turbo_nonnull dest, const AlphaNum& a,
+    void str_append(std::string* turbo_nonnull dest, const AlphaNum& a,
         const AlphaNum& b);
 
-    void StrAppend(std::string* turbo_nonnull dest, const AlphaNum& a,
+    void str_append(std::string* turbo_nonnull dest, const AlphaNum& a,
         const AlphaNum& b, const AlphaNum& c);
 
-    void StrAppend(std::string* turbo_nonnull dest, const AlphaNum& a,
+    void str_append(std::string* turbo_nonnull dest, const AlphaNum& a,
         const AlphaNum& b, const AlphaNum& c, const AlphaNum& d);
 
     // Support 5 or more arguments
     template <typename... AV>
-    inline void StrAppend(std::string* turbo_nonnull dest, const AlphaNum& a,
+    inline void str_append(std::string* turbo_nonnull dest, const AlphaNum& a,
         const AlphaNum& b, const AlphaNum& c, const AlphaNum& d,
         const AlphaNum& e, const AV&... args) {
         strings_internal::AppendPieces(
             dest, { a.Piece(), b.Piece(), c.Piece(), d.Piece(), e.Piece(), static_cast<const AlphaNum&>(args).Piece()... });
     }
 
-    // Helper function for the future StrCat default floating-point format, %.6g
+    // Helper function for the future str_cat default floating-point format, %.6g
     // This is fast.
     inline strings_internal::AlphaNumBuffer<
         format_internal::kSixDigitsToBufferSize>

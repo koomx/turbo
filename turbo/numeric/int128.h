@@ -221,7 +221,7 @@ class
 #endif
   }
 
-  // Support for turbo::StrCat() etc.
+  // Support for turbo::str_cat() etc.
   template <typename Sink>
   friend void turbo_stringify(Sink& sink, uint128 v) {
     sink.Append(v.ToString());
@@ -471,7 +471,7 @@ class int128 {
 #endif
   }
 
-  // Support for turbo::StrCat() etc.
+  // Support for turbo::str_cat() etc.
   template <typename Sink>
   friend void turbo_stringify(Sink& sink, int128 v) {
     sink.Append(v.ToString());

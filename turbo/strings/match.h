@@ -25,11 +25,11 @@
 // Examples:
 //   std::string s = "foo";
 //   std::string_view sv = "f";
-//   assert(turbo::StrContains(s, sv));
+//   assert(turbo::str_contains(s, sv));
 //
 // Note: The order of parameters in these functions is designed to mimic the
 // order an equivalent member function would exhibit;
-// e.g. `s.Contains(x)` ==> `turbo::StrContains(s, x).
+// e.g. `s.Contains(x)` ==> `turbo::str_contains(s, x).
 #ifndef TURBO_STRINGS_MATCH_H_
 #define TURBO_STRINGS_MATCH_H_
 
@@ -39,22 +39,22 @@
 
 namespace turbo {
 
-    // StrContains()
+    // str_contains()
     //
     // Returns whether a given string `haystack` contains the substring `needle`.
-    inline bool StrContains(std::string_view haystack,
+    inline bool str_contains(std::string_view haystack,
         std::string_view needle) noexcept {
         return haystack.find(needle, 0) != haystack.npos;
     }
 
-    inline bool StrContains(std::string_view haystack, char needle) noexcept {
+    inline bool str_contains(std::string_view haystack, char needle) noexcept {
         return haystack.find(needle) != haystack.npos;
     }
 
-    // StartsWith()
+    // starts_with()
     //
     // Returns whether a given string `text` begins with `prefix`.
-    inline constexpr bool StartsWith(std::string_view text,
+    inline constexpr bool starts_with(std::string_view text,
         std::string_view prefix) noexcept {
         if (prefix.empty()) {
             return true;
@@ -67,10 +67,18 @@ namespace turbo {
         return possible_match == prefix;
     }
 
-    // EndsWith()
+    inline constexpr bool starts_with(std::string_view text,
+        char prefix) noexcept {
+        if (text.empty()) {
+            return false;
+        }
+        return text.front() == prefix;
+    }
+
+    // ends_with()
     //
     // Returns whether a given string `text` ends with `suffix`.
-    inline constexpr bool EndsWith(std::string_view text,
+    inline constexpr bool ends_with(std::string_view text,
         std::string_view suffix) noexcept {
         if (suffix.empty()) {
             return true;
@@ -81,46 +89,64 @@ namespace turbo {
         std::string_view possible_match = text.substr(text.size() - suffix.size());
         return possible_match == suffix;
     }
-    // StrContainsIgnoreCase()
+
+    inline constexpr bool ends_with(std::string_view text,
+        char suffix) noexcept {
+
+        if (text.empty()) {
+            return false;
+        }
+        return text.back() == suffix;
+    }
+
+    // str_contains_ignore_case()
     //
     // Returns whether a given ASCII string `haystack` contains the ASCII substring
     // `needle`, ignoring case in the comparison.
-    bool StrContainsIgnoreCase(std::string_view haystack,
+    bool str_contains_ignore_case(std::string_view haystack,
         std::string_view needle) noexcept;
 
-    bool StrContainsIgnoreCase(std::string_view haystack,
+    bool str_contains_ignore_case(std::string_view haystack,
         char needle) noexcept;
 
-    // EqualsIgnoreCase()
+    // equals_ignore_case()
     //
     // Returns whether given ASCII strings `piece1` and `piece2` are equal, ignoring
     // case in the comparison.
-    bool EqualsIgnoreCase(std::string_view piece1,
+    bool equals_ignore_case(std::string_view piece1,
         std::string_view piece2) noexcept;
 
-    // StartsWithIgnoreCase()
+    // starts_with_ignore_case()
     //
     // Returns whether a given ASCII string `text` starts with `prefix`,
     // ignoring case in the comparison.
-    bool StartsWithIgnoreCase(std::string_view text,
+    bool starts_with_ignore_case(std::string_view text,
         std::string_view prefix) noexcept;
 
-    // EndsWithIgnoreCase()
+    // ends_with_ignore_case()
     //
     // Returns whether a given ASCII string `text` ends with `suffix`, ignoring
     // case in the comparison.
-    bool EndsWithIgnoreCase(std::string_view text,
+    bool ends_with_ignore_case(std::string_view text,
         std::string_view suffix) noexcept;
 
     // Yields the longest prefix in common between both input strings.
     // Pointer-wise, the returned result is a subset of input "a".
-    std::string_view FindLongestCommonPrefix(std::string_view a,
+    std::string_view find_longest_common_prefix(std::string_view a,
         std::string_view b);
 
     // Yields the longest suffix in common between both input strings.
     // Pointer-wise, the returned result is a subset of input "a".
-    std::string_view FindLongestCommonSuffix(std::string_view a,
+    std::string_view find_longest_common_suffix(std::string_view a,
         std::string_view b);
+
+    // Like POSIX `fnmatch`, but:
+    // * accepts `string_view`
+    // * does not allocate any dynamic memory
+    // * only supports * and ? wildcards and not bracket expressions [...]
+    // * wildcards may match /
+    // * no backslash-escaping
+    bool fnmatch(std::string_view pattern, std::string_view str);
 
 } // namespace turbo
 

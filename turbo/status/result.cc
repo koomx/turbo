@@ -65,7 +65,7 @@ namespace turbo {
 
     void BadResultAccess::init_what() const {
         turbo::call_once(init_what_, [this] {
-            what_ = turbo::StrCat("Bad Result access: ", status_.ToString());
+            what_ = turbo::str_cat("Bad Result access: ", status_.ToString());
         });
     }
 
@@ -85,7 +85,7 @@ namespace turbo {
         void Helper::Crash(const turbo::Status &status) {
             TURBO_INTERNAL_LOG(
                 FATAL,
-                turbo::StrCat("Attempting to fetch value instead of handling error ",
+                turbo::str_cat("Attempting to fetch value instead of handling error ",
                               status.ToString()));
         }
 
@@ -95,7 +95,7 @@ namespace turbo {
 #else
             TURBO_INTERNAL_LOG(
                 FATAL,
-                turbo::StrCat("Attempting to fetch value instead of handling error ",
+                turbo::str_cat("Attempting to fetch value instead of handling error ",
                               status.ToString()));
             std::abort();
 #endif

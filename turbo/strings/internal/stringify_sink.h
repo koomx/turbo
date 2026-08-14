@@ -20,7 +20,7 @@
 #include <type_traits>
 #include <utility>
 
-#include <source_location>
+#include <turbo/types/source_location.h>
 #include <string_view>
 #include <turbo/strings/numbers.h>
 
@@ -52,7 +52,7 @@ namespace turbo {
     } // namespace strings_internal
 
     template <typename Sink>
-    void turbo_stringify(Sink& sink, std::source_location l) {
+    void turbo_stringify(Sink& sink, turbo::SourceLocation l) {
         sink.Append(l.file_name());
         sink.Append(":");
         std::array<char, format_internal::kFastToBufferSize> buffer;

@@ -25,7 +25,7 @@
 #include <turbo/status/status.h>
 #include <turbo/strings/str_cat.h>
 #include <string_view>
-#include <source_location>
+#include <turbo/types/source_location.h>
 
 namespace turbo {
     void StatusBuilder::Destroy(std::unique_ptr<Rep>) {
@@ -37,7 +37,7 @@ namespace turbo {
     StatusBuilder::StatusBuilder() = default;
 
     StatusBuilder::StatusBuilder(const turbo::Status &original_status,
-                                 std::source_location location)
+                                 turbo::SourceLocation location)
         : loc_(location), rep_(InitRep(original_status)) {
     }
 
@@ -91,9 +91,9 @@ namespace turbo {
         turbo::StatusCode code) & {
         if (rep_ == nullptr) {
             rep_ = std::make_unique<StatusBuilder::Rep>(
-                turbo::Status(code, std::string_view(), std::source_location()));
+                turbo::Status(code, std::string_view(), turbo::SourceLocation()));
         } else {
-            turbo::Status status(code, std::string_view(), std::source_location());
+            turbo::Status status(code, std::string_view(), turbo::SourceLocation());
             rep_->status.for_each_payload(
                 [&status](std::string_view type_url, const std::string &payload) {
                     status.set_payload(type_url, payload);
@@ -115,7 +115,7 @@ namespace turbo {
             KUMO_ASSERT(!status.ok());
 
             if (message.empty()) {
-                return turbo::Status(status.code(), message, std::source_location());
+                return turbo::Status(status.code(), message, turbo::SourceLocation());
             }
 
             using StatusRep =
@@ -139,15 +139,15 @@ namespace turbo {
                 case MessageJoinStyle::kAnnotate: {
                     std::string annotated;
                     if (!original_message.empty()) {
-                        turbo::StrAppend(&annotated, original_message, "; ", msg);
+                        turbo::str_append(&annotated, original_message, "; ", msg);
                         msg = annotated;
                     }
                     return SetMessage(s, msg);
                 }
                 case MessageJoinStyle::kPrepend:
-                    return SetMessage(s, turbo::StrCat(msg, original_message));
+                    return SetMessage(s, turbo::str_cat(msg, original_message));
                 case MessageJoinStyle::kAppend:
-                    return SetMessage(s, turbo::StrCat(original_message, msg));
+                    return SetMessage(s, turbo::str_cat(original_message, msg));
                 default:
                     return turbo::internal_error("Unknown MessageJoinStyle");
             }
@@ -159,7 +159,7 @@ namespace turbo {
     }
 
     KUMO_ATTRIBUTE_WEAK turbo::Status StatusBuilder::CreateStatusAndConditionallyLog(
-        std::source_location loc, std::unique_ptr<Rep> rep) {
+        turbo::SourceLocation loc, std::unique_ptr<Rep> rep) {
         if (rep == nullptr) return turbo::ok_status();
         turbo::Status result = status_internal::StatusPrivateAccessorForStatusBuilder::
                 JoinMessageToStatus(std::move(rep->status), rep->stream_message,

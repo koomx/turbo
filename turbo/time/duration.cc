@@ -902,11 +902,11 @@ bool ParseDuration(std::string_view dur_sv, Duration* d) {
   return true;
 }
 
-bool TurboParseFlag(std::string_view text, Duration* dst, std::string*) {
+bool turbo_parse_flag(std::string_view text, Duration* dst, std::string*) {
   return ParseDuration(text, dst);
 }
 
-std::string TurboUnparseFlag(Duration d) { return FormatDuration(d); }
+std::string turbo_unparse_flag(Duration d) { return FormatDuration(d); }
 bool ParseFlag(const std::string& text, Duration* dst, std::string* ) {
   return ParseDuration(text, dst);
 }

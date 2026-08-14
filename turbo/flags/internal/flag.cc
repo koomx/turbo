@@ -143,7 +143,7 @@ namespace turbo {
                     return;
 
                 TURBO_INTERNAL_LOG(INFO,
-                    turbo::StrCat("Restore saved value of ", flag_impl_.Name(),
+                    turbo::str_cat("Restore saved value of ", flag_impl_.Name(),
                         " to: ", flag_impl_.CurrentValue()));
             }
 
@@ -288,7 +288,7 @@ namespace turbo {
 #endif
 
             TURBO_INTERNAL_LOG(
-                FATAL, turbo::StrCat("Flag '", Name(), "' is defined as one type and declared as another"));
+                FATAL, turbo::str_cat("Flag '", Name(), "' is defined as one type and declared as another"));
         }
 
         std::unique_ptr<void, DynValueDeleter> FlagImpl::MakeInitValue() const {
@@ -564,7 +564,7 @@ namespace turbo {
             std::string parse_err;
             if (!flags_internal::Parse(op_, value, tentative_value.get(), &parse_err)) {
                 std::string_view err_sep = parse_err.empty() ? "" : "; ";
-                err = turbo::StrCat("Illegal value '", value, "' specified for flag '",
+                err = turbo::str_cat("Illegal value '", value, "' specified for flag '",
                     Name(), "'", err_sep, parse_err);
                 return nullptr;
             }
@@ -572,7 +572,7 @@ namespace turbo {
             std::string validate_err;
             if (!InvokeUserValidate(tentative_value.get(), &validate_err)) {
                 std::string_view err_sep = validate_err.empty() ? "" : "; ";
-                err = turbo::StrCat("Illegal value '", value, "' specified for flag '",
+                err = turbo::str_cat("Illegal value '", value, "' specified for flag '",
                     Name(), "'", err_sep, validate_err);
                 return nullptr;
             }
@@ -648,7 +648,7 @@ namespace turbo {
                 std::string ignored_error;
                 std::string src_as_str = flags_internal::Unparse(op_, src);
                 if (!flags_internal::Parse(op_, src_as_str, obj.get(), &ignored_error)) {
-                    TURBO_INTERNAL_LOG(ERROR, turbo::StrCat("Attempt to set flag '", Name(), "' to invalid value ", src_as_str));
+                    TURBO_INTERNAL_LOG(ERROR, turbo::str_cat("Attempt to set flag '", Name(), "' to invalid value ", src_as_str));
                 }
             }
 
@@ -694,7 +694,7 @@ namespace turbo {
                     // TODO(rogeeff): review and fix this semantic. Currently we do not fail
                     // in this case if flag is modified. This is misleading since the flag's
                     // value is not updated even though we return true.
-                    // *err = turbo::StrCat(Name(), " is already set to ",
+                    // *err = turbo::str_cat(Name(), " is already set to ",
                     //                     CurrentValue(), "\n");
                     // return false;
                     return true;
@@ -742,7 +742,7 @@ namespace turbo {
             if (!flags_internal::Parse(op_, v, dst.get(), &error)) {
                 TURBO_INTERNAL_LOG(
                     FATAL,
-                    turbo::StrCat("Flag ", Name(), " (from ", Filename(),
+                    turbo::str_cat("Flag ", Name(), " (from ", Filename(),
                         "): string form of default value '", v,
                         "' could not be parsed; error=", error));
             }

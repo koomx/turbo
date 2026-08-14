@@ -61,7 +61,7 @@ namespace turbo {
 #ifndef NDEBUG
                         TURBO_RAW_LOG(FATAL,
                             "Invalid turbo::substitute() format string: \"%s\".",
-                            turbo::CEscape(format).c_str());
+                            turbo::c_escape(format).c_str());
 #endif
                         return;
                     } else if (turbo::ascii_isdigit(
@@ -74,7 +74,7 @@ namespace turbo {
                                 "Invalid turbo::substitute() format string: asked for \"$"
                                 "%d\", but only %d args were given.  Full format string was: "
                                 "\"%s\".",
-                                index, static_cast<int>(num_args), turbo::CEscape(format).c_str());
+                                index, static_cast<int>(num_args), turbo::c_escape(format).c_str());
 #endif
                             return;
                         }
@@ -87,7 +87,7 @@ namespace turbo {
 #ifndef NDEBUG
                         TURBO_RAW_LOG(FATAL,
                             "Invalid turbo::substitute() format string: \"%s\".",
-                            turbo::CEscape(format).c_str());
+                            turbo::c_escape(format).c_str());
 #endif
                         return;
                     }

@@ -15,8 +15,6 @@
 
 #include <tests/log/scoped_mock_log.h>
 
-#include <atomic>
-#include <barrier>
 #include <memory>
 #include <thread>  // NOLINT(build/c++11)
 
@@ -24,6 +22,8 @@
 #include "gtest/gtest-spi.h"
 #include <gtest/gtest.h>
 #include <turbo/macros/config.h>
+#include <turbo/types/barrier.h>
+#include <turbo/types/latch.h>
 #include <turbo/base/log_severity.h>
 #include <turbo/log/globals.h>
 #include <tests/log/internal/test_helpers.h>
@@ -105,7 +105,7 @@ TEST(ScopedMockLogTest, LogMockCatchAndMatchSendExpectations) {
                  SourceBasename(Eq("very_long_source_file.cc")),
                  SourceLine(Eq(777)), ThreadID(Eq(turbo::LogEntry::tid_t{1234})),
                  TextMessageWithPrefix(Truly([](std::string_view msg) {
-                   return turbo::EndsWith(
+                   return turbo::ends_with(
                        msg, " very_long_source_file.cc:777] Info message");
                  })))));
 
@@ -225,7 +225,7 @@ TEST(ScopedMockLogTest, LogFromMultipleThreads) {
 
   log.StartCapturingLogs();
 
-  std::barrier barrier(2);
+  turbo::barrier barrier(2);
   std::thread thread1([&barrier]() {
     barrier.arrive_and_wait();
     KLOG(INFO) << "Thread 1";
@@ -245,7 +245,7 @@ TEST(ScopedMockLogTest, LogFromMultipleThreads) {
 TEST(ScopedMockLogTest, NoSequenceWithMultipleThreads) {
   turbo::ScopedMockLog log;
 
-  std::barrier barrier(2);
+  turbo::barrier barrier(2);
   EXPECT_CALL(log, Log(turbo::LogSeverity::kInfo, _, _))
       .Times(2)
       .WillRepeatedly([&barrier]() { barrier.arrive_and_wait(); });
@@ -267,19 +267,18 @@ TEST(ScopedMockLogTsanTest,
 
   log->StartCapturingLogs();
 
-  std::atomic<bool> logging_started{false};
+  turbo::latch logging_started(1);
 
   std::thread thread([&logging_started]() {
     for (int i = 0; i < 100; ++i) {
       if (i == 50) {
-        logging_started.store(true);
-        logging_started.notify_one();
+        logging_started.count_down();
       }
       KLOG(INFO) << "Thread log";
     }
   });
 
-  logging_started.wait(false);
+  logging_started.wait();
   log.reset();
   thread.join();
 }

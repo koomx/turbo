@@ -56,7 +56,7 @@
 //   * pointer types other than char* (Printed as "0x<lower case hex string>",
 //     except that null is printed as "NULL")
 //   * user-defined types via the `turbo_stringify()` customization point. See the
-//     documentation for `turbo::StrCat` for an explanation on how to use this.
+//     documentation for `turbo::str_cat` for an explanation on how to use this.
 //
 // If an invalid format string is provided, substitute returns an empty string
 // and substitute_and_append does not change the provided output string.
@@ -97,7 +97,7 @@ namespace turbo {
         // This class provides an argument type for `turbo::substitute()` and
         // `turbo::substitute_and_append()`. `Arg` handles implicit conversion of various
         // types to a string. (`Arg` is very similar to the `AlphaNum` class in
-        // `StrCat()`.)
+        // `str_cat()`.)
         //
         // This class has implicit constructors.
         class Arg {

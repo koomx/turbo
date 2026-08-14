@@ -26,45 +26,45 @@
 
 namespace turbo {
 
-    bool EqualsIgnoreCase(std::string_view piece1,
+    bool equals_ignore_case(std::string_view piece1,
         std::string_view piece2) noexcept {
         return (piece1.size() == piece2.size() && 0 == turbo::strings_internal::memcasecmp(piece1.data(), piece2.data(), piece1.size()));
         // memcasecmp uses turbo::ascii_tolower().
     }
 
-    bool StrContainsIgnoreCase(std::string_view haystack,
+    bool str_contains_ignore_case(std::string_view haystack,
         std::string_view needle) noexcept {
         while (haystack.size() >= needle.size()) {
-            if (StartsWithIgnoreCase(haystack, needle))
+            if (starts_with_ignore_case(haystack, needle))
                 return true;
             haystack.remove_prefix(1);
         }
         return false;
     }
 
-    bool StrContainsIgnoreCase(std::string_view haystack,
+    bool str_contains_ignore_case(std::string_view haystack,
         char needle) noexcept {
         char upper_needle = turbo::ascii_toupper(static_cast<unsigned char>(needle));
         char lower_needle = turbo::ascii_tolower(static_cast<unsigned char>(needle));
         if (upper_needle == lower_needle) {
-            return StrContains(haystack, needle);
+            return str_contains(haystack, needle);
         } else {
             const char both_cstr[3] = { lower_needle, upper_needle, '\0' };
             return haystack.find_first_of(both_cstr) != std::string_view::npos;
         }
     }
 
-    bool StartsWithIgnoreCase(std::string_view text,
+    bool starts_with_ignore_case(std::string_view text,
         std::string_view prefix) noexcept {
-        return (text.size() >= prefix.size()) && EqualsIgnoreCase(text.substr(0, prefix.size()), prefix);
+        return (text.size() >= prefix.size()) && equals_ignore_case(text.substr(0, prefix.size()), prefix);
     }
 
-    bool EndsWithIgnoreCase(std::string_view text,
+    bool ends_with_ignore_case(std::string_view text,
         std::string_view suffix) noexcept {
-        return (text.size() >= suffix.size()) && EqualsIgnoreCase(text.substr(text.size() - suffix.size()), suffix);
+        return (text.size() >= suffix.size()) && equals_ignore_case(text.substr(text.size() - suffix.size()), suffix);
     }
 
-    std::string_view FindLongestCommonPrefix(std::string_view a,
+    std::string_view find_longest_common_prefix(std::string_view a,
         std::string_view b) {
         const std::string_view::size_type limit = std::min(a.size(), b.size());
         const char* const pa = a.data();
@@ -106,7 +106,7 @@ namespace turbo {
         return std::string_view(pa, limit);
     }
 
-    std::string_view FindLongestCommonSuffix(std::string_view a,
+    std::string_view find_longest_common_suffix(std::string_view a,
         std::string_view b) {
         const std::string_view::size_type limit = std::min(a.size(), b.size());
         if (limit == 0)
@@ -123,5 +123,52 @@ namespace turbo {
 
         return std::string_view(++pa, count);
     }
+
+     bool fnmatch(std::string_view pattern, std::string_view str) {
+            bool in_wildcard_match = false;
+            while (true) {
+                if (pattern.empty()) {
+                    // `pattern` is exhausted; succeed if all of `str` was consumed matching
+                    // it.
+                    return in_wildcard_match || str.empty();
+                }
+                if (str.empty()) {
+                    // `str` is exhausted; succeed if `pattern` is empty or all '*'s.
+                    return pattern.find_first_not_of('*') == pattern.npos;
+                }
+                switch (pattern.front()) {
+                    case '*':
+                        pattern.remove_prefix(1);
+                        in_wildcard_match = true;
+                        break;
+                    case '?':
+                        pattern.remove_prefix(1);
+                        str.remove_prefix(1);
+                        break;
+                    default:
+                        if (in_wildcard_match) {
+                            std::string_view fixed_portion = pattern;
+                            const size_t end = fixed_portion.find_first_of("*?");
+                            if (end != fixed_portion.npos) {
+                                fixed_portion = fixed_portion.substr(0, end);
+                            }
+                            const size_t match = str.find(fixed_portion);
+                            if (match == str.npos) {
+                                return false;
+                            }
+                            pattern.remove_prefix(fixed_portion.size());
+                            str.remove_prefix(match + fixed_portion.size());
+                            in_wildcard_match = false;
+                        } else {
+                            if (pattern.front() != str.front()) {
+                                return false;
+                            }
+                            pattern.remove_prefix(1);
+                            str.remove_prefix(1);
+                        }
+                        break;
+                }
+            }
+        }
 
 } // namespace turbo

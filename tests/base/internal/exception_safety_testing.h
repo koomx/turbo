@@ -595,7 +595,7 @@ class ThrowingValue : private exceptions_internal::TrackedObject {
 
  private:
   static std::string GetInstanceString(int dummy) {
-    return turbo::StrCat("ThrowingValue<",
+    return turbo::str_cat("ThrowingValue<",
                         exceptions_internal::GetSpecString(Spec), ">(", dummy,
                         ")");
   }
@@ -755,7 +755,7 @@ class ThrowingAllocator : private exceptions_internal::TrackedObject {
 
  private:
   static std::string GetInstanceString(int dummy) {
-    return turbo::StrCat("ThrowingAllocator<",
+    return turbo::str_cat("ThrowingAllocator<",
                         exceptions_internal::GetSpecString(Spec), ">(", dummy,
                         ")");
   }

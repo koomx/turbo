@@ -41,14 +41,14 @@ namespace turbo {
     namespace flags_internal {
 
         // --------------------------------------------------------------------
-        // TurboParseFlag specializations for boolean type.
+        // turbo_parse_flag specializations for boolean type.
 
-        bool TurboParseFlag(std::string_view text, bool* dst, std::string*) {
+        bool turbo_parse_flag(std::string_view text, bool* dst, std::string*) {
             return SimpleAtob(turbo::trim_all(text), dst);
         }
 
         // --------------------------------------------------------------------
-        // TurboParseFlag for integral types.
+        // turbo_parse_flag for integral types.
 
         // Return the base to use for parsing text as an integer.  Leading 0x
         // puts us in base 16.  But leading 0 does not put us in base 8. It
@@ -69,7 +69,7 @@ namespace turbo {
                 NumericBase(text));
         }
 
-        bool TurboParseFlag(std::string_view text, short* dst, std::string*) {
+        bool turbo_parse_flag(std::string_view text, short* dst, std::string*) {
             int val;
             if (!ParseFlagImpl(text, val))
                 return false;
@@ -79,7 +79,7 @@ namespace turbo {
             return true;
         }
 
-        bool TurboParseFlag(std::string_view text, unsigned short* dst, std::string*) {
+        bool turbo_parse_flag(std::string_view text, unsigned short* dst, std::string*) {
             unsigned int val;
             if (!ParseFlagImpl(text, val))
                 return false;
@@ -89,32 +89,32 @@ namespace turbo {
             return true;
         }
 
-        bool TurboParseFlag(std::string_view text, int* dst, std::string*) {
+        bool turbo_parse_flag(std::string_view text, int* dst, std::string*) {
             return ParseFlagImpl(text, *dst);
         }
 
-        bool TurboParseFlag(std::string_view text, unsigned int* dst, std::string*) {
+        bool turbo_parse_flag(std::string_view text, unsigned int* dst, std::string*) {
             return ParseFlagImpl(text, *dst);
         }
 
-        bool TurboParseFlag(std::string_view text, long* dst, std::string*) {
+        bool turbo_parse_flag(std::string_view text, long* dst, std::string*) {
             return ParseFlagImpl(text, *dst);
         }
 
-        bool TurboParseFlag(std::string_view text, unsigned long* dst, std::string*) {
+        bool turbo_parse_flag(std::string_view text, unsigned long* dst, std::string*) {
             return ParseFlagImpl(text, *dst);
         }
 
-        bool TurboParseFlag(std::string_view text, long long* dst, std::string*) {
+        bool turbo_parse_flag(std::string_view text, long long* dst, std::string*) {
             return ParseFlagImpl(text, *dst);
         }
 
-        bool TurboParseFlag(std::string_view text, unsigned long long* dst,
+        bool turbo_parse_flag(std::string_view text, unsigned long long* dst,
             std::string*) {
             return ParseFlagImpl(text, *dst);
         }
 
-        bool TurboParseFlag(std::string_view text, turbo::int128* dst, std::string*) {
+        bool turbo_parse_flag(std::string_view text, turbo::int128* dst, std::string*) {
             text = turbo::trim_all(text);
 
             // check hex
@@ -127,7 +127,7 @@ namespace turbo {
                               : turbo::SimpleAtoi(text, dst);
         }
 
-        bool TurboParseFlag(std::string_view text, turbo::uint128* dst, std::string*) {
+        bool turbo_parse_flag(std::string_view text, turbo::uint128* dst, std::string*) {
             text = turbo::trim_all(text);
 
             // check hex
@@ -141,28 +141,28 @@ namespace turbo {
         }
 
         // --------------------------------------------------------------------
-        // TurboParseFlag for floating point types.
+        // turbo_parse_flag for floating point types.
 
-        bool TurboParseFlag(std::string_view text, float* dst, std::string*) {
+        bool turbo_parse_flag(std::string_view text, float* dst, std::string*) {
             return turbo::SimpleAtof(text, dst);
         }
 
-        bool TurboParseFlag(std::string_view text, double* dst, std::string*) {
+        bool turbo_parse_flag(std::string_view text, double* dst, std::string*) {
             return turbo::SimpleAtod(text, dst);
         }
 
         // --------------------------------------------------------------------
-        // TurboParseFlag for strings.
+        // turbo_parse_flag for strings.
 
-        bool TurboParseFlag(std::string_view text, std::string* dst, std::string*) {
+        bool turbo_parse_flag(std::string_view text, std::string* dst, std::string*) {
             dst->assign(text.data(), text.size());
             return true;
         }
 
         // --------------------------------------------------------------------
-        // TurboParseFlag for vector of strings.
+        // turbo_parse_flag for vector of strings.
 
-        bool TurboParseFlag(std::string_view text, std::vector<std::string>* dst,
+        bool turbo_parse_flag(std::string_view text, std::vector<std::string>* dst,
             std::string*) {
             // An empty flag value corresponds to an empty vector, not a vector
             // with a single, empty std::string.
@@ -175,34 +175,34 @@ namespace turbo {
         }
 
         // --------------------------------------------------------------------
-        // TurboUnparseFlag specializations for various builtin flag types.
+        // turbo_unparse_flag specializations for various builtin flag types.
 
         std::string Unparse(bool v) {
             return v ? "true" : "false";
         }
         std::string Unparse(short v) {
-            return turbo::StrCat(v);
+            return turbo::str_cat(v);
         }
         std::string Unparse(unsigned short v) {
-            return turbo::StrCat(v);
+            return turbo::str_cat(v);
         }
         std::string Unparse(int v) {
-            return turbo::StrCat(v);
+            return turbo::str_cat(v);
         }
         std::string Unparse(unsigned int v) {
-            return turbo::StrCat(v);
+            return turbo::str_cat(v);
         }
         std::string Unparse(long v) {
-            return turbo::StrCat(v);
+            return turbo::str_cat(v);
         }
         std::string Unparse(unsigned long v) {
-            return turbo::StrCat(v);
+            return turbo::str_cat(v);
         }
         std::string Unparse(long long v) {
-            return turbo::StrCat(v);
+            return turbo::str_cat(v);
         }
         std::string Unparse(unsigned long long v) {
-            return turbo::StrCat(v);
+            return turbo::str_cat(v);
         }
         std::string Unparse(turbo::int128 v) {
             std::stringstream ss;
@@ -239,53 +239,53 @@ namespace turbo {
         std::string Unparse(double v) {
             return UnparseFloatingPointVal(v);
         }
-        std::string TurboUnparseFlag(std::string_view v) {
+        std::string turbo_unparse_flag(std::string_view v) {
             return std::string(v);
         }
-        std::string TurboUnparseFlag(const std::vector<std::string>& v) {
+        std::string turbo_unparse_flag(const std::vector<std::string>& v) {
             return turbo::StrJoin(v, ",");
         }
 
     } // namespace flags_internal
 
-    bool TurboParseFlag(std::string_view text, turbo::LogSeverity* dst,
+    bool turbo_parse_flag(std::string_view text, turbo::LogSeverity* dst,
         std::string* err) {
         text = turbo::trim_all(text);
         if (text.empty()) {
             *err = "no value provided";
             return false;
         }
-        if (turbo::EqualsIgnoreCase(text, "dfatal")) {
+        if (turbo::equals_ignore_case(text, "dfatal")) {
             *dst = turbo::kLogDebugFatal;
             return true;
         }
-        if (turbo::EqualsIgnoreCase(text, "klogdebugfatal")) {
+        if (turbo::equals_ignore_case(text, "klogdebugfatal")) {
             *dst = turbo::kLogDebugFatal;
             return true;
         }
         if (text.front() == 'k' || text.front() == 'K')
             text.remove_prefix(1);
-        if (turbo::EqualsIgnoreCase(text, "trace")) {
+        if (turbo::equals_ignore_case(text, "trace")) {
             *dst = turbo::LogSeverity::kTrace;
             return true;
         }
-        if (turbo::EqualsIgnoreCase(text, "debug")) {
+        if (turbo::equals_ignore_case(text, "debug")) {
             *dst = turbo::LogSeverity::kDebug;
             return true;
         }
-        if (turbo::EqualsIgnoreCase(text, "info")) {
+        if (turbo::equals_ignore_case(text, "info")) {
             *dst = turbo::LogSeverity::kInfo;
             return true;
         }
-        if (turbo::EqualsIgnoreCase(text, "warning")) {
+        if (turbo::equals_ignore_case(text, "warning")) {
             *dst = turbo::LogSeverity::kWarning;
             return true;
         }
-        if (turbo::EqualsIgnoreCase(text, "error")) {
+        if (turbo::equals_ignore_case(text, "error")) {
             *dst = turbo::LogSeverity::kError;
             return true;
         }
-        if (turbo::EqualsIgnoreCase(text, "fatal")) {
+        if (turbo::equals_ignore_case(text, "fatal")) {
             *dst = turbo::LogSeverity::kFatal;
             return true;
         }
@@ -298,7 +298,7 @@ namespace turbo {
         return false;
     }
 
-    std::string TurboUnparseFlag(turbo::LogSeverity v) {
+    std::string turbo_unparse_flag(turbo::LogSeverity v) {
         if (v == turbo::NormalizeLogSeverity(v))
             return turbo::LogSeverityName(v);
         return turbo::UnparseFlag(static_cast<int>(v));

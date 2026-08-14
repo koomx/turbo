@@ -1103,9 +1103,9 @@ struct Point {
   turbo_format_convert(const Point& p, const turbo::FormatConversionSpec& spec,
                     turbo::FormatSink* s) {
     if (spec.conversion_char() == turbo::FormatConversionChar::s) {
-      s->Append(turbo::StrCat("x=", p.x, " y=", p.y));
+      s->Append(turbo::str_cat("x=", p.x, " y=", p.y));
     } else {
-      s->Append(turbo::StrCat(p.x, ",", p.y));
+      s->Append(turbo::str_cat(p.x, ",", p.y));
     }
     return {true};
   }
@@ -1131,7 +1131,7 @@ TEST_F(FormatExtensionTest, TurboFormatConvertExample) {
 struct PointStringify {
   template <typename FormatSink>
   friend void turbo_stringify(FormatSink& sink, const PointStringify& p) {
-    sink.Append(turbo::StrCat("(", p.x, ", ", p.y, ")"));
+    sink.Append(turbo::str_cat("(", p.x, ", ", p.y, ")"));
   }
 
   double x = 10.0;

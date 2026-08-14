@@ -179,7 +179,7 @@ TEST(StrJoin, CustomFormatter) {
   {
     std::string joined =
         turbo::StrJoin(v, "", [](std::string* out, const std::string& in) {
-          turbo::StrAppend(out, "(", in, ")");
+          turbo::str_append(out, "(", in, ")");
         });
     EXPECT_EQ("(One)(Two)(Three)", joined);
   }
@@ -187,7 +187,7 @@ TEST(StrJoin, CustomFormatter) {
     class ImmovableFormatter {
      public:
       void operator()(std::string* out, const std::string& in) {
-        turbo::StrAppend(out, "(", in, ")");
+        turbo::str_append(out, "(", in, ")");
       }
       ImmovableFormatter() {}
       ImmovableFormatter(const ImmovableFormatter&) = delete;
@@ -198,10 +198,10 @@ TEST(StrJoin, CustomFormatter) {
     class OverloadedFormatter {
      public:
       void operator()(std::string* out, const std::string& in) {
-        turbo::StrAppend(out, "(", in, ")");
+        turbo::str_append(out, "(", in, ")");
       }
       void operator()(std::string* out, const std::string& in) const {
-        turbo::StrAppend(out, "[", in, "]");
+        turbo::str_append(out, "[", in, "]");
       }
     };
     EXPECT_EQ("(One)(Two)(Three)", turbo::StrJoin(v, "", OverloadedFormatter()));
@@ -280,7 +280,7 @@ TEST(StreamFormatter, FormatterAPI) {
 struct TestingParenFormatter {
   template <typename T>
   void operator()(std::string* s, const T& t) {
-    turbo::StrAppend(s, "(", t, ")");
+    turbo::str_append(s, "(", t, ")");
   }
 };
 
@@ -636,7 +636,7 @@ TEST(StrJoin, TestIteratorRequirementsCustomFormatter) {
   EXPECT_EQ("a-b-c",
             turbo::StrJoin(TestIteratorRange<TestValue>(a), "-",
                           [](std::string* out, const TestValue& value) {
-                            turbo::StrAppend(
+                            turbo::str_append(
                                 out,
                                 std::string_view(value.data(), value.size()));
                           }));

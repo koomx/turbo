@@ -20,7 +20,6 @@ set(BITS_TESTS
         casts_test
         prefetch_test
         endian_test
-        bitmap_view_test
 )
 
 foreach (case IN LISTS BITS_TESTS)

@@ -58,7 +58,7 @@
 
 // KUMO_HAVE_STD_SOURCE_LOCATION
 //
-// Checks whether C++20 std::source_location is available.
+// Checks whether C++20 turbo::SourceLocation is available.
 #ifdef KUMO_HAVE_STD_SOURCE_LOCATION
 #error "KUMO_HAVE_STD_SOURCE_LOCATION cannot be directly set."
 #elif (defined(__cpp_lib_source_location) &&    \

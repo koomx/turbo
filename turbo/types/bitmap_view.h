@@ -16,11 +16,15 @@
 #pragma once
 
 #include <algorithm>
+#include <climits>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <type_traits>
+
 #include <bit>
 #include <turbo/bits/bits.h>
-
-#include <cstddef>
-#include <cstring>
+#include <turbo/log/kcheck.h>
 
 namespace turbo {
     /// BITSET_WORD_COUNT
@@ -46,7 +50,7 @@ namespace turbo {
         constexpr bool is_word_type_v = is_word_type<T>::value;
     } // namespace detail
 
-    template<typename UInt8>
+    template <typename UInt8>
     std::enable_if_t<detail::is_word_type_v<UInt8> && sizeof(UInt8) == 1, uint32_t> GetFirstBit(UInt8 x) {
         if (x) {
             uint32_t n = 1;
@@ -60,10 +64,116 @@ namespace turbo {
                 x >>= 2;
             }
 
-            return (uint32_t) (n - (x & 1));
+            return (uint32_t)(n - (x & 1));
         }
 
         return 8;
+    }
+
+    template <typename UInt16>
+    std::enable_if_t<detail::is_word_type_v<UInt16> && sizeof(UInt16) == 2, uint32_t> GetFirstBit(UInt16 x) {
+        if (x) {
+            uint32_t n = 1;
+
+            if ((x & 0x000000FF) == 0) {
+                n += 8;
+                x >>= 8;
+            }
+            if ((x & 0x0000000F) == 0) {
+                n += 4;
+                x >>= 4;
+            }
+            if ((x & 0x00000003) == 0) {
+                n += 2;
+                x >>= 2;
+            }
+
+            return (uint32_t)(n - (x & 1));
+        }
+
+        return 16;
+    }
+
+    template <typename UInt32>
+    std::enable_if_t<detail::is_word_type_v<UInt32> && sizeof(UInt32) == 4, uint32_t> GetFirstBit(UInt32 x) {
+        if (x) {
+            return turbo::countr_zero(x);
+        }
+        return 32;
+    }
+
+    template <typename UInt64>
+    std::enable_if_t<detail::is_word_type_v<UInt64> && sizeof(UInt64) == 8, uint32_t> GetFirstBit(UInt64 x) {
+        if (x) {
+            return turbo::countr_zero(x);
+        }
+        return 64;
+    }
+
+    template <typename UInt8>
+    std::enable_if_t<detail::is_word_type_v<UInt8> && sizeof(UInt8) == 1, uint32_t> GetLastBit(UInt8 x) {
+        if (x) {
+            uint32_t n = 0;
+
+            if (x & 0xFFF0) {
+                n += 4;
+                x >>= 4;
+            }
+            if (x & 0xFFFC) {
+                n += 2;
+                x >>= 2;
+            }
+            if (x & 0xFFFE) {
+                n += 1;
+            }
+
+            return n;
+        }
+
+        return 8;
+    }
+
+    template <typename UInt16>
+    std::enable_if_t<detail::is_word_type_v<UInt16> && sizeof(UInt16) == 2, uint32_t> GetLastBit(UInt16 x) {
+        if (x) {
+            uint32_t n = 0;
+
+            if (x & 0xFF00) {
+                n += 8;
+                x >>= 8;
+            }
+            if (x & 0xFFF0) {
+                n += 4;
+                x >>= 4;
+            }
+            if (x & 0xFFFC) {
+                n += 2;
+                x >>= 2;
+            }
+            if (x & 0xFFFE) {
+                n += 1;
+            }
+
+            return n;
+        }
+
+        return 16;
+    }
+
+    template <typename UInt32>
+    std::enable_if_t<detail::is_word_type_v<UInt32> && sizeof(UInt32) == 4, uint32_t> GetLastBit(UInt32 x) {
+        if (x) {
+            return 31 - turbo::countl_zero(x);
+        }
+        return 32;
+    }
+
+    template <typename UInt64>
+    std::enable_if_t<detail::is_word_type_v<UInt64> && sizeof(UInt64) == 8, uint32_t> GetLastBit(UInt64 x) {
+        if (x) {
+            return 63 - turbo::countl_zero(x);
+        }
+        return 64;
     }
 
     template <bool OverFlowAsFalse = true, typename WordType = uint64_t>
@@ -311,7 +421,27 @@ namespace turbo {
         // Finds the index of the last "on" bit before last_find, returns size() if none are set.
         size_type find_prev(size_type last_find) const;
 
+        // Load lowest bits of value into the existing backing store. Does not allocate.
+        template <typename UInt>
+        std::enable_if_t<detail::is_word_type_v<UInt>, this_type&> from_unsigned(UInt value);
+
+        uint32_t to_uint32_assert_convertible() const;
+        uint64_t to_uint64_assert_convertible() const;
+        unsigned long to_ulong_assert_convertible() const;
+
+        uint32_t to_uint32_no_assert_convertible() const;
+        uint64_t to_uint64_no_assert_convertible() const;
+        unsigned long to_ulong_no_assert_convertible() const;
+
+        template <typename UInt>
+        std::enable_if_t<detail::is_word_type_v<UInt>, UInt> as_uint() const;
+
+        uint64_t as_uint64() const { return as_uint<uint64_t>(); }
+
     private:
+        template <typename UInt, bool bAssertOnOverflow>
+        UInt to_unsigned_integral() const;
+
         size_type _bits_number { 0 };
     }; // BitmapView
 
@@ -868,6 +998,104 @@ namespace turbo {
         // Else i could be the base type bit count, so we clamp it to our size.
 
         return _bits_number;
+    }
+
+    template <bool OverFlowAsFalse, typename WordType>
+    template <typename UInt>
+    inline std::enable_if_t<detail::is_word_type_v<UInt>,
+        typename BitmapView<OverFlowAsFalse, WordType>::this_type&>
+    BitmapView<OverFlowAsFalse, WordType>::from_unsigned(UInt value) {
+        if (_words == nullptr || _num_words == 0) {
+            return *this;
+        }
+        if (_bits_number == 0) {
+            _words[0] = 0;
+            return *this;
+        }
+
+        const size_t bytes_to_copy = std::min(_num_words * sizeof(WordType), sizeof(UInt));
+        memcpy(_words, &value, bytes_to_copy);
+        memset(reinterpret_cast<unsigned char*>(_words) + bytes_to_copy, 0,
+            _num_words * sizeof(WordType) - bytes_to_copy);
+
+        const size_t rem = _bits_number % (CHAR_BIT * sizeof(WordType));
+        if (rem != 0) {
+            const WordType last_mask = (static_cast<WordType>(1) << rem) - 1;
+            _words[_num_words - 1] &= last_mask;
+        }
+        return *this;
+    }
+
+    template <bool OverFlowAsFalse, typename WordType>
+    template <typename UInt, bool bAssertOnOverflow>
+    inline UInt BitmapView<OverFlowAsFalse, WordType>::to_unsigned_integral() const {
+        if (_bits_number == 0 || _words == nullptr) {
+            return 0;
+        }
+
+        UInt result = 0;
+        size_t num_words_copied = 0;
+        if (sizeof(UInt) < sizeof(WordType)) {
+            memcpy(&result, _words, sizeof(UInt));
+            const WordType overflow_mask = static_cast<WordType>(~(
+                (static_cast<WordType>(1) << (CHAR_BIT * sizeof(UInt))) - 1));
+            if ((_words[0] & overflow_mask) != 0) {
+                if constexpr (bAssertOnOverflow) {
+                    KCHECK(false) << "overflow_error";
+                }
+            }
+            num_words_copied = 1;
+        } else {
+            const size_t bytes_to_copy = std::min(_num_words * sizeof(WordType), sizeof(UInt));
+            memcpy(&result, _words, bytes_to_copy);
+            num_words_copied = bytes_to_copy / sizeof(WordType);
+        }
+
+        for (size_t i = num_words_copied; i < _num_words; ++i) {
+            if (_words[i] != 0) {
+                if constexpr (bAssertOnOverflow) {
+                    KCHECK(false) << "overflow_error";
+                }
+            }
+        }
+        return result;
+    }
+
+    template <bool OverFlowAsFalse, typename WordType>
+    inline uint32_t BitmapView<OverFlowAsFalse, WordType>::to_uint32_assert_convertible() const {
+        return to_unsigned_integral<uint32_t, true>();
+    }
+
+    template <bool OverFlowAsFalse, typename WordType>
+    inline uint64_t BitmapView<OverFlowAsFalse, WordType>::to_uint64_assert_convertible() const {
+        return to_unsigned_integral<uint64_t, true>();
+    }
+
+    template <bool OverFlowAsFalse, typename WordType>
+    inline unsigned long BitmapView<OverFlowAsFalse, WordType>::to_ulong_assert_convertible() const {
+        return to_unsigned_integral<unsigned long, true>();
+    }
+
+    template <bool OverFlowAsFalse, typename WordType>
+    inline uint32_t BitmapView<OverFlowAsFalse, WordType>::to_uint32_no_assert_convertible() const {
+        return to_unsigned_integral<uint32_t, false>();
+    }
+
+    template <bool OverFlowAsFalse, typename WordType>
+    inline uint64_t BitmapView<OverFlowAsFalse, WordType>::to_uint64_no_assert_convertible() const {
+        return to_unsigned_integral<uint64_t, false>();
+    }
+
+    template <bool OverFlowAsFalse, typename WordType>
+    inline unsigned long BitmapView<OverFlowAsFalse, WordType>::to_ulong_no_assert_convertible() const {
+        return to_unsigned_integral<unsigned long, false>();
+    }
+
+    template <bool OverFlowAsFalse, typename WordType>
+    template <typename UInt>
+    inline std::enable_if_t<detail::is_word_type_v<UInt>, UInt>
+    BitmapView<OverFlowAsFalse, WordType>::as_uint() const {
+        return to_unsigned_integral<UInt, true>();
     }
 
 } // namespace turbo

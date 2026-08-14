@@ -48,7 +48,7 @@ namespace {
 
     TEST_P(FailureSignalHandlerDeathTest, TurboFailureSignal) {
         const int signo = GetParam();
-        std::string exit_regex = turbo::StrCat(
+        std::string exit_regex = turbo::str_cat(
                 "\\*\\*\\* ", turbo::debugging_internal::FailureSignalToString(signo),
                 " received at time=");
 #ifndef _WIN32
@@ -98,9 +98,9 @@ namespace {
     TEST_P(FailureSignalHandlerDeathTest, TurboFatalSignalsWithWriterFn) {
         const int signo = GetParam();
         std::string tmp_dir = GetTmpDir();
-        std::string file = turbo::StrCat(tmp_dir, "/signo_", signo);
+        std::string file = turbo::str_cat(tmp_dir, "/signo_", signo);
 
-        std::string exit_regex = turbo::StrCat(
+        std::string exit_regex = turbo::str_cat(
                 "\\*\\*\\* ", turbo::debugging_internal::FailureSignalToString(signo),
                 " received at time=");
 #ifndef _WIN32
@@ -119,7 +119,7 @@ namespace {
         std::getline(error_output, error_line);
         EXPECT_THAT(
                 error_line,
-                StartsWith(turbo::StrCat(
+                StartsWith(turbo::str_cat(
                         "*** ", turbo::debugging_internal::FailureSignalToString(signo),
                         " received at ")));
 
@@ -146,7 +146,7 @@ namespace {
         std::string result =
                 turbo::debugging_internal::FailureSignalToString(info.param);
         if (result.empty()) {
-            result = turbo::StrCat(info.param);
+            result = turbo::str_cat(info.param);
         }
         return result;
     }

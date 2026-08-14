@@ -19,7 +19,7 @@
 // KUMO_OPTION_USE_STD_SOURCE_LOCATION
 //
 // This option controls whether turbo::SourceLocation is implemented as an alias
-// to the std::source_location type, or as an independent implementation.
+// to the turbo::SourceLocation type, or as an independent implementation.
 //
 // A value of 0 means to use Abseil's implementation.  This requires only C++17
 // support, and is expected to run on every toolchain we support, and to
@@ -30,7 +30,7 @@
 // is built in C++20 mode or later.
 //
 // A value of 2 means to detect the C++ version being used to compile Abseil,
-// and use an alias only if working std::source_location types are available.
+// and use an alias only if working turbo::SourceLocation types are available.
 // This option is useful when you are building your program from source.  It
 // should not be used otherwise -- for example, if you are distributing Abseil
 // in a binary package manager -- since in mode 2, they will name different
@@ -39,7 +39,7 @@
 // https://abseil.io/about/design/dropin-types.
 //
 // User code should not inspect this macro.  To check in the preprocessor if
-// the source location type is an alias of std::source_location type, use the
+// the source location type is an alias of turbo::SourceLocation type, use the
 // feature macro KUMO_USES_STD_SOURCE_LOCATION.
 //
 

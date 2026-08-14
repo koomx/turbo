@@ -30,7 +30,7 @@
 #include <turbo/log/klog.h>
 #include <tests/log/scoped_mock_log.h>
 #include <string_view>
-#include <source_location>
+#include <turbo/types/source_location.h>
 
 namespace {
 using ::turbo::log_internal::DeathTestExpectedLogging;
@@ -459,7 +459,7 @@ TEST(LogStreamerTest, AtSourceLocation) {
 
   EXPECT_CALL(test_sink,
               send(AllOf(SourceFilename(
-                             Eq(std::source_location::current().file_name())),
+                             Eq(turbo::SourceLocation::current().file_name())),
                          SourceLine(Eq(log_line)))));
 
   test_sink.StartCapturingLogs();

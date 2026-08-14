@@ -34,7 +34,7 @@
 namespace turbo {
 
     // ----------------------------------------------------------------------
-    // StrCat()
+    // str_cat()
     //    This merges the given strings or integers, with no delimiter. This
     //    is designed to be the fastest possible way to construct a string out
     //    of a mix of raw C strings, string_views, strings, and integer values.
@@ -75,7 +75,7 @@ namespace turbo {
 
     } // namespace
 
-    std::string StrCat(const AlphaNum& a, const AlphaNum& b) {
+    std::string str_cat(const AlphaNum& a, const AlphaNum& b) {
         std::string result;
         // Use uint64_t to prevent size_t overflow. We assume it is not possible for
         // in memory strings to overflow a uint64_t.
@@ -93,7 +93,7 @@ namespace turbo {
         return result;
     }
 
-    std::string StrCat(const AlphaNum& a, const AlphaNum& b, const AlphaNum& c) {
+    std::string str_cat(const AlphaNum& a, const AlphaNum& b, const AlphaNum& c) {
         std::string result;
         // Use uint64_t to prevent size_t overflow. We assume it is not possible for
         // in memory strings to overflow a uint64_t.
@@ -113,7 +113,7 @@ namespace turbo {
         return result;
     }
 
-    std::string StrCat(const AlphaNum& a, const AlphaNum& b, const AlphaNum& c,
+    std::string str_cat(const AlphaNum& a, const AlphaNum& b, const AlphaNum& c,
         const AlphaNum& d) {
         std::string result;
         // Use uint64_t to prevent size_t overflow. We assume it is not possible for
@@ -164,7 +164,7 @@ namespace turbo {
             return result;
         }
 
-// It's possible to call StrAppend with an std::string_view that is itself a
+// It's possible to call str_append with an std::string_view that is itself a
 // fragment of the string we're appending to.  However the results of this are
 // random. Therefore, check for this in debug mode.  Use unsigned math so we
 // only have to do one comparison. Note, there's an exception case: appending an
@@ -196,7 +196,7 @@ namespace turbo {
 
     } // namespace strings_internal
 
-    void StrAppend(std::string* turbo_nonnull dest, const AlphaNum& a) {
+    void str_append(std::string* turbo_nonnull dest, const AlphaNum& a) {
         ASSERT_NO_OVERLAP(*dest, a);
         strings_internal::StringAppendAndOverwrite(
             *dest, a.size(), [&a](char* const buf, size_t buf_size) {
@@ -207,7 +207,7 @@ namespace turbo {
             });
     }
 
-    void StrAppend(std::string* turbo_nonnull dest, const AlphaNum& a,
+    void str_append(std::string* turbo_nonnull dest, const AlphaNum& a,
         const AlphaNum& b) {
         ASSERT_NO_OVERLAP(*dest, a);
         ASSERT_NO_OVERLAP(*dest, b);
@@ -222,7 +222,7 @@ namespace turbo {
             });
     }
 
-    void StrAppend(std::string* turbo_nonnull dest, const AlphaNum& a,
+    void str_append(std::string* turbo_nonnull dest, const AlphaNum& a,
         const AlphaNum& b, const AlphaNum& c) {
         ASSERT_NO_OVERLAP(*dest, a);
         ASSERT_NO_OVERLAP(*dest, b);
@@ -239,7 +239,7 @@ namespace turbo {
             });
     }
 
-    void StrAppend(std::string* turbo_nonnull dest, const AlphaNum& a,
+    void str_append(std::string* turbo_nonnull dest, const AlphaNum& a,
         const AlphaNum& b, const AlphaNum& c, const AlphaNum& d) {
         ASSERT_NO_OVERLAP(*dest, a);
         ASSERT_NO_OVERLAP(*dest, b);

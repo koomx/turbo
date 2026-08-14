@@ -613,7 +613,7 @@ template void Cord::Prepend(std::string&& src);
 
 void Cord::RemovePrefix(size_t n) {
   TURBO_INTERNAL_CHECK(n <= size(),
-                      turbo::StrCat("Requested prefix size ", n,
+                      turbo::str_cat("Requested prefix size ", n,
                                    " exceeds Cord's size ", size()));
   contents_.MaybeRemoveEmptyCrcNode();
   CordRep* tree = contents_.tree();
@@ -642,7 +642,7 @@ void Cord::RemovePrefix(size_t n) {
 
 void Cord::RemoveSuffix(size_t n) {
   TURBO_INTERNAL_CHECK(n <= size(),
-                      turbo::StrCat("Requested suffix size ", n,
+                      turbo::str_cat("Requested suffix size ", n,
                                    " exceeds Cord's size ", size()));
   contents_.MaybeRemoveEmptyCrcNode();
   CordRep* tree = contents_.tree();
@@ -956,7 +956,7 @@ int Cord::CompareImpl(const Cord& rhs) const {
   return SharedCompareImpl(*this, rhs);
 }
 
-bool Cord::EndsWith(std::string_view rhs) const {
+bool Cord::ends_with(std::string_view rhs) const {
   size_t my_size = size();
   size_t rhs_size = rhs.size();
 
@@ -967,7 +967,7 @@ bool Cord::EndsWith(std::string_view rhs) const {
   return tmp.EqualsImpl(rhs, rhs_size);
 }
 
-bool Cord::EndsWith(const Cord& rhs) const {
+bool Cord::ends_with(const Cord& rhs) const {
   size_t my_size = size();
   size_t rhs_size = rhs.size();
 
@@ -1437,13 +1437,13 @@ static void DumpNode(CordRep* turbo_nonnull nonnull_rep, bool include_data,
       if (rep->IsExternal()) {
         *os << "EXTERNAL [";
         if (include_data)
-          *os << turbo::CEscape(
+          *os << turbo::c_escape(
               std::string_view(rep->external()->base, rep->length));
         *os << "]\n";
       } else if (rep->IsFlat()) {
         *os << "FLAT cap=" << rep->flat()->Capacity() << " [";
         if (include_data)
-          *os << turbo::CEscape(
+          *os << turbo::c_escape(
               std::string_view(rep->flat()->Data(), rep->length));
         *os << "]\n";
       } else {
@@ -1519,7 +1519,7 @@ size_t CordTestAccess::FlatTagToLength(uint8_t tag) {
   return cord_internal::TagToLength(tag);
 }
 uint8_t CordTestAccess::LengthToTag(size_t s) {
-  TURBO_INTERNAL_CHECK(s <= kMaxFlatLength, turbo::StrCat("Invalid length ", s));
+  TURBO_INTERNAL_CHECK(s <= kMaxFlatLength, turbo::str_cat("Invalid length ", s));
   return cord_internal::AllocatedSizeToTag(s + cord_internal::kFlatOverhead);
 }
 size_t CordTestAccess::SizeofCordRepExternal() {

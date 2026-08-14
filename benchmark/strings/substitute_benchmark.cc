@@ -56,7 +56,7 @@ void BM_StringPrintf(benchmark::State& state) {
   std::string s(state.range(0), 'x');
   int64_t bytes = 0;
   for (auto _ : state) {
-    std::string result = turbo::StrCat(s, " ", s, " ", s, " ", s, " ", s, " ", s,
+    std::string result = turbo::str_cat(s, " ", s, " ", s, " ", s, " ", s, " ", s,
                                       " ", s, " ", s, " ", s, " ", s);
     bytes += result.size();
   }
@@ -86,7 +86,7 @@ void BM_StrCatNumber(benchmark::State& state) {
   int64_t bytes = 0;
   for (auto _ : state) {
     std::string result =
-        turbo::StrCat(n, " ", n + 1, " ", n + 2, " ", n + 3, " ", n + 4, " ",
+        turbo::str_cat(n, " ", n + 1, " ", n + 2, " ", n + 3, " ", n + 4, " ",
                      n + 5, " ", n + 6, " ", n + 7, " ", n + 8, " ", n + 9);
     bytes += result.size();
   }
@@ -113,7 +113,7 @@ void BM_StrCatSimpleText(benchmark::State& state) {
   std::string s(state.range(0), 'x');
   int64_t bytes = 0;
   for (auto _ : state) {
-    std::string result = turbo::StrCat("", s);
+    std::string result = turbo::str_cat("", s);
     bytes += result.size();
   }
   state.SetBytesProcessed(bytes);
@@ -147,7 +147,7 @@ void BM_StrCatDensity(benchmark::State& state) {
   int64_t bytes = 0;
   for (auto _ : state) {
     std::string result =
-        turbo::StrCat(s, format, s, format, s, format, s, format, s, format, s,
+        turbo::str_cat(s, format, s, format, s, format, s, format, s, format, s,
                      format, s, format, s, format, s, format, s, format);
     bytes += result.size();
   }

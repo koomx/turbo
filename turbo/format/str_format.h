@@ -615,7 +615,7 @@ namespace turbo {
     // Note that unlike with turbo_format_convert(), turbo_stringify() does not allow
     // customization of allowed conversion characters. turbo_stringify() uses `%v` as
     // the underlying conversion specifier. Additionally, turbo_stringify() supports
-    // use with turbo::StrCat while turbo_format_convert() does not.
+    // use with turbo::str_cat while turbo_format_convert() does not.
     //
     // Example:
     //

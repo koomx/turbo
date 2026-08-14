@@ -35,7 +35,7 @@ void BM_CUnescapeHexString(benchmark::State& state) {
   for (auto _ : state) {
     std::string dest;
     benchmark::DoNotOptimize(src);
-    bool result = turbo::CUnescape(src, &dest);
+    bool result = turbo::c_unescape(src, &dest);
     benchmark::DoNotOptimize(result);
     benchmark::DoNotOptimize(dest);
   }
@@ -50,7 +50,7 @@ void BM_WebSafeBase64Escape_string(benchmark::State& state) {
     }
   }
   for (auto _ : state) {
-    std::string escaped = turbo::WebSafeBase64Escape(raw);
+    std::string escaped = turbo::web_safe_base64_escape(raw);
     benchmark::DoNotOptimize(escaped);
   }
 }
@@ -62,7 +62,7 @@ void BM_HexStringToBytes(benchmark::State& state) {
   for (int i = 0; i < size; ++i) input += "1c";
   for (auto _ : state) {
     benchmark::DoNotOptimize(input);
-    bool result = turbo::HexStringToBytes(input, &output);
+    bool result = turbo::hex_string_to_bytes(input, &output);
     benchmark::DoNotOptimize(result);
     benchmark::DoNotOptimize(output);
   }
@@ -75,11 +75,11 @@ void BM_HexStringToBytes_Fail(benchmark::State& state) {
   std::string_view hex_input2 = "1c2f0032f40123456789abcdef**";
   for (auto _ : state) {
     benchmark::DoNotOptimize(hex_input1);
-    bool result1 = turbo::HexStringToBytes(hex_input1, &binary);
+    bool result1 = turbo::hex_string_to_bytes(hex_input1, &binary);
     benchmark::DoNotOptimize(result1);
     benchmark::DoNotOptimize(binary);
     benchmark::DoNotOptimize(hex_input2);
-    bool result2 = turbo::HexStringToBytes(hex_input2, &binary);
+    bool result2 = turbo::hex_string_to_bytes(hex_input2, &binary);
     benchmark::DoNotOptimize(result2);
     benchmark::DoNotOptimize(binary);
   }
@@ -122,7 +122,7 @@ static void BM_UrlEscapePlus(benchmark::State& state) {
 }
 BENCHMARK(BM_UrlEscapePlus);
 
-// Used for the CEscape benchmarks
+// Used for the c_escape benchmarks
 const char kStringValueNoEscape[] = "1234567890";
 const char kStringValueSomeEscaped[] = "123\n56789\xA1";
 const char kStringValueMostEscaped[] = "\xA1\xA2\ny\xA4\xA5\xA6z\b\r";
@@ -131,12 +131,12 @@ void CEscapeBenchmarkHelper(benchmark::State& state, const char* string_value,
                             int max_len) {
   std::string src;
   while (src.size() < max_len) {
-    turbo::StrAppend(&src, string_value);
+    turbo::str_append(&src, string_value);
   }
 
   for (auto _ : state) {
     benchmark::DoNotOptimize(src);
-    std::string result = turbo::CEscape(src);
+    std::string result = turbo::c_escape(src);
     benchmark::DoNotOptimize(result);
   }
 }

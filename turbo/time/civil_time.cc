@@ -40,7 +40,7 @@ std::string FormatYearAnd(std::string_view fmt, CivilSecond cs) {
   const CivilSecond ncs(NormalizeYear(cs.year()), cs.month(), cs.day(),
                         cs.hour(), cs.minute(), cs.second());
   const TimeZone utc = UTCTimeZone();
-  return StrCat(cs.year(), FormatTime(fmt, FromCivil(ncs, utc), utc));
+  return str_cat(cs.year(), FormatTime(fmt, FromCivil(ncs, utc), utc));
 }
 
 template <typename CivilT>
@@ -56,11 +56,11 @@ bool ParseYearAnd(std::string_view fmt, std::string_view s, CivilT* c) {
       std::strtoll(np, &endp, 10);  // NOLINT(runtime/deprecated_fn)
   if (endp == np || errno == ERANGE) return false;
   const civil_year_t normalized_year = NormalizeYear(y);
-  const std::string norm = StrCat(normalized_year, endp);
+  const std::string norm = str_cat(normalized_year, endp);
 
   const TimeZone utc = UTCTimeZone();
   Time t;
-  if (ParseTime(StrCat("%Y", fmt), norm, utc, &t, nullptr)) {
+  if (ParseTime(str_cat("%Y", fmt), norm, utc, &t, nullptr)) {
     const auto cs = ToCivilSecond(t, utc);
     // Field normalization while parsing (e.g. a ":60" leap second or an
     // end-of-year rollover) can carry into the year. The other fields are taken
@@ -176,30 +176,30 @@ std::ostream& operator<<(std::ostream& os, CivilSecond s) {
   return os << FormatCivilTime(s);
 }
 
-bool TurboParseFlag(std::string_view s, CivilSecond* c, std::string*) {
+bool turbo_parse_flag(std::string_view s, CivilSecond* c, std::string*) {
   return ParseLenientCivilTime(s, c);
 }
-bool TurboParseFlag(std::string_view s, CivilMinute* c, std::string*) {
+bool turbo_parse_flag(std::string_view s, CivilMinute* c, std::string*) {
   return ParseLenientCivilTime(s, c);
 }
-bool TurboParseFlag(std::string_view s, CivilHour* c, std::string*) {
+bool turbo_parse_flag(std::string_view s, CivilHour* c, std::string*) {
   return ParseLenientCivilTime(s, c);
 }
-bool TurboParseFlag(std::string_view s, CivilDay* c, std::string*) {
+bool turbo_parse_flag(std::string_view s, CivilDay* c, std::string*) {
   return ParseLenientCivilTime(s, c);
 }
-bool TurboParseFlag(std::string_view s, CivilMonth* c, std::string*) {
+bool turbo_parse_flag(std::string_view s, CivilMonth* c, std::string*) {
   return ParseLenientCivilTime(s, c);
 }
-bool TurboParseFlag(std::string_view s, CivilYear* c, std::string*) {
+bool turbo_parse_flag(std::string_view s, CivilYear* c, std::string*) {
   return ParseLenientCivilTime(s, c);
 }
-std::string TurboUnparseFlag(CivilSecond c) { return FormatCivilTime(c); }
-std::string TurboUnparseFlag(CivilMinute c) { return FormatCivilTime(c); }
-std::string TurboUnparseFlag(CivilHour c) { return FormatCivilTime(c); }
-std::string TurboUnparseFlag(CivilDay c) { return FormatCivilTime(c); }
-std::string TurboUnparseFlag(CivilMonth c) { return FormatCivilTime(c); }
-std::string TurboUnparseFlag(CivilYear c) { return FormatCivilTime(c); }
+std::string turbo_unparse_flag(CivilSecond c) { return FormatCivilTime(c); }
+std::string turbo_unparse_flag(CivilMinute c) { return FormatCivilTime(c); }
+std::string turbo_unparse_flag(CivilHour c) { return FormatCivilTime(c); }
+std::string turbo_unparse_flag(CivilDay c) { return FormatCivilTime(c); }
+std::string turbo_unparse_flag(CivilMonth c) { return FormatCivilTime(c); }
+std::string turbo_unparse_flag(CivilYear c) { return FormatCivilTime(c); }
 
 }  // namespace time_internal
 

@@ -17,7 +17,7 @@
 // -----------------------------------------------------------------------------
 //
 // This package contains functions for converting strings to numbers. For
-// converting numbers to strings, use `StrCat()` or `StrAppend()` in str_cat.h,
+// converting numbers to strings, use `str_cat()` or `str_append()` in str_cat.h,
 // which automatically detect and convert most number values appropriately.
 
 #ifndef TURBO_STRINGS_NUMBERS_H_

@@ -28,7 +28,7 @@
 #include <turbo/strings/match.h>
 #include <string_view>
 #include <turbo/time/time.h>
-#include <source_location>
+#include <turbo/types/source_location.h>
 
 namespace {
 #if GTEST_HAS_DEATH_TEST
@@ -72,7 +72,7 @@ TEST(TailCallsModifiesTest, AtLocationFileLine) {
           // The logged line should change too, even though the prefix must
           // grow to fit the new metadata.
           TextMessageWithPrefix(Truly([](std::string_view msg) {
-            return turbo::EndsWith(msg,
+            return turbo::ends_with(msg,
                                   " very_long_source_file.cc:777] hello world");
           })))));
 
@@ -94,7 +94,7 @@ TEST(TailCallsModifiesTest, AtLocationSourceLocation) {
   EXPECT_CALL(test_sink, send).Times(0);
 
   const int log_line = __LINE__ + 1;
-  constexpr std::source_location loc = std::source_location::current();
+  constexpr turbo::SourceLocation loc = turbo::SourceLocation::current();
   auto do_log = [loc] { KLOG(INFO).at_location(loc) << "hello world"; };
 
   EXPECT_CALL(test_sink,

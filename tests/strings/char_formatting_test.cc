@@ -25,7 +25,7 @@ TEST(CharFormatting, Char) {
   const char v = 'A';
 
   // Desired behavior: does not compile:
-  // EXPECT_EQ(turbo::StrCat(v, "B"), "AB");
+  // EXPECT_EQ(turbo::str_cat(v, "B"), "AB");
   // EXPECT_EQ(turbo::str_sprintf("%vB", v), "AB");
 
   // Legacy behavior: format as char:
@@ -38,7 +38,7 @@ TEST(CharFormatting, CharEnum) {
 
   // Desired behavior: format as decimal
   EXPECT_EQ(turbo::str_sprintf("%vB", v), "65B");
-  EXPECT_EQ(turbo::StrCat(v, "B"), "65B");
+  EXPECT_EQ(turbo::str_cat(v, "B"), "65B");
 
   // Legacy behavior: format as character:
 
@@ -54,7 +54,7 @@ TEST(CharFormatting, CharEnumClass) {
 
   // Desired behavior: format as decimal:
   EXPECT_EQ(turbo::str_sprintf("%vB", v), "65B");
-  EXPECT_EQ(turbo::StrCat(v, "B"), "65B");
+  EXPECT_EQ(turbo::str_cat(v, "B"), "65B");
 
   // Legacy behavior: format as character:
   EXPECT_EQ(turbo::substitute("$0B", v), "AB");
@@ -64,13 +64,13 @@ TEST(CharFormatting, UnsignedChar) {
   const unsigned char v = 'A';
 
   // Desired behavior: format as decimal:
-  EXPECT_EQ(turbo::StrCat(v, "B"), "65B");
+  EXPECT_EQ(turbo::str_cat(v, "B"), "65B");
   EXPECT_EQ(turbo::substitute("$0B", v), "65B");
   EXPECT_EQ(turbo::str_sprintf("%vB", v), "65B");
 
   // Signedness check
   const unsigned char w = 255;
-  EXPECT_EQ(turbo::StrCat(w, "B"), "255B");
+  EXPECT_EQ(turbo::str_cat(w, "B"), "255B");
   EXPECT_EQ(turbo::substitute("$0B", w), "255B");
   // EXPECT_EQ(turbo::str_sprintf("%vB", v), "255B");
 }
@@ -79,13 +79,13 @@ TEST(CharFormatting, SignedChar) {
   const signed char v = 'A';
 
   // Desired behavior: format as decimal:
-  EXPECT_EQ(turbo::StrCat(v, "B"), "65B");
+  EXPECT_EQ(turbo::str_cat(v, "B"), "65B");
   EXPECT_EQ(turbo::substitute("$0B", v), "65B");
   EXPECT_EQ(turbo::str_sprintf("%vB", v), "65B");
 
   // Signedness check
   const signed char w = -128;
-  EXPECT_EQ(turbo::StrCat(w, "B"), "-128B");
+  EXPECT_EQ(turbo::str_cat(w, "B"), "-128B");
   EXPECT_EQ(turbo::substitute("$0B", w), "-128B");
 }
 
@@ -94,13 +94,13 @@ TEST(CharFormatting, UnsignedCharEnum) {
   auto v = static_cast<UnsignedCharEnum>('A');
 
   // Desired behavior: format as decimal:
-  EXPECT_EQ(turbo::StrCat(v, "B"), "65B");
+  EXPECT_EQ(turbo::str_cat(v, "B"), "65B");
   EXPECT_EQ(turbo::substitute("$0B", v), "65B");
   EXPECT_EQ(turbo::str_sprintf("%vB", v), "65B");
 
   // Signedness check
   auto w = static_cast<UnsignedCharEnum>(255);
-  EXPECT_EQ(turbo::StrCat(w, "B"), "255B");
+  EXPECT_EQ(turbo::str_cat(w, "B"), "255B");
   EXPECT_EQ(turbo::substitute("$0B", w), "255B");
   EXPECT_EQ(turbo::str_sprintf("%vB", w), "255B");
 }
@@ -110,13 +110,13 @@ TEST(CharFormatting, SignedCharEnum) {
   auto v = static_cast<SignedCharEnum>('A');
 
   // Desired behavior: format as decimal:
-  EXPECT_EQ(turbo::StrCat(v, "B"), "65B");
+  EXPECT_EQ(turbo::str_cat(v, "B"), "65B");
   EXPECT_EQ(turbo::substitute("$0B", v), "65B");
   EXPECT_EQ(turbo::str_sprintf("%vB", v), "65B");
 
   // Signedness check
   auto w = static_cast<SignedCharEnum>(-128);
-  EXPECT_EQ(turbo::StrCat(w, "B"), "-128B");
+  EXPECT_EQ(turbo::str_cat(w, "B"), "-128B");
   EXPECT_EQ(turbo::substitute("$0B", w), "-128B");
   EXPECT_EQ(turbo::str_sprintf("%vB", w), "-128B");
 }
@@ -126,13 +126,13 @@ TEST(CharFormatting, UnsignedCharEnumClass) {
   auto v = static_cast<UnsignedCharEnumClass>('A');
 
   // Desired behavior: format as decimal:
-  EXPECT_EQ(turbo::StrCat(v, "B"), "65B");
+  EXPECT_EQ(turbo::str_cat(v, "B"), "65B");
   EXPECT_EQ(turbo::substitute("$0B", v), "65B");
   EXPECT_EQ(turbo::str_sprintf("%vB", v), "65B");
 
   // Signedness check
   auto w = static_cast<UnsignedCharEnumClass>(255);
-  EXPECT_EQ(turbo::StrCat(w, "B"), "255B");
+  EXPECT_EQ(turbo::str_cat(w, "B"), "255B");
   EXPECT_EQ(turbo::substitute("$0B", w), "255B");
   EXPECT_EQ(turbo::str_sprintf("%vB", w), "255B");
 }
@@ -142,13 +142,13 @@ TEST(CharFormatting, SignedCharEnumClass) {
   auto v = static_cast<SignedCharEnumClass>('A');
 
   // Desired behavior: format as decimal:
-  EXPECT_EQ(turbo::StrCat(v, "B"), "65B");
+  EXPECT_EQ(turbo::str_cat(v, "B"), "65B");
   EXPECT_EQ(turbo::substitute("$0B", v), "65B");
   EXPECT_EQ(turbo::str_sprintf("%vB", v), "65B");
 
   // Signedness check
   auto w = static_cast<SignedCharEnumClass>(-128);
-  EXPECT_EQ(turbo::StrCat(w, "B"), "-128B");
+  EXPECT_EQ(turbo::str_cat(w, "B"), "-128B");
   EXPECT_EQ(turbo::substitute("$0B", w), "-128B");
   EXPECT_EQ(turbo::str_sprintf("%vB", w), "-128B");
 }
@@ -160,7 +160,7 @@ TEST(CharFormatting, StdByte) {
   // (No APIs do this today.)
 
   // Legacy behavior: format as decimal:
-  EXPECT_EQ(turbo::StrCat(v, "B"), "65B");
+  EXPECT_EQ(turbo::str_cat(v, "B"), "65B");
   EXPECT_EQ(turbo::substitute("$0B", v), "65B");
   EXPECT_EQ(turbo::str_sprintf("%vB", v), "65B");
 }

@@ -100,7 +100,7 @@ struct CustomUDT {
   int a;
   int b;
 };
-bool TurboParseFlag(std::string_view in, CustomUDT* f, std::string*) {
+bool turbo_parse_flag(std::string_view in, CustomUDT* f, std::string*) {
   std::vector<std::string_view> parts =
       turbo::str_split(in, ':', turbo::SkipWhitespace());
 
@@ -112,8 +112,8 @@ bool TurboParseFlag(std::string_view in, CustomUDT* f, std::string*) {
 
   return true;
 }
-std::string TurboUnparseFlag(const CustomUDT& f) {
-  return turbo::StrCat(f.a, ":", f.b);
+std::string turbo_unparse_flag(const CustomUDT& f) {
+  return turbo::str_cat(f.a, ":", f.b);
 }
 
 }  // namespace

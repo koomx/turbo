@@ -40,7 +40,7 @@
 #include <turbo/strings/str_split.h>
 #include <string_view>
 #include <turbo/types/optional_ref.h>
-#include <source_location>
+#include <turbo/types/source_location.h>
 #include <turbo/types/span.h>
 
 namespace turbo {
@@ -129,17 +129,17 @@ namespace turbo {
             }
         }
 
-        turbo::Span<const std::source_location> StatusRep::GetSourceLocations() const {
+        turbo::Span<const turbo::SourceLocation> StatusRep::GetSourceLocations() const {
             return turbo::make_span(source_locations_);
         }
 
-        void StatusRep::add_source_location(std::source_location loc) {
+        void StatusRep::add_source_location(turbo::SourceLocation loc) {
             source_locations_.push_back(loc);
         }
 
         std::string StatusRep::ToString(StatusToStringMode mode) const {
             std::string text;
-            turbo::StrAppend(&text, turbo::status_code_to_string(code()), ": ", message());
+            turbo::str_append(&text, turbo::status_code_to_string(code()), ": ", message());
 
             const bool with_payload = (mode & StatusToStringMode::kWithPayload) ==
                                       StatusToStringMode::kWithPayload;
@@ -151,9 +151,9 @@ namespace turbo {
                                          const std::string &payload) {
                     std::optional<std::string> result;
                     if (printer) result = printer(type_url, payload);
-                    turbo::StrAppend(
+                    turbo::str_append(
                         &text, " [", type_url, "='",
-                        result.has_value() ? *result : turbo::CHexEscape(std::string(payload)),
+                        result.has_value() ? *result : turbo::c_hex_escape(std::string(payload)),
                         "']");
                 });
             }
@@ -162,10 +162,10 @@ namespace turbo {
                     StatusToStringMode::kWithSourceLocation;
             if (with_source_location && !source_locations_.empty()) {
                 std::string_view whitespace = (turbo::Hash<int>{}(42) % 2 == 0) ? "" : " ";
-                turbo::StrAppend(&text, "\n=== Source Location Trace: ===", whitespace,
+                turbo::str_append(&text, "\n=== Source Location Trace: ===", whitespace,
                                  "\n");
-                for (const std::source_location loc: GetSourceLocations()) {
-                    turbo::StrAppend(&text, loc.file_name(), ":", loc.line(), "\n");
+                for (const turbo::SourceLocation loc: GetSourceLocations()) {
+                    turbo::str_append(&text, loc.file_name(), ":", loc.line(), "\n");
                 }
             }
 
@@ -278,7 +278,7 @@ namespace turbo {
             const turbo::Status * turbo_nonnull status, const char * turbo_nonnull prefix) {
             // There's no need to free this string since the process is crashing.
             return turbo::IgnoreLeak(
-                        new std::string(turbo::StrCat(
+                        new std::string(turbo::str_cat(
                             prefix, " (",
                             status->ToString(StatusToStringMode::kWithEverything), ")")))
                     ->c_str();

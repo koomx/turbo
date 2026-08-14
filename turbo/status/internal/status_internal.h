@@ -25,7 +25,7 @@
 #include <utility>
 #include <vector>
 
-#include <source_location>
+#include <turbo/types/source_location.h>
 #include <string_view>
 #include <turbo/base/nullability.h>
 #include <turbo/functional/function_ref.h>
@@ -120,9 +120,9 @@ namespace turbo {
                 turbo::FunctionRef<void(std::string_view, const std::string&)> visitor)
                 const;
 
-            turbo::Span<const std::source_location> GetSourceLocations() const;
+            turbo::Span<const turbo::SourceLocation> GetSourceLocations() const;
 
-            void add_source_location(std::source_location loc);
+            void add_source_location(turbo::SourceLocation loc);
 
             std::string ToString(StatusToStringMode mode) const;
 
@@ -160,7 +160,7 @@ namespace turbo {
             // string might save memory at scale.
             std::string message_;
 
-            turbo::InlinedVector<std::source_location, 1> source_locations_;
+            turbo::InlinedVector<turbo::SourceLocation, 1> source_locations_;
             std::unique_ptr<status_internal::Payloads> payloads_;
         };
 

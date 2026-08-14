@@ -63,8 +63,8 @@ struct UDT {
   UDT(const UDT&) = default;
   UDT& operator=(const UDT&) = default;
 };
-bool TurboParseFlag(std::string_view, UDT*, std::string*) { return true; }
-std::string TurboUnparseFlag(const UDT&) { return ""; }
+bool turbo_parse_flag(std::string_view, UDT*, std::string*) { return true; }
+std::string turbo_unparse_flag(const UDT&) { return ""; }
 
 class FlagTest : public testing::Test {
  protected:
@@ -308,7 +308,7 @@ TEST_F(FlagTest, TestFlagDefinition) {
             "test_flag_01");
   EXPECT_EQ(turbo::GetFlagReflectionHandle(FLAGS_test_flag_01).Help(),
             "test flag 01");
-  EXPECT_TRUE(turbo::EndsWith(
+  EXPECT_TRUE(turbo::ends_with(
       turbo::GetFlagReflectionHandle(FLAGS_test_flag_01).Filename(),
       expected_file_name))
       << turbo::GetFlagReflectionHandle(FLAGS_test_flag_01).Filename();
@@ -317,7 +317,7 @@ TEST_F(FlagTest, TestFlagDefinition) {
             "test_flag_02");
   EXPECT_EQ(turbo::GetFlagReflectionHandle(FLAGS_test_flag_02).Help(),
             "test flag 02");
-  EXPECT_TRUE(turbo::EndsWith(
+  EXPECT_TRUE(turbo::ends_with(
       turbo::GetFlagReflectionHandle(FLAGS_test_flag_02).Filename(),
       expected_file_name))
       << turbo::GetFlagReflectionHandle(FLAGS_test_flag_02).Filename();
@@ -326,7 +326,7 @@ TEST_F(FlagTest, TestFlagDefinition) {
             "test_flag_03");
   EXPECT_EQ(turbo::GetFlagReflectionHandle(FLAGS_test_flag_03).Help(),
             "test flag 03");
-  EXPECT_TRUE(turbo::EndsWith(
+  EXPECT_TRUE(turbo::ends_with(
       turbo::GetFlagReflectionHandle(FLAGS_test_flag_03).Filename(),
       expected_file_name))
       << turbo::GetFlagReflectionHandle(FLAGS_test_flag_03).Filename();
@@ -335,7 +335,7 @@ TEST_F(FlagTest, TestFlagDefinition) {
             "test_flag_04");
   EXPECT_EQ(turbo::GetFlagReflectionHandle(FLAGS_test_flag_04).Help(),
             "test flag 04");
-  EXPECT_TRUE(turbo::EndsWith(
+  EXPECT_TRUE(turbo::ends_with(
       turbo::GetFlagReflectionHandle(FLAGS_test_flag_04).Filename(),
       expected_file_name))
       << turbo::GetFlagReflectionHandle(FLAGS_test_flag_04).Filename();
@@ -344,7 +344,7 @@ TEST_F(FlagTest, TestFlagDefinition) {
             "test_flag_05");
   EXPECT_EQ(turbo::GetFlagReflectionHandle(FLAGS_test_flag_05).Help(),
             "test flag 05");
-  EXPECT_TRUE(turbo::EndsWith(
+  EXPECT_TRUE(turbo::ends_with(
       turbo::GetFlagReflectionHandle(FLAGS_test_flag_05).Filename(),
       expected_file_name))
       << turbo::GetFlagReflectionHandle(FLAGS_test_flag_05).Filename();
@@ -353,7 +353,7 @@ TEST_F(FlagTest, TestFlagDefinition) {
             "test_flag_06");
   EXPECT_EQ(turbo::GetFlagReflectionHandle(FLAGS_test_flag_06).Help(),
             "test flag 06");
-  EXPECT_TRUE(turbo::EndsWith(
+  EXPECT_TRUE(turbo::ends_with(
       turbo::GetFlagReflectionHandle(FLAGS_test_flag_06).Filename(),
       expected_file_name))
       << turbo::GetFlagReflectionHandle(FLAGS_test_flag_06).Filename();
@@ -362,7 +362,7 @@ TEST_F(FlagTest, TestFlagDefinition) {
             "test_flag_07");
   EXPECT_EQ(turbo::GetFlagReflectionHandle(FLAGS_test_flag_07).Help(),
             "test flag 07");
-  EXPECT_TRUE(turbo::EndsWith(
+  EXPECT_TRUE(turbo::ends_with(
       turbo::GetFlagReflectionHandle(FLAGS_test_flag_07).Filename(),
       expected_file_name))
       << turbo::GetFlagReflectionHandle(FLAGS_test_flag_07).Filename();
@@ -371,7 +371,7 @@ TEST_F(FlagTest, TestFlagDefinition) {
             "test_flag_08");
   EXPECT_EQ(turbo::GetFlagReflectionHandle(FLAGS_test_flag_08).Help(),
             "test flag 08");
-  EXPECT_TRUE(turbo::EndsWith(
+  EXPECT_TRUE(turbo::ends_with(
       turbo::GetFlagReflectionHandle(FLAGS_test_flag_08).Filename(),
       expected_file_name))
       << turbo::GetFlagReflectionHandle(FLAGS_test_flag_08).Filename();
@@ -380,7 +380,7 @@ TEST_F(FlagTest, TestFlagDefinition) {
             "test_flag_09");
   EXPECT_EQ(turbo::GetFlagReflectionHandle(FLAGS_test_flag_09).Help(),
             "test flag 09");
-  EXPECT_TRUE(turbo::EndsWith(
+  EXPECT_TRUE(turbo::ends_with(
       turbo::GetFlagReflectionHandle(FLAGS_test_flag_09).Filename(),
       expected_file_name))
       << turbo::GetFlagReflectionHandle(FLAGS_test_flag_09).Filename();
@@ -389,7 +389,7 @@ TEST_F(FlagTest, TestFlagDefinition) {
             "test_flag_10");
   EXPECT_EQ(turbo::GetFlagReflectionHandle(FLAGS_test_flag_10).Help(),
             "test flag 10");
-  EXPECT_TRUE(turbo::EndsWith(
+  EXPECT_TRUE(turbo::ends_with(
       turbo::GetFlagReflectionHandle(FLAGS_test_flag_10).Filename(),
       expected_file_name))
       << turbo::GetFlagReflectionHandle(FLAGS_test_flag_10).Filename();
@@ -398,7 +398,7 @@ TEST_F(FlagTest, TestFlagDefinition) {
             "test_flag_11");
   EXPECT_EQ(turbo::GetFlagReflectionHandle(FLAGS_test_flag_11).Help(),
             "test flag 11");
-  EXPECT_TRUE(turbo::EndsWith(
+  EXPECT_TRUE(turbo::ends_with(
       turbo::GetFlagReflectionHandle(FLAGS_test_flag_11).Filename(),
       expected_file_name))
       << turbo::GetFlagReflectionHandle(FLAGS_test_flag_11).Filename();
@@ -407,7 +407,7 @@ TEST_F(FlagTest, TestFlagDefinition) {
             "test_flag_12");
   EXPECT_EQ(turbo::GetFlagReflectionHandle(FLAGS_test_flag_12).Help(),
             "test flag 12");
-  EXPECT_TRUE(turbo::EndsWith(
+  EXPECT_TRUE(turbo::ends_with(
       turbo::GetFlagReflectionHandle(FLAGS_test_flag_12).Filename(),
       expected_file_name))
       << turbo::GetFlagReflectionHandle(FLAGS_test_flag_12).Filename();
@@ -416,7 +416,7 @@ TEST_F(FlagTest, TestFlagDefinition) {
             "test_flag_13");
   EXPECT_EQ(turbo::GetFlagReflectionHandle(FLAGS_test_flag_13).Help(),
             "test flag 13");
-  EXPECT_TRUE(turbo::EndsWith(
+  EXPECT_TRUE(turbo::ends_with(
       turbo::GetFlagReflectionHandle(FLAGS_test_flag_13).Filename(),
       expected_file_name))
       << turbo::GetFlagReflectionHandle(FLAGS_test_flag_13).Filename();
@@ -425,7 +425,7 @@ TEST_F(FlagTest, TestFlagDefinition) {
             "test_flag_14");
   EXPECT_EQ(turbo::GetFlagReflectionHandle(FLAGS_test_flag_14).Help(),
             "test flag 14");
-  EXPECT_TRUE(turbo::EndsWith(
+  EXPECT_TRUE(turbo::ends_with(
       turbo::GetFlagReflectionHandle(FLAGS_test_flag_14).Filename(),
       expected_file_name))
       << turbo::GetFlagReflectionHandle(FLAGS_test_flag_14).Filename();
@@ -525,12 +525,12 @@ struct NonTriviallyCopyableAggregate {
 
   int value;
 };
-bool TurboParseFlag(std::string_view src, NonTriviallyCopyableAggregate* f,
+bool turbo_parse_flag(std::string_view src, NonTriviallyCopyableAggregate* f,
                    std::string* e) {
   return turbo::ParseFlag(src, &f->value, e);
 }
-std::string TurboUnparseFlag(const NonTriviallyCopyableAggregate& ntc) {
-  return turbo::StrCat(ntc.value);
+std::string turbo_unparse_flag(const NonTriviallyCopyableAggregate& ntc) {
+  return turbo::str_cat(ntc.value);
 }
 
 bool operator==(const NonTriviallyCopyableAggregate& ntc1,
@@ -705,7 +705,7 @@ int GetDflt1() { return 1; }
 TURBO_FLAG(int, test_int_flag_with_non_const_default, GetDflt1(),
           "test int flag non const default");
 TURBO_FLAG(std::string, test_string_flag_with_non_const_default,
-          turbo::StrCat("AAA", "BBB"), "test string flag non const default");
+          turbo::str_cat("AAA", "BBB"), "test string flag non const default");
 
 namespace {
 
@@ -720,7 +720,7 @@ TEST_F(FlagTest, TestNonConstexprDefault) {
 }  // namespace
 
 TURBO_FLAG(bool, test_flag_with_non_const_help, true,
-          turbo::StrCat("test ", "flag ", "non const help"));
+          turbo::str_cat("test ", "flag ", "non const help"));
 
 namespace {
 
@@ -776,7 +776,7 @@ struct CustomUDT {
   int a;
   int b;
 };
-bool TurboParseFlag(std::string_view in, CustomUDT* f, std::string*) {
+bool turbo_parse_flag(std::string_view in, CustomUDT* f, std::string*) {
   std::vector<std::string_view> parts =
       turbo::str_split(in, ':', turbo::SkipWhitespace());
 
@@ -788,8 +788,8 @@ bool TurboParseFlag(std::string_view in, CustomUDT* f, std::string*) {
 
   return true;
 }
-std::string TurboUnparseFlag(const CustomUDT& f) {
-  return turbo::StrCat(f.a, ":", f.b);
+std::string turbo_unparse_flag(const CustomUDT& f) {
+  return turbo::str_cat(f.a, ":", f.b);
 }
 
 }  // namespace
@@ -853,15 +853,15 @@ struct ConversionTestVal {
   int a;
 };
 
-bool TurboParseFlag(std::string_view in, ConversionTestVal* val_out,
+bool turbo_parse_flag(std::string_view in, ConversionTestVal* val_out,
                    std::string*) {
   if (!turbo::SimpleAtoi(in, &val_out->a)) {
     return false;
   }
   return true;
 }
-std::string TurboUnparseFlag(const ConversionTestVal& val) {
-  return turbo::StrCat(val.a);
+std::string turbo_unparse_flag(const ConversionTestVal& val) {
+  return turbo::str_cat(val.a);
 }
 
 }  // namespace
@@ -895,12 +895,12 @@ struct NonDfltConstructible {
   int value;
 };
 
-bool TurboParseFlag(std::string_view in, NonDfltConstructible* ndc_out,
+bool turbo_parse_flag(std::string_view in, NonDfltConstructible* ndc_out,
                    std::string*) {
   return turbo::SimpleAtoi(in, &ndc_out->value);
 }
-std::string TurboUnparseFlag(const NonDfltConstructible& ndc) {
-  return turbo::StrCat(ndc.value);
+std::string turbo_unparse_flag(const NonDfltConstructible& ndc) {
+  return turbo::str_cat(ndc.value);
 }
 
 }  // namespace
@@ -929,7 +929,7 @@ TEST_F(FlagTest, TestNonDefaultConstructibleType) {
 
 TURBO_RETIRED_FLAG(bool, old_bool_flag, true, "old descr");
 TURBO_RETIRED_FLAG(int, old_int_flag, (int)std::sqrt(10), "old descr");
-TURBO_RETIRED_FLAG(std::string, old_str_flag, "", turbo::StrCat("old ", "descr"));
+TURBO_RETIRED_FLAG(std::string, old_str_flag, "", turbo::str_cat("old ", "descr"));
 
 namespace {
 
@@ -970,10 +970,10 @@ struct SmallAlignUDT {
   char bytes[14];
 };
 
-bool TurboParseFlag(std::string_view, SmallAlignUDT*, std::string*) {
+bool turbo_parse_flag(std::string_view, SmallAlignUDT*, std::string*) {
   return true;
 }
-std::string TurboUnparseFlag(const SmallAlignUDT&) { return ""; }
+std::string turbo_unparse_flag(const SmallAlignUDT&) { return ""; }
 
 }  // namespace
 
@@ -1022,13 +1022,13 @@ template <int id>
 uint64_t NonTriviallyCopyableUDT<id>::s_num_instance = 0;
 
 template <int id>
-bool TurboParseFlag(std::string_view txt, NonTriviallyCopyableUDT<id>* f,
+bool turbo_parse_flag(std::string_view txt, NonTriviallyCopyableUDT<id>* f,
                    std::string*) {
   f->c = txt.empty() ? '\0' : txt[0];
   return true;
 }
 template <int id>
-std::string TurboUnparseFlag(const NonTriviallyCopyableUDT<id>&) {
+std::string turbo_unparse_flag(const NonTriviallyCopyableUDT<id>&) {
   return "";
 }
 
@@ -1185,10 +1185,10 @@ struct EnumWrapper {
   TestE e;
 };
 
-bool TurboParseFlag(std::string_view, EnumWrapper*, std::string*) {
+bool turbo_parse_flag(std::string_view, EnumWrapper*, std::string*) {
   return true;
 }
-std::string TurboUnparseFlag(const EnumWrapper&) { return ""; }
+std::string turbo_unparse_flag(const EnumWrapper&) { return ""; }
 
 }  // namespace
 

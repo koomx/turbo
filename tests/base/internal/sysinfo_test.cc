@@ -19,13 +19,13 @@
 #include <unistd.h>
 #endif
 
-#include <barrier>
 #include <mutex>
 #include <thread>  // NOLINT(build/c++11)
 #include <unordered_set>
 #include <vector>
 
 #include <gtest/gtest.h>
+#include <turbo/types/barrier.h>
 
 namespace turbo {
 
@@ -43,7 +43,7 @@ TEST(SysinfoTest, GetTID) {
   // Uses a few loops to exercise implementations that reallocate IDs.
   for (int i = 0; i < 10; ++i) {
     constexpr int kNumThreads = 10;
-    std::barrier all_threads_done(kNumThreads);
+    turbo::barrier all_threads_done(kNumThreads);
     std::vector<std::thread> threads;
 
     std::mutex mutex;

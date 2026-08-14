@@ -15,20 +15,23 @@
 
 #include <gtest/gtest.h>
 
-
-
-#define STATUS_ASSERT(cond) if (!(cond)) {throw std::runtime_error(std::string("assertion failure")); }
+#define STATUS_ASSERT(cond)                                         \
+    if (!(cond)) {                                                  \
+        throw std::runtime_error(std::string("assertion failure")); \
+    }
 
 #include <turbo/types/expected.h>
 
 TEST(expected, Assertions) {
-  turbo::expected<int,int> o1 = 42;
-  ASSERT_ANY_THROW(o1.error());
+    turbo::expected<int, int> o1 = 42;
+    ASSERT_ANY_THROW(o1.error());
 
-  turbo::expected<int,int> o2 {turbo::unexpect, 0};
-  ASSERT_ANY_THROW(*o2);
+    turbo::expected<int, int> o2 { turbo::unexpect, 0 };
+    ASSERT_ANY_THROW(*o2);
 
-  struct foo { int bar; };
-  turbo::expected<struct foo,int> o3 {turbo::unexpect, 0};
-  ASSERT_ANY_THROW(o3->bar);
+    struct foo {
+        int bar;
+    };
+    turbo::expected<struct foo, int> o3 { turbo::unexpect, 0 };
+    ASSERT_ANY_THROW(o3->bar);
 }

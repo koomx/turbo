@@ -68,11 +68,11 @@ namespace turbo {
             // vector<bool>::iterator
             template <typename T>
             void operator()(std::string* out, const T& t) const {
-                StrAppend(out, AlphaNum(t));
+                str_append(out, AlphaNum(t));
             }
 
             void operator()(std::string* out, const AlphaNum& t) const {
-                StrAppend(out, t);
+                str_append(out, t);
             }
         };
 

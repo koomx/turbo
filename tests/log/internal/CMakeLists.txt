@@ -15,7 +15,6 @@
 
 set(LOG_INTERNAL_TESTS
         container_test
-        fnmatch_test
         generic_printer_test
         stderr_log_sink_test
         structured_proto_test

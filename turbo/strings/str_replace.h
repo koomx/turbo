@@ -61,7 +61,7 @@ namespace turbo {
     //
     //   std::string s = turbo::StrReplaceAll(
     //       "$who bought $count #Noun. Thanks $who!",
-    //       {{"$count", turbo::StrCat(5)},
+    //       {{"$count", turbo::str_cat(5)},
     //        {"$who", "Bob"},
     //        {"#Noun", "Apples"}});
     //   EXPECT_EQ("Bob bought 5 Apples. Thanks Bob!", s);
@@ -105,7 +105,7 @@ namespace turbo {
     //
     //   std::string s = std::string("$who bought $count #Noun. Thanks $who!");
     //   int count;
-    //   count = turbo::StrReplaceAll({{"$count", turbo::StrCat(5)},
+    //   count = turbo::StrReplaceAll({{"$count", turbo::str_cat(5)},
     //                               {"$who", "Bob"},
     //                               {"#Noun", "Apples"}}, &s);
     //  EXPECT_EQ(count, 4);

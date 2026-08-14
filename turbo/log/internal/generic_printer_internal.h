@@ -247,7 +247,7 @@ namespace turbo {
                 return (PrintSmartPointerContents)(os, v);
             } else if constexpr (turbo::HasTurboStringify<T>::value) {
                 // If someone has specified `turbo_stringify`, we should prefer that.
-                return os << turbo::StrCat(v);
+                return os << turbo::str_cat(v);
             } else if constexpr (meta_internal::Requires<const T>(
                 [&](auto &&w)
             -> decltype((
@@ -319,9 +319,9 @@ namespace turbo {
                 return os;
             } else if constexpr (!std::is_enum_v<T> &&
                                  meta_internal::Requires<const T>(
-                                     [&](auto &&w) -> decltype(turbo::StrCat(w)) {
+                                     [&](auto &&w) -> decltype(turbo::str_cat(w)) {
                                      })) {
-                return os << turbo::StrCat(v);
+                return os << turbo::str_cat(v);
             } else if constexpr (meta_internal::Requires<const T>(
                 [&](auto &&w)
             -> decltype(std::declval<std::ostream &>()

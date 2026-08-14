@@ -93,7 +93,7 @@ namespace turbo {
     //   EXPECT_EQ(input, "bc");
     inline constexpr bool consume_prefix(std::string_view* turbo_nonnull str,
         std::string_view expected) {
-        if (!turbo::StartsWith(*str, expected))
+        if (!turbo::starts_with(*str, expected))
             return false;
         str->remove_prefix(expected.size());
         return true;
@@ -111,7 +111,7 @@ namespace turbo {
     //   EXPECT_EQ(input, "abc");
     inline constexpr bool consume_suffix(std::string_view* turbo_nonnull str,
         std::string_view expected) {
-        if (!turbo::EndsWith(*str, expected))
+        if (!turbo::ends_with(*str, expected))
             return false;
         str->remove_suffix(expected.size());
         return true;
@@ -125,7 +125,7 @@ namespace turbo {
     [[nodiscard]] inline constexpr std::string_view strip_prefix(
         std::string_view str KUMO_ATTRIBUTE_LIFETIME_BOUND,
         std::string_view prefix) {
-        if (turbo::StartsWith(str, prefix))
+        if (turbo::starts_with(str, prefix))
             str.remove_prefix(prefix.size());
         return str;
     }
@@ -138,7 +138,7 @@ namespace turbo {
     [[nodiscard]] inline constexpr std::string_view strip_suffix(
         std::string_view str KUMO_ATTRIBUTE_LIFETIME_BOUND,
         std::string_view suffix) {
-        if (turbo::EndsWith(str, suffix))
+        if (turbo::ends_with(str, suffix))
             str.remove_suffix(suffix.size());
         return str;
     }

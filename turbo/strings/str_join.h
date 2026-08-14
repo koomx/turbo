@@ -22,7 +22,7 @@
 // passing a range, a separator string to use between the elements joined, and
 // an optional Formatter responsible for converting each argument in the range
 // to a string. If omitted, a default `AlphaNumFormatter()` is called on the
-// elements to be joined, using the same formatting that `turbo::StrCat()` uses.
+// elements to be joined, using the same formatting that `turbo::str_cat()` uses.
 // This package defines a number of default formatters, and you can define your
 // own implementations.
 //
@@ -32,7 +32,7 @@
 // objects. The separator string is specified as an `std::string_view`.
 //
 // Because the default formatter uses the `turbo::AlphaNum` class,
-// `turbo::StrJoin()`, like `turbo::StrCat()`, will work out-of-the-box on
+// `turbo::StrJoin()`, like `turbo::str_cat()`, will work out-of-the-box on
 // collections of strings, ints, floats, doubles, etc.
 //
 // Example:
@@ -77,7 +77,7 @@ namespace turbo {
     //   std::vector<turbo::Duration> v = {turbo::Seconds(1), turbo::Milliseconds(10)};
     //   std::string s =
     //       turbo::StrJoin(v, ", ", [](std::string* out, turbo::Duration dur) {
-    //         turbo::StrAppend(out, turbo::FormatDuration(dur));
+    //         turbo::str_append(out, turbo::FormatDuration(dur));
     //       });
     //   EXPECT_EQ(s, "1s, 10ms");
     //
@@ -174,7 +174,7 @@ namespace turbo {
     //
     // Example 3:
     //   // Joins a collection of ints. This pattern also works with floats,
-    //   // doubles, int64s -- any `StrCat()`-compatible type.
+    //   // doubles, int64s -- any `str_cat()`-compatible type.
     //   std::vector<int> v = {1, 2, 3, -4};
     //   std::string s = turbo::StrJoin(v, "-");
     //   EXPECT_EQ(s, "1-2-3--4");

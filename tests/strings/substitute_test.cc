@@ -30,7 +30,7 @@ struct MyStruct {
   template <typename Sink>
   friend void turbo_stringify(Sink& sink, const MyStruct& s) {
     sink.Append("MyStruct{.value = ");
-    sink.Append(turbo::StrCat(s.value));
+    sink.Append(turbo::str_cat(s.value));
     sink.Append("}");
   }
   int value;
@@ -79,7 +79,7 @@ TEST(SubstituteTest, substitute) {
   // Pointer.
   const int* int_p = reinterpret_cast<const int*>(0x12345);
   std::string str = turbo::substitute("$0", int_p);
-  EXPECT_EQ(turbo::StrCat("0x", turbo::Hex(int_p)), str);
+  EXPECT_EQ(turbo::str_cat("0x", turbo::Hex(int_p)), str);
 
   // Volatile Pointer.
   // Like C++ streamed I/O, such pointers implicitly become bool
@@ -88,7 +88,7 @@ TEST(SubstituteTest, substitute) {
   str = turbo::substitute("$0", volptr);
   EXPECT_EQ("true", str);
 
-  // null is special. StrCat prints 0x0. substitute prints NULL.
+  // null is special. str_cat prints 0x0. substitute prints NULL.
   const uint64_t* null_p = nullptr;
   str = turbo::substitute("$0", null_p);
   EXPECT_EQ("NULL", str);

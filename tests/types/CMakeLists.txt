@@ -17,6 +17,7 @@
 set(TYPES_TESTS
         any_span_test
         optional_ref_test
+        source_location_test
         span_test
         variant_test
         fixed_array_exception_safety_test
@@ -26,6 +27,7 @@ set(TYPES_TESTS
         expected_test
         expected_extensions_test
         expected_assertions_test
+        bitmap_view_test
 )
 
 foreach (case IN LISTS TYPES_TESTS)

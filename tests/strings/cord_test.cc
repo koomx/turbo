@@ -698,7 +698,7 @@ static void VerifyAppendCordToString(const turbo::Cord& cord) {
 
   const std::string_view kInitialContents = "initial contents.";
   std::string expected_after_append =
-      turbo::StrCat(kInitialContents, std::string(cord));
+      turbo::str_cat(kInitialContents, std::string(cord));
 
   std::string no_reserve(kInitialContents);
   turbo::AppendCordToString(cord, &no_reserve);
@@ -838,8 +838,8 @@ TEST_P(CordTest, AppendAndPrependBufferArePrecise) {
   EXPECT_LE(cord1.EstimatedMemoryUsage() - size1, kMaxDelta);
   EXPECT_LE(cord2.EstimatedMemoryUsage() - size2, kMaxDelta);
 
-  EXPECT_EQ(cord1, turbo::StrCat(test_data, "Abc"));
-  EXPECT_EQ(cord2, turbo::StrCat("Abc", test_data));
+  EXPECT_EQ(cord1, turbo::str_cat(test_data, "Abc"));
+  EXPECT_EQ(cord2, turbo::str_cat("Abc", test_data));
 }
 
 TEST_P(CordTest, PrependSmallBuffer) {
@@ -2752,7 +2752,7 @@ TEST_P(CordTest, ForEachChunk) {
     SCOPED_TRACE(num_elements);
     std::vector<std::string> cord_chunks;
     for (int i = 0; i < num_elements; ++i) {
-      cord_chunks.push_back(turbo::StrCat("[", i, "]"));
+      cord_chunks.push_back(turbo::str_cat("[", i, "]"));
     }
     turbo::Cord c = turbo::MakeFragmentedCord(cord_chunks);
     MaybeHarden(c);
@@ -2796,7 +2796,7 @@ TEST_P(CordTest, Stringify) {
   turbo::Cord c =
       turbo::MakeFragmentedCord({"A ", "small ", "fragmented ", "Cord", "."});
   MaybeHarden(c);
-  EXPECT_EQ(turbo::StrCat(c), "A small fragmented Cord.");
+  EXPECT_EQ(turbo::str_cat(c), "A small fragmented Cord.");
 }
 
 TEST_P(CordTest, Hardening) {
@@ -2908,7 +2908,7 @@ void TestAfterExit(Str) {
     std::string expected_copy(expected);
     for (int i = 0; i < 10; ++i) {
       copy.Append(cord);
-      turbo::StrAppend(&expected_copy, expected);
+      turbo::str_append(&expected_copy, expected);
       EXPECT_EQ(copy, expected_copy);
     }
   }
@@ -2972,7 +2972,7 @@ PopulatedCordFactory cord_factories[] = {
   {"sso", [] { return turbo::Cord("abcde"); }},
   {"flat", [] {
     // Too large to live in SSO space, but small enough to be a simple FLAT.
-    turbo::Cord flat(turbo::StrCat("abcde", std::string(1000, 'x')));
+    turbo::Cord flat(turbo::str_cat("abcde", std::string(1000, 'x')));
     flat.Flatten();
     return flat;
   }},
@@ -2988,12 +2988,12 @@ PopulatedCordFactory cord_factories[] = {
     return turbo::CordTestPeer::MakeSubstring(ext, 1, ext.size() - 1);
   }},
   {"substring", [] {
-    turbo::Cord flat(turbo::StrCat("-abcde", std::string(1000, 'x')));
+    turbo::Cord flat(turbo::str_cat("-abcde", std::string(1000, 'x')));
     flat.Flatten();
     return flat.Subcord(1, 998);
   }},
   {"fragmented", [] {
-    std::string fragment = turbo::StrCat("abcde", std::string(195, 'x'));
+    std::string fragment = turbo::str_cat("abcde", std::string(195, 'x'));
     std::vector<std::string> fragments(200, fragment);
     turbo::Cord cord = turbo::MakeFragmentedCord(fragments);
     assert(cord.size() == 40000);

@@ -22,143 +22,140 @@
 #include <gtest/gtest.h>
 
 namespace turbo {
-namespace {
+    namespace {
 
-using ::testing::DoubleEq;
-using ::testing::Pointee;
-using ::testing::VariantWith;
+        using ::testing::DoubleEq;
+        using ::testing::Pointee;
+        using ::testing::VariantWith;
 
-struct Convertible2;
-struct Convertible1 {
-  Convertible1() {}
-  Convertible1(const Convertible1&) {}
-  Convertible1& operator=(const Convertible1&) { return *this; }
+        struct Convertible2;
+        struct Convertible1 {
+            Convertible1() { }
+            Convertible1(const Convertible1&) { }
+            Convertible1& operator=(const Convertible1&) { return *this; }
 
-  // implicit conversion from Convertible2
-  Convertible1(const Convertible2&) {}  // NOLINT(runtime/explicit)
-};
+            // implicit conversion from Convertible2
+            Convertible1(const Convertible2&) { } // NOLINT(runtime/explicit)
+        };
 
-struct Convertible2 {
-  Convertible2() {}
-  Convertible2(const Convertible2&) {}
-  Convertible2& operator=(const Convertible2&) { return *this; }
+        struct Convertible2 {
+            Convertible2() { }
+            Convertible2(const Convertible2&) { }
+            Convertible2& operator=(const Convertible2&) { return *this; }
 
-  // implicit conversion from Convertible1
-  Convertible2(const Convertible1&) {}  // NOLINT(runtime/explicit)
-};
+            // implicit conversion from Convertible1
+            Convertible2(const Convertible1&) { } // NOLINT(runtime/explicit)
+        };
 
-TEST(VariantTest, TestRvalueConversion) {
-  std::variant<Convertible1, Convertible2> v(
-      convert_variant_to<std::variant<Convertible1, Convertible2>>(
-          (std::variant<Convertible2, Convertible1>(Convertible1()))));
-  ASSERT_TRUE(std::holds_alternative<Convertible1>(v));
+        TEST(VariantTest, TestRvalueConversion) {
+            std::variant<Convertible1, Convertible2> v(
+                convert_variant_to<std::variant<Convertible1, Convertible2>>(
+                    (std::variant<Convertible2, Convertible1>(Convertible1()))));
+            ASSERT_TRUE(std::holds_alternative<Convertible1>(v));
 
-  v = convert_variant_to<std::variant<Convertible1, Convertible2>>(
-      std::variant<Convertible2, Convertible1>(Convertible2()));
-  ASSERT_TRUE(std::holds_alternative<Convertible2>(v));
-}
+            v = convert_variant_to<std::variant<Convertible1, Convertible2>>(
+                std::variant<Convertible2, Convertible1>(Convertible2()));
+            ASSERT_TRUE(std::holds_alternative<Convertible2>(v));
+        }
 
-TEST(VariantTest, TestLvalueConversion) {
-  std::variant<Convertible2, Convertible1> source((Convertible1()));
-  std::variant<Convertible1, Convertible2> v(
-      convert_variant_to<std::variant<Convertible1, Convertible2>>(source));
-  ASSERT_TRUE(std::holds_alternative<Convertible1>(v));
+        TEST(VariantTest, TestLvalueConversion) {
+            std::variant<Convertible2, Convertible1> source((Convertible1()));
+            std::variant<Convertible1, Convertible2> v(
+                convert_variant_to<std::variant<Convertible1, Convertible2>>(source));
+            ASSERT_TRUE(std::holds_alternative<Convertible1>(v));
 
-  source = Convertible2();
-  v = convert_variant_to<std::variant<Convertible1, Convertible2>>(source);
-  ASSERT_TRUE(std::holds_alternative<Convertible2>(v));
-}
+            source = Convertible2();
+            v = convert_variant_to<std::variant<Convertible1, Convertible2>>(source);
+            ASSERT_TRUE(std::holds_alternative<Convertible2>(v));
+        }
 
-TEST(VariantTest, TestMoveConversion) {
-  using Variant = std::variant<std::unique_ptr<const int>,
-                               std::unique_ptr<const std::string>>;
-  using OtherVariant =
-      std::variant<std::unique_ptr<int>, std::unique_ptr<std::string>>;
+        TEST(VariantTest, TestMoveConversion) {
+            using Variant = std::variant<std::unique_ptr<const int>,
+                std::unique_ptr<const std::string>>;
+            using OtherVariant = std::variant<std::unique_ptr<int>, std::unique_ptr<std::string>>;
 
-  Variant var(
-      convert_variant_to<Variant>(OtherVariant{std::make_unique<int>(0)}));
-  ASSERT_TRUE(std::holds_alternative<std::unique_ptr<const int>>(var));
-  ASSERT_NE(std::get<std::unique_ptr<const int>>(var), nullptr);
-  EXPECT_EQ(0, *std::get<std::unique_ptr<const int>>(var));
+            Variant var(
+                convert_variant_to<Variant>(OtherVariant { std::make_unique<int>(0) }));
+            ASSERT_TRUE(std::holds_alternative<std::unique_ptr<const int>>(var));
+            ASSERT_NE(std::get<std::unique_ptr<const int>>(var), nullptr);
+            EXPECT_EQ(0, *std::get<std::unique_ptr<const int>>(var));
 
-  var = convert_variant_to<Variant>(
-      OtherVariant(std::make_unique<std::string>("foo")));
-  ASSERT_TRUE(std::holds_alternative<std::unique_ptr<const std::string>>(var));
-  EXPECT_EQ("foo", *std::get<std::unique_ptr<const std::string>>(var));
-}
+            var = convert_variant_to<Variant>(
+                OtherVariant(std::make_unique<std::string>("foo")));
+            ASSERT_TRUE(std::holds_alternative<std::unique_ptr<const std::string>>(var));
+            EXPECT_EQ("foo", *std::get<std::unique_ptr<const std::string>>(var));
+        }
 
-TEST(VariantTest, DoesNotMoveFromLvalues) {
-  // We use shared_ptr here because it's both copyable and movable, and
-  // a moved-from shared_ptr is guaranteed to be null, so we can detect
-  // whether moving or copying has occurred.
-  using Variant = std::variant<std::shared_ptr<const int>,
-                               std::shared_ptr<const std::string>>;
-  using OtherVariant =
-      std::variant<std::shared_ptr<int>, std::shared_ptr<std::string>>;
+        TEST(VariantTest, DoesNotMoveFromLvalues) {
+            // We use shared_ptr here because it's both copyable and movable, and
+            // a moved-from shared_ptr is guaranteed to be null, so we can detect
+            // whether moving or copying has occurred.
+            using Variant = std::variant<std::shared_ptr<const int>,
+                std::shared_ptr<const std::string>>;
+            using OtherVariant = std::variant<std::shared_ptr<int>, std::shared_ptr<std::string>>;
 
-  Variant v1(std::make_shared<const int>(0));
+            Variant v1(std::make_shared<const int>(0));
 
-  // Test copy constructor
-  Variant v2(v1);
-  EXPECT_EQ(std::get<std::shared_ptr<const int>>(v1),
-            std::get<std::shared_ptr<const int>>(v2));
+            // Test copy constructor
+            Variant v2(v1);
+            EXPECT_EQ(std::get<std::shared_ptr<const int>>(v1),
+                std::get<std::shared_ptr<const int>>(v2));
 
-  // Test copy-assignment operator
-  v1 = std::make_shared<const std::string>("foo");
-  v2 = v1;
-  EXPECT_EQ(std::get<std::shared_ptr<const std::string>>(v1),
-            std::get<std::shared_ptr<const std::string>>(v2));
+            // Test copy-assignment operator
+            v1 = std::make_shared<const std::string>("foo");
+            v2 = v1;
+            EXPECT_EQ(std::get<std::shared_ptr<const std::string>>(v1),
+                std::get<std::shared_ptr<const std::string>>(v2));
 
-  // Test converting copy constructor
-  OtherVariant other(std::make_shared<int>(0));
-  Variant v3(convert_variant_to<Variant>(other));
-  EXPECT_EQ(std::get<std::shared_ptr<int>>(other),
-            std::get<std::shared_ptr<const int>>(v3));
+            // Test converting copy constructor
+            OtherVariant other(std::make_shared<int>(0));
+            Variant v3(convert_variant_to<Variant>(other));
+            EXPECT_EQ(std::get<std::shared_ptr<int>>(other),
+                std::get<std::shared_ptr<const int>>(v3));
 
-  other = std::make_shared<std::string>("foo");
-  v3 = convert_variant_to<Variant>(other);
-  EXPECT_EQ(std::get<std::shared_ptr<std::string>>(other),
-            std::get<std::shared_ptr<const std::string>>(v3));
-}
+            other = std::make_shared<std::string>("foo");
+            v3 = convert_variant_to<Variant>(other);
+            EXPECT_EQ(std::get<std::shared_ptr<std::string>>(other),
+                std::get<std::shared_ptr<const std::string>>(v3));
+        }
 
-TEST(VariantTest, TestRvalueConversionViaConvertVariantTo) {
-  std::variant<Convertible1, Convertible2> v(
-      convert_variant_to<std::variant<Convertible1, Convertible2>>(
-          (std::variant<Convertible2, Convertible1>(Convertible1()))));
-  ASSERT_TRUE(std::holds_alternative<Convertible1>(v));
+        TEST(VariantTest, TestRvalueConversionViaConvertVariantTo) {
+            std::variant<Convertible1, Convertible2> v(
+                convert_variant_to<std::variant<Convertible1, Convertible2>>(
+                    (std::variant<Convertible2, Convertible1>(Convertible1()))));
+            ASSERT_TRUE(std::holds_alternative<Convertible1>(v));
 
-  v = convert_variant_to<std::variant<Convertible1, Convertible2>>(
-      std::variant<Convertible2, Convertible1>(Convertible2()));
-  ASSERT_TRUE(std::holds_alternative<Convertible2>(v));
-}
+            v = convert_variant_to<std::variant<Convertible1, Convertible2>>(
+                std::variant<Convertible2, Convertible1>(Convertible2()));
+            ASSERT_TRUE(std::holds_alternative<Convertible2>(v));
+        }
 
-TEST(VariantTest, TestLvalueConversionViaConvertVariantTo) {
-  std::variant<Convertible2, Convertible1> source((Convertible1()));
-  std::variant<Convertible1, Convertible2> v(
-      convert_variant_to<std::variant<Convertible1, Convertible2>>(source));
-  ASSERT_TRUE(std::holds_alternative<Convertible1>(v));
+        TEST(VariantTest, TestLvalueConversionViaConvertVariantTo) {
+            std::variant<Convertible2, Convertible1> source((Convertible1()));
+            std::variant<Convertible1, Convertible2> v(
+                convert_variant_to<std::variant<Convertible1, Convertible2>>(source));
+            ASSERT_TRUE(std::holds_alternative<Convertible1>(v));
 
-  source = Convertible2();
-  v = convert_variant_to<std::variant<Convertible1, Convertible2>>(source);
-  ASSERT_TRUE(std::holds_alternative<Convertible2>(v));
-}
+            source = Convertible2();
+            v = convert_variant_to<std::variant<Convertible1, Convertible2>>(source);
+            ASSERT_TRUE(std::holds_alternative<Convertible2>(v));
+        }
 
-TEST(VariantTest, TestMoveConversionViaConvertVariantTo) {
-  using Variant = std::variant<std::unique_ptr<const int>,
-                               std::unique_ptr<const std::string>>;
-  using OtherVariant =
-      std::variant<std::unique_ptr<int>, std::unique_ptr<std::string>>;
+        TEST(VariantTest, TestMoveConversionViaConvertVariantTo) {
+            using Variant = std::variant<std::unique_ptr<const int>,
+                std::unique_ptr<const std::string>>;
+            using OtherVariant = std::variant<std::unique_ptr<int>, std::unique_ptr<std::string>>;
 
-  Variant var(
-      convert_variant_to<Variant>(OtherVariant{std::make_unique<int>(3)}));
-  EXPECT_THAT(std::get_if<std::unique_ptr<const int>>(&var),
-              Pointee(Pointee(3)));
+            Variant var(
+                convert_variant_to<Variant>(OtherVariant { std::make_unique<int>(3) }));
+            EXPECT_THAT(std::get_if<std::unique_ptr<const int>>(&var),
+                Pointee(Pointee(3)));
 
-  var = convert_variant_to<Variant>(
-      OtherVariant(std::make_unique<std::string>("foo")));
-  EXPECT_THAT(std::get_if<std::unique_ptr<const std::string>>(&var),
-              Pointee(Pointee(std::string("foo"))));
-}
+            var = convert_variant_to<Variant>(
+                OtherVariant(std::make_unique<std::string>("foo")));
+            EXPECT_THAT(std::get_if<std::unique_ptr<const std::string>>(&var),
+                Pointee(Pointee(std::string("foo"))));
+        }
 
-}  // namespace
-}  // namespace turbo
+    } // namespace
+} // namespace turbo

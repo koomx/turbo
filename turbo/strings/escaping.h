@@ -36,7 +36,7 @@
 
 namespace turbo {
 
-    // CUnescape()
+    // c_unescape()
     //
     // Unescapes a `source` string and copies it into `dest`, rewriting C-style
     // escape sequences (https://en.cppreference.com/w/cpp/language/escape) into
@@ -66,20 +66,20 @@ namespace turbo {
     //
     //   std::string s = "foo\\rbar\\nbaz\\t";
     //   std::string unescaped_s;
-    //   if (!turbo::CUnescape(s, &unescaped_s)) {
+    //   if (!turbo::c_unescape(s, &unescaped_s)) {
     //     ...
     //   }
     //   EXPECT_EQ(unescaped_s, "foo\rbar\nbaz\t");
-    bool CUnescape(std::string_view source, std::string* turbo_nonnull dest,
+    bool c_unescape(std::string_view source, std::string* turbo_nonnull dest,
         std::string* turbo_nullable error);
 
-    // Overload of `CUnescape()` with no error reporting.
-    inline bool CUnescape(std::string_view source,
+    // Overload of `c_unescape()` with no error reporting.
+    inline bool c_unescape(std::string_view source,
         std::string* turbo_nonnull dest) {
-        return CUnescape(source, dest, nullptr);
+        return c_unescape(source, dest, nullptr);
     }
 
-    // CEscape()
+    // c_escape()
     //
     // Escapes a `src` string using C-style escapes sequences
     // (https://en.cppreference.com/w/cpp/language/escape), escaping other
@@ -88,11 +88,11 @@ namespace turbo {
     // Example:
     //
     //   std::string s = "foo\rbar\tbaz\010\011\012\013\014\x0d\n";
-    //   std::string escaped_s = turbo::CEscape(s);
+    //   std::string escaped_s = turbo::c_escape(s);
     //   EXPECT_EQ(escaped_s, "foo\\rbar\\tbaz\\010\\t\\n\\013\\014\\r\\n");
-    std::string CEscape(std::string_view src);
+    std::string c_escape(std::string_view src);
 
-    // CHexEscape()
+    // c_hex_escape()
     //
     // Escapes a `src` string using C-style escape sequences, escaping
     // other non-printable/non-whitespace bytes as hexadecimal sequences (e.g.
@@ -101,93 +101,73 @@ namespace turbo {
     // Example:
     //
     //   std::string s = "foo\rbar\tbaz\010\011\012\013\014\x0d\n";
-    //   std::string escaped_s = turbo::CHexEscape(s);
+    //   std::string escaped_s = turbo::c_hex_escape(s);
     //   EXPECT_EQ(escaped_s, "foo\\rbar\\tbaz\\x08\\t\\n\\x0b\\x0c\\r\\n");
-    std::string CHexEscape(std::string_view src);
+    std::string c_hex_escape(std::string_view src);
 
-    // Utf8SafeCEscape()
+    // utf8_safe_c_escape()
     //
     // Escapes a `src` string using C-style escape sequences, escaping bytes as
     // octal sequences, and passing through UTF-8 characters without conversion.
     // I.e., when encountering any bytes with their high bit set, this function
     // will not escape those values, whether or not they are valid UTF-8.
-    std::string Utf8SafeCEscape(std::string_view src);
+    std::string utf8_safe_c_escape(std::string_view src);
 
-    // Utf8SafeCHexEscape()
+    // utf8_safe_chex_escape()
     //
     // Escapes a `src` string using C-style escape sequences, escaping bytes as
     // hexadecimal sequences, and passing through UTF-8 characters without
     // conversion.
-    std::string Utf8SafeCHexEscape(std::string_view src);
+    std::string utf8_safe_chex_escape(std::string_view src);
 
-    // Base64Escape()
+    // base64_escape()
     //
     // Encodes a `src` string into a base64-encoded `dest` string with padding
     // characters. This function conforms with RFC 4648 section 4 (base64) and RFC
     // 2045.
-    std::string Base64Escape(std::string_view src);
-    [[deprecated(
-        "Use the string-returning version of "
-        "Base64Escape()")]] KUMO_REFACTOR_INLINE inline void
-    Base64Escape(std::string_view src, std::string* turbo_nonnull dest) {
-        *dest = Base64Escape(src);
-    }
+    std::string base64_escape(std::string_view src);
 
-    // WebSafeBase64Escape()
+    // web_safe_base64_escape()
     //
-    // Encodes a `src` string into a base64 string, like Base64Escape() does, but
+    // Encodes a `src` string into a base64 string, like base64_escape() does, but
     // outputs '-' instead of '+' and '_' instead of '/', and does not pad `dest`.
     // This function conforms with RFC 4648 section 5 (base64url).
-    std::string WebSafeBase64Escape(std::string_view src);
-    [[deprecated(
-        "Use the string-returning version of "
-        "WebSafeBase64Escape()")]] KUMO_REFACTOR_INLINE inline void
-    WebSafeBase64Escape(std::string_view src, std::string* turbo_nonnull dest) {
-        *dest = WebSafeBase64Escape(src);
-    }
+    std::string web_safe_base64_escape(std::string_view src);
 
-    // Base64Unescape()
+    // base64_unescape()
     //
     // Converts a `src` string encoded in Base64 (RFC 4648 section 4) to its binary
     // equivalent, writing it to a `dest` buffer, returning `true` on success. If
     // `src` contains invalid characters, `dest` is cleared and returns `false`.
-    // If padding is included (note that `Base64Escape()` does produce it), it must
+    // If padding is included (note that `base64_escape()` does produce it), it must
     // be correct. In the padding, '=' and '.' are treated identically.
-    bool Base64Unescape(std::string_view src, std::string* turbo_nonnull dest);
+    bool base64_unescape(std::string_view src, std::string* turbo_nonnull dest);
 
-    // WebSafeBase64Unescape()
+    // web_safe_base64_unescape()
     //
     // Converts a `src` string encoded in "web safe" Base64 (RFC 4648 section 5) to
     // its binary equivalent, writing it to a `dest` buffer, returning `true` on
     // success. If `src` contains invalid characters, `dest` is cleared and returns
-    // `false`. If padding is included (note that `WebSafeBase64Escape()` does not
+    // `false`. If padding is included (note that `web_safe_base64_escape()` does not
     // produce it), it must be correct. In the padding, '=' and '.' are treated
     // identically.
-    bool WebSafeBase64Unescape(std::string_view src,
+    bool web_safe_base64_unescape(std::string_view src,
         std::string* turbo_nonnull dest);
 
-    // HexStringToBytes()
+    // hex_string_to_bytes()
     //
     // Converts the hexadecimal encoded data in `hex` into raw bytes in the `bytes`
     // output string.  If `hex` does not consist of valid hexadecimal data, this
     // function returns false and leaves `bytes` in an unspecified state. Returns
     // true on success.
-    [[nodiscard]] bool HexStringToBytes(std::string_view hex,
+    [[nodiscard]] bool hex_string_to_bytes(std::string_view hex,
         std::string* turbo_nonnull bytes);
 
-    // HexStringToBytes()
-    //
-    // Converts an ASCII hex string into bytes, returning binary data of length
-    // `from.size()/2`. The input must be valid hexadecimal data, otherwise the
-    // return value is unspecified.
-    KUMO_DEPRECATED("Use the HexStringToBytes() that returns a bool")
-    std::string HexStringToBytes(std::string_view from);
-
-    // BytesToHexString()
+    // bytes_to_hex_string()
     //
     // Converts binary data into an ASCII text string, returning a string of size
     // `2*from.size()`.
-    std::string BytesToHexString(std::string_view from);
+    std::string bytes_to_hex_string(std::string_view from);
 
     // UrlEscape()
     //

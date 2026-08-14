@@ -24,7 +24,7 @@ namespace turbo {
         void die_because_null(const char * turbo_nonnull file, int line,
                             const char * turbo_nonnull exprtext) {
             KLOG(FATAL).at_location(file, line)
-                    << turbo::StrCat("Check failed: '", exprtext, "' Must be non-null");
+                    << turbo::str_cat("Check failed: '", exprtext, "' Must be non-null");
         }
     } // namespace log_internal
 } // namespace turbo

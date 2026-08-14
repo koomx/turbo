@@ -45,7 +45,7 @@ namespace turbo {
                 auto& sub = subs.back();
                 if (sub.offset >= pos) {
                     if (pos <= s.size()) {
-                        StrAppend(result_ptr, s.substr(pos, sub.offset - pos), sub.replacement);
+                        str_append(result_ptr, s.substr(pos, sub.offset - pos), sub.replacement);
                     }
                     pos = sub.offset + sub.old.size();
                     substitutions += 1;

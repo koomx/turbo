@@ -65,228 +65,227 @@
 #include <type_traits>
 #include <utility>
 
-#include <turbo/macros/config.h>
 #include <turbo/base/internal/hardening.h>
+#include <turbo/macros/config.h>
 
 namespace turbo {
 
+    template <typename T>
+    class optional_ref {
+        template <typename U>
+        using EnableIfConvertibleFrom = std::enable_if_t<std::is_convertible_v<U*, T*>>;
 
-template <typename T>
-class optional_ref {
-  template <typename U>
-  using EnableIfConvertibleFrom =
-      std::enable_if_t<std::is_convertible_v<U*, T*>>;
+    public:
+        using value_type = T;
 
- public:
-  using value_type = T;
+        constexpr optional_ref()
+            : ptr_(nullptr) { }
+        constexpr optional_ref( // NOLINT(google-explicit-constructor)
+            std::nullopt_t)
+            : ptr_(nullptr) { }
 
-  constexpr optional_ref() : ptr_(nullptr) {}
-  constexpr optional_ref(  // NOLINT(google-explicit-constructor)
-      std::nullopt_t)
-      : ptr_(nullptr) {}
+        // Constructor given a concrete value.
+        constexpr optional_ref( // NOLINT(google-explicit-constructor)
+            T& input KUMO_ATTRIBUTE_LIFETIME_BOUND)
+            : ptr_(std::addressof(input)) { }
 
-  // Constructor given a concrete value.
-  constexpr optional_ref(  // NOLINT(google-explicit-constructor)
-      T& input KUMO_ATTRIBUTE_LIFETIME_BOUND)
-      : ptr_(std::addressof(input)) {}
+        // Constructors given an existing std::optional value.
+        // Templated on the input optional's type to avoid creating a temporary.
+        template <typename U, typename = EnableIfConvertibleFrom<const U>>
+        constexpr optional_ref( // NOLINT(google-explicit-constructor)
+            const std::optional<U>& input KUMO_ATTRIBUTE_LIFETIME_BOUND)
+            : ptr_(input.has_value() ? std::addressof(*input) : nullptr) { }
+        template <typename U, typename = EnableIfConvertibleFrom<U>>
+        constexpr optional_ref( // NOLINT(google-explicit-constructor)
+            std::optional<U>& input KUMO_ATTRIBUTE_LIFETIME_BOUND)
+            : ptr_(input.has_value() ? std::addressof(*input) : nullptr) { }
 
-  // Constructors given an existing std::optional value.
-  // Templated on the input optional's type to avoid creating a temporary.
-  template <typename U, typename = EnableIfConvertibleFrom<const U>>
-  constexpr optional_ref(  // NOLINT(google-explicit-constructor)
-      const std::optional<U>& input KUMO_ATTRIBUTE_LIFETIME_BOUND)
-      : ptr_(input.has_value() ? std::addressof(*input) : nullptr) {}
-  template <typename U, typename = EnableIfConvertibleFrom<U>>
-  constexpr optional_ref(  // NOLINT(google-explicit-constructor)
-      std::optional<U>& input KUMO_ATTRIBUTE_LIFETIME_BOUND)
-      : ptr_(input.has_value() ? std::addressof(*input) : nullptr) {}
+        // Constructor given a T*, where nullptr indicates empty/absent.
+        constexpr optional_ref( // NOLINT(google-explicit-constructor)
+            T* input KUMO_ATTRIBUTE_LIFETIME_BOUND)
+            : ptr_(input) { }
 
-  // Constructor given a T*, where nullptr indicates empty/absent.
-  constexpr optional_ref(  // NOLINT(google-explicit-constructor)
-      T* input KUMO_ATTRIBUTE_LIFETIME_BOUND)
-      : ptr_(input) {}
+        // Don't allow naked nullptr as input, as this creates confusion in the case
+        // of optional_ref<T*>. Use std::nullopt instead to create an empty
+        // optional_ref.
+        constexpr optional_ref( // NOLINT(google-explicit-constructor)
+            std::nullptr_t) = delete;
 
-  // Don't allow naked nullptr as input, as this creates confusion in the case
-  // of optional_ref<T*>. Use std::nullopt instead to create an empty
-  // optional_ref.
-  constexpr optional_ref(  // NOLINT(google-explicit-constructor)
-      std::nullptr_t) = delete;
+        // Copying is allowed.
+        optional_ref(const optional_ref<T>&) = default;
+        // Assignment is not allowed.
+        optional_ref<T>& operator=(const optional_ref<T>&) = delete;
 
-  // Copying is allowed.
-  optional_ref(const optional_ref<T>&) = default;
-  // Assignment is not allowed.
-  optional_ref<T>& operator=(const optional_ref<T>&) = delete;
+        // Conversion from optional_ref<U> is allowed iff U* is convertible to T*.
+        // (Note this also allows non-const to const conversions.)
+        template <typename U, typename = EnableIfConvertibleFrom<U>>
+        constexpr optional_ref( // NOLINT(google-explicit-constructor)
+            optional_ref<U> input)
+            : ptr_(input.as_pointer()) { }
 
-  // Conversion from optional_ref<U> is allowed iff U* is convertible to T*.
-  // (Note this also allows non-const to const conversions.)
-  template <typename U, typename = EnableIfConvertibleFrom<U>>
-  constexpr optional_ref(  // NOLINT(google-explicit-constructor)
-      optional_ref<U> input)
-      : ptr_(input.as_pointer()) {}
+        // Determines whether the `optional_ref` contains a value. Returns `false` if
+        // and only if `*this` is empty.
+        constexpr bool has_value() const { return ptr_ != nullptr; }
 
-  // Determines whether the `optional_ref` contains a value. Returns `false` if
-  // and only if `*this` is empty.
-  constexpr bool has_value() const { return ptr_ != nullptr; }
+        // Returns a reference to an `optional_ref`s underlying value. The constness
+        // and lvalue/rvalue-ness of the `optional_ref` is preserved to the view of
+        // the `T` sub-object. Throws the same error as `std::optional`'s `value()`
+        // when the `optional_ref` is empty.
+        constexpr T& value() const {
+            return KUMO_LIKELY(ptr_ != nullptr)
+                ? *ptr_
+                // Replicate the same error logic as in `std::optional`'s
+                // `value()`. It either throws an exception or aborts the
+                // program. We intentionally ignore the return value of
+                // the constructed optional's value as we only need to run
+                // the code for error checking.
+                : ((void)std::optional<T>().value(), *ptr_);
+        }
 
-  // Returns a reference to an `optional_ref`s underlying value. The constness
-  // and lvalue/rvalue-ness of the `optional_ref` is preserved to the view of
-  // the `T` sub-object. Throws the same error as `std::optional`'s `value()`
-  // when the `optional_ref` is empty.
-  constexpr T& value() const {
-    return KUMO_LIKELY(ptr_ != nullptr)
-               ? *ptr_
-               // Replicate the same error logic as in `std::optional`'s
-               // `value()`. It either throws an exception or aborts the
-               // program. We intentionally ignore the return value of
-               // the constructed optional's value as we only need to run
-               // the code for error checking.
-               : ((void)std::optional<T>().value(), *ptr_);
-  }
+        // Returns the value iff *this has a value, otherwise returns `default_value`.
+        template <typename U>
+        constexpr T value_or(U&& default_value) const {
+            // Instantiate std::optional<T>::value_or(U) to trigger its static_asserts.
+            if (false) {
+                // We use `std::add_const_t` here since just using `const` makes MSVC
+                // complain about the syntax.
+                (void)std::add_const_t<std::optional<T>> { }.value_or(
+                    std::forward<U>(default_value));
+            }
+            return ptr_ != nullptr ? *ptr_
+                                   : static_cast<T>(std::forward<U>(default_value));
+        }
 
-  // Returns the value iff *this has a value, otherwise returns `default_value`.
-  template <typename U>
-  constexpr T value_or(U&& default_value) const {
-    // Instantiate std::optional<T>::value_or(U) to trigger its static_asserts.
-    if (false) {
-      // We use `std::add_const_t` here since just using `const` makes MSVC
-      // complain about the syntax.
-      (void)std::add_const_t<std::optional<T>>{}.value_or(
-          std::forward<U>(default_value));
+        // Accesses the underlying `T` value of an `optional_ref`. If the
+        // `optional_ref` is empty, behavior is undefined.
+        constexpr T& operator*() const {
+            turbo::base_internal::HardeningAssertNonNull(ptr_);
+            return *ptr_;
+        }
+        constexpr T* operator->() const {
+            turbo::base_internal::HardeningAssertNonNull(ptr_);
+            return ptr_;
+        }
+
+        // Convenience function to represent the `optional_ref` as a `T*` pointer.
+        constexpr T* as_pointer() const { return ptr_; }
+        // Convenience function to represent the `optional_ref` as an `optional`,
+        // which incurs a copy when the `optional_ref` is non-empty. The template type
+        // allows for implicit type conversion; example:
+        //   optional_ref<std::string> a = ...;
+        //   std::optional<std::string_view> b = a.as_optional<std::string_view>();
+        template <typename U = std::decay_t<T>>
+        constexpr std::optional<U> as_optional() const {
+            if (ptr_ == nullptr)
+                return std::nullopt;
+            return *ptr_;
+        }
+
+    private:
+        T* const ptr_;
+
+        // T constraint checks.  You can't have an optional of nullopt_t or
+        // in_place_t.
+        static_assert(!std::is_same_v<std::nullopt_t, std::remove_cv_t<T>>,
+            "optional_ref<nullopt_t> is not allowed.");
+        static_assert(!std::is_same_v<std::in_place_t, std::remove_cv_t<T>>,
+            "optional_ref<in_place_t> is not allowed.");
+    };
+
+    // Template type deduction guides:
+
+    template <typename T>
+    optional_ref(const T&) -> optional_ref<const T>;
+    template <typename T>
+    optional_ref(T&) -> optional_ref<T>;
+
+    template <typename T>
+    optional_ref(const std::optional<T>&) -> optional_ref<const T>;
+    template <typename T>
+    optional_ref(std::optional<T>&) -> optional_ref<T>;
+
+    template <typename T>
+    optional_ref(T*) -> optional_ref<T>;
+
+    namespace optional_ref_internal {
+
+        // This is a C++-11 compatible version of std::equality_comparable_with that
+        // only requires `t == u` is a valid boolean expression.
+        //
+        // We still need this for a couple reasons:
+        // -  As of 2026-02-13, Abseil supports C++17.
+        //  - Even for targets that are built with the default toolchain, using
+        //    std::equality_comparable_with gives us an error due to mutual recursion
+        //    between its definition and our definition of operator==.
+        //
+        template <typename T, typename U>
+        using enable_if_equality_comparable_t = std::enable_if_t<std::is_convertible_v<
+            decltype(std::declval<T>() == std::declval<U>()), bool>>;
+
+    } // namespace optional_ref_internal
+
+    // Compare an optional referenced value to std::nullopt.
+
+    template <typename T>
+    constexpr bool operator==(optional_ref<T> a, std::nullopt_t) {
+        return !a.has_value();
     }
-    return ptr_ != nullptr ? *ptr_
-                           : static_cast<T>(std::forward<U>(default_value));
-  }
+    template <typename T>
+    constexpr bool operator==(std::nullopt_t, optional_ref<T> b) {
+        return !b.has_value();
+    }
+    template <typename T>
+    constexpr bool operator!=(optional_ref<T> a, std::nullopt_t) {
+        return a.has_value();
+    }
+    template <typename T>
+    constexpr bool operator!=(std::nullopt_t, optional_ref<T> b) {
+        return b.has_value();
+    }
 
-  // Accesses the underlying `T` value of an `optional_ref`. If the
-  // `optional_ref` is empty, behavior is undefined.
-  constexpr T& operator*() const {
-    turbo::base_internal::HardeningAssertNonNull(ptr_);
-    return *ptr_;
-  }
-  constexpr T* operator->() const {
-    turbo::base_internal::HardeningAssertNonNull(ptr_);
-    return ptr_;
-  }
+    // Compare two optional referenced values. Note, this does not test that the
+    // contained `ptr_`s are equal. If the caller wants "shallow" reference equality
+    // semantics, they should use `as_pointer()` explicitly.
 
-  // Convenience function to represent the `optional_ref` as a `T*` pointer.
-  constexpr T* as_pointer() const { return ptr_; }
-  // Convenience function to represent the `optional_ref` as an `optional`,
-  // which incurs a copy when the `optional_ref` is non-empty. The template type
-  // allows for implicit type conversion; example:
-  //   optional_ref<std::string> a = ...;
-  //   std::optional<std::string_view> b = a.as_optional<std::string_view>();
-  template <typename U = std::decay_t<T>>
-  constexpr std::optional<U> as_optional() const {
-    if (ptr_ == nullptr) return std::nullopt;
-    return *ptr_;
-  }
+    template <typename T, typename U>
+    constexpr bool operator==(optional_ref<T> a, optional_ref<U> b) {
+        return a.has_value() ? *a == b : !b.has_value();
+    }
 
- private:
-  T* const ptr_;
+    // Compare an optional referenced value to a non-optional value.
 
-  // T constraint checks.  You can't have an optional of nullopt_t or
-  // in_place_t.
-  static_assert(!std::is_same_v<std::nullopt_t, std::remove_cv_t<T>>,
-                "optional_ref<nullopt_t> is not allowed.");
-  static_assert(!std::is_same_v<std::in_place_t, std::remove_cv_t<T>>,
-                "optional_ref<in_place_t> is not allowed.");
-};
+    template <
+        typename T, typename U,
+        typename = optional_ref_internal::enable_if_equality_comparable_t<T, U>>
+    constexpr bool operator==(const T& a, optional_ref<U> b) {
+        return b.has_value() && a == *b;
+    }
+    template <
+        typename T, typename U,
+        typename = optional_ref_internal::enable_if_equality_comparable_t<T, U>>
+    constexpr bool operator==(optional_ref<T> a, const U& b) {
+        return b == a;
+    }
 
-// Template type deduction guides:
+    // Inequality operators, as above.
 
-template <typename T>
-optional_ref(const T&) -> optional_ref<const T>;
-template <typename T>
-optional_ref(T&) -> optional_ref<T>;
+    template <typename T, typename U>
+    constexpr bool operator!=(optional_ref<T> a, optional_ref<U> b) {
+        return !(a == b);
+    }
+    template <
+        typename T, typename U,
+        typename = optional_ref_internal::enable_if_equality_comparable_t<T, U>>
+    constexpr bool operator!=(optional_ref<T> a, const U& b) {
+        return !(a == b);
+    }
+    template <
+        typename T, typename U,
+        typename = optional_ref_internal::enable_if_equality_comparable_t<T, U>>
+    constexpr bool operator!=(const T& a, optional_ref<U> b) {
+        return !(a == b);
+    }
 
-template <typename T>
-optional_ref(const std::optional<T>&) -> optional_ref<const T>;
-template <typename T>
-optional_ref(std::optional<T>&) -> optional_ref<T>;
+} // namespace turbo
 
-template <typename T>
-optional_ref(T*) -> optional_ref<T>;
-
-namespace optional_ref_internal {
-
-// This is a C++-11 compatible version of std::equality_comparable_with that
-// only requires `t == u` is a valid boolean expression.
-//
-// We still need this for a couple reasons:
-// -  As of 2026-02-13, Abseil supports C++17.
-//  - Even for targets that are built with the default toolchain, using
-//    std::equality_comparable_with gives us an error due to mutual recursion
-//    between its definition and our definition of operator==.
-//
-template <typename T, typename U>
-using enable_if_equality_comparable_t = std::enable_if_t<std::is_convertible_v<
-    decltype(std::declval<T>() == std::declval<U>()), bool>>;
-
-}  // namespace optional_ref_internal
-
-// Compare an optional referenced value to std::nullopt.
-
-template <typename T>
-constexpr bool operator==(optional_ref<T> a, std::nullopt_t) {
-  return !a.has_value();
-}
-template <typename T>
-constexpr bool operator==(std::nullopt_t, optional_ref<T> b) {
-  return !b.has_value();
-}
-template <typename T>
-constexpr bool operator!=(optional_ref<T> a, std::nullopt_t) {
-  return a.has_value();
-}
-template <typename T>
-constexpr bool operator!=(std::nullopt_t, optional_ref<T> b) {
-  return b.has_value();
-}
-
-// Compare two optional referenced values. Note, this does not test that the
-// contained `ptr_`s are equal. If the caller wants "shallow" reference equality
-// semantics, they should use `as_pointer()` explicitly.
-
-template <typename T, typename U>
-constexpr bool operator==(optional_ref<T> a, optional_ref<U> b) {
-  return a.has_value() ? *a == b : !b.has_value();
-}
-
-// Compare an optional referenced value to a non-optional value.
-
-template <
-    typename T, typename U,
-    typename = optional_ref_internal::enable_if_equality_comparable_t<T, U>>
-constexpr bool operator==(const T& a, optional_ref<U> b) {
-  return b.has_value() && a == *b;
-}
-template <
-    typename T, typename U,
-    typename = optional_ref_internal::enable_if_equality_comparable_t<T, U>>
-constexpr bool operator==(optional_ref<T> a, const U& b) {
-  return b == a;
-}
-
-// Inequality operators, as above.
-
-template <typename T, typename U>
-constexpr bool operator!=(optional_ref<T> a, optional_ref<U> b) {
-  return !(a == b);
-}
-template <
-    typename T, typename U,
-    typename = optional_ref_internal::enable_if_equality_comparable_t<T, U>>
-constexpr bool operator!=(optional_ref<T> a, const U& b) {
-  return !(a == b);
-}
-template <
-    typename T, typename U,
-    typename = optional_ref_internal::enable_if_equality_comparable_t<T, U>>
-constexpr bool operator!=(const T& a, optional_ref<U> b) {
-  return !(a == b);
-}
-
-
-}  // namespace turbo
-
-#endif  // TURBO_TYPES_OPTIONAL_REF_H_
+#endif // TURBO_TYPES_OPTIONAL_REF_H_

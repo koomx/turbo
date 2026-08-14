@@ -69,7 +69,7 @@ namespace turbo {
             const char old_fill = os->fill();
             const auto old_flags = os->flags();
             *os << std::right
-                    << std::setw(static_cast<int>(turbo::CHexEscape(head).size())) << "";
+                    << std::setw(static_cast<int>(turbo::c_hex_escape(head).size())) << "";
             switch (substr.size()) {
                 case 0:
                     *os << "\\";
@@ -78,7 +78,7 @@ namespace turbo {
                     *os << "^";
                     break;
                 default:
-                    *os << "[" << std::setw(static_cast<int>(turbo::CHexEscape(substr).size()))
+                    *os << "[" << std::setw(static_cast<int>(turbo::c_hex_escape(substr).size()))
                             << std::setfill('-') << ")";
                     break;
             }
@@ -91,9 +91,9 @@ namespace turbo {
             entry.text_message_with_prefix_and_newline_and_nul_.data(),
             entry.text_message_with_prefix_and_newline_and_nul_.size());
         *os << "LogEntry {\n"
-                << "  source_filename: \"" << turbo::CHexEscape(entry.source_filename())
+                << "  source_filename: \"" << turbo::c_hex_escape(entry.source_filename())
                 << "\"\n"
-                << "  source_basename: \"" << turbo::CHexEscape(entry.source_basename())
+                << "  source_basename: \"" << turbo::c_hex_escape(entry.source_basename())
                 << "\"\n"
                 << "  source_line: " << entry.source_line() << "\n"
                 << "  prefix: " << std::boolalpha << entry.prefix() << "\n"
@@ -106,7 +106,7 @@ namespace turbo {
                 << "  timestamp: " << entry.timestamp() << "\n"
                 << "  tid: " << entry.tid() << "\n"
                 << "  text_message_with_prefix_and_newline_and_nul_: \""
-                << turbo::CHexEscape(text_message_with_prefix_and_newline_and_nul)
+                << turbo::c_hex_escape(text_message_with_prefix_and_newline_and_nul)
                 << "\"\n"
                 << "  text_message_with_prefix_and_newline:           ";
         PrintEscapedRangeTo(text_message_with_prefix_and_newline_and_nul,
@@ -132,14 +132,14 @@ namespace turbo {
             os);
         *os << "\n"
                 << "  encoded_message (raw): \""
-                << turbo::CHexEscape(entry.encoded_message()) << "\"\n"
+                << turbo::c_hex_escape(entry.encoded_message()) << "\"\n"
                 << "  encoded_message {\n";
         turbo::Span<const char> event = entry.encoded_message();
         log_internal::ProtoField field;
         while (field.DecodeFrom(&event)) {
             switch (field.tag()) {
                 case EventTag::kFileName:
-                    *os << "    file_name: \"" << turbo::CHexEscape(field.string_value())
+                    *os << "    file_name: \"" << turbo::c_hex_escape(field.string_value())
                             << "\"\n";
                     break;
                 case EventTag::kFileLine:
@@ -197,12 +197,12 @@ namespace turbo {
                     while (field.DecodeFrom(&value)) {
                         switch (field.tag()) {
                             case ValueTag::kString:
-                                *os << "      str: \"" << turbo::CHexEscape(field.string_value())
+                                *os << "      str: \"" << turbo::c_hex_escape(field.string_value())
                                         << "\"\n";
                                 break;
                             case ValueTag::kStringLiteral:
                                 *os << "      literal: \""
-                                        << turbo::CHexEscape(field.string_value()) << "\"\n";
+                                        << turbo::c_hex_escape(field.string_value()) << "\"\n";
                                 break;
                             default:
                                 *os << "      unknown field " << field.tag();
@@ -216,7 +216,7 @@ namespace turbo {
                                                 << field.uint64_value() << std::dec << "\n";
                                         break;
                                     case log_internal::WireType::kLengthDelimited:
-                                        *os << " (LEN): \"" << turbo::CHexEscape(field.string_value())
+                                        *os << " (LEN): \"" << turbo::c_hex_escape(field.string_value())
                                                 << "\"\n";
                                         break;
                                     case log_internal::WireType::k32Bit:
@@ -242,7 +242,7 @@ namespace turbo {
                                     << field.uint64_value() << std::dec << "\n";
                             break;
                         case log_internal::WireType::kLengthDelimited:
-                            *os << " (LEN): \"" << turbo::CHexEscape(field.string_value())
+                            *os << " (LEN): \"" << turbo::c_hex_escape(field.string_value())
                                     << "\"\n";
                             break;
                         case log_internal::WireType::k32Bit:
@@ -254,7 +254,7 @@ namespace turbo {
             }
         }
         *os << "  }\n"
-                << "  stacktrace: \"" << turbo::CHexEscape(entry.stacktrace()) << "\"\n"
+                << "  stacktrace: \"" << turbo::c_hex_escape(entry.stacktrace()) << "\"\n"
                 << "}";
     }
 } // namespace turbo

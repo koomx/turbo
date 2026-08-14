@@ -24,7 +24,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <source_location>
+#include <turbo/types/source_location.h>
 #include <string_view>
 #include <turbo/status/result.h>
 #include <turbo/status/status.h>
@@ -83,7 +83,7 @@ turbo::Result<std::unique_ptr<int>> ReturnResultPtrValue(int v) {
 }
 void CheckSourceLocation(
     const turbo::Status& status, std::vector<int> lines = {},
-    std::source_location loc = std::source_location::current()) {
+    turbo::SourceLocation loc = turbo::SourceLocation::current()) {
   ASSERT_EQ(status.GetSourceLocations().size(), lines.size())
       << "Size check failed at " << loc.line();
   for (size_t i = 0; i < lines.size(); ++i) {

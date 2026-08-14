@@ -291,7 +291,7 @@ TEST(GenericPrinterTest, DebugString) {
   struct WithDebugString {
     std::string val;
     std::string DebugString() const {
-      return turbo::StrCat("WithDebugString{", val, "}");
+      return turbo::str_cat("WithDebugString{", val, "}");
     }
   };
   EXPECT_EQ("WithDebugString{foo}",
@@ -652,7 +652,7 @@ enum class WideBasedEnum : uint64_t {
   kValue = std::numeric_limits<uint64_t>::max()
 };
 TEST(GenericPrinterTest, WideBasedEnum) {
-  EXPECT_EQ(turbo::StrCat(std::numeric_limits<uint64_t>::max()),
+  EXPECT_EQ(turbo::str_cat(std::numeric_limits<uint64_t>::max()),
             GenericPrintToString(WideBasedEnum::kValue));
 }
 

@@ -117,11 +117,11 @@ namespace turbo {
 
     bool SimpleAtob(std::string_view str, bool* turbo_nonnull out) {
         TURBO_RAW_CHECK(out != nullptr, "Output pointer must not be nullptr.");
-        if (EqualsIgnoreCase(str, "true") || EqualsIgnoreCase(str, "t") || EqualsIgnoreCase(str, "yes") || EqualsIgnoreCase(str, "y") || EqualsIgnoreCase(str, "1")) {
+        if (equals_ignore_case(str, "true") || equals_ignore_case(str, "t") || equals_ignore_case(str, "yes") || equals_ignore_case(str, "y") || equals_ignore_case(str, "1")) {
             *out = true;
             return true;
         }
-        if (EqualsIgnoreCase(str, "false") || EqualsIgnoreCase(str, "f") || EqualsIgnoreCase(str, "no") || EqualsIgnoreCase(str, "n") || EqualsIgnoreCase(str, "0")) {
+        if (equals_ignore_case(str, "false") || equals_ignore_case(str, "f") || equals_ignore_case(str, "no") || equals_ignore_case(str, "n") || equals_ignore_case(str, "0")) {
             *out = false;
             return true;
         }

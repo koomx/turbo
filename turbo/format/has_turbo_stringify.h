@@ -42,7 +42,7 @@ namespace turbo {
     // https://abseil.io/docs/cpp/guides/format#turbostringify for the
     // documentation).
     //
-    // Note that there are types that can be `StrCat`-ed that do not use the
+    // Note that there are types that can be `str_cat`-ed that do not use the
     // `turbo_stringify` customization point (for example, `int`).
 
     template<typename T, typename = void>

@@ -73,7 +73,7 @@ namespace turbo {
             std::string* turbo_nullable error) {
             if (c >= 0xD800 && c <= 0xDFFF) {
                 if (error) {
-                    *error = turbo::StrCat("invalid surrogate character (0xD800-DFFF): \\",
+                    *error = turbo::str_cat("invalid surrogate character (0xD800-DFFF): \\",
                         src);
                 }
                 return true;
@@ -83,9 +83,9 @@ namespace turbo {
 
         // ----------------------------------------------------------------------
         // CUnescapeInternal()
-        //    Implements both CUnescape() and CUnescapeForNullTerminatedString().
+        //    Implements both c_unescape() and CUnescapeForNullTerminatedString().
         //
-        //    Unescapes C escape sequences and is the reverse of CEscape().
+        //    Unescapes C escape sequences and is the reverse of c_escape().
         //
         //    If `src` is valid, stores the unescaped string in `dst` and the length of
         //    unescaped string in `dst_size`, and returns true. Otherwise returns false
@@ -303,10 +303,10 @@ namespace turbo {
         }
 
         // ----------------------------------------------------------------------
-        // CEscape()
-        // CHexEscape()
-        // Utf8SafeCEscape()
-        // Utf8SafeCHexEscape()
+        // c_escape()
+        // c_hex_escape()
+        // utf8_safe_c_escape()
+        // utf8_safe_chex_escape()
         //    Escapes 'src' using C-style escape sequences.  This is useful for
         //    preparing query flags.  The 'Hex' version uses hexadecimal rather than
         //    octal sequences.  The 'Utf8Safe' version does not touch UTF-8 bytes.
@@ -463,7 +463,7 @@ constexpr std::array<unsigned char, 256> kCEscapedLen = {
             constexpr size_t kSlopBytes = 3;
             TURBO_INTERNAL_CHECK(
                 escaped_len <= std::numeric_limits<size_t>::max() - kSlopBytes,
-                "CEscape length overflow");
+                "c_escape length overflow");
             size_t append_buf_len = escaped_len + kSlopBytes;
             strings_internal::StringAppendAndOverwrite(
                 *dest, append_buf_len, [src, escaped_len](char* append_ptr, size_t) {
@@ -1056,16 +1056,16 @@ constexpr std::array<int8_t, 256> kHexValueStrict = {
     } // namespace
 
     // ----------------------------------------------------------------------
-    // CUnescape()
+    // c_unescape()
     //
     // See CUnescapeInternal() for implementation details.
     // ----------------------------------------------------------------------
 
-    bool CUnescape(std::string_view source, std::string* turbo_nonnull dest,
+    bool c_unescape(std::string_view source, std::string* turbo_nonnull dest,
         std::string* turbo_nullable error) {
         bool success;
 
-        // `CUnescape()` allows for in-place unescaping, which means `source` may
+        // `c_unescape()` allows for in-place unescaping, which means `source` may
         // alias `*dest`.  However, turbo::StringResizeAndOverwrite() invalidates all
         // iterators, pointers, and references into the string, regardless whether
         // reallocation occurs. Therefore we need to avoid calling
@@ -1090,46 +1090,46 @@ constexpr std::array<int8_t, 256> kHexValueStrict = {
         return success;
     }
 
-    std::string CEscape(std::string_view src) {
+    std::string c_escape(std::string_view src) {
         std::string dest;
         CEscapeAndAppendInternal(src, &dest);
         return dest;
     }
 
-    std::string CHexEscape(std::string_view src) {
+    std::string c_hex_escape(std::string_view src) {
         return CEscapeInternal(src, true, false);
     }
 
-    std::string Utf8SafeCEscape(std::string_view src) {
+    std::string utf8_safe_c_escape(std::string_view src) {
         return CEscapeInternal(src, false, true);
     }
 
-    std::string Utf8SafeCHexEscape(std::string_view src) {
+    std::string utf8_safe_chex_escape(std::string_view src) {
         return CEscapeInternal(src, true, true);
     }
 
-    bool Base64Unescape(std::string_view src, std::string* turbo_nonnull dest) {
+    bool base64_unescape(std::string_view src, std::string* turbo_nonnull dest) {
         return Base64UnescapeInternal(src.data(), src.size(), dest, kUnBase64);
     }
 
-    bool WebSafeBase64Unescape(std::string_view src,
+    bool web_safe_base64_unescape(std::string_view src,
         std::string* turbo_nonnull dest) {
         return Base64UnescapeInternal(src.data(), src.size(), dest, kUnWebSafeBase64);
     }
 
-    std::string Base64Escape(std::string_view src) {
+    std::string base64_escape(std::string_view src) {
         return Base64EscapeToStringInternal(
             reinterpret_cast<const unsigned char*>(src.data()), src.size(), true,
             kBase64Chars);
     }
 
-    std::string WebSafeBase64Escape(std::string_view src) {
+    std::string web_safe_base64_escape(std::string_view src) {
         return Base64EscapeToStringInternal(
             reinterpret_cast<const unsigned char*>(src.data()), src.size(), false,
             kWebSafeBase64Chars);
     }
 
-    bool HexStringToBytes(std::string_view hex, std::string* turbo_nonnull bytes) {
+    bool hex_string_to_bytes(std::string_view hex, std::string* turbo_nonnull bytes) {
         std::string output;
 
         size_t num_bytes = hex.size() / 2;
@@ -1160,7 +1160,7 @@ constexpr std::array<int8_t, 256> kHexValueStrict = {
         return true;
     }
 
-    std::string HexStringToBytes(std::string_view from) {
+    std::string hex_string_to_bytes(std::string_view from) {
         std::string result;
         const auto num = from.size() / 2;
         StringResizeAndOverwrite(result, num, [from](char* buf, size_t buf_size) {
@@ -1170,10 +1170,10 @@ constexpr std::array<int8_t, 256> kHexValueStrict = {
         return result;
     }
 
-    std::string BytesToHexString(std::string_view from) {
+    std::string bytes_to_hex_string(std::string_view from) {
         std::string result;
         TURBO_INTERNAL_CHECK(from.size() <= std::numeric_limits<size_t>::max() / 2,
-            "BytesToHexString() overflow");
+            "bytes_to_hex_string() overflow");
         StringResizeAndOverwrite(
             result, 2 * from.size(), [from](char* buf, size_t buf_size) {
                 turbo::BytesToHexStringInternal(

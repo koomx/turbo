@@ -141,7 +141,7 @@ using OpenOpenOutRangeValidator =
 template <const std::string_view& prefix>
 struct StartsWithValidator {
   static bool validate(const std::string& value, std::string* error) noexcept {
-    if (!turbo::StartsWith(value, prefix)) {
+    if (!turbo::starts_with(value, prefix)) {
       if (error) {
         *error = "value must start with " + std::string(prefix);
       }
@@ -154,7 +154,7 @@ struct StartsWithValidator {
 template <const std::string_view& prefix>
 struct StartsWithIgnoreCaseValidator {
   static bool validate(const std::string& value, std::string* error) noexcept {
-    if (!turbo::StartsWithIgnoreCase(value, prefix)) {
+    if (!turbo::starts_with_ignore_case(value, prefix)) {
       if (error) {
         *error = "value must start with " + std::string(prefix);
       }
@@ -167,7 +167,7 @@ struct StartsWithIgnoreCaseValidator {
 template <const std::string_view& suffix>
 struct EndsWithValidator {
   static bool validate(const std::string& value, std::string* error) noexcept {
-    if (!turbo::EndsWith(value, suffix)) {
+    if (!turbo::ends_with(value, suffix)) {
       if (error) {
         *error = "value must ends with " + std::string(suffix);
       }
@@ -180,7 +180,7 @@ struct EndsWithValidator {
 template <const std::string_view& suffix>
 struct EndsWithIgnoreCaseValidator {
   static bool validate(const std::string& value, std::string* error) noexcept {
-    if (!turbo::EndsWithIgnoreCase(value, suffix)) {
+    if (!turbo::ends_with_ignore_case(value, suffix)) {
       if (error) {
         *error = "value must ends with " + std::string(suffix);
       }
@@ -193,7 +193,7 @@ struct EndsWithIgnoreCaseValidator {
 template <const std::string_view& frag>
 struct ContainsValidator {
   static bool validate(const std::string& value, std::string* error) noexcept {
-    if (!turbo::StrContains(value, frag)) {
+    if (!turbo::str_contains(value, frag)) {
       if (error) {
         *error = "value must contains " + std::string(frag);
       }
@@ -206,7 +206,7 @@ struct ContainsValidator {
 template <const std::string_view& frag>
 struct ContainsIgnoreCaseValidator {
   static bool validate(const std::string& value, std::string* error) noexcept {
-    if (!turbo::StrContainsIgnoreCase(value, frag)) {
+    if (!turbo::str_contains_ignore_case(value, frag)) {
       if (error) {
         *error = "value must contains " + std::string(frag);
       }

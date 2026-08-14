@@ -126,7 +126,7 @@ namespace turbo {
       return nullptr;                                                          \
     } else {                                                                   \
       /* There's no need to free this string since the process is crashing. */ \
-      return turbo::IgnoreLeak(new std::string(turbo::StrCat(exprtext, " (", s1, \
+      return turbo::IgnoreLeak(new std::string(turbo::str_cat(exprtext, " (", s1, \
                                                            " vs. ", s2, ")"))) \
           ->c_str();                                                           \
     }                                                                          \

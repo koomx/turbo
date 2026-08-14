@@ -56,7 +56,7 @@
 // the statement supports some chainable methods:
 //
 //   * .at_location(std::string_view file, int line)
-//     .at_location(std::source_location loc)
+//     .at_location(turbo::SourceLocation loc)
 //     Overrides the location inferred from the callsite.  The string pointed to
 //     by `file` must be valid until the end of the statement.
 //   * .no_prefix()
@@ -155,7 +155,7 @@
 // options: `turbo_stringify()` or `std::ostream& operator<<(std::ostream&, ...)`.
 // It is recommended that users make their types loggable through
 // `turbo_stringify()` as it is a universal stringification extension that also
-// enables `turbo::str_sprintf` and `turbo::StrCat` support. If both
+// enables `turbo::str_sprintf` and `turbo::str_cat` support. If both
 // `turbo_stringify()` and `std::ostream& operator<<(std::ostream&, ...)` are
 // defined, `turbo_stringify()` will be used.
 //

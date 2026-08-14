@@ -209,8 +209,8 @@ void StrAppendV(std::string *dst, const char *format, va_list ap) {
   delete[] buf;
 }
 
-void StrAppend(std::string *, const char *, ...) KUMO_PRINTF_ATTRIBUTE(2, 3);
-void StrAppend(std::string *out, const char *format, ...) {
+void str_append(std::string *, const char *, ...) KUMO_PRINTF_ATTRIBUTE(2, 3);
+void str_append(std::string *out, const char *format, ...) {
   va_list ap;
   va_start(ap, format);
   StrAppendV(out, format, ap);
@@ -247,19 +247,19 @@ NativePrintfTraits VerifyNativeImplementationImpl() {
   const double d0081 = 65665.0;  // 0x1.0081p+16
   const double d0181 = 65921.0;  // 0x1.0181p+16
   result.hex_float_has_glibc_rounding =
-      StartsWith(StrPrint("%.2a", d0079), "0x1.00") &&
-      StartsWith(StrPrint("%.2a", d0179), "0x1.01") &&
-      StartsWith(StrPrint("%.2a", d0080), "0x1.00") &&
-      StartsWith(StrPrint("%.2a", d0180), "0x1.02") &&
-      StartsWith(StrPrint("%.2a", d0081), "0x1.01") &&
-      StartsWith(StrPrint("%.2a", d0181), "0x1.02");
+      starts_with(StrPrint("%.2a", d0079), "0x1.00") &&
+      starts_with(StrPrint("%.2a", d0179), "0x1.01") &&
+      starts_with(StrPrint("%.2a", d0080), "0x1.00") &&
+      starts_with(StrPrint("%.2a", d0180), "0x1.02") &&
+      starts_with(StrPrint("%.2a", d0081), "0x1.01") &&
+      starts_with(StrPrint("%.2a", d0181), "0x1.02");
 
   // >>> hex_float_prefers_denormal_repr. Formatting `denormal` on glibc yields
   // "0x0.0000000000001p-1022", whereas on std libs that don't use denormal
   // representation it would either be 0x1p-1074 or 0x1.0000000000000-1074.
   const double denormal = std::numeric_limits<double>::denorm_min();
   result.hex_float_prefers_denormal_repr =
-      StartsWith(StrPrint("%a", denormal), "0x0.0000000000001");
+      starts_with(StrPrint("%a", denormal), "0x0.0000000000001");
 
   // >>> hex_float_uses_minimal_precision_when_not_specified. Some (non-glibc)
   // libs will format the following as "0x1.0079000000000p+16".
@@ -273,8 +273,8 @@ NativePrintfTraits VerifyNativeImplementationImpl() {
   const double d_15 = 1.5;
   const long double ld_15 = 1.5;
   result.hex_float_optimizes_leading_digit_bit_count =
-      StartsWith(StrPrint("%a", d_15), "0x1.8") &&
-      StartsWith(StrPrint("%La", ld_15), "0xc");
+      starts_with(StrPrint("%a", d_15), "0x1.8") &&
+      starts_with(StrPrint("%La", ld_15), "0xc");
 
   return result;
 }
@@ -853,7 +853,7 @@ void TestWithMultipleFormatsHelper(Floating tested_float) {
         UntypedFormatSpecImpl format(fmt_str);
 
         string_printf_result.clear();
-        StrAppend(&string_printf_result, fmt_str.c_str(), tested_float, i);
+        str_append(&string_printf_result, fmt_str.c_str(), tested_float, i);
         str_format_result.clear();
 
         {
