@@ -107,7 +107,6 @@ set(LOG_SRC
         log/initialize.cc
         log/internal/check_op.cc
         log/internal/conditions.cc
-        log/internal/fnmatch.cc
         log/internal/globals.cc
         log/internal/log_format.cc
         log/internal/log_message.cc
@@ -120,6 +119,7 @@ set(LOG_SRC
         log/log_sink.cc
         log/sinks/android_log_sink.cc
         log/sinks/ansi_color_sink.cc
+        log/sinks/async_sink.cc
         log/sinks/daily_file_sink.cc
         log/sinks/hourly_file_sink.cc
         log/sinks/internal/append_file.cc
@@ -214,6 +214,10 @@ set(CCTZ_SRC
         cctz/zone_info_source.cc
 )
 
+set(TYPES_SRC
+        types/source_location.cc
+)
+
 set(TURBO_SRC
         ${BASE_SRC}
         ${BITS_SRC}
@@ -229,6 +233,7 @@ set(TURBO_SRC
         ${STRINGS_SRC}
         ${TIME_SRC}
         ${CCTZ_SRC}
+        ${TYPES_SRC}
 )
 
 kmcmake_cc_library(

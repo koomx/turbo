@@ -53,6 +53,8 @@ namespace turbo {
         virtual void flush() {
         }
 
+        virtual bool is_async() const { return false; }
+
     protected:
         LogSink() = default;
 

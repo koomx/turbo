@@ -39,4 +39,16 @@ kmcmake_cc_benchmark(
         ${KMCMAKE_DEPS_LINK}
 )
 
-add_subdirectory(internal)
+kmcmake_cc_benchmark(
+        MODULE log
+        NAME daily_file_sink_benchmark
+        SOURCES
+        daily_file_sink_benchmark.cc
+        CXXOPTS
+        ${KMCMAKE_CXX_OPTIONS}
+        LINKS
+        benchmark::benchmark
+        turbo::turbo_static
+        ${KMCMAKE_DEPS_LINK}
+)
+

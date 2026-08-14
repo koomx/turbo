@@ -20,6 +20,7 @@ set(LOG_SINKS_TESTS
         daily_file_sink_test
         hourly_file_sink_test
         rotating_file_sink_test
+        async_file_sink_test
         sink_factory_test
         auto_log_sink_test
 )

@@ -22,44 +22,52 @@ namespace turbo {
     RotatingFileSink::RotatingFileSink(std::string_view base_filename,
                                        size_t max_size_bytes, size_t max_files,
                                        int check_interval_s)
-        : _active_path(base_filename),
+        : AsyncSink(check_interval_s),
+          _active_path(base_filename),
           _base(base_filename),
           _max_size(max_size_bytes),
           _max_files(max_files),
-          _check_interval_s(check_interval_s),
-          _next_check(turbo::Now() + turbo::Seconds(check_interval_s)),
           _file(std::make_unique<log_internal::AppendFile>()) {
         _file->initialize(_active_path);
     }
 
     RotatingFileSink::~RotatingFileSink() {
+        stop();
         if (_file) {
             _file->close();
         }
     }
 
-    void RotatingFileSink::send(const turbo::LogEntry &entry) {
-        // Called under LogSinkSet mutex — no sink-level lock.
-        maybe_rotate(entry.timestamp());
+    void RotatingFileSink::emit(std::string_view text, turbo::Time) {
+        maybe_rotate();
         if (!_file) {
             return;
         }
-        _file->write(entry.text_message_with_prefix_and_newline());
+        _file->write(text);
     }
 
-    void RotatingFileSink::flush() {
+    void RotatingFileSink::emit_flush() {
         if (_file) {
             _file->flush();
         }
     }
 
-    void RotatingFileSink::maybe_rotate(turbo::Time now) {
+    bool RotatingFileSink::need_rewind(size_t addition_size, turbo::Time) {
+        if (!_file || _max_size == 0) {
+            return false;
+        }
+        return _file->file_size() + addition_size >= _max_size;
+    }
+
+    void RotatingFileSink::reopen() {
+        if (_file) {
+            _file->reopen();
+        }
+    }
+
+    void RotatingFileSink::maybe_rotate() {
         if (!_file) {
             return;
-        }
-        if (now >= _next_check) {
-            _file->reopen();
-            _next_check = now + turbo::Seconds(_check_interval_s);
         }
         if (_max_size == 0 || _file->file_size() < _max_size) {
             return;
