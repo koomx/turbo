@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <random>
 #include <turbo/crc/internal/crc_memcpy.h>
 
 #include <cstddef>
@@ -25,8 +26,6 @@
 #include <gtest/gtest.h>
 #include <turbo/crc/crc32c.h>
 #include <turbo/memory/memory.h>
-#include <turbo/random/distributions.h>
-#include <turbo/random/random.h>
 #include <turbo/strings/str_cat.h>
 #include <string_view>
 
@@ -54,7 +53,7 @@ class CrcMemcpyTest : public testing::Test {
   std::unique_ptr<char[]> source_;
   std::unique_ptr<char[]> destination_;
 
-  turbo::BitGen gen_;
+  std::mt19937 gen_;
 };
 
 // Small test is slightly larger 4096 bytes to allow coverage of the "large"
@@ -105,20 +104,21 @@ TEST_P(EngineParamTest, SmallCorrectnessCheckSourceAlignment) {
       char* base_data = static_cast<char*>(source_.get()) + source_alignment;
       for (size_t i = 0; i < size; i++) {
         *(base_data + i) =
-            static_cast<char>(turbo::Uniform<unsigned char>(gen_));
+            static_cast<char>(
+                std::uniform_int_distribution<unsigned int>(0, 255)(gen_));
       }
-      SCOPED_TRACE(turbo::StrCat("engine=<", GetParam().vector_lanes, ",",
+      SCOPED_TRACE(turbo::str_cat("engine=<", GetParam().vector_lanes, ",",
                                 GetParam().integer_lanes, ">, ", "size=", size,
                                 ", source_alignment=", source_alignment));
       turbo::crc32c_t initial_crc =
-          turbo::crc32c_t{turbo::Uniform<uint32_t>(gen_)};
+          turbo::crc32c_t{std::uniform_int_distribution<uint32_t>()(gen_)};
       turbo::crc32c_t experiment_crc =
           engine_->Compute(destination_.get(), source_.get() + source_alignment,
                            size, initial_crc);
       // Check the memory region to make sure it is the same
       int mem_comparison =
           memcmp(destination_.get(), source_.get() + source_alignment, size);
-      SCOPED_TRACE(turbo::StrCat("Error in memcpy of size: ", size,
+      SCOPED_TRACE(turbo::str_cat("Error in memcpy of size: ", size,
                                 " with source alignment: ", source_alignment));
       ASSERT_EQ(mem_comparison, 0);
       turbo::crc32c_t baseline_crc = turbo::ExtendCrc32c(
@@ -139,20 +139,21 @@ TEST_P(EngineParamTest, SmallCorrectnessCheckDestAlignment) {
       char* base_data = static_cast<char*>(source_.get());
       for (size_t i = 0; i < size; i++) {
         *(base_data + i) =
-            static_cast<char>(turbo::Uniform<unsigned char>(gen_));
+            static_cast<char>(
+                std::uniform_int_distribution<unsigned int>(0, 255)(gen_));
       }
-      SCOPED_TRACE(turbo::StrCat("engine=<", GetParam().vector_lanes, ",",
+      SCOPED_TRACE(turbo::str_cat("engine=<", GetParam().vector_lanes, ",",
                                 GetParam().integer_lanes, ">, ", "size=", size,
                                 ", destination_alignment=", dest_alignment));
       turbo::crc32c_t initial_crc =
-          turbo::crc32c_t{turbo::Uniform<uint32_t>(gen_)};
+          turbo::crc32c_t{std::uniform_int_distribution<uint32_t>()(gen_)};
       turbo::crc32c_t experiment_crc =
           engine_->Compute(destination_.get() + dest_alignment, source_.get(),
                            size, initial_crc);
       // Check the memory region to make sure it is the same
       int mem_comparison =
           memcmp(destination_.get() + dest_alignment, source_.get(), size);
-      SCOPED_TRACE(turbo::StrCat("Error in memcpy of size: ", size,
+      SCOPED_TRACE(turbo::str_cat("Error in memcpy of size: ", size,
                                 " with dest alignment: ", dest_alignment));
       ASSERT_EQ(mem_comparison, 0);
       turbo::crc32c_t baseline_crc = turbo::ExtendCrc32c(

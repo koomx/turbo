@@ -193,7 +193,7 @@ namespace turbo {
             turbo::Span<char> &encoded_remaining() {
                 if (encoded_remaining_actual_do_not_use_directly.data() == nullptr) {
                     encoded_remaining_actual_do_not_use_directly =
-                            turbo::MakeSpan(encoded_buf);
+                            turbo::make_span(encoded_buf);
                     initialize_encoding_and_format();
                 }
                 return encoded_remaining_actual_do_not_use_directly;
@@ -279,7 +279,7 @@ namespace turbo {
             string_buf[chars_written++] = '\n';
             string_buf[chars_written++] = '\0';
             entry.text_message_with_prefix_and_newline_and_nul_ =
-                    turbo::MakeSpan(string_buf).subspan(0, chars_written);
+                    turbo::make_span(string_buf).subspan(0, chars_written);
         }
 
         LogMessage::LogMessage(const char * turbo_nonnull file, int line,
@@ -588,7 +588,7 @@ namespace turbo {
 
             if (!data_->fail_quietly) {
                 // Log the message first before we start collecting stack trace.
-                log_internal::log_to_sinks(data_->entry, turbo::MakeSpan(data_->extra_sinks),
+                log_internal::log_to_sinks(data_->entry, turbo::make_span(data_->extra_sinks),
                                          data_->extra_sinks_only);
 
                 // `DumpStackTrace` generates an empty string under MSVC.
@@ -614,7 +614,7 @@ namespace turbo {
         void LogMessage::send_to_log() {
             if (is_fatal()) prepare_to_die();
             // Also log to all registered sinks, even if only_log_to_stderr() is set.
-            log_internal::log_to_sinks(data_->entry, turbo::MakeSpan(data_->extra_sinks),
+            log_internal::log_to_sinks(data_->entry, turbo::make_span(data_->extra_sinks),
                                      data_->extra_sinks_only);
             if (is_fatal()) die();
         }

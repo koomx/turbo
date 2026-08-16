@@ -29,3 +29,12 @@
 # list(APPEND KMCMAKE_CXX_OPTIONS "-fopenmp")
 # ------------------------------------------------------------------------------
 
+# C++ standard must be set before CPMAddPackage so fetched deps inherit it.
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Default ON via CMakePresets "base"; CI preset sets OFF and uses vcpkg.
+# Do not FORCE so -D / preset can override.
+if (NOT DEFINED CACHE{KMCMAKE_USE_CPM})
+    set(KMCMAKE_USE_CPM ON CACHE BOOL "fetch dependencies via CPM.cmake")
+endif ()

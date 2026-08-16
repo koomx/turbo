@@ -20,32 +20,32 @@
 
 namespace turbo {
 
-namespace strings_internal {
+    namespace strings_internal {
 
-namespace {
+        namespace {
 
-// Table containing some large powers of 5, for fast computation.
+            // Table containing some large powers of 5, for fast computation.
 
-// Constant step size for entries in the kLargePowersOfFive table.  Each entry
-// is larger than the previous entry by a factor of 5**kLargePowerOfFiveStep
-// (or 5**27).
-//
-// In other words, the Nth entry in the table is 5**(27*N).
-//
-// 5**27 is the largest power of 5 that fits in 64 bits.
-constexpr int kLargePowerOfFiveStep = 27;
+            // Constant step size for entries in the kLargePowersOfFive table.  Each entry
+            // is larger than the previous entry by a factor of 5**kLargePowerOfFiveStep
+            // (or 5**27).
+            //
+            // In other words, the Nth entry in the table is 5**(27*N).
+            //
+            // 5**27 is the largest power of 5 that fits in 64 bits.
+            constexpr int kLargePowerOfFiveStep = 27;
 
-// The largest legal index into the kLargePowersOfFive table.
-//
-// In other words, the largest precomputed power of 5 is 5**(27*20).
-constexpr int kLargestPowerOfFiveIndex = 20;
+            // The largest legal index into the kLargePowersOfFive table.
+            //
+            // In other words, the largest precomputed power of 5 is 5**(27*20).
+            constexpr int kLargestPowerOfFiveIndex = 20;
 
-// Table of powers of (5**27), up to (5**27)**20 == 5**540.
-//
-// Used to generate large powers of 5 while limiting the number of repeated
-// multiplications required.
-//
-// clang-format off
+            // Table of powers of (5**27), up to (5**27)**20 == 5**540.
+            //
+            // Used to generate large powers of 5 while limiting the number of repeated
+            // multiplications required.
+            //
+            // clang-format off
 const uint32_t kLargePowersOfFive[] = {
 // 5**27 (i=1), start=0, end=2
   0xfa10079dU, 0x6765c793U,
@@ -145,213 +145,233 @@ const uint32_t kLargePowersOfFive[] = {
   0x96242ffaU, 0x1775fb27U, 0xbecc58ceU, 0xebf2a53bU, 0x3eaad82aU, 0xf41137baU,
   0x573e6fbaU, 0xfb4866b8U, 0x54002148U, 0x00000039U,
 };
-// clang-format on
+            // clang-format on
 
-// Returns a pointer to the big integer data for (5**27)**i.  i must be
-// between 1 and 20, inclusive.
-const uint32_t* LargePowerOfFiveData(int i) {
-  return kLargePowersOfFive + i * (i - 1);
-}
+            // Returns a pointer to the big integer data for (5**27)**i.  i must be
+            // between 1 and 20, inclusive.
+            const uint32_t* LargePowerOfFiveData(int i) {
+                return kLargePowersOfFive + i * (i - 1);
+            }
 
-// Returns the size of the big integer data for (5**27)**i, in words.  i must be
-// between 1 and 20, inclusive.
-int LargePowerOfFiveSize(int i) { return 2 * i; }
-}  // namespace
+            // Returns the size of the big integer data for (5**27)**i, in words.  i must be
+            // between 1 and 20, inclusive.
+            int LargePowerOfFiveSize(int i) {
+                return 2 * i;
+            }
+        } // namespace
 
-KUMO_DLL const uint32_t kFiveToNth[14] = {
-    1,     5,      25,      125,     625,      3125,      15625,
-    78125, 390625, 1953125, 9765625, 48828125, 244140625, 1220703125,
-};
+        KUMO_DLL const uint32_t kFiveToNth[14] = {
+            1,
+            5,
+            25,
+            125,
+            625,
+            3125,
+            15625,
+            78125,
+            390625,
+            1953125,
+            9765625,
+            48828125,
+            244140625,
+            1220703125,
+        };
 
-KUMO_DLL const uint32_t kTenToNth[10] = {
-    1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000,
-};
+        KUMO_DLL const uint32_t kTenToNth[10] = {
+            1,
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000,
+            10000000,
+            100000000,
+            1000000000,
+        };
 
-template <int max_words>
-int BigUnsigned<max_words>::ReadFloatMantissa(const ParsedFloat& fp,
-                                              int significant_digits) {
-  SetToZero();
-  assert(fp.type == FloatType::kNumber);
+        template <int max_words>
+        int BigUnsigned<max_words>::ReadFloatMantissa(const ParsedFloat& fp,
+            int significant_digits) {
+            SetToZero();
+            assert(fp.type == FloatType::kNumber);
 
-  if (fp.subrange_begin == nullptr) {
-    // We already exactly parsed the mantissa, so no more work is necessary.
-    words_[0] = fp.mantissa & 0xffffffffu;
-    words_[1] = fp.mantissa >> 32;
-    if (words_[1]) {
-      size_ = 2;
-    } else if (words_[0]) {
-      size_ = 1;
-    }
-    return fp.exponent;
-  }
-  int exponent_adjust =
-      ReadDigits(fp.subrange_begin, fp.subrange_end, significant_digits);
-  return fp.literal_exponent + exponent_adjust;
-}
+            if (fp.subrange_begin == nullptr) {
+                // We already exactly parsed the mantissa, so no more work is necessary.
+                words_[0] = fp.mantissa & 0xffffffffu;
+                words_[1] = fp.mantissa >> 32;
+                if (words_[1]) {
+                    size_ = 2;
+                } else if (words_[0]) {
+                    size_ = 1;
+                }
+                return fp.exponent;
+            }
+            int exponent_adjust = ReadDigits(fp.subrange_begin, fp.subrange_end, significant_digits);
+            return fp.literal_exponent + exponent_adjust;
+        }
 
-template <int max_words>
-int BigUnsigned<max_words>::ReadDigits(const char* begin, const char* end,
-                                       int significant_digits) {
-  assert(significant_digits <= Digits10() + 1);
-  SetToZero();
+        template <int max_words>
+        int BigUnsigned<max_words>::ReadDigits(const char* begin, const char* end,
+            int significant_digits) {
+            assert(significant_digits <= Digits10() + 1);
+            SetToZero();
 
-  bool after_decimal_point = false;
-  // Discard any leading zeroes before the decimal point
-  while (begin < end && *begin == '0') {
-    ++begin;
-  }
-  int dropped_digits = 0;
-  // Discard any trailing zeroes.  These may or may not be after the decimal
-  // point.
-  while (begin < end && *std::prev(end) == '0') {
-    --end;
-    ++dropped_digits;
-  }
-  if (begin < end && *std::prev(end) == '.') {
-    // If the string ends in '.', either before or after dropping zeroes, then
-    // drop the decimal point and look for more digits to drop.
-    dropped_digits = 0;
-    --end;
-    while (begin < end && *std::prev(end) == '0') {
-      --end;
-      ++dropped_digits;
-    }
-  } else if (dropped_digits) {
-    // We dropped digits, and aren't sure if they're before or after the decimal
-    // point.  Figure that out now.
-    const char* dp = std::find(begin, end, '.');
-    if (dp != end) {
-      // The dropped trailing digits were after the decimal point, so don't
-      // count them.
-      dropped_digits = 0;
-    }
-  }
-  // Any non-fraction digits we dropped need to be accounted for in our exponent
-  // adjustment.
-  int exponent_adjust = dropped_digits;
+            bool after_decimal_point = false;
+            // Discard any leading zeroes before the decimal point
+            while (begin < end && *begin == '0') {
+                ++begin;
+            }
+            int dropped_digits = 0;
+            // Discard any trailing zeroes.  These may or may not be after the decimal
+            // point.
+            while (begin < end && *std::prev(end) == '0') {
+                --end;
+                ++dropped_digits;
+            }
+            if (begin < end && *std::prev(end) == '.') {
+                // If the string ends in '.', either before or after dropping zeroes, then
+                // drop the decimal point and look for more digits to drop.
+                dropped_digits = 0;
+                --end;
+                while (begin < end && *std::prev(end) == '0') {
+                    --end;
+                    ++dropped_digits;
+                }
+            } else if (dropped_digits) {
+                // We dropped digits, and aren't sure if they're before or after the decimal
+                // point.  Figure that out now.
+                const char* dp = std::find(begin, end, '.');
+                if (dp != end) {
+                    // The dropped trailing digits were after the decimal point, so don't
+                    // count them.
+                    dropped_digits = 0;
+                }
+            }
+            // Any non-fraction digits we dropped need to be accounted for in our exponent
+            // adjustment.
+            int exponent_adjust = dropped_digits;
 
-  uint32_t queued = 0;
-  int digits_queued = 0;
-  for (; begin != end && significant_digits > 0; ++begin) {
-    if (*begin == '.') {
-      after_decimal_point = true;
-      continue;
-    }
-    if (after_decimal_point) {
-      // For each fractional digit we emit in our parsed integer, adjust our
-      // decimal exponent to compensate.
-      --exponent_adjust;
-    }
-    char digit = (*begin - '0');
-    --significant_digits;
-    if (significant_digits == 0 && std::next(begin) != end &&
-        (digit == 0 || digit == 5)) {
-      // If this is the very last significant digit, but insignificant digits
-      // remain, we know that the last of those remaining significant digits is
-      // nonzero.  (If it wasn't, we would have stripped it before we got here.)
-      // So if this final digit is a 0 or 5, adjust it upward by 1.
-      //
-      // This adjustment is what allows incredibly large mantissas ending in
-      // 500000...000000000001 to correctly round up, rather than to nearest.
-      ++digit;
-    }
-    queued = 10 * queued + static_cast<uint32_t>(digit);
-    ++digits_queued;
-    if (digits_queued == kMaxSmallPowerOfTen) {
-      MultiplyBy(kTenToNth[kMaxSmallPowerOfTen]);
-      AddWithCarry(0, queued);
-      queued = digits_queued = 0;
-    }
-  }
-  // Encode any remaining digits.
-  if (digits_queued) {
-    MultiplyBy(kTenToNth[digits_queued]);
-    AddWithCarry(0, queued);
-  }
+            uint32_t queued = 0;
+            int digits_queued = 0;
+            for (; begin != end && significant_digits > 0; ++begin) {
+                if (*begin == '.') {
+                    after_decimal_point = true;
+                    continue;
+                }
+                if (after_decimal_point) {
+                    // For each fractional digit we emit in our parsed integer, adjust our
+                    // decimal exponent to compensate.
+                    --exponent_adjust;
+                }
+                char digit = (*begin - '0');
+                --significant_digits;
+                if (significant_digits == 0 && std::next(begin) != end && (digit == 0 || digit == 5)) {
+                    // If this is the very last significant digit, but insignificant digits
+                    // remain, we know that the last of those remaining significant digits is
+                    // nonzero.  (If it wasn't, we would have stripped it before we got here.)
+                    // So if this final digit is a 0 or 5, adjust it upward by 1.
+                    //
+                    // This adjustment is what allows incredibly large mantissas ending in
+                    // 500000...000000000001 to correctly round up, rather than to nearest.
+                    ++digit;
+                }
+                queued = 10 * queued + static_cast<uint32_t>(digit);
+                ++digits_queued;
+                if (digits_queued == kMaxSmallPowerOfTen) {
+                    MultiplyBy(kTenToNth[kMaxSmallPowerOfTen]);
+                    AddWithCarry(0, queued);
+                    queued = digits_queued = 0;
+                }
+            }
+            // Encode any remaining digits.
+            if (digits_queued) {
+                MultiplyBy(kTenToNth[digits_queued]);
+                AddWithCarry(0, queued);
+            }
 
-  // If any insignificant digits remain, we will drop them.  But if we have not
-  // yet read the decimal point, then we have to adjust the exponent to account
-  // for the dropped digits.
-  if (begin < end && !after_decimal_point) {
-    // This call to std::find will result in a pointer either to the decimal
-    // point, or to the end of our buffer if there was none.
-    //
-    // Either way, [begin, decimal_point) will contain the set of dropped digits
-    // that require an exponent adjustment.
-    const char* decimal_point = std::find(begin, end, '.');
-    exponent_adjust += static_cast<int>(decimal_point - begin);
-  }
-  return exponent_adjust;
-}
+            // If any insignificant digits remain, we will drop them.  But if we have not
+            // yet read the decimal point, then we have to adjust the exponent to account
+            // for the dropped digits.
+            if (begin < end && !after_decimal_point) {
+                // This call to std::find will result in a pointer either to the decimal
+                // point, or to the end of our buffer if there was none.
+                //
+                // Either way, [begin, decimal_point) will contain the set of dropped digits
+                // that require an exponent adjustment.
+                const char* decimal_point = std::find(begin, end, '.');
+                exponent_adjust += static_cast<int>(decimal_point - begin);
+            }
+            return exponent_adjust;
+        }
 
-template <int max_words>
-/* static */ BigUnsigned<max_words> BigUnsigned<max_words>::FiveToTheNth(
-    int n) {
-  BigUnsigned answer(1u);
+        template <int max_words>
+        /* static */ BigUnsigned<max_words> BigUnsigned<max_words>::FiveToTheNth(
+            int n) {
+            BigUnsigned answer(1u);
 
-  // Seed from the table of large powers, if possible.
-  bool first_pass = true;
-  while (n >= kLargePowerOfFiveStep) {
-    int big_power =
-        std::min(n / kLargePowerOfFiveStep, kLargestPowerOfFiveIndex);
-    if (first_pass) {
-      // just copy, rather than multiplying by 1
-      std::copy_n(LargePowerOfFiveData(big_power),
-                  LargePowerOfFiveSize(big_power), answer.words_);
-      answer.size_ = LargePowerOfFiveSize(big_power);
-      first_pass = false;
-    } else {
-      answer.MultiplyBy(LargePowerOfFiveSize(big_power),
+            // Seed from the table of large powers, if possible.
+            bool first_pass = true;
+            while (n >= kLargePowerOfFiveStep) {
+                int big_power = std::min(n / kLargePowerOfFiveStep, kLargestPowerOfFiveIndex);
+                if (first_pass) {
+                    // just copy, rather than multiplying by 1
+                    std::copy_n(LargePowerOfFiveData(big_power),
+                        LargePowerOfFiveSize(big_power), answer.words_);
+                    answer.size_ = LargePowerOfFiveSize(big_power);
+                    first_pass = false;
+                } else {
+                    answer.MultiplyBy(LargePowerOfFiveSize(big_power),
                         LargePowerOfFiveData(big_power));
-    }
-    n -= kLargePowerOfFiveStep * big_power;
-  }
-  answer.MultiplyByFiveToTheNth(n);
-  return answer;
-}
+                }
+                n -= kLargePowerOfFiveStep * big_power;
+            }
+            answer.MultiplyByFiveToTheNth(n);
+            return answer;
+        }
 
-template <int max_words>
-void BigUnsigned<max_words>::MultiplyStep(int original_size,
-                                          const uint32_t* other_words,
-                                          int other_size, int step) {
-  int this_i = std::min(original_size - 1, step);
-  int other_i = step - this_i;
+        template <int max_words>
+        void BigUnsigned<max_words>::MultiplyStep(int original_size,
+            const uint32_t* other_words,
+            int other_size, int step) {
+            int this_i = std::min(original_size - 1, step);
+            int other_i = step - this_i;
 
-  uint64_t this_word = 0;
-  uint64_t carry = 0;
-  for (; this_i >= 0 && other_i < other_size; --this_i, ++other_i) {
-    uint64_t product = words_[this_i];
-    product *= other_words[other_i];
-    this_word += product;
-    carry += (this_word >> 32);
-    this_word &= 0xffffffff;
-  }
-  AddWithCarry(step + 1, carry);
-  words_[step] = this_word & 0xffffffff;
-  if (this_word > 0 && size_ <= step) {
-    size_ = step + 1;
-  }
-}
+            uint64_t this_word = 0;
+            uint64_t carry = 0;
+            for (; this_i >= 0 && other_i < other_size; --this_i, ++other_i) {
+                uint64_t product = words_[this_i];
+                product *= other_words[other_i];
+                this_word += product;
+                carry += (this_word >> 32);
+                this_word &= 0xffffffff;
+            }
+            AddWithCarry(step + 1, carry);
+            words_[step] = this_word & 0xffffffff;
+            if (this_word > 0 && size_ <= step) {
+                size_ = step + 1;
+            }
+        }
 
-template <int max_words>
-std::string BigUnsigned<max_words>::ToString() const {
-  BigUnsigned<max_words> copy = *this;
-  std::string result;
-  // Build result in reverse order
-  while (copy.size() > 0) {
-    uint32_t next_digit = copy.DivMod<10>();
-    result.push_back('0' + static_cast<char>(next_digit));
-  }
-  if (result.empty()) {
-    result.push_back('0');
-  }
-  std::reverse(result.begin(), result.end());
-  return result;
-}
+        template <int max_words>
+        std::string BigUnsigned<max_words>::ToString() const {
+            BigUnsigned<max_words> copy = *this;
+            std::string result;
+            // Build result in reverse order
+            while (copy.size() > 0) {
+                uint32_t next_digit = copy.DivMod<10>();
+                result.push_back('0' + static_cast<char>(next_digit));
+            }
+            if (result.empty()) {
+                result.push_back('0');
+            }
+            std::reverse(result.begin(), result.end());
+            return result;
+        }
 
-template class BigUnsigned<4>;
-template class BigUnsigned<84>;
+        template class BigUnsigned<4>;
+        template class BigUnsigned<84>;
 
-}  // namespace strings_internal
+    } // namespace strings_internal
 
-}  // namespace turbo
+} // namespace turbo

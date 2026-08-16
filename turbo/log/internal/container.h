@@ -78,7 +78,7 @@ namespace turbo {
                         })) {
                         out << element;
                     } else {
-                        out << turbo::StrCat(element);
+                        out << turbo::str_cat(element);
                     }
                 }
 

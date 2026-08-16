@@ -863,10 +863,10 @@ bool ConsumeDurationUnit(const char** start, const char* end, Duration* unit) {
 //   Valid time units are "ns", "us" "ms", "s", "m", "h".
 bool ParseDuration(std::string_view dur_sv, Duration* d) {
   int sign = 1;
-  if (turbo::ConsumePrefix(&dur_sv, "-")) {
+  if (turbo::consume_prefix(&dur_sv, "-")) {
     sign = -1;
   } else {
-    turbo::ConsumePrefix(&dur_sv, "+");
+    turbo::consume_prefix(&dur_sv, "+");
   }
   if (dur_sv.empty()) return false;
 
@@ -902,11 +902,11 @@ bool ParseDuration(std::string_view dur_sv, Duration* d) {
   return true;
 }
 
-bool TurboParseFlag(std::string_view text, Duration* dst, std::string*) {
+bool turbo_parse_flag(std::string_view text, Duration* dst, std::string*) {
   return ParseDuration(text, dst);
 }
 
-std::string TurboUnparseFlag(Duration d) { return FormatDuration(d); }
+std::string turbo_unparse_flag(Duration d) { return FormatDuration(d); }
 bool ParseFlag(const std::string& text, Duration* dst, std::string* ) {
   return ParseDuration(text, dst);
 }

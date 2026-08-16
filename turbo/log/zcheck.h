@@ -393,7 +393,7 @@
   TURBO_LOG_INTERNAL_DZCHECK_GT_IMPL((val1), #val1, (val2), #val2, __VA_ARGS__)
 
 // `ZCHECK_OK` and friends validate that the provided `turbo::Status` or
-// `turbo::StatusOr<T>` is OK.  If it isn't, they print a failure message that
+// `turbo::Result<T>` is OK.  If it isn't, they print a failure message that
 // includes the actual status (plus the printf-formatted message) and terminate
 // the program.
 //

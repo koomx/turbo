@@ -165,19 +165,18 @@ static const AbbrevPair kSubstitutionList[] = {
 // State needed for demangling.  This struct is copied in almost every stack
 // frame, so every byte counts.
 typedef struct {
-  int mangled_idx;                     // Cursor of mangled name.
-  int out_cur_idx;                     // Cursor of output string.
-  int prev_name_idx;                   // For constructors/destructors.
-  unsigned int prev_name_length : 16;  // For constructors/destructors.
-  signed int nest_level : 15;          // For nested names.
-  unsigned int append : 1;             // Append flag.
-  // Note: for some reason MSVC can't pack "bool append : 1" into the same int
-  // with the above two fields, so we use an int instead.  Amusingly it can pack
-  // "signed bool" as expected, but relying on that to continue to be a legal
-  // type seems ill-advised (as it's illegal in at least clang).
+  int mangled_idx;        // Cursor of mangled name.
+  int out_cur_idx;        // Cursor of output string.
+  int prev_name_idx;      // For constructors/destructors.
+  int prev_name_length;   // For constructors/destructors.
+  // nest_level / append were bitfields; MSVC packs/sign-extends them in ways
+  // that break MaybeAppendSeparator ("::" missing → "nsY<>" instead of
+  // "ns::Y<>"). Plain ints keep the same semantics and remain cheap to copy.
+  int nest_level;  // For nested names. -1 = not in a nested name.
+  int append;      // Append flag (0/1).
 } ParseState;
 
-static_assert(sizeof(ParseState) == 4 * sizeof(int),
+static_assert(sizeof(ParseState) == 6 * sizeof(int),
               "unexpected size of ParseState");
 
 // One-off state for demangling that's not subject to backtracking -- either
@@ -498,7 +497,7 @@ static bool IsAlpha(char c) {
 
 static bool IsDigit(char c) { return c >= '0' && c <= '9'; }
 
-static bool EndsWith(State *state, const char chr) {
+static bool ends_with(State *state, const char chr) {
   return state->parse_state.out_cur_idx > 0 &&
          state->parse_state.out_cur_idx < state->out_end_idx &&
          chr == state->out[state->parse_state.out_cur_idx - 1];
@@ -510,7 +509,7 @@ static void MaybeAppendWithLength(State *state, const char *const str,
   if (state->parse_state.append && length > 0) {
     // Append a space if the output buffer ends with '<' and "str"
     // starts with '<' to avoid <<<.
-    if (str[0] == '<' && EndsWith(state, '<')) {
+    if (str[0] == '<' && ends_with(state, '<')) {
       Append(state, " ", 1);
     }
     // Remember the last identifier name for ctors/dtors,

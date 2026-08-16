@@ -84,7 +84,7 @@ namespace turbo {
     bool StatusBuilder::HasPayload() const {
         static constexpr std::string_view kMessageSetUrl =
                 "type.googleapis.com/util.MessageSetPayload";
-        return rep_ != nullptr && rep_->status.GetPayload(kMessageSetUrl).has_value();
+        return rep_ != nullptr && rep_->status.get_payload(kMessageSetUrl).has_value();
     }
 
     KUMO_ATTRIBUTE_WEAK StatusBuilder &StatusBuilder::SetCode(
@@ -94,9 +94,9 @@ namespace turbo {
                 turbo::Status(code, std::string_view(), turbo::SourceLocation()));
         } else {
             turbo::Status status(code, std::string_view(), turbo::SourceLocation());
-            rep_->status.ForEachPayload(
+            rep_->status.for_each_payload(
                 [&status](std::string_view type_url, const std::string &payload) {
-                    status.SetPayload(type_url, payload);
+                    status.set_payload(type_url, payload);
                 });
             rep_->status = std::move(status);
         }
@@ -119,16 +119,16 @@ namespace turbo {
             }
 
             using StatusRep =
-                    std::remove_cv_t<std::remove_pointer_t<decltype(Status::RepToPointer(
+                    std::remove_cv_t<std::remove_pointer_t<decltype(Status::rep_to_pointer(
                         std::declval<uintptr_t>()))> >;
             StatusRep *rep;
-            if (Status::IsInlined(status.rep_)) {
-                rep = new StatusRep(Status::InlinedRepToCode(status.rep_), message,
+            if (Status::is_inlined(status.rep_)) {
+                rep = new StatusRep(Status::inlined_rep_to_code(status.rep_), message,
                                     nullptr);
             } else {
-                rep = Status::RepToPointer(status.rep_)->Clone(message, true, true);
+                rep = Status::rep_to_pointer(status.rep_)->Clone(message, true, true);
             }
-            return turbo::Status(Status::PointerToRep(rep));
+            return turbo::Status(Status::pointer_to_rep(rep));
         }
 
         static turbo::Status JoinMessageToStatus(turbo::Status s, std::string_view msg,
@@ -139,17 +139,17 @@ namespace turbo {
                 case MessageJoinStyle::kAnnotate: {
                     std::string annotated;
                     if (!original_message.empty()) {
-                        turbo::StrAppend(&annotated, original_message, "; ", msg);
+                        turbo::str_append(&annotated, original_message, "; ", msg);
                         msg = annotated;
                     }
                     return SetMessage(s, msg);
                 }
                 case MessageJoinStyle::kPrepend:
-                    return SetMessage(s, turbo::StrCat(msg, original_message));
+                    return SetMessage(s, turbo::str_cat(msg, original_message));
                 case MessageJoinStyle::kAppend:
-                    return SetMessage(s, turbo::StrCat(original_message, msg));
+                    return SetMessage(s, turbo::str_cat(original_message, msg));
                 default:
-                    return turbo::InternalError("Unknown MessageJoinStyle");
+                    return turbo::internal_error("Unknown MessageJoinStyle");
             }
         }
     };
@@ -160,24 +160,24 @@ namespace turbo {
 
     KUMO_ATTRIBUTE_WEAK turbo::Status StatusBuilder::CreateStatusAndConditionallyLog(
         turbo::SourceLocation loc, std::unique_ptr<Rep> rep) {
-        if (rep == nullptr) return turbo::OkStatus();
+        if (rep == nullptr) return turbo::ok_status();
         turbo::Status result = status_internal::StatusPrivateAccessorForStatusBuilder::
                 JoinMessageToStatus(std::move(rep->status), rep->stream_message,
                                     rep->message_join_style);
         // Passing in the `loc` last to ensure the sequence of the source locations.
-        result.AddSourceLocation(loc);
+        result.add_source_location(loc);
         return result;
     }
 
     KUMO_ATTRIBUTE_WEAK std::string StatusBuilder::ToString() const {
         if (rep_ == nullptr) {
-            return turbo::OkStatus().ToString();
+            return turbo::ok_status().ToString();
         }
 
         return status_internal::StatusPrivateAccessorForStatusBuilder::
                 JoinMessageToStatus(rep_->status, rep_->stream_message,
                                     rep_->message_join_style)
-                .WithSourceLocation(loc_)
+                .with_source_location(loc_)
                 .ToString();
     }
 

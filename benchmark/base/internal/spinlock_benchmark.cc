@@ -12,26 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// See also //turbo/synchronization:mutex_benchmark for a comparison of SpinLock
-// and Mutex performance under varying levels of contention.
-
-#include <turbo/base/internal/raw_logging.h>
 #include <turbo/base/internal/scheduling_mode.h>
 #include <turbo/base/internal/spinlock.h>
 #include <turbo/base/no_destructor.h>
-#include <turbo/synchronization/internal/create_thread_identity.h>
 #include "benchmark/benchmark.h"
 
 namespace {
 
 template <turbo::base_internal::SchedulingMode scheduling_mode>
 static void BM_TryLock(benchmark::State& state) {
-  // Ensure a ThreadIdentity is installed so that KERNEL_ONLY has an effect.
-  TURBO_INTERNAL_CHECK(
-      turbo::synchronization_internal::GetOrCreateCurrentThreadIdentity() !=
-          nullptr,
-      "GetOrCreateCurrentThreadIdentity() failed");
-
   static turbo::NoDestructor<turbo::base_internal::SpinLock> spinlock(
       scheduling_mode);
   for (auto _ : state) {
@@ -41,12 +30,6 @@ static void BM_TryLock(benchmark::State& state) {
 
 template <turbo::base_internal::SchedulingMode scheduling_mode>
 static void BM_SpinLock(benchmark::State& state) {
-  // Ensure a ThreadIdentity is installed so that KERNEL_ONLY has an effect.
-  TURBO_INTERNAL_CHECK(
-      turbo::synchronization_internal::GetOrCreateCurrentThreadIdentity() !=
-          nullptr,
-      "GetOrCreateCurrentThreadIdentity() failed");
-
   static turbo::NoDestructor<turbo::base_internal::SpinLock> spinlock(
       scheduling_mode);
   for (auto _ : state) {
@@ -60,8 +43,7 @@ BENCHMARK_TEMPLATE(BM_SpinLock,
     ->Threads(1)
     ->ThreadPerCpu();
 
-BENCHMARK_TEMPLATE(BM_SpinLock,
-                   turbo::base_internal::SCHEDULE_COOPERATIVE_AND_KERNEL)
+BENCHMARK_TEMPLATE(BM_SpinLock, turbo::base_internal::SCHEDULE_COOPERATIVE_AND_KERNEL)
     ->UseRealTime()
     ->Threads(1)
     ->ThreadPerCpu();
@@ -71,8 +53,7 @@ BENCHMARK_TEMPLATE(BM_TryLock, turbo::base_internal::SCHEDULE_KERNEL_ONLY)
     ->Threads(1)
     ->ThreadPerCpu();
 
-BENCHMARK_TEMPLATE(BM_TryLock,
-                   turbo::base_internal::SCHEDULE_COOPERATIVE_AND_KERNEL)
+BENCHMARK_TEMPLATE(BM_TryLock, turbo::base_internal::SCHEDULE_COOPERATIVE_AND_KERNEL)
     ->UseRealTime()
     ->Threads(1)
     ->ThreadPerCpu();

@@ -41,8 +41,8 @@ TEST(StatusCode, InsertionOperator) {
   const turbo::StatusCode code = turbo::StatusCode::kUnknown;
   std::ostringstream oss;
   oss << code;
-  EXPECT_EQ(oss.str(), turbo::StatusCodeToString(code));
-  EXPECT_EQ(oss.str(), turbo::StatusCodeToStringView(code));
+  EXPECT_EQ(oss.str(), turbo::status_code_to_string(code));
+  EXPECT_EQ(oss.str(), turbo::status_code_to_string_view(code));
 }
 
 // This structure holds the details for testing a single error code,
@@ -56,41 +56,41 @@ struct ErrorTest {
 };
 
 constexpr ErrorTest kErrorTests[]{
-    {turbo::StatusCode::kCancelled, turbo::CancelledError, turbo::IsCancelled},
-    {turbo::StatusCode::kUnknown, turbo::UnknownError, turbo::IsUnknown},
-    {turbo::StatusCode::kInvalidArgument, turbo::InvalidArgumentError,
-     turbo::IsInvalidArgument},
-    {turbo::StatusCode::kDeadlineExceeded, turbo::DeadlineExceededError,
-     turbo::IsDeadlineExceeded},
-    {turbo::StatusCode::kNotFound, turbo::NotFoundError, turbo::IsNotFound},
-    {turbo::StatusCode::kAlreadyExists, turbo::AlreadyExistsError,
-     turbo::IsAlreadyExists},
-    {turbo::StatusCode::kPermissionDenied, turbo::PermissionDeniedError,
-     turbo::IsPermissionDenied},
-    {turbo::StatusCode::kResourceExhausted, turbo::ResourceExhaustedError,
-     turbo::IsResourceExhausted},
-    {turbo::StatusCode::kFailedPrecondition, turbo::FailedPreconditionError,
-     turbo::IsFailedPrecondition},
-    {turbo::StatusCode::kAborted, turbo::AbortedError, turbo::IsAborted},
-    {turbo::StatusCode::kOutOfRange, turbo::OutOfRangeError, turbo::IsOutOfRange},
-    {turbo::StatusCode::kUnimplemented, turbo::UnimplementedError,
-     turbo::IsUnimplemented},
-    {turbo::StatusCode::kInternal, turbo::InternalError, turbo::IsInternal},
-    {turbo::StatusCode::kUnavailable, turbo::UnavailableError,
-     turbo::IsUnavailable},
-    {turbo::StatusCode::kDataLoss, turbo::DataLossError, turbo::IsDataLoss},
-    {turbo::StatusCode::kUnauthenticated, turbo::UnauthenticatedError,
-     turbo::IsUnauthenticated},
+    {turbo::StatusCode::kCancelled, turbo::cancelled_error, turbo::is_cancelled},
+    {turbo::StatusCode::kUnknown, turbo::unknown_error, turbo::is_unknown},
+    {turbo::StatusCode::kInvalidArgument, turbo::invalid_argument_error,
+     turbo::is_invalid_argument},
+    {turbo::StatusCode::kDeadlineExceeded, turbo::deadline_exceeded_error,
+     turbo::is_deadline_exceeded},
+    {turbo::StatusCode::kNotFound, turbo::not_found_error, turbo::is_not_found},
+    {turbo::StatusCode::kAlreadyExists, turbo::already_exists_error,
+     turbo::is_already_exists},
+    {turbo::StatusCode::kPermissionDenied, turbo::permission_denied_error,
+     turbo::is_permission_denied},
+    {turbo::StatusCode::kResourceExhausted, turbo::resource_exhausted_error,
+     turbo::is_resource_exhausted},
+    {turbo::StatusCode::kFailedPrecondition, turbo::failed_precondition_error,
+     turbo::is_failed_precondition},
+    {turbo::StatusCode::kAborted, turbo::aborted_error, turbo::is_aborted},
+    {turbo::StatusCode::kOutOfRange, turbo::outOf_range_error, turbo::is_out_of_range},
+    {turbo::StatusCode::kUnimplemented, turbo::unimplemented_error,
+     turbo::is_unimplemented},
+    {turbo::StatusCode::kInternal, turbo::internal_error, turbo::is_internal},
+    {turbo::StatusCode::kUnavailable, turbo::unavailable_error,
+     turbo::is_unavailable},
+    {turbo::StatusCode::kDataLoss, turbo::data_loss_error, turbo::is_data_loss},
+    {turbo::StatusCode::kUnauthenticated, turbo::unauthenticated_error,
+     turbo::is_unauthenticated},
 };
 
 TEST(Status, CreateAndClassify) {
   for (const auto& test : kErrorTests) {
-    SCOPED_TRACE(turbo::StatusCodeToString(test.code));
+    SCOPED_TRACE(turbo::status_code_to_string(test.code));
 
     // Ensure that the creator does, in fact, create status objects with the
     // expected error code and message.
     std::string message =
-        turbo::StrCat("error code ", test.code, " test message");
+        turbo::str_cat("error code ", test.code, " test message");
     turbo::Status status =
         test.creator(message, turbo::SourceLocation::current());
     EXPECT_EQ(test.code, status.code());
@@ -118,8 +118,8 @@ TEST(Status, DefaultConstructor) {
   EXPECT_EQ("", status.message());
 }
 
-TEST(Status, OkStatus) {
-  turbo::Status status = turbo::OkStatus();
+TEST(Status, ok_status) {
+  turbo::Status status = turbo::ok_status();
   EXPECT_TRUE(status.ok());
   EXPECT_EQ(turbo::StatusCode::kOk, status.code());
   EXPECT_EQ("", status.message());
@@ -142,24 +142,24 @@ TEST(Status, ConstructorWithCodeMessage) {
 
 TEST(Status, StatusMessageCStringTest) {
   {
-    turbo::Status status = turbo::OkStatus();
+    turbo::Status status = turbo::ok_status();
     EXPECT_EQ(status.message(), "");
-    EXPECT_STREQ(turbo::StatusMessageAsCStr(status), "");
-    EXPECT_EQ(status.message(), turbo::StatusMessageAsCStr(status));
-    EXPECT_NE(turbo::StatusMessageAsCStr(status), nullptr);
+    EXPECT_STREQ(turbo::status_message_as_cstr(status), "");
+    EXPECT_EQ(status.message(), turbo::status_message_as_cstr(status));
+    EXPECT_NE(turbo::status_message_as_cstr(status), nullptr);
   }
   {
     turbo::Status status;
     EXPECT_EQ(status.message(), "");
-    EXPECT_NE(turbo::StatusMessageAsCStr(status), nullptr);
-    EXPECT_STREQ(turbo::StatusMessageAsCStr(status), "");
+    EXPECT_NE(turbo::status_message_as_cstr(status), nullptr);
+    EXPECT_STREQ(turbo::status_message_as_cstr(status), "");
   }
   {
     turbo::Status status(turbo::StatusCode::kInternal, "message");
     EXPECT_FALSE(status.ok());
     EXPECT_EQ(turbo::StatusCode::kInternal, status.code());
     EXPECT_EQ("message", status.message());
-    EXPECT_STREQ("message", turbo::StatusMessageAsCStr(status));
+    EXPECT_STREQ("message", turbo::status_message_as_cstr(status));
   }
 }
 
@@ -182,79 +182,79 @@ constexpr char kPayload3[] = "ccccc";
 using PayloadsVec = std::vector<std::pair<std::string, std::string>>;
 
 TEST(Status, TestGetSetPayload) {
-  turbo::Status ok_status = turbo::OkStatus();
-  ok_status.SetPayload(kUrl1, std::string(kPayload1));
-  ok_status.SetPayload(kUrl2, std::string(kPayload2));
+  turbo::Status ok_status = turbo::ok_status();
+  ok_status.set_payload(kUrl1, std::string(kPayload1));
+  ok_status.set_payload(kUrl2, std::string(kPayload2));
 
-  EXPECT_FALSE(ok_status.GetPayload(kUrl1));
-  EXPECT_FALSE(ok_status.GetPayload(kUrl2));
+  EXPECT_FALSE(ok_status.get_payload(kUrl1));
+  EXPECT_FALSE(ok_status.get_payload(kUrl2));
 
   turbo::Status bad_status(turbo::StatusCode::kInternal, "fail");
-  bad_status.SetPayload(kUrl1, std::string(kPayload1));
-  bad_status.SetPayload(kUrl2, std::string(kPayload2));
+  bad_status.set_payload(kUrl1, std::string(kPayload1));
+  bad_status.set_payload(kUrl2, std::string(kPayload2));
 
-  EXPECT_THAT(bad_status.GetPayload(kUrl1), Optional(Eq(kPayload1)));
-  EXPECT_THAT(bad_status.GetPayload(kUrl2), Optional(Eq(kPayload2)));
+  EXPECT_THAT(bad_status.get_payload(kUrl1), Optional(Eq(kPayload1)));
+  EXPECT_THAT(bad_status.get_payload(kUrl2), Optional(Eq(kPayload2)));
 
-  EXPECT_FALSE(bad_status.GetPayload(kUrl3));
+  EXPECT_FALSE(bad_status.get_payload(kUrl3));
 
-  bad_status.SetPayload(kUrl1, std::string(kPayload3));
-  EXPECT_THAT(bad_status.GetPayload(kUrl1), Optional(Eq(kPayload3)));
+  bad_status.set_payload(kUrl1, std::string(kPayload3));
+  EXPECT_THAT(bad_status.get_payload(kUrl1), Optional(Eq(kPayload3)));
 
   // Testing dynamically generated type_url
-  bad_status.SetPayload(turbo::StrCat(kUrl1, ".1"), std::string(kPayload1));
-  EXPECT_THAT(bad_status.GetPayload(turbo::StrCat(kUrl1, ".1")),
+  bad_status.set_payload(turbo::str_cat(kUrl1, ".1"), std::string(kPayload1));
+  EXPECT_THAT(bad_status.get_payload(turbo::str_cat(kUrl1, ".1")),
               Optional(Eq(kPayload1)));
 }
 
 TEST(Status, TestErasePayload) {
   turbo::Status bad_status(turbo::StatusCode::kInternal, "fail");
-  bad_status.SetPayload(kUrl1, std::string(kPayload1));
-  bad_status.SetPayload(kUrl2, std::string(kPayload2));
-  bad_status.SetPayload(kUrl3, std::string(kPayload3));
+  bad_status.set_payload(kUrl1, std::string(kPayload1));
+  bad_status.set_payload(kUrl2, std::string(kPayload2));
+  bad_status.set_payload(kUrl3, std::string(kPayload3));
 
-  EXPECT_FALSE(bad_status.ErasePayload(kUrl4));
+  EXPECT_FALSE(bad_status.erase_payload(kUrl4));
 
-  EXPECT_TRUE(bad_status.GetPayload(kUrl2));
-  EXPECT_TRUE(bad_status.ErasePayload(kUrl2));
-  EXPECT_FALSE(bad_status.GetPayload(kUrl2));
-  EXPECT_FALSE(bad_status.ErasePayload(kUrl2));
+  EXPECT_TRUE(bad_status.get_payload(kUrl2));
+  EXPECT_TRUE(bad_status.erase_payload(kUrl2));
+  EXPECT_FALSE(bad_status.get_payload(kUrl2));
+  EXPECT_FALSE(bad_status.erase_payload(kUrl2));
 
-  EXPECT_TRUE(bad_status.ErasePayload(kUrl1));
-  EXPECT_TRUE(bad_status.ErasePayload(kUrl3));
+  EXPECT_TRUE(bad_status.erase_payload(kUrl1));
+  EXPECT_TRUE(bad_status.erase_payload(kUrl3));
 
-  bad_status.SetPayload(kUrl1, std::string(kPayload1));
-  EXPECT_TRUE(bad_status.ErasePayload(kUrl1));
+  bad_status.set_payload(kUrl1, std::string(kPayload1));
+  EXPECT_TRUE(bad_status.erase_payload(kUrl1));
 }
 
 TEST(Status, TestComparePayloads) {
   turbo::Status bad_status1(turbo::StatusCode::kInternal, "fail");
-  bad_status1.SetPayload(kUrl1, std::string(kPayload1));
-  bad_status1.SetPayload(kUrl2, std::string(kPayload2));
-  bad_status1.SetPayload(kUrl3, std::string(kPayload3));
+  bad_status1.set_payload(kUrl1, std::string(kPayload1));
+  bad_status1.set_payload(kUrl2, std::string(kPayload2));
+  bad_status1.set_payload(kUrl3, std::string(kPayload3));
 
   turbo::Status bad_status2(turbo::StatusCode::kInternal, "fail");
-  bad_status2.SetPayload(kUrl2, std::string(kPayload2));
-  bad_status2.SetPayload(kUrl3, std::string(kPayload3));
-  bad_status2.SetPayload(kUrl1, std::string(kPayload1));
+  bad_status2.set_payload(kUrl2, std::string(kPayload2));
+  bad_status2.set_payload(kUrl3, std::string(kPayload3));
+  bad_status2.set_payload(kUrl1, std::string(kPayload1));
 
   EXPECT_EQ(bad_status1, bad_status2);
 }
 
 TEST(Status, TestComparePayloadsAfterErase) {
   turbo::Status payload_status(turbo::StatusCode::kInternal, "");
-  payload_status.SetPayload(kUrl1, std::string(kPayload1));
-  payload_status.SetPayload(kUrl2, std::string(kPayload2));
+  payload_status.set_payload(kUrl1, std::string(kPayload1));
+  payload_status.set_payload(kUrl2, std::string(kPayload2));
 
   turbo::Status empty_status(turbo::StatusCode::kInternal, "");
 
   // Different payloads, not equal
   EXPECT_NE(payload_status, empty_status);
-  EXPECT_TRUE(payload_status.ErasePayload(kUrl1));
+  EXPECT_TRUE(payload_status.erase_payload(kUrl1));
 
   // Still Different payloads, still not equal.
   EXPECT_NE(payload_status, empty_status);
-  EXPECT_TRUE(payload_status.ErasePayload(kUrl2));
+  EXPECT_TRUE(payload_status.erase_payload(kUrl2));
 
   // Both empty payloads, should be equal
   EXPECT_EQ(payload_status, empty_status);
@@ -263,7 +263,7 @@ TEST(Status, TestComparePayloadsAfterErase) {
 PayloadsVec AllVisitedPayloads(const turbo::Status& s) {
   PayloadsVec result;
 
-  s.ForEachPayload([&](std::string_view type_url, const std::string& payload) {
+  s.for_each_payload([&](std::string_view type_url, const std::string& payload) {
     result.push_back(std::make_pair(std::string(type_url), payload));
   });
 
@@ -272,13 +272,13 @@ PayloadsVec AllVisitedPayloads(const turbo::Status& s) {
 
 TEST(Status, TestForEachPayload) {
   turbo::Status bad_status(turbo::StatusCode::kInternal, "fail");
-  bad_status.SetPayload(kUrl1, std::string(kPayload1));
-  bad_status.SetPayload(kUrl2, std::string(kPayload2));
-  bad_status.SetPayload(kUrl3, std::string(kPayload3));
+  bad_status.set_payload(kUrl1, std::string(kPayload1));
+  bad_status.set_payload(kUrl2, std::string(kPayload2));
+  bad_status.set_payload(kUrl3, std::string(kPayload3));
 
   int count = 0;
 
-  bad_status.ForEachPayload(
+  bad_status.for_each_payload(
       [&count](std::string_view, const std::string&) { ++count; });
 
   EXPECT_EQ(count, 3);
@@ -296,9 +296,9 @@ TEST(Status, TestForEachPayload) {
   while (true) {
     scratch.emplace_back(turbo::StatusCode::kInternal, "fail");
 
-    scratch.back().SetPayload(kUrl1, std::string(kPayload1));
-    scratch.back().SetPayload(kUrl2, std::string(kPayload2));
-    scratch.back().SetPayload(kUrl3, std::string(kPayload3));
+    scratch.back().set_payload(kUrl1, std::string(kPayload1));
+    scratch.back().set_payload(kUrl2, std::string(kPayload2));
+    scratch.back().set_payload(kUrl3, std::string(kPayload3));
 
     if (AllVisitedPayloads(scratch.back()) != visited_payloads) {
       break;
@@ -309,9 +309,9 @@ TEST(Status, TestForEachPayload) {
 TEST(Status, ToString) {
   turbo::Status status(turbo::StatusCode::kInternal, "fail");
   EXPECT_EQ("INTERNAL: fail", status.ToString());
-  status.SetPayload("foo", std::string("bar"));
+  status.set_payload("foo", std::string("bar"));
   EXPECT_EQ("INTERNAL: fail [foo='bar']", status.ToString());
-  status.SetPayload("bar", std::string("\377"));
+  status.set_payload("bar", std::string("\377"));
   EXPECT_THAT(status.ToString(),
               AllOf(HasSubstr("INTERNAL: fail"), HasSubstr("[foo='bar']"),
                     HasSubstr("[bar='\\xff']")));
@@ -319,8 +319,8 @@ TEST(Status, ToString) {
 
 TEST(Status, ToStringMode) {
   turbo::Status status(turbo::StatusCode::kInternal, "fail");
-  status.SetPayload("foo", std::string("bar"));
-  status.SetPayload("bar", std::string("\377"));
+  status.set_payload("foo", std::string("bar"));
+  status.set_payload("bar", std::string("\377"));
 
   EXPECT_EQ("INTERNAL: fail",
             status.ToString(turbo::StatusToStringMode::kWithNoExtraData));
@@ -346,14 +346,14 @@ TEST(Status, OstreamOperator) {
                 AllOf(HasSubstr("INTERNAL: fail"),
                       HasSubstr("status_test.cc:")));
   }
-  status.SetPayload("foo", std::string("bar"));
+  status.set_payload("foo", std::string("bar"));
   { std::stringstream stream;
     stream << status;
     EXPECT_THAT(stream.str(),
                 AllOf(HasSubstr("INTERNAL: fail"), HasSubstr("[foo='bar']"),
                       HasSubstr("status_test.cc:")));
   }
-  status.SetPayload("bar", std::string("\377"));
+  status.set_payload("bar", std::string("\377"));
   { std::stringstream stream;
     stream << status;
     EXPECT_THAT(stream.str(),
@@ -365,19 +365,19 @@ TEST(Status, OstreamOperator) {
 
 TEST(Status, turbo_stringify) {
   turbo::Status status(turbo::StatusCode::kInternal, "fail");
-  EXPECT_THAT(turbo::StrCat(status),
+  EXPECT_THAT(turbo::str_cat(status),
               AllOf(HasSubstr("INTERNAL: fail"),
                     HasSubstr("status_test.cc:")));
   EXPECT_THAT(turbo::str_sprintf("%v", status),
               AllOf(HasSubstr("INTERNAL: fail"),
                     HasSubstr("status_test.cc:")));
-  EXPECT_EQ(turbo::StrCat(status), turbo::str_sprintf("%v", status));
-  status.SetPayload("foo", std::string("bar"));
-  EXPECT_THAT(turbo::StrCat(status),
+  EXPECT_EQ(turbo::str_cat(status), turbo::str_sprintf("%v", status));
+  status.set_payload("foo", std::string("bar"));
+  EXPECT_THAT(turbo::str_cat(status),
               AllOf(HasSubstr("INTERNAL: fail"), HasSubstr("[foo='bar']"),
                     HasSubstr("status_test.cc:")));
-  status.SetPayload("bar", std::string("\377"));
-  EXPECT_THAT(turbo::StrCat(status),
+  status.set_payload("bar", std::string("\377"));
+  EXPECT_THAT(turbo::str_cat(status),
               AllOf(HasSubstr("INTERNAL: fail"), HasSubstr("[foo='bar']"),
                     HasSubstr("[bar='\\xff']"),
                     HasSubstr("status_test.cc:")));
@@ -385,39 +385,39 @@ TEST(Status, turbo_stringify) {
 
 TEST(Status, OstreamEqStringify) {
   turbo::Status status(turbo::StatusCode::kUnknown, "fail");
-  status.SetPayload("foo", std::string("bar"));
+  status.set_payload("foo", std::string("bar"));
   std::stringstream stream;
   stream << status;
-  EXPECT_EQ(stream.str(), turbo::StrCat(status));
+  EXPECT_EQ(stream.str(), turbo::str_cat(status));
 }
 
 turbo::Status EraseAndReturn(const turbo::Status& base) {
   turbo::Status copy = base;
-  EXPECT_TRUE(copy.ErasePayload(kUrl1));
+  EXPECT_TRUE(copy.erase_payload(kUrl1));
   return copy;
 }
 
 TEST(Status, CopyOnWriteForErasePayload) {
   {
     turbo::Status base(turbo::StatusCode::kInvalidArgument, "fail");
-    base.SetPayload(kUrl1, std::string(kPayload1));
-    EXPECT_TRUE(base.GetPayload(kUrl1).has_value());
+    base.set_payload(kUrl1, std::string(kPayload1));
+    EXPECT_TRUE(base.get_payload(kUrl1).has_value());
     turbo::Status copy = EraseAndReturn(base);
-    EXPECT_TRUE(base.GetPayload(kUrl1).has_value());
-    EXPECT_FALSE(copy.GetPayload(kUrl1).has_value());
+    EXPECT_TRUE(base.get_payload(kUrl1).has_value());
+    EXPECT_FALSE(copy.get_payload(kUrl1).has_value());
   }
   {
     turbo::Status base(turbo::StatusCode::kInvalidArgument, "fail");
-    base.SetPayload(kUrl1, std::string(kPayload1));
+    base.set_payload(kUrl1, std::string(kPayload1));
     turbo::Status copy = base;
 
-    EXPECT_TRUE(base.GetPayload(kUrl1).has_value());
-    EXPECT_TRUE(copy.GetPayload(kUrl1).has_value());
+    EXPECT_TRUE(base.get_payload(kUrl1).has_value());
+    EXPECT_TRUE(copy.get_payload(kUrl1).has_value());
 
-    EXPECT_TRUE(base.ErasePayload(kUrl1));
+    EXPECT_TRUE(base.erase_payload(kUrl1));
 
-    EXPECT_FALSE(base.GetPayload(kUrl1).has_value());
-    EXPECT_TRUE(copy.GetPayload(kUrl1).has_value());
+    EXPECT_FALSE(base.get_payload(kUrl1).has_value());
+    EXPECT_TRUE(copy.get_payload(kUrl1).has_value());
   }
 }
 
@@ -434,7 +434,7 @@ TEST(Status, CopyConstructor) {
   }
   {
     turbo::Status status(turbo::StatusCode::kInvalidArgument, "message");
-    status.SetPayload(kUrl1, std::string(kPayload1));
+    status.set_payload(kUrl1, std::string(kPayload1));
     turbo::Status copy(status);
     EXPECT_EQ(copy, status);
   }
@@ -454,7 +454,7 @@ TEST(Status, CopyAssignment) {
   }
   {
     turbo::Status status(turbo::StatusCode::kInvalidArgument, "message");
-    status.SetPayload(kUrl1, std::string(kPayload1));
+    status.set_payload(kUrl1, std::string(kPayload1));
     assignee = status;
     EXPECT_EQ(assignee, status);
   }
@@ -464,7 +464,7 @@ TEST(Status, CopyAssignmentIsNotRef) {
   const turbo::Status status_orig(turbo::StatusCode::kInvalidArgument, "message");
   turbo::Status status_copy = status_orig;
   EXPECT_EQ(status_orig, status_copy);
-  status_copy.SetPayload(kUrl1, std::string(kPayload1));
+  status_copy.set_payload(kUrl1, std::string(kPayload1));
   EXPECT_NE(status_orig, status_copy);
 }
 
@@ -482,7 +482,7 @@ TEST(Status, MoveConstructor) {
   }
   {
     turbo::Status status(turbo::StatusCode::kInvalidArgument, "message");
-    status.SetPayload(kUrl1, std::string(kPayload1));
+    status.set_payload(kUrl1, std::string(kPayload1));
     turbo::Status copy1(status);
     turbo::Status copy2(std::move(status));
     EXPECT_EQ(copy1, copy2);
@@ -503,7 +503,7 @@ TEST(Status, MoveAssignment) {
   }
   {
     turbo::Status status(turbo::StatusCode::kInvalidArgument, "message");
-    status.SetPayload(kUrl1, std::string(kPayload1));
+    status.set_payload(kUrl1, std::string(kPayload1));
     turbo::Status copy(status);
     assignee = std::move(status);
     EXPECT_EQ(assignee, copy);
@@ -518,7 +518,7 @@ TEST(Status, MoveAssignment) {
 
 TEST(Status, Update) {
   turbo::Status s;
-  s.Update(turbo::OkStatus());
+  s.Update(turbo::ok_status());
   EXPECT_TRUE(s.ok());
   const turbo::Status a(turbo::StatusCode::kCancelled, "message");
   s.Update(a);
@@ -526,18 +526,18 @@ TEST(Status, Update) {
   const turbo::Status b(turbo::StatusCode::kInternal, "other message");
   s.Update(b);
   EXPECT_EQ(s, a);
-  s.Update(turbo::OkStatus());
+  s.Update(turbo::ok_status());
   EXPECT_EQ(s, a);
   EXPECT_FALSE(s.ok());
 }
 
 TEST(Status, Equality) {
   turbo::Status ok;
-  turbo::Status no_payload = turbo::CancelledError("no payload");
-  turbo::Status one_payload = turbo::InvalidArgumentError("one payload");
-  one_payload.SetPayload(kUrl1, std::string(kPayload1));
+  turbo::Status no_payload = turbo::cancelled_error("no payload");
+  turbo::Status one_payload = turbo::invalid_argument_error("one payload");
+  one_payload.set_payload(kUrl1, std::string(kPayload1));
   turbo::Status two_payloads = one_payload;
-  two_payloads.SetPayload(kUrl2, std::string(kPayload2));
+  two_payloads.set_payload(kUrl2, std::string(kPayload2));
   const std::array<turbo::Status, 4> status_arr = {ok, no_payload, one_payload,
                                                   two_payloads};
   for (int i = 0; i < status_arr.size(); i++) {
@@ -563,7 +563,7 @@ TEST(Status, Swap) {
   const turbo::Status ok;
   const turbo::Status no_payload(turbo::StatusCode::kAlreadyExists, "no payload");
   turbo::Status with_payload(turbo::StatusCode::kInternal, "with payload");
-  with_payload.SetPayload(kUrl1, std::string(kPayload1));
+  with_payload.set_payload(kUrl1, std::string(kPayload1));
   test_swap(ok, no_payload);
   test_swap(no_payload, ok);
   test_swap(ok, with_payload);
@@ -862,7 +862,7 @@ TEST(Status, SourceLocationWithMoveConstructor) {
   }
 }
 
-TEST(Status, AddSourceLocation) {
+TEST(Status, add_source_location) {
   int max_iter = 10;
   {
     // Status that ignores source location.
@@ -871,31 +871,31 @@ TEST(Status, AddSourceLocation) {
         turbo::Status(turbo::StatusCode::kInternal, "")};
     for (turbo::Status& s : status_ignores_source_location) {
       for (int i = 0; i < max_iter; ++i) {
-        s.AddSourceLocation(turbo::SourceLocation::current());
-        s.AddSourceLocation(turbo::SourceLocation());
+        s.add_source_location(turbo::SourceLocation::current());
+        s.add_source_location(turbo::SourceLocation());
       }
       CheckSourceLocation(s);
     }
   }
   {
-    // Default SourceLocation is not added.
+    // Default turbo::SourceLocation is not added.
     turbo::Status status(turbo::StatusCode::kInternal, "foo",
                         turbo::SourceLocation::current());
     int line = GET_SOURCE_LOCATION(1);
     for (int i = 0; i < max_iter; ++i) {
-      status.AddSourceLocation(turbo::SourceLocation());
+      status.add_source_location(turbo::SourceLocation());
     }
     CheckSourceLocation(status, {line});
   }
   {
-    // Default SourceLocation is not added.
+    // Default turbo::SourceLocation is not added.
     turbo::Status status(turbo::StatusCode::kInternal, "foo",
                         turbo::SourceLocation::current());
     int line = GET_SOURCE_LOCATION(1);
     std::vector<int> lines = {line};
     lines.reserve(1 + max_iter);
     for (int i = 0; i < max_iter; ++i) {
-      status.AddSourceLocation(turbo::SourceLocation::current());
+      status.add_source_location(turbo::SourceLocation::current());
       lines.push_back(GET_SOURCE_LOCATION(1));
     }
     CheckSourceLocation(status, lines);
@@ -908,7 +908,7 @@ TEST(Status, WithSourceLocationCopy) {
   int line = GET_SOURCE_LOCATION(1);
 
   const turbo::Status status =
-      original.WithSourceLocation(turbo::SourceLocation::current());
+      original.with_source_location(turbo::SourceLocation::current());
   int line2 = GET_SOURCE_LOCATION(1);
 
   CheckSourceLocation(original, {line});
@@ -924,7 +924,7 @@ TEST(Status, WithSourceLocationMove) {
   int line = GET_SOURCE_LOCATION(1);
 
   const turbo::Status status = IsRvalueStatus(
-      std::move(original).WithSourceLocation(turbo::SourceLocation::current()));
+      std::move(original).with_source_location(turbo::SourceLocation::current()));
   int line2 = GET_SOURCE_LOCATION(1);
 
   CheckSourceLocation(status, {line, line2});
@@ -938,7 +938,7 @@ TEST(Status, CopyOnWriteSourceLocations) {
   EXPECT_EQ(source.GetSourceLocations().size(), 1);
   turbo::Status copy = source;
   EXPECT_EQ(copy.GetSourceLocations().size(), 1);
-  copy.AddSourceLocation(turbo::SourceLocation::current());  // Copy rep.
+  copy.add_source_location(turbo::SourceLocation::current());  // Copy rep.
   EXPECT_EQ(copy.GetSourceLocations().size(), 2);
   EXPECT_EQ(source.GetSourceLocations().size(), 1);
 }
@@ -948,10 +948,10 @@ TEST(Status, SourceLocationToStringMode) {
                  turbo::SourceLocation::current());
   int line = GET_SOURCE_LOCATION(1);
   std::string source_location_string = "\n=== Source Location Trace: ===";
-  std::string source_location_stack = turbo::StrCat(
+  std::string source_location_stack = turbo::str_cat(
       turbo::SourceLocation::current().file_name(), ":", line, "\n");
 
-  s.SetPayload("foo", std::string("bar"));
+  s.set_payload("foo", std::string("bar"));
 
   EXPECT_EQ("INTERNAL: fail",
             s.ToString(turbo::StatusToStringMode::kWithNoExtraData));
@@ -965,7 +965,7 @@ TEST(Status, SourceLocationToStringMode) {
                     HasSubstr(source_location_string),
                     HasSubstr(source_location_stack)));
 
-  s.SetPayload("bar", std::string("\377"));
+  s.set_payload("bar", std::string("\377"));
 
   EXPECT_THAT(s.ToString(turbo::StatusToStringMode::kWithEverything),
               AllOf(HasSubstr("INTERNAL: fail"), HasSubstr("[foo='bar']"),
@@ -998,8 +998,8 @@ TEST(Status, StackTracePayloadOverflow) {
   } stack;
   stack.size = 200;  // Overflows frames.
 
-  turbo::Status status = turbo::CancelledError();
-  status.SetPayload("TurboStatusStackTracePayload",
+  turbo::Status status = turbo::cancelled_error();
+  status.set_payload("TurboStatusStackTracePayload",
                     std::string(std::string_view(
                         reinterpret_cast<const char*>(&stack), sizeof(stack))));
 

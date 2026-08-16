@@ -113,8 +113,6 @@ turbo_cc_test(
   DEPS
     turbo::crc32c
     turbo::memory
-    turbo::random_random
-    turbo::random_distributions
     turbo::strings
     GTest::gtest_main
 )

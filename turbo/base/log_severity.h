@@ -45,8 +45,8 @@ namespace turbo {
 //   set_min_log_level(static_cast<turbo::LogSeverity>(100));
 //
 // Abseil flags may be defined with type `LogSeverity`. Dependency layering
-// constraints require that the `TurboParseFlag()` overload be declared and
-// defined in the flags library itself rather than here. The `TurboUnparseFlag()`
+// constraints require that the `turbo_parse_flag()` overload be declared and
+// defined in the flags library itself rather than here. The `turbo_unparse_flag()`
 // overload is defined there as well for consistency.
 //
 // turbo::LogSeverity Flag String Representation

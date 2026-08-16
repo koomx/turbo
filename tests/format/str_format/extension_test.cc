@@ -22,7 +22,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <turbo/random/random.h>
+#include <random>
 #include <turbo/format/str_format.h>
 #include <string_view>
 
@@ -46,7 +46,7 @@ class UserDefinedType {
 namespace {
 
 std::string MakeRandomString(size_t len) {
-  turbo::InsecureBitGen gen;
+  std::mt19937 gen;
   std::uniform_int_distribution<> dis('a', 'z');
   std::string s(len, '0');
   for (char& c : s) {

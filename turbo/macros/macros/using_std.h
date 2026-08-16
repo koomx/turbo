@@ -38,7 +38,7 @@
 
 // KUMO_USES_STD_SOURCE_LOCATION
 //
-// Indicates whether turbo::SourceLocation is an alias for std::source_location.
+// Indicates whether turbo::SourceLocation is an alias for turbo::SourceLocation.
 #if !defined(KUMO_OPTION_USE_STD_SOURCE_LOCATION)
 #error options.h is misconfigured.
 #elif KUMO_OPTION_USE_STD_SOURCE_LOCATION == 0 || \

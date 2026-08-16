@@ -23,337 +23,337 @@
 
 namespace {
 
-void BM_StatusOrInt_CtorStatus(benchmark::State& state) {
+void BM_ResultInt_CtorStatus(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<int> status(turbo::CancelledError());
+    turbo::Result<int> status(turbo::cancelled_error());
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrInt_CtorStatus);
+BENCHMARK(BM_ResultInt_CtorStatus);
 
-void BM_StatusOrInt_CtorStatusWithMessage(benchmark::State& state) {
+void BM_ResultInt_CtorStatusWithMessage(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<int> status(
-        turbo::UnknownError("This string is 28 characters"));
+    turbo::Result<int> status(
+        turbo::unknown_error("This string is 28 characters"));
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrInt_CtorStatusWithMessage);
+BENCHMARK(BM_ResultInt_CtorStatusWithMessage);
 
-void BM_StatusOrInt_CopyCtor_Error(benchmark::State& state) {
+void BM_ResultInt_CopyCtor_Error(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<int> original(
-        turbo::UnknownError("This string is 28 characters"));
+    turbo::Result<int> original(
+        turbo::unknown_error("This string is 28 characters"));
     benchmark::DoNotOptimize(original);
-    turbo::StatusOr<int> status(original);
+    turbo::Result<int> status(original);
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrInt_CopyCtor_Error);
+BENCHMARK(BM_ResultInt_CopyCtor_Error);
 
-void BM_StatusOrInt_CopyCtor_Ok(benchmark::State& state) {
+void BM_ResultInt_CopyCtor_Ok(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<int> original(42);
+    turbo::Result<int> original(42);
     benchmark::DoNotOptimize(original);
-    turbo::StatusOr<int> status(original);
+    turbo::Result<int> status(original);
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrInt_CopyCtor_Ok);
+BENCHMARK(BM_ResultInt_CopyCtor_Ok);
 
-void BM_StatusOrInt_MoveCtor_Error(benchmark::State& state) {
+void BM_ResultInt_MoveCtor_Error(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<int> original(
-        turbo::UnknownError("This string is 28 characters"));
+    turbo::Result<int> original(
+        turbo::unknown_error("This string is 28 characters"));
     benchmark::DoNotOptimize(original);
-    turbo::StatusOr<int> status(std::move(original));
+    turbo::Result<int> status(std::move(original));
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrInt_MoveCtor_Error);
+BENCHMARK(BM_ResultInt_MoveCtor_Error);
 
-void BM_StatusOrInt_MoveCtor_Ok(benchmark::State& state) {
+void BM_ResultInt_MoveCtor_Ok(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<int> original(42);
+    turbo::Result<int> original(42);
     benchmark::DoNotOptimize(original);
-    turbo::StatusOr<int> status(std::move(original));
+    turbo::Result<int> status(std::move(original));
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrInt_MoveCtor_Ok);
+BENCHMARK(BM_ResultInt_MoveCtor_Ok);
 
-void BM_StatusOrInt_CopyAssign_Error(benchmark::State& state) {
+void BM_ResultInt_CopyAssign_Error(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<int> original(
-        turbo::UnknownError("This string is 28 characters"));
+    turbo::Result<int> original(
+        turbo::unknown_error("This string is 28 characters"));
     benchmark::DoNotOptimize(original);
-    turbo::StatusOr<int> status(42);
+    turbo::Result<int> status(42);
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(status = original);
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrInt_CopyAssign_Error);
+BENCHMARK(BM_ResultInt_CopyAssign_Error);
 
-void BM_StatusOrInt_CopyAssign_Ok(benchmark::State& state) {
+void BM_ResultInt_CopyAssign_Ok(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<int> original(42);
+    turbo::Result<int> original(42);
     benchmark::DoNotOptimize(original);
-    turbo::StatusOr<int> status(42);
+    turbo::Result<int> status(42);
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(status = original);
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrInt_CopyAssign_Ok);
+BENCHMARK(BM_ResultInt_CopyAssign_Ok);
 
-void BM_StatusOrInt_MoveAssign_Error(benchmark::State& state) {
+void BM_ResultInt_MoveAssign_Error(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<int> original(
-        turbo::UnknownError("This string is 28 characters"));
+    turbo::Result<int> original(
+        turbo::unknown_error("This string is 28 characters"));
     benchmark::DoNotOptimize(original);
-    turbo::StatusOr<int> status(42);
+    turbo::Result<int> status(42);
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(status = std::move(original));
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrInt_MoveAssign_Error);
+BENCHMARK(BM_ResultInt_MoveAssign_Error);
 
-void BM_StatusOrInt_MoveAssign_Ok(benchmark::State& state) {
+void BM_ResultInt_MoveAssign_Ok(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<int> original(42);
+    turbo::Result<int> original(42);
     benchmark::DoNotOptimize(original);
-    turbo::StatusOr<int> status(42);
+    turbo::Result<int> status(42);
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(status = std::move(original));
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrInt_MoveAssign_Ok);
+BENCHMARK(BM_ResultInt_MoveAssign_Ok);
 
-void BM_StatusOrInt_OkMethod_Error(benchmark::State& state) {
-  turbo::StatusOr<int> status(
-      turbo::UnknownError("This string is 28 characters"));
+void BM_ResultInt_OkMethod_Error(benchmark::State& state) {
+  turbo::Result<int> status(
+      turbo::unknown_error("This string is 28 characters"));
   for (auto _ : state) {
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(status.ok());
   }
 }
-BENCHMARK(BM_StatusOrInt_OkMethod_Error);
+BENCHMARK(BM_ResultInt_OkMethod_Error);
 
-void BM_StatusOrInt_OkMethod_Ok(benchmark::State& state) {
-  turbo::StatusOr<int> status(42);
+void BM_ResultInt_OkMethod_Ok(benchmark::State& state) {
+  turbo::Result<int> status(42);
   for (auto _ : state) {
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(status.ok());
   }
 }
-BENCHMARK(BM_StatusOrInt_OkMethod_Ok);
+BENCHMARK(BM_ResultInt_OkMethod_Ok);
 
-void BM_StatusOrInt_StatusMethod_Error(benchmark::State& state) {
+void BM_ResultInt_StatusMethod_Error(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<int> status(
-        turbo::UnknownError("This string is 28 characters"));
+    turbo::Result<int> status(
+        turbo::unknown_error("This string is 28 characters"));
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(status.status().ok());
   }
 }
-BENCHMARK(BM_StatusOrInt_StatusMethod_Error);
+BENCHMARK(BM_ResultInt_StatusMethod_Error);
 
-void BM_StatusOrInt_StatusMethod_Ok(benchmark::State& state) {
+void BM_ResultInt_StatusMethod_Ok(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<int> status(42);
+    turbo::Result<int> status(42);
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(std::move(status).status().ok());
   }
 }
-BENCHMARK(BM_StatusOrInt_StatusMethod_Ok);
+BENCHMARK(BM_ResultInt_StatusMethod_Ok);
 
-void BM_StatusOrInt_StatusMethodRvalue_Error(benchmark::State& state) {
+void BM_ResultInt_StatusMethodRvalue_Error(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<int> status(
-        turbo::UnknownError("This string is 28 characters"));
+    turbo::Result<int> status(
+        turbo::unknown_error("This string is 28 characters"));
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(std::move(status).status().ok());
   }
 }
-BENCHMARK(BM_StatusOrInt_StatusMethodRvalue_Error);
+BENCHMARK(BM_ResultInt_StatusMethodRvalue_Error);
 
-void BM_StatusOrInt_StatusMethodRvalue_Ok(benchmark::State& state) {
+void BM_ResultInt_StatusMethodRvalue_Ok(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<int> status(42);
+    turbo::Result<int> status(42);
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(std::move(status).status());
   }
 }
-BENCHMARK(BM_StatusOrInt_StatusMethodRvalue_Ok);
+BENCHMARK(BM_ResultInt_StatusMethodRvalue_Ok);
 
-void BM_StatusOrString_CtorStatus(benchmark::State& state) {
+void BM_ResultString_CtorStatus(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<std::string> status(turbo::CancelledError());
+    turbo::Result<std::string> status(turbo::cancelled_error());
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrString_CtorStatus);
+BENCHMARK(BM_ResultString_CtorStatus);
 
-void BM_StatusOrString_CtorStatusWithMessage(benchmark::State& state) {
+void BM_ResultString_CtorStatusWithMessage(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<std::string> status(
-        turbo::UnknownError("This string is 28 characters"));
+    turbo::Result<std::string> status(
+        turbo::unknown_error("This string is 28 characters"));
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrString_CtorStatusWithMessage);
+BENCHMARK(BM_ResultString_CtorStatusWithMessage);
 
-void BM_StatusOrString_CopyCtor_Error(benchmark::State& state) {
+void BM_ResultString_CopyCtor_Error(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<std::string> original(
-        turbo::UnknownError("This string is 28 characters"));
+    turbo::Result<std::string> original(
+        turbo::unknown_error("This string is 28 characters"));
     benchmark::DoNotOptimize(original);
-    turbo::StatusOr<std::string> status(original);
+    turbo::Result<std::string> status(original);
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrString_CopyCtor_Error);
+BENCHMARK(BM_ResultString_CopyCtor_Error);
 
-void BM_StatusOrString_CopyCtor_Ok(benchmark::State& state) {
+void BM_ResultString_CopyCtor_Ok(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<std::string> original("This string is 28 characters");
+    turbo::Result<std::string> original("This string is 28 characters");
     benchmark::DoNotOptimize(original);
-    turbo::StatusOr<std::string> status(original);
+    turbo::Result<std::string> status(original);
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrString_CopyCtor_Ok);
+BENCHMARK(BM_ResultString_CopyCtor_Ok);
 
-void BM_StatusOrString_MoveCtor_Error(benchmark::State& state) {
+void BM_ResultString_MoveCtor_Error(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<std::string> original(
-        turbo::UnknownError("This string is 28 characters"));
+    turbo::Result<std::string> original(
+        turbo::unknown_error("This string is 28 characters"));
     benchmark::DoNotOptimize(original);
-    turbo::StatusOr<std::string> status(std::move(original));
+    turbo::Result<std::string> status(std::move(original));
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrString_MoveCtor_Error);
+BENCHMARK(BM_ResultString_MoveCtor_Error);
 
-void BM_StatusOrString_MoveCtor_Ok(benchmark::State& state) {
+void BM_ResultString_MoveCtor_Ok(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<std::string> original("This string is 28 characters");
+    turbo::Result<std::string> original("This string is 28 characters");
     benchmark::DoNotOptimize(original);
-    turbo::StatusOr<std::string> status(std::move(original));
+    turbo::Result<std::string> status(std::move(original));
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrString_MoveCtor_Ok);
+BENCHMARK(BM_ResultString_MoveCtor_Ok);
 
-void BM_StatusOrString_CopyAssign_Error(benchmark::State& state) {
+void BM_ResultString_CopyAssign_Error(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<std::string> original(
-        turbo::UnknownError("This string is 28 characters"));
+    turbo::Result<std::string> original(
+        turbo::unknown_error("This string is 28 characters"));
     benchmark::DoNotOptimize(original);
-    turbo::StatusOr<std::string> status("This string is 28 characters");
+    turbo::Result<std::string> status("This string is 28 characters");
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(status = original);
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrString_CopyAssign_Error);
+BENCHMARK(BM_ResultString_CopyAssign_Error);
 
-void BM_StatusOrString_CopyAssign_Ok(benchmark::State& state) {
+void BM_ResultString_CopyAssign_Ok(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<std::string> original("This string is 28 characters");
+    turbo::Result<std::string> original("This string is 28 characters");
     benchmark::DoNotOptimize(original);
-    turbo::StatusOr<std::string> status("This string is 28 characters");
+    turbo::Result<std::string> status("This string is 28 characters");
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(status = original);
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrString_CopyAssign_Ok);
+BENCHMARK(BM_ResultString_CopyAssign_Ok);
 
-void BM_StatusOrString_MoveAssign_Error(benchmark::State& state) {
+void BM_ResultString_MoveAssign_Error(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<std::string> original(
-        turbo::UnknownError("This string is 28 characters"));
+    turbo::Result<std::string> original(
+        turbo::unknown_error("This string is 28 characters"));
     benchmark::DoNotOptimize(original);
-    turbo::StatusOr<std::string> status("This string is 28 characters");
+    turbo::Result<std::string> status("This string is 28 characters");
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(status = std::move(original));
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrString_MoveAssign_Error);
+BENCHMARK(BM_ResultString_MoveAssign_Error);
 
-void BM_StatusOrString_MoveAssign_Ok(benchmark::State& state) {
+void BM_ResultString_MoveAssign_Ok(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<std::string> original("This string is 28 characters");
+    turbo::Result<std::string> original("This string is 28 characters");
     benchmark::DoNotOptimize(original);
-    turbo::StatusOr<std::string> status("This string is 28 characters");
+    turbo::Result<std::string> status("This string is 28 characters");
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(status = std::move(original));
     benchmark::DoNotOptimize(status);
   }
 }
-BENCHMARK(BM_StatusOrString_MoveAssign_Ok);
+BENCHMARK(BM_ResultString_MoveAssign_Ok);
 
-void BM_StatusOrString_OkMethod_Error(benchmark::State& state) {
+void BM_ResultString_OkMethod_Error(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<std::string> status(
-        turbo::UnknownError("This string is 28 characters"));
+    turbo::Result<std::string> status(
+        turbo::unknown_error("This string is 28 characters"));
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(status.ok());
   }
 }
-BENCHMARK(BM_StatusOrString_OkMethod_Error);
+BENCHMARK(BM_ResultString_OkMethod_Error);
 
-void BM_StatusOrString_OkMethod_Ok(benchmark::State& state) {
+void BM_ResultString_OkMethod_Ok(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<std::string> status("This string is 28 characters");
+    turbo::Result<std::string> status("This string is 28 characters");
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(status.ok());
   }
 }
-BENCHMARK(BM_StatusOrString_OkMethod_Ok);
+BENCHMARK(BM_ResultString_OkMethod_Ok);
 
-void BM_StatusOrString_StatusMethod_Error(benchmark::State& state) {
+void BM_ResultString_StatusMethod_Error(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<std::string> status(
-        turbo::UnknownError("This string is 28 characters"));
+    turbo::Result<std::string> status(
+        turbo::unknown_error("This string is 28 characters"));
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(status.status().ok());
   }
 }
-BENCHMARK(BM_StatusOrString_StatusMethod_Error);
+BENCHMARK(BM_ResultString_StatusMethod_Error);
 
-void BM_StatusOrString_StatusMethod_Ok(benchmark::State& state) {
+void BM_ResultString_StatusMethod_Ok(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<std::string> status("This string is 28 characters");
+    turbo::Result<std::string> status("This string is 28 characters");
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(status.status().ok());
   }
 }
-BENCHMARK(BM_StatusOrString_StatusMethod_Ok);
+BENCHMARK(BM_ResultString_StatusMethod_Ok);
 
-void BM_StatusOrString_StatusMethodRvalue_Error(benchmark::State& state) {
+void BM_ResultString_StatusMethodRvalue_Error(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<std::string> status(
-        turbo::UnknownError("This string is 28 characters"));
+    turbo::Result<std::string> status(
+        turbo::unknown_error("This string is 28 characters"));
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(std::move(status).status());
   }
 }
-BENCHMARK(BM_StatusOrString_StatusMethodRvalue_Error);
+BENCHMARK(BM_ResultString_StatusMethodRvalue_Error);
 
-void BM_StatusOrString_StatusMethodRvalue_Ok(benchmark::State& state) {
+void BM_ResultString_StatusMethodRvalue_Ok(benchmark::State& state) {
   for (auto _ : state) {
-    turbo::StatusOr<std::string> status("This string is 28 characters");
+    turbo::Result<std::string> status("This string is 28 characters");
     benchmark::DoNotOptimize(status);
     benchmark::DoNotOptimize(std::move(status).status());
   }
 }
-BENCHMARK(BM_StatusOrString_StatusMethodRvalue_Ok);
+BENCHMARK(BM_ResultString_StatusMethodRvalue_Ok);
 
 // Benchmarks comparing a few alternative ways of structuring an interface
 // for returning an int64 on success or an error.  See (a), (b), (c), (d)
@@ -365,7 +365,7 @@ bool SimpleIntInterfaceWithErrorMessage(int64_t* v, std::string* msg)
     KUMO_ATTRIBUTE_NOINLINE;
 turbo::Status SimpleIntInterfaceWithErrorStatus(int64_t* v)
     KUMO_ATTRIBUTE_NOINLINE;
-turbo::StatusOr<int64_t> SimpleIntStatusOrInterface() KUMO_ATTRIBUTE_NOINLINE;
+turbo::Result<int64_t> SimpleIntResultInterface() KUMO_ATTRIBUTE_NOINLINE;
 
 // (a): Just a boolean return value with an out int64* parameter
 bool SimpleIntInterface(int64_t* v) {
@@ -396,20 +396,20 @@ turbo::Status SimpleIntInterfaceWithErrorStatus(int64_t* v) {
   benchmark::DoNotOptimize(bm_cond);
   if (bm_cond) {
     *v = 42;
-    return turbo::OkStatus();
+    return turbo::ok_status();
   } else {
-    return turbo::UnknownError("This is an error message");
+    return turbo::unknown_error("This is an error message");
   }
 }
 
-// (d): A StatusOr<int64> return value
-turbo::StatusOr<int64_t> SimpleIntStatusOrInterface() {
+// (d): A Result<int64> return value
+turbo::Result<int64_t> SimpleIntResultInterface() {
   benchmark::DoNotOptimize(bm_cond);
   if (bm_cond) {
     return 42;
   } else {
-    return turbo::StatusOr<int64_t>(
-        turbo::UnknownError("This is an error message"));
+    return turbo::Result<int64_t>(
+        turbo::unknown_error("This is an error message"));
   }
 }
 
@@ -457,11 +457,11 @@ void BM_SimpleIntInterfaceStatus(benchmark::State& state) {
   }
 }
 
-void BM_SimpleIntStatusOrInterface(benchmark::State& state) {
+void BM_SimpleIntResultInterface(benchmark::State& state) {
   SetCondition(state);
   int64_t sum = 0;
   for (auto s : state) {
-    auto v_s = SimpleIntStatusOrInterface();
+    auto v_s = SimpleIntResultInterface();
     if (v_s.ok()) {
       sum += *v_s;
     }
@@ -474,10 +474,10 @@ void BM_SimpleIntStatusOrInterface(benchmark::State& state) {
 BENCHMARK(BM_SimpleIntInterface)->Arg(0);
 BENCHMARK(BM_SimpleIntInterfaceMsg)->Arg(0);
 BENCHMARK(BM_SimpleIntInterfaceStatus)->Arg(0);
-BENCHMARK(BM_SimpleIntStatusOrInterface)->Arg(0);
+BENCHMARK(BM_SimpleIntResultInterface)->Arg(0);
 BENCHMARK(BM_SimpleIntInterface)->Arg(1);
 BENCHMARK(BM_SimpleIntInterfaceMsg)->Arg(1);
 BENCHMARK(BM_SimpleIntInterfaceStatus)->Arg(1);
-BENCHMARK(BM_SimpleIntStatusOrInterface)->Arg(1);
+BENCHMARK(BM_SimpleIntResultInterface)->Arg(1);
 
 }  // namespace

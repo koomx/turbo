@@ -462,7 +462,7 @@ std::string FormatCivilTime(CivilDay c);
 std::string FormatCivilTime(CivilMonth c);
 std::string FormatCivilTime(CivilYear c);
 
-// Support for str_sprintf(), StrCat(), etc
+// Support for str_sprintf(), str_cat(), etc
 template <typename Sink>
 void turbo_stringify(Sink& sink, CivilSecond c) {
   sink.Append(FormatCivilTime(c));
@@ -568,28 +568,28 @@ std::ostream& operator<<(std::ostream& os, CivilHour h);
 std::ostream& operator<<(std::ostream& os, CivilMinute m);
 std::ostream& operator<<(std::ostream& os, CivilSecond s);
 
-// TurboParseFlag()
+// turbo_parse_flag()
 //
 // Parses the command-line flag string representation `s` into a civil-time
 // value. Flags must be specified in a format that is valid for
 // `turbo::ParseLenientCivilTime()`.
-bool TurboParseFlag(std::string_view s, CivilSecond* c, std::string* error);
-bool TurboParseFlag(std::string_view s, CivilMinute* c, std::string* error);
-bool TurboParseFlag(std::string_view s, CivilHour* c, std::string* error);
-bool TurboParseFlag(std::string_view s, CivilDay* c, std::string* error);
-bool TurboParseFlag(std::string_view s, CivilMonth* c, std::string* error);
-bool TurboParseFlag(std::string_view s, CivilYear* c, std::string* error);
+bool turbo_parse_flag(std::string_view s, CivilSecond* c, std::string* error);
+bool turbo_parse_flag(std::string_view s, CivilMinute* c, std::string* error);
+bool turbo_parse_flag(std::string_view s, CivilHour* c, std::string* error);
+bool turbo_parse_flag(std::string_view s, CivilDay* c, std::string* error);
+bool turbo_parse_flag(std::string_view s, CivilMonth* c, std::string* error);
+bool turbo_parse_flag(std::string_view s, CivilYear* c, std::string* error);
 
-// TurboUnparseFlag()
+// turbo_unparse_flag()
 //
 // Unparses a civil-time value into a command-line string representation using
 // the format specified by `turbo::ParseCivilTime()`.
-std::string TurboUnparseFlag(CivilSecond c);
-std::string TurboUnparseFlag(CivilMinute c);
-std::string TurboUnparseFlag(CivilHour c);
-std::string TurboUnparseFlag(CivilDay c);
-std::string TurboUnparseFlag(CivilMonth c);
-std::string TurboUnparseFlag(CivilYear c);
+std::string turbo_unparse_flag(CivilSecond c);
+std::string turbo_unparse_flag(CivilMinute c);
+std::string turbo_unparse_flag(CivilHour c);
+std::string turbo_unparse_flag(CivilDay c);
+std::string turbo_unparse_flag(CivilMonth c);
+std::string turbo_unparse_flag(CivilYear c);
 
 }  // namespace time_internal
 

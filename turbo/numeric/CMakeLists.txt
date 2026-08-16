@@ -39,7 +39,6 @@ turbo_cc_test(
   DEPS
     turbo::bits
     turbo::core_headers
-    turbo::random_random
     GTest::gmock_main
 )
 

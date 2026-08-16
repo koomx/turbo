@@ -14,14 +14,14 @@
 
 #include <turbo/base/call_once.h>
 
+#include <condition_variable>
+#include <mutex>
 #include <thread>
 #include <vector>
 
 #include <gtest/gtest.h>
 #include <turbo/macros/config.h>
-#include <turbo/base/const_init.h>
 #include <turbo/base/thread_annotations.h>
-#include <turbo/synchronization/mutex.h>
 
 namespace turbo {
 
@@ -29,7 +29,8 @@ namespace {
 
 turbo::once_flag once;
 
-KUMO_CONST_INIT Mutex counters_mu(turbo::kConstInit);
+std::mutex counters_mu;
+std::condition_variable counters_cv;
 
 int running_thread_count TURBO_GUARDED_BY(counters_mu) = 0;
 int call_once_invoke_count TURBO_GUARDED_BY(counters_mu) = 0;
@@ -39,31 +40,31 @@ bool done_blocking TURBO_GUARDED_BY(counters_mu) = false;
 
 // Function to be called from turbo::call_once.  Waits for a notification.
 void WaitAndIncrement() {
-  counters_mu.lock();
-  ++call_once_invoke_count;
-  counters_mu.unlock();
+  {
+    std::lock_guard lock(counters_mu);
+    ++call_once_invoke_count;
+  }
 
-  counters_mu.LockWhen(Condition(&done_blocking));
-  ++call_once_finished_count;
-  counters_mu.unlock();
+  {
+    std::unique_lock lock(counters_mu);
+    counters_cv.wait(lock, [] { return done_blocking; });
+    ++call_once_finished_count;
+  }
 }
 
 void ThreadBody() {
-  counters_mu.lock();
-  ++running_thread_count;
-  counters_mu.unlock();
+  {
+    std::lock_guard lock(counters_mu);
+    ++running_thread_count;
+  }
+  counters_cv.notify_all();
 
   turbo::call_once(once, WaitAndIncrement);
 
-  counters_mu.lock();
-  ++call_once_return_count;
-  counters_mu.unlock();
-}
-
-// Returns true if all threads are set up for the test.
-bool ThreadsAreSetup(void*) TURBO_EXCLUSIVE_LOCKS_REQUIRED(counters_mu) {
-  // All ten threads must be running, and WaitAndIncrement should be blocked.
-  return running_thread_count == 10 && call_once_invoke_count == 1;
+  {
+    std::lock_guard lock(counters_mu);
+    ++call_once_return_count;
+  }
 }
 
 TEST(CallOnceTest, ExecutionCount) {
@@ -74,32 +75,37 @@ TEST(CallOnceTest, ExecutionCount) {
     threads.emplace_back(ThreadBody);
   }
 
-
   // Wait until all ten threads have started, and WaitAndIncrement has been
   // invoked.
-  counters_mu.LockWhen(Condition(ThreadsAreSetup, nullptr));
+  {
+    std::unique_lock lock(counters_mu);
+    counters_cv.wait(lock, [] {
+      return running_thread_count == 10 && call_once_invoke_count == 1;
+    });
 
-  // WaitAndIncrement should have been invoked by exactly one call_once()
-  // instance.  That thread should be blocking on a notification, and all other
-  // call_once instances should be blocking as well.
-  EXPECT_EQ(call_once_invoke_count, 1);
-  EXPECT_EQ(call_once_finished_count, 0);
-  EXPECT_EQ(call_once_return_count, 0);
+    // WaitAndIncrement should have been invoked by exactly one call_once()
+    // instance.  That thread should be blocking on a notification, and all
+    // other call_once instances should be blocking as well.
+    EXPECT_EQ(call_once_invoke_count, 1);
+    EXPECT_EQ(call_once_finished_count, 0);
+    EXPECT_EQ(call_once_return_count, 0);
 
-  // Allow WaitAndIncrement to finish executing.  Once it does, the other
-  // call_once waiters will be unblocked.
-  done_blocking = true;
-  counters_mu.unlock();
+    // Allow WaitAndIncrement to finish executing.  Once it does, the other
+    // call_once waiters will be unblocked.
+    done_blocking = true;
+  }
+  counters_cv.notify_all();
 
   for (std::thread& thread : threads) {
     thread.join();
   }
 
-  counters_mu.lock();
-  EXPECT_EQ(call_once_invoke_count, 1);
-  EXPECT_EQ(call_once_finished_count, 1);
-  EXPECT_EQ(call_once_return_count, 10);
-  counters_mu.unlock();
+  {
+    std::lock_guard lock(counters_mu);
+    EXPECT_EQ(call_once_invoke_count, 1);
+    EXPECT_EQ(call_once_finished_count, 1);
+    EXPECT_EQ(call_once_return_count, 10);
+  }
 }
 
 }  // namespace

@@ -92,7 +92,7 @@ constexpr size_t kIntLoadsPerVec = sizeof(V128) / sizeof(uint64_t);
 // Common function for copying the tails of multiple large regions.
 // Disable ubsan for benign unaligned access. See b/254108538.
 template <size_t vec_regions, size_t int_regions>
-TURBO_ATTRIBUTE_NO_SANITIZE_UNDEFINED inline void LargeTailCopy(
+KUMO_ATTRIBUTE_NO_SANITIZE_UNDEFINED inline void LargeTailCopy(
     crc32c_t* crcs, char** dst, const char** src, size_t region_size,
     size_t copy_rounds) {
   std::array<V128, vec_regions> data;
@@ -161,7 +161,7 @@ class AcceleratedCrcMemcpyEngine : public CrcMemcpyEngine {
 
 // Disable ubsan for benign unaligned access. See b/254108538.
 template <size_t vec_regions, size_t int_regions>
-TURBO_ATTRIBUTE_NO_SANITIZE_UNDEFINED crc32c_t
+KUMO_ATTRIBUTE_NO_SANITIZE_UNDEFINED crc32c_t
 AcceleratedCrcMemcpyEngine<vec_regions, int_regions>::Compute(
     void* __restrict dst, const void* __restrict src, std::size_t length,
     crc32c_t initial_crc) const {

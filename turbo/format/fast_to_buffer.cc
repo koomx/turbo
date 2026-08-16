@@ -14,6 +14,7 @@
 //
 
 #include <turbo/format/fast_to_buffer.h>
+#include <algorithm>
 #include <clocale>
 
 namespace turbo::format_internal {

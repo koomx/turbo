@@ -131,9 +131,8 @@ namespace turbo {
 //    * turbo::Time, turbo::Duration, and turbo::TimeZone
 //  * turbo containers (provided the elements are hashable) such as the
 //    following:
-//    * turbo::flat_hash_set, turbo::node_hash_set, turbo::btree_set
-//    * turbo::flat_hash_map, turbo::node_hash_map, turbo::btree_map
-//    * turbo::btree_multiset, turbo::btree_multimap
+//    * std::unordered_set, std::set
+//    * std::unordered_map, std::map
 //    * turbo::InlinedVector
 //    * turbo::FixedArray
 //

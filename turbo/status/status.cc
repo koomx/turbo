@@ -36,11 +36,11 @@ namespace turbo {
         alignof(status_internal::StatusRep) >= 4,
         "turbo::Status assumes it can use the bottom 2 bits of a StatusRep*.");
 
-    std::string StatusCodeToString(StatusCode code) {
-        return std::string(turbo::StatusCodeToStringView(code));
+    std::string status_code_to_string(StatusCode code) {
+        return std::string(turbo::status_code_to_string_view(code));
     }
 
-    std::string_view StatusCodeToStringView(StatusCode code) {
+    std::string_view status_code_to_string_view(StatusCode code) {
         switch (code) {
             case StatusCode::kOk:
                 return "OK";
@@ -82,7 +82,7 @@ namespace turbo {
     }
 
     std::ostream &operator<<(std::ostream &os, StatusCode code) {
-        return os << StatusCodeToString(code);
+        return os << status_code_to_string(code);
     }
 
     const std::string * turbo_nonnull Status::EmptyString() {
@@ -95,68 +95,68 @@ namespace turbo {
         return kMovedFrom.get();
     }
 
-    turbo::Status turbo::Status::MakeNonOkStatusWithOkCode(
+    turbo::Status turbo::Status::make_non_ok_status_with_ok_code(
         std::string_view message) {
         return turbo::Status(
-            turbo::Status::PointerToRep(new turbo::status_internal::StatusRep(
+            turbo::Status::pointer_to_rep(new turbo::status_internal::StatusRep(
                 turbo::StatusCode::kOk, message, nullptr)));
     }
 
     template<typename StringOrView>
-    uintptr_t MakeStatusRepImpl(uintptr_t inlined_rep, StringOrView msg,
+    uintptr_t make_status_rep_impl(uintptr_t inlined_rep, StringOrView msg,
                                 turbo::SourceLocation loc) {
         static_assert(std::is_same_v<StringOrView, std::string_view> ||
                       std::is_same_v<StringOrView, std::string &&>);
-        bool ok = inlined_rep == Status::CodeToInlinedRep(turbo::StatusCode::kOk);
+        bool ok = inlined_rep == Status::code_to_inlined_rep(turbo::StatusCode::kOk);
         if (ok) return inlined_rep;
         if (msg.empty()
         ) {
             return inlined_rep;
         }
         auto *rep =
-                new status_internal::StatusRep(Status::InlinedRepToCode(inlined_rep),
+                new status_internal::StatusRep(Status::inlined_rep_to_code(inlined_rep),
                                                std::forward<StringOrView>(msg), nullptr);
         if (loc.file_name()[0] != '\0') {
-            rep->AddSourceLocation(loc);
+            rep->add_source_location(loc);
         }
-        return Status::PointerToRep(rep);
+        return Status::pointer_to_rep(rep);
     }
 
-    uintptr_t Status::MakeRepFromStringView(uintptr_t inlined_rep,
+    uintptr_t Status::make_rep_from_string_view(uintptr_t inlined_rep,
                                             std::string_view msg,
                                             turbo::SourceLocation loc) {
-        return MakeStatusRepImpl<std::string_view>(inlined_rep, msg, loc);
+        return make_status_rep_impl<std::string_view>(inlined_rep, msg, loc);
     }
 
     uintptr_t Status::MakeRepFromStringRvalue(uintptr_t inlined_rep,
                                               std::string &&msg,
                                               turbo::SourceLocation loc) {
-        return MakeStatusRepImpl<std::string &&>(inlined_rep, std::move(msg), loc);
+        return make_status_rep_impl<std::string &&>(inlined_rep, std::move(msg), loc);
     }
 
-    uintptr_t Status::AddSourceLocationImpl(uintptr_t rep,
+    uintptr_t Status::add_source_location_impl(uintptr_t rep,
                                             turbo::SourceLocation loc) {
-        if (IsInlined(rep)) return rep;
+        if (is_inlined(rep)) return rep;
         if (loc.file_name()[0] == '\0') return rep;
         status_internal::StatusRep *rep_ptr = PrepareToModify(rep);
-        rep_ptr->AddSourceLocation(loc);
-        return PointerToRep(rep_ptr);
+        rep_ptr->add_source_location(loc);
+        return pointer_to_rep(rep_ptr);
     }
 
     status_internal::StatusRep * turbo_nonnull Status::PrepareToModify(
         uintptr_t rep) {
-        if (IsInlined(rep)) {
-            return new status_internal::StatusRep(InlinedRepToCode(rep),
+        if (is_inlined(rep)) {
+            return new status_internal::StatusRep(inlined_rep_to_code(rep),
                                                   std::string_view(), nullptr);
         }
-        return RepToPointer(rep)->CloneAndUnref();
+        return rep_to_pointer(rep)->CloneAndUnref();
     }
 
-    std::string Status::ToStringSlow(uintptr_t rep, StatusToStringMode mode) {
-        if (IsInlined(rep)) {
-            return turbo::StrCat(turbo::StatusCodeToString(InlinedRepToCode(rep)), ": ");
+    std::string Status::to_string_slow(uintptr_t rep, StatusToStringMode mode) {
+        if (is_inlined(rep)) {
+            return turbo::str_cat(turbo::status_code_to_string(inlined_rep_to_code(rep)), ": ");
         }
-        return RepToPointer(rep)->ToString(mode);
+        return rep_to_pointer(rep)->ToString(mode);
     }
 
     std::ostream &operator<<(std::ostream &os, const Status &x) {
@@ -167,7 +167,7 @@ namespace turbo {
     namespace status_internal {
         // We use an int in the template parameter to shorten mangled names.
         template<int error_code>
-        Status MakeErrorImpl(std::string_view message, SourceLocation loc) {
+        Status make_error_impl(std::string_view message, turbo::SourceLocation loc) {
             return Status(static_cast<StatusCode>(error_code), message, loc);
         }
 
@@ -175,102 +175,102 @@ namespace turbo {
         // If we add more error code, we need to add their values on this list.
         // Using ints here instead of static_cast<int>(StatusCode::kFoo) makes it easier
         // to see that the list is complete.
-        template Status MakeErrorImpl<0>(std::string_view, SourceLocation);
+        template Status make_error_impl<0>(std::string_view, turbo::SourceLocation);
 
-        template Status MakeErrorImpl<1>(std::string_view, SourceLocation);
+        template Status make_error_impl<1>(std::string_view, turbo::SourceLocation);
 
-        template Status MakeErrorImpl<2>(std::string_view, SourceLocation);
+        template Status make_error_impl<2>(std::string_view, turbo::SourceLocation);
 
-        template Status MakeErrorImpl<3>(std::string_view, SourceLocation);
+        template Status make_error_impl<3>(std::string_view, turbo::SourceLocation);
 
-        template Status MakeErrorImpl<4>(std::string_view, SourceLocation);
+        template Status make_error_impl<4>(std::string_view, turbo::SourceLocation);
 
-        template Status MakeErrorImpl<5>(std::string_view, SourceLocation);
+        template Status make_error_impl<5>(std::string_view, turbo::SourceLocation);
 
-        template Status MakeErrorImpl<6>(std::string_view, SourceLocation);
+        template Status make_error_impl<6>(std::string_view, turbo::SourceLocation);
 
-        template Status MakeErrorImpl<7>(std::string_view, SourceLocation);
+        template Status make_error_impl<7>(std::string_view, turbo::SourceLocation);
 
-        template Status MakeErrorImpl<8>(std::string_view, SourceLocation);
+        template Status make_error_impl<8>(std::string_view, turbo::SourceLocation);
 
-        template Status MakeErrorImpl<9>(std::string_view, SourceLocation);
+        template Status make_error_impl<9>(std::string_view, turbo::SourceLocation);
 
-        template Status MakeErrorImpl<10>(std::string_view, SourceLocation);
+        template Status make_error_impl<10>(std::string_view, turbo::SourceLocation);
 
-        template Status MakeErrorImpl<11>(std::string_view, SourceLocation);
+        template Status make_error_impl<11>(std::string_view, turbo::SourceLocation);
 
-        template Status MakeErrorImpl<12>(std::string_view, SourceLocation);
+        template Status make_error_impl<12>(std::string_view, turbo::SourceLocation);
 
-        template Status MakeErrorImpl<13>(std::string_view, SourceLocation);
+        template Status make_error_impl<13>(std::string_view, turbo::SourceLocation);
 
-        template Status MakeErrorImpl<14>(std::string_view, SourceLocation);
+        template Status make_error_impl<14>(std::string_view, turbo::SourceLocation);
 
-        template Status MakeErrorImpl<15>(std::string_view, SourceLocation);
+        template Status make_error_impl<15>(std::string_view, turbo::SourceLocation);
 
-        template Status MakeErrorImpl<16>(std::string_view, SourceLocation);
+        template Status make_error_impl<16>(std::string_view, turbo::SourceLocation);
     } // namespace status_internal
 
-    bool IsAborted(const Status &status) {
+    bool is_aborted(const Status &status) {
         return status.code() == turbo::StatusCode::kAborted;
     }
 
-    bool IsAlreadyExists(const Status &status) {
+    bool is_already_exists(const Status &status) {
         return status.code() == turbo::StatusCode::kAlreadyExists;
     }
 
-    bool IsCancelled(const Status &status) {
+    bool is_cancelled(const Status &status) {
         return status.code() == turbo::StatusCode::kCancelled;
     }
 
-    bool IsDataLoss(const Status &status) {
+    bool is_data_loss(const Status &status) {
         return status.code() == turbo::StatusCode::kDataLoss;
     }
 
-    bool IsDeadlineExceeded(const Status &status) {
+    bool is_deadline_exceeded(const Status &status) {
         return status.code() == turbo::StatusCode::kDeadlineExceeded;
     }
 
-    bool IsFailedPrecondition(const Status &status) {
+    bool is_failed_precondition(const Status &status) {
         return status.code() == turbo::StatusCode::kFailedPrecondition;
     }
 
-    bool IsInternal(const Status &status) {
+    bool is_internal(const Status &status) {
         return status.code() == turbo::StatusCode::kInternal;
     }
 
-    bool IsInvalidArgument(const Status &status) {
+    bool is_invalid_argument(const Status &status) {
         return status.code() == turbo::StatusCode::kInvalidArgument;
     }
 
-    bool IsNotFound(const Status &status) {
+    bool is_not_found(const Status &status) {
         return status.code() == turbo::StatusCode::kNotFound;
     }
 
-    bool IsOutOfRange(const Status &status) {
+    bool is_out_of_range(const Status &status) {
         return status.code() == turbo::StatusCode::kOutOfRange;
     }
 
-    bool IsPermissionDenied(const Status &status) {
+    bool is_permission_denied(const Status &status) {
         return status.code() == turbo::StatusCode::kPermissionDenied;
     }
 
-    bool IsResourceExhausted(const Status &status) {
+    bool is_resource_exhausted(const Status &status) {
         return status.code() == turbo::StatusCode::kResourceExhausted;
     }
 
-    bool IsUnauthenticated(const Status &status) {
+    bool is_unauthenticated(const Status &status) {
         return status.code() == turbo::StatusCode::kUnauthenticated;
     }
 
-    bool IsUnavailable(const Status &status) {
+    bool is_unavailable(const Status &status) {
         return status.code() == turbo::StatusCode::kUnavailable;
     }
 
-    bool IsUnimplemented(const Status &status) {
+    bool is_unimplemented(const Status &status) {
         return status.code() == turbo::StatusCode::kUnimplemented;
     }
 
-    bool IsUnknown(const Status &status) {
+    bool is_unknown(const Status &status) {
         return status.code() == turbo::StatusCode::kUnknown;
     }
 
@@ -413,7 +413,7 @@ namespace turbo {
     namespace {
         std::string MessageForErrnoToStatus(int error_number,
                                             std::string_view message) {
-            return turbo::StrCat(message, ": ",
+            return turbo::str_cat(message, ": ",
                                  turbo::base_internal::StrError(error_number));
         }
     } // namespace
@@ -424,7 +424,7 @@ namespace turbo {
                       MessageForErrnoToStatus(error_number, message), loc);
     }
 
-    const char * turbo_nonnull StatusMessageAsCStr(const Status &status) {
+    const char * turbo_nonnull status_message_as_cstr(const Status &status) {
         // As an internal implementation detail, we guarantee that if status.message()
         // is non-empty, then the resulting std::string_view is null terminated.
         auto sv_message = status.message();

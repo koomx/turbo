@@ -19,7 +19,7 @@
 #include <string>
 #include <string_view>
 
-#include <turbo/log/log_sink.h>
+#include <turbo/log/sinks/async_sink.h>
 #include <turbo/log/sinks/log_filename.h>
 #include <turbo/time/time.h>
 
@@ -28,28 +28,26 @@ namespace log_internal {
     class AppendFile;
 }  // namespace log_internal
 
-    // Size-based rotation: active file is `base_filename`;
-    // rotated files are `basename_0001.ext` ... `basename_NNNN.ext`.
-    // No per-sink mutex: LogSinkSet serializes send/flush.
-    class RotatingFileSink : public LogSink {
+    class RotatingFileSink : public AsyncSink {
     public:
         RotatingFileSink(std::string_view base_filename, size_t max_size_bytes,
                          size_t max_files = 100, int check_interval_s = 60);
 
         ~RotatingFileSink() override;
 
-        void send(const turbo::LogEntry &entry) override;
-        void flush() override;
+    protected:
+        void emit(std::string_view text, turbo::Time timestamp) override;
+        void emit_flush() override;
+        bool need_rewind(size_t addition_size, turbo::Time timestamp) override;
+        void reopen() override;
 
     private:
-        void maybe_rotate(turbo::Time now);
+        void maybe_rotate();
 
         std::string _active_path;
         BaseFilename _base;
         size_t _max_size;
         size_t _max_files;
-        int _check_interval_s;
-        turbo::Time _next_check{};
         std::unique_ptr<log_internal::AppendFile> _file;
     };
 

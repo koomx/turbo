@@ -124,7 +124,6 @@ turbo_cc_test(
     turbo::config
     turbo::core_headers
     turbo::hash_testing
-    turbo::random_random
     turbo::strings
     turbo::str_format
     turbo::time_zone

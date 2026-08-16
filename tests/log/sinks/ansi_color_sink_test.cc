@@ -51,7 +51,8 @@ protected:
     }
 
     FILE* OpenFile() {
-        _fp = std::fopen(tmpfile_.c_str(), "w+");
+        // path::c_str() is wchar_t* on Windows; fopen needs narrow chars.
+        _fp = std::fopen(tmpfile_.string().c_str(), "w+");
         return _fp;
     }
 

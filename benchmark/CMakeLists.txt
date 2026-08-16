@@ -16,6 +16,9 @@
 configure_file(${PROJECT_SOURCE_DIR}/benchmark/config.h.in
                ${PROJECT_SOURCE_DIR}/benchmark/config.h @ONLY)
 
-find_package(benchmark REQUIRED)
+if (NOT TARGET benchmark::benchmark)
+    find_package(benchmark REQUIRED)
+endif ()
+
 
 add_subdirectory(log)

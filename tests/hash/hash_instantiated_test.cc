@@ -35,12 +35,6 @@
 #include <vector>
 
 #include <gtest/gtest.h>
-#include <turbo/container/btree_map.h>
-#include <turbo/container/btree_set.h>
-#include <turbo/container/flat_hash_map.h>
-#include <turbo/container/flat_hash_set.h>
-#include <turbo/container/node_hash_map.h>
-#include <turbo/container/node_hash_set.h>
 #include <tests/hash/hash_testing.h>
 #include <tests/hash/internal/hash_test.h>
 
@@ -121,8 +115,7 @@ using IntSequenceTypes = testing::Types<
     std::vector<bool>, TypeErasedContainer<std::vector<int>>, std::set<int>,
     std::multiset<int>, UnorderedSequence<int>,
     TypeErasedContainer<UnorderedSequence<int>>, std::unordered_set<int>,
-    std::unordered_multiset<int>, turbo::flat_hash_set<int>,
-    turbo::node_hash_set<int>, turbo::btree_set<int>>;
+    std::unordered_multiset<int>>;
 INSTANTIATE_TYPED_TEST_SUITE_P(My, HashValueSequenceTest, IntSequenceTypes);
 
 template <typename T>
@@ -185,8 +178,6 @@ TYPED_TEST_P(HashValueAssociativeMapTest, BasicUsage) {
 REGISTER_TYPED_TEST_SUITE_P(HashValueAssociativeMapTest, BasicUsage);
 using AssociativeMapTypes = testing::Types<
     std::map<int, std::string>, std::unordered_map<int, std::string>,
-    turbo::flat_hash_map<int, std::string>,
-    turbo::node_hash_map<int, std::string>, turbo::btree_map<int, std::string>,
     UnorderedSequence<std::pair<const int, std::string>>>;
 INSTANTIATE_TYPED_TEST_SUITE_P(My, HashValueAssociativeMapTest,
                                AssociativeMapTypes);

@@ -23,247 +23,239 @@
 #include <limits>
 #include <string>
 
-#include <turbo/macros/config.h>
+#include <string_view>
 #include <turbo/base/internal/raw_logging.h>
 #include <turbo/base/nullability.h>
 #include <turbo/base/throw_delegate.h>
+#include <turbo/macros/config.h>
 #include <turbo/strings/internal/append_and_overwrite.h>
 #include <turbo/strings/resize_and_overwrite.h>
-#include <string_view>
 
 namespace turbo {
 
+    // ----------------------------------------------------------------------
+    // str_cat()
+    //    This merges the given strings or integers, with no delimiter. This
+    //    is designed to be the fastest possible way to construct a string out
+    //    of a mix of raw C strings, string_views, strings, and integer values.
+    // ----------------------------------------------------------------------
 
-// ----------------------------------------------------------------------
-// StrCat()
-//    This merges the given strings or integers, with no delimiter. This
-//    is designed to be the fastest possible way to construct a string out
-//    of a mix of raw C strings, string_views, strings, and integer values.
-// ----------------------------------------------------------------------
+    namespace {
+        // Append is merely a version of memcpy that returns the address of the byte
+        // after the area just overwritten.
+        inline char* turbo_nonnull Append(char* turbo_nonnull out, const AlphaNum& x) {
+            // memcpy is allowed to overwrite arbitrary memory, so doing this after the
+            // call would force an extra fetch of x.size().
+            char* after = out + x.size();
+            if (x.size() != 0) {
+                memcpy(out, x.data(), x.size());
+            }
+            return after;
+        }
 
-namespace {
-// Append is merely a version of memcpy that returns the address of the byte
-// after the area just overwritten.
-inline char* turbo_nonnull Append(char* turbo_nonnull out, const AlphaNum& x) {
-  // memcpy is allowed to overwrite arbitrary memory, so doing this after the
-  // call would force an extra fetch of x.size().
-  char* after = out + x.size();
-  if (x.size() != 0) {
-    memcpy(out, x.data(), x.size());
-  }
-  return after;
-}
+        // Safely adds size_t values, throwing std::length_error if overflow occurs.
+        inline size_t SafeAdd(size_t a, size_t b) {
+            const uint64_t sum = static_cast<uint64_t>(a) + b;
+            if (KUMO_UNLIKELY(sum > (std::numeric_limits<size_t>::max)())) {
+                ThrowStdLengthError("turbo string append length overflow");
+            }
+            return static_cast<size_t>(sum);
+        }
 
-// Safely adds size_t values, throwing std::length_error if overflow occurs.
-inline size_t SafeAdd(size_t a, size_t b) {
-  const uint64_t sum = static_cast<uint64_t>(a) + b;
-  if (KUMO_UNLIKELY(sum > (std::numeric_limits<size_t>::max)())) {
-    ThrowStdLengthError("turbo string append length overflow");
-  }
-  return static_cast<size_t>(sum);
-}
+        inline size_t SafeAdd(std::initializer_list<size_t> sizes) {
+            uint64_t sum = 0;
+            for (size_t size : sizes) {
+                sum += size;
+            }
+            if (KUMO_UNLIKELY(sum > (std::numeric_limits<size_t>::max)())) {
+                ThrowStdLengthError("turbo string append length overflow");
+            }
+            return static_cast<size_t>(sum);
+        }
 
-inline size_t SafeAdd(std::initializer_list<size_t> sizes) {
-  uint64_t sum = 0;
-  for (size_t size : sizes) {
-    sum += size;
-  }
-  if (KUMO_UNLIKELY(sum > (std::numeric_limits<size_t>::max)())) {
-    ThrowStdLengthError("turbo string append length overflow");
-  }
-  return static_cast<size_t>(sum);
-}
+    } // namespace
 
-}  // namespace
+    std::string str_cat(const AlphaNum& a, const AlphaNum& b) {
+        std::string result;
+        // Use uint64_t to prevent size_t overflow. We assume it is not possible for
+        // in memory strings to overflow a uint64_t.
+        constexpr uint64_t kMaxSize = uint64_t { std::numeric_limits<size_t>::max() };
+        const uint64_t result_size = static_cast<uint64_t>(a.size()) + static_cast<uint64_t>(b.size());
+        TURBO_INTERNAL_CHECK(result_size <= kMaxSize, "size_t overflow");
+        turbo::StringResizeAndOverwrite(result, static_cast<size_t>(result_size),
+            [&a, &b](char* const begin, size_t buf_size) {
+                char* out = begin;
+                out = Append(out, a);
+                out = Append(out, b);
+                assert(out == begin + buf_size);
+                return buf_size;
+            });
+        return result;
+    }
 
-std::string StrCat(const AlphaNum& a, const AlphaNum& b) {
-  std::string result;
-  // Use uint64_t to prevent size_t overflow. We assume it is not possible for
-  // in memory strings to overflow a uint64_t.
-  constexpr uint64_t kMaxSize = uint64_t{std::numeric_limits<size_t>::max()};
-  const uint64_t result_size =
-      static_cast<uint64_t>(a.size()) + static_cast<uint64_t>(b.size());
-  TURBO_INTERNAL_CHECK(result_size <= kMaxSize, "size_t overflow");
-  turbo::StringResizeAndOverwrite(result, static_cast<size_t>(result_size),
-                                 [&a, &b](char* const begin, size_t buf_size) {
-                                   char* out = begin;
-                                   out = Append(out, a);
-                                   out = Append(out, b);
-                                   assert(out == begin + buf_size);
-                                   return buf_size;
-                                 });
-  return result;
-}
+    std::string str_cat(const AlphaNum& a, const AlphaNum& b, const AlphaNum& c) {
+        std::string result;
+        // Use uint64_t to prevent size_t overflow. We assume it is not possible for
+        // in memory strings to overflow a uint64_t.
+        constexpr uint64_t kMaxSize = uint64_t { std::numeric_limits<size_t>::max() };
+        const uint64_t result_size = static_cast<uint64_t>(a.size()) + static_cast<uint64_t>(b.size()) + static_cast<uint64_t>(c.size());
+        TURBO_INTERNAL_CHECK(result_size <= kMaxSize, "size_t overflow");
+        turbo::StringResizeAndOverwrite(
+            result, static_cast<size_t>(result_size),
+            [&a, &b, &c](char* const begin, size_t buf_size) {
+                char* out = begin;
+                out = Append(out, a);
+                out = Append(out, b);
+                out = Append(out, c);
+                assert(out == begin + buf_size);
+                return buf_size;
+            });
+        return result;
+    }
 
-std::string StrCat(const AlphaNum& a, const AlphaNum& b, const AlphaNum& c) {
-  std::string result;
-  // Use uint64_t to prevent size_t overflow. We assume it is not possible for
-  // in memory strings to overflow a uint64_t.
-  constexpr uint64_t kMaxSize = uint64_t{std::numeric_limits<size_t>::max()};
-  const uint64_t result_size = static_cast<uint64_t>(a.size()) +
-                               static_cast<uint64_t>(b.size()) +
-                               static_cast<uint64_t>(c.size());
-  TURBO_INTERNAL_CHECK(result_size <= kMaxSize, "size_t overflow");
-  turbo::StringResizeAndOverwrite(
-      result, static_cast<size_t>(result_size),
-      [&a, &b, &c](char* const begin, size_t buf_size) {
-        char* out = begin;
-        out = Append(out, a);
-        out = Append(out, b);
-        out = Append(out, c);
-        assert(out == begin + buf_size);
-        return buf_size;
-      });
-  return result;
-}
+    std::string str_cat(const AlphaNum& a, const AlphaNum& b, const AlphaNum& c,
+        const AlphaNum& d) {
+        std::string result;
+        // Use uint64_t to prevent size_t overflow. We assume it is not possible for
+        // in memory strings to overflow a uint64_t.
+        constexpr uint64_t kMaxSize = uint64_t { std::numeric_limits<size_t>::max() };
+        const uint64_t result_size = static_cast<uint64_t>(a.size()) + static_cast<uint64_t>(b.size()) + static_cast<uint64_t>(c.size()) + static_cast<uint64_t>(d.size());
+        TURBO_INTERNAL_CHECK(result_size <= kMaxSize, "size_t overflow");
+        turbo::StringResizeAndOverwrite(
+            result, static_cast<size_t>(result_size),
+            [&a, &b, &c, &d](char* const begin, size_t buf_size) {
+                char* out = begin;
+                out = Append(out, a);
+                out = Append(out, b);
+                out = Append(out, c);
+                out = Append(out, d);
+                assert(out == begin + buf_size);
+                return buf_size;
+            });
+        return result;
+    }
 
-std::string StrCat(const AlphaNum& a, const AlphaNum& b, const AlphaNum& c,
-                   const AlphaNum& d) {
-  std::string result;
-  // Use uint64_t to prevent size_t overflow. We assume it is not possible for
-  // in memory strings to overflow a uint64_t.
-  constexpr uint64_t kMaxSize = uint64_t{std::numeric_limits<size_t>::max()};
-  const uint64_t result_size =
-      static_cast<uint64_t>(a.size()) + static_cast<uint64_t>(b.size()) +
-      static_cast<uint64_t>(c.size()) + static_cast<uint64_t>(d.size());
-  TURBO_INTERNAL_CHECK(result_size <= kMaxSize, "size_t overflow");
-  turbo::StringResizeAndOverwrite(
-      result, static_cast<size_t>(result_size),
-      [&a, &b, &c, &d](char* const begin, size_t buf_size) {
-        char* out = begin;
-        out = Append(out, a);
-        out = Append(out, b);
-        out = Append(out, c);
-        out = Append(out, d);
-        assert(out == begin + buf_size);
-        return buf_size;
-      });
-  return result;
-}
+    namespace strings_internal {
 
-namespace strings_internal {
+        // Do not call directly - these are not part of the public API.
+        std::string CatPieces(std::initializer_list<std::string_view> pieces) {
+            std::string result;
+            // Use uint64_t to prevent size_t overflow. We assume it is not possible for
+            // in memory strings to overflow a uint64_t.
+            constexpr uint64_t kMaxSize = uint64_t { std::numeric_limits<size_t>::max() };
+            uint64_t total_size = 0;
+            for (std::string_view piece : pieces) {
+                total_size += piece.size();
+            }
+            TURBO_INTERNAL_CHECK(total_size <= kMaxSize, "size_t overflow");
+            turbo::StringResizeAndOverwrite(result, static_cast<size_t>(total_size),
+                [&pieces](char* const begin, size_t buf_size) {
+                    char* out = begin;
+                    for (std::string_view piece : pieces) {
+                        const size_t this_size = piece.size();
+                        if (this_size != 0) {
+                            memcpy(out, piece.data(), this_size);
+                            out += this_size;
+                        }
+                    }
+                    assert(out == begin + buf_size);
+                    return buf_size;
+                });
+            return result;
+        }
 
-// Do not call directly - these are not part of the public API.
-std::string CatPieces(std::initializer_list<std::string_view> pieces) {
-  std::string result;
-  // Use uint64_t to prevent size_t overflow. We assume it is not possible for
-  // in memory strings to overflow a uint64_t.
-  constexpr uint64_t kMaxSize = uint64_t{std::numeric_limits<size_t>::max()};
-  uint64_t total_size = 0;
-  for (std::string_view piece : pieces) {
-    total_size += piece.size();
-  }
-  TURBO_INTERNAL_CHECK(total_size <= kMaxSize, "size_t overflow");
-  turbo::StringResizeAndOverwrite(result, static_cast<size_t>(total_size),
-                                 [&pieces](char* const begin, size_t buf_size) {
-                                   char* out = begin;
-                                   for (std::string_view piece : pieces) {
-                                     const size_t this_size = piece.size();
-                                     if (this_size != 0) {
-                                       memcpy(out, piece.data(), this_size);
-                                       out += this_size;
-                                     }
-                                   }
-                                   assert(out == begin + buf_size);
-                                   return buf_size;
-                                 });
-  return result;
-}
-
-// It's possible to call StrAppend with an std::string_view that is itself a
+// It's possible to call str_append with an std::string_view that is itself a
 // fragment of the string we're appending to.  However the results of this are
 // random. Therefore, check for this in debug mode.  Use unsigned math so we
 // only have to do one comparison. Note, there's an exception case: appending an
 // empty string is always allowed.
 #define ASSERT_NO_OVERLAP(dest, src) \
-  assert(((src).size() == 0) ||      \
-         (uintptr_t((src).data() - (dest).data()) > uintptr_t((dest).size())))
+    assert(((src).size() == 0) || (uintptr_t((src).data() - (dest).data()) > uintptr_t((dest).size())))
 
-void AppendPieces(std::string* turbo_nonnull dest,
-                  std::initializer_list<std::string_view> pieces) {
-  size_t to_append = 0;
-  for (std::string_view piece : pieces) {
-    ASSERT_NO_OVERLAP(*dest, piece);
-    to_append = SafeAdd(to_append, piece.size());
-  }
-  StringAppendAndOverwrite(*dest, to_append,
-                           [&pieces](char* const buf, size_t buf_size) {
-                             char* out = buf;
-                             for (std::string_view piece : pieces) {
-                               const size_t this_size = piece.size();
-                               if (this_size != 0) {
-                                 memcpy(out, piece.data(), this_size);
-                                 out += this_size;
-                               }
-                             }
-                             assert(out == buf + buf_size);
-                             return buf_size;
-                           });
-}
+        void AppendPieces(std::string* turbo_nonnull dest,
+            std::initializer_list<std::string_view> pieces) {
+            size_t to_append = 0;
+            for (std::string_view piece : pieces) {
+                ASSERT_NO_OVERLAP(*dest, piece);
+                to_append = SafeAdd(to_append, piece.size());
+            }
+            StringAppendAndOverwrite(*dest, to_append,
+                [&pieces](char* const buf, size_t buf_size) {
+                    char* out = buf;
+                    for (std::string_view piece : pieces) {
+                        const size_t this_size = piece.size();
+                        if (this_size != 0) {
+                            memcpy(out, piece.data(), this_size);
+                            out += this_size;
+                        }
+                    }
+                    assert(out == buf + buf_size);
+                    return buf_size;
+                });
+        }
 
-}  // namespace strings_internal
+    } // namespace strings_internal
 
-void StrAppend(std::string* turbo_nonnull dest, const AlphaNum& a) {
-  ASSERT_NO_OVERLAP(*dest, a);
-  strings_internal::StringAppendAndOverwrite(
-      *dest, a.size(), [&a](char* const buf, size_t buf_size) {
-        char* out = buf;
-        out = Append(out, a);
-        assert(out == buf + buf_size);
-        return buf_size;
-      });
-}
+    void str_append(std::string* turbo_nonnull dest, const AlphaNum& a) {
+        ASSERT_NO_OVERLAP(*dest, a);
+        strings_internal::StringAppendAndOverwrite(
+            *dest, a.size(), [&a](char* const buf, size_t buf_size) {
+                char* out = buf;
+                out = Append(out, a);
+                assert(out == buf + buf_size);
+                return buf_size;
+            });
+    }
 
-void StrAppend(std::string* turbo_nonnull dest, const AlphaNum& a,
-               const AlphaNum& b) {
-  ASSERT_NO_OVERLAP(*dest, a);
-  ASSERT_NO_OVERLAP(*dest, b);
-  strings_internal::StringAppendAndOverwrite(
-      *dest, SafeAdd(a.size(), b.size()),
-      [&a, &b](char* const buf, size_t buf_size) {
-        char* out = buf;
-        out = Append(out, a);
-        out = Append(out, b);
-        assert(out == buf + buf_size);
-        return buf_size;
-      });
-}
+    void str_append(std::string* turbo_nonnull dest, const AlphaNum& a,
+        const AlphaNum& b) {
+        ASSERT_NO_OVERLAP(*dest, a);
+        ASSERT_NO_OVERLAP(*dest, b);
+        strings_internal::StringAppendAndOverwrite(
+            *dest, SafeAdd(a.size(), b.size()),
+            [&a, &b](char* const buf, size_t buf_size) {
+                char* out = buf;
+                out = Append(out, a);
+                out = Append(out, b);
+                assert(out == buf + buf_size);
+                return buf_size;
+            });
+    }
 
-void StrAppend(std::string* turbo_nonnull dest, const AlphaNum& a,
-               const AlphaNum& b, const AlphaNum& c) {
-  ASSERT_NO_OVERLAP(*dest, a);
-  ASSERT_NO_OVERLAP(*dest, b);
-  ASSERT_NO_OVERLAP(*dest, c);
-  strings_internal::StringAppendAndOverwrite(
-      *dest, SafeAdd({a.size(), b.size(), c.size()}),
-      [&a, &b, &c](char* const buf, size_t buf_size) {
-        char* out = buf;
-        out = Append(out, a);
-        out = Append(out, b);
-        out = Append(out, c);
-        assert(out == buf + buf_size);
-        return buf_size;
-      });
-}
+    void str_append(std::string* turbo_nonnull dest, const AlphaNum& a,
+        const AlphaNum& b, const AlphaNum& c) {
+        ASSERT_NO_OVERLAP(*dest, a);
+        ASSERT_NO_OVERLAP(*dest, b);
+        ASSERT_NO_OVERLAP(*dest, c);
+        strings_internal::StringAppendAndOverwrite(
+            *dest, SafeAdd({ a.size(), b.size(), c.size() }),
+            [&a, &b, &c](char* const buf, size_t buf_size) {
+                char* out = buf;
+                out = Append(out, a);
+                out = Append(out, b);
+                out = Append(out, c);
+                assert(out == buf + buf_size);
+                return buf_size;
+            });
+    }
 
-void StrAppend(std::string* turbo_nonnull dest, const AlphaNum& a,
-               const AlphaNum& b, const AlphaNum& c, const AlphaNum& d) {
-  ASSERT_NO_OVERLAP(*dest, a);
-  ASSERT_NO_OVERLAP(*dest, b);
-  ASSERT_NO_OVERLAP(*dest, c);
-  ASSERT_NO_OVERLAP(*dest, d);
-  strings_internal::StringAppendAndOverwrite(
-      *dest, SafeAdd({a.size(), b.size(), c.size(), d.size()}),
-      [&a, &b, &c, &d](char* const buf, size_t buf_size) {
-        char* out = buf;
-        out = Append(out, a);
-        out = Append(out, b);
-        out = Append(out, c);
-        out = Append(out, d);
-        assert(out == buf + buf_size);
-        return buf_size;
-      });
-}
+    void str_append(std::string* turbo_nonnull dest, const AlphaNum& a,
+        const AlphaNum& b, const AlphaNum& c, const AlphaNum& d) {
+        ASSERT_NO_OVERLAP(*dest, a);
+        ASSERT_NO_OVERLAP(*dest, b);
+        ASSERT_NO_OVERLAP(*dest, c);
+        ASSERT_NO_OVERLAP(*dest, d);
+        strings_internal::StringAppendAndOverwrite(
+            *dest, SafeAdd({ a.size(), b.size(), c.size(), d.size() }),
+            [&a, &b, &c, &d](char* const buf, size_t buf_size) {
+                char* out = buf;
+                out = Append(out, a);
+                out = Append(out, b);
+                out = Append(out, c);
+                out = Append(out, d);
+                assert(out == buf + buf_size);
+                return buf_size;
+            });
+    }
 
-
-}  // namespace turbo
+} // namespace turbo

@@ -23,20 +23,16 @@
 
 namespace turbo {
 
+    // Detects if type `T` supports streaming to `std::ostream`s with `operator<<`.
 
-// Detects if type `T` supports streaming to `std::ostream`s with `operator<<`.
+    template <typename T, typename = void>
+    struct HasOstreamOperator : std::false_type { };
 
-template <typename T, typename = void>
-struct HasOstreamOperator : std::false_type {};
+    template <typename T>
+    struct HasOstreamOperator<
+        T, std::enable_if_t<std::is_same<std::ostream&, decltype(std::declval<std::ostream&>() << std::declval<const T&>())>::value>>
+        : std::true_type { };
 
-template <typename T>
-struct HasOstreamOperator<
-    T, std::enable_if_t<std::is_same<
-           std::ostream&, decltype(std::declval<std::ostream&>()
-                                   << std::declval<const T&>())>::value>>
-    : std::true_type {};
+} // namespace turbo
 
-
-}  // namespace turbo
-
-#endif  // TURBO_STRINGS_HAS_OSTREAM_OPERATOR_H_
+#endif // TURBO_STRINGS_HAS_OSTREAM_OPERATOR_H_

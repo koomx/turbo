@@ -55,3 +55,10 @@ foreach (case IN LISTS TIME_TESTS)
             ${KMCMAKE_DEPS_LINK}
     )
 endforeach ()
+
+# Same bundled zoneinfo as tests/cctz (needed on Windows CI without tzdata).
+set(_TURBO_TEST_TZDIR "${PROJECT_SOURCE_DIR}/tests/cctz/testdata/zoneinfo")
+foreach (case IN LISTS TIME_TESTS)
+    set_tests_properties(time_${case} PROPERTIES
+            ENVIRONMENT "TZDIR=${_TURBO_TEST_TZDIR}")
+endforeach ()

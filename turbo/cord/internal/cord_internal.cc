@@ -36,7 +36,7 @@ void RefcountAndFlags::IncrementOverflow() {
 }
 
 void LogFatalNodeType(CordRep* rep) {
-  TURBO_INTERNAL_LOG(FATAL, turbo::StrCat("Unexpected node type: ",
+  TURBO_INTERNAL_LOG(FATAL, turbo::str_cat("Unexpected node type: ",
                                         static_cast<int>(rep->tag)));
 }
 

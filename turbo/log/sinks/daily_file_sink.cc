@@ -22,44 +22,50 @@ namespace turbo {
     DailyFileSink::DailyFileSink(std::string_view base_filename,
                                  uint16_t max_files, int check_interval_s,
                                  bool truncate, bool utc)
-        : _base(base_filename),
+        : AsyncSink(check_interval_s),
+          _base(base_filename),
           _truncate(truncate),
           _utc(utc),
           _max_files(max_files),
-          _check_interval_s(check_interval_s),
-          _next_check(turbo::Now() + turbo::Seconds(check_interval_s)),
           _file(std::make_unique<log_internal::AppendFile>()) {
         rotate_file(turbo::Now());
     }
 
     DailyFileSink::~DailyFileSink() {
+        stop();
         if (_file) {
             _file->close();
         }
     }
 
-    void DailyFileSink::send(const turbo::LogEntry &entry) {
-        // Called under LogSinkSet mutex — no sink-level lock.
-        rotate_file(entry.timestamp());
+    void DailyFileSink::emit(std::string_view text, turbo::Time timestamp) {
+        rotate_file(timestamp);
         if (!_file) {
             return;
         }
-        _file->write(entry.text_message_with_prefix_and_newline());
+        _file->write(text);
     }
 
-    void DailyFileSink::flush() {
+    void DailyFileSink::emit_flush() {
         if (_file) {
             _file->flush();
         }
     }
 
-    void DailyFileSink::rotate_file(turbo::Time stamp) {
-        if (stamp >= _next_check) {
-            _next_check = stamp + turbo::Seconds(_check_interval_s);
-            if (_file) {
-                _file->reopen();
-            }
+    bool DailyFileSink::need_rewind(size_t, turbo::Time timestamp) {
+        if (!_file) {
+            return false;
         }
+        return daily_log_path(_base, timestamp, _utc) != _file->file_path();
+    }
+
+    void DailyFileSink::reopen() {
+        if (_file) {
+            _file->reopen();
+        }
+    }
+
+    void DailyFileSink::rotate_file(turbo::Time stamp) {
         const std::string path = daily_log_path(_base, stamp, _utc);
         if (_file && _file->file_path() == path) {
             return;

@@ -24,11 +24,11 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <turbo/types/source_location.h>
+#include <string_view>
+#include <turbo/status/result.h>
 #include <turbo/status/status.h>
 #include <turbo/status/status_builder.h>
-#include <turbo/status/statusor.h>
-#include <string_view>
-#include <turbo/types/source_location.h>
 
 namespace {
 
@@ -45,10 +45,10 @@ static_assert(!std::is_copy_constructible_v<StatusAdaptorForMacros>);
 static_assert(!std::is_copy_assignable_v<ReturnIfErrorAdaptor>);
 static_assert(!std::is_copy_assignable_v<StatusAdaptorForMacros>);
 
-turbo::Status ReturnOk() { return turbo::OkStatus(); }
+turbo::Status ReturnOk() { return turbo::ok_status(); }
 
 turbo::StatusBuilder ReturnOkBuilder() {
-  return turbo::StatusBuilder(turbo::OkStatus());
+  return turbo::StatusBuilder(turbo::ok_status());
 }
 
 turbo::Status ReturnError(std::string_view msg) {
@@ -59,26 +59,26 @@ turbo::StatusBuilder ReturnErrorBuilder(std::string_view msg) {
   return turbo::StatusBuilder(turbo::Status(turbo::StatusCode::kUnknown, msg));
 }
 
-turbo::StatusOr<int> ReturnStatusOrValue(int v) { return v; }
+turbo::Result<int> ReturnResultValue(int v) { return v; }
 
-turbo::StatusOr<int> ReturnStatusOrError(std::string_view msg) {
+turbo::Result<int> ReturnResultError(std::string_view msg) {
   return turbo::Status(turbo::StatusCode::kUnknown, msg);
 }
 
 template <class... Args>
-turbo::StatusOr<std::tuple<Args...>> ReturnStatusOrTupleValue(Args&&... v) {
+turbo::Result<std::tuple<Args...>> ReturnResultTupleValue(Args&&... v) {
   return std::tuple<Args...>(std::forward<Args>(v)...);
 }
 
 template <class... Args>
-turbo::StatusOr<std::tuple<Args...>> ReturnStatusOrTupleError(
+turbo::Result<std::tuple<Args...>> ReturnResultTupleError(
     std::string_view msg) {
   return turbo::Status(turbo::StatusCode::kUnknown, msg);
 }
 
-turbo::StatusOr<int&> ReturnStatusOrRef(int& v) { return v; }
+turbo::Result<int&> ReturnResultRef(int& v) { return v; }
 
-turbo::StatusOr<std::unique_ptr<int>> ReturnStatusOrPtrValue(int v) {
+turbo::Result<std::unique_ptr<int>> ReturnResultPtrValue(int v) {
   return std::make_unique<int>(v);
 }
 void CheckSourceLocation(
@@ -96,14 +96,14 @@ void CheckSourceLocation(
 }
 TEST(AssignOrReturn, Works) {
   auto func = []() -> turbo::Status {
-    TURBO_ASSIGN_OR_RETURN(int value1, ReturnStatusOrValue(1));
+    TURBO_ASSIGN_OR_RETURN(int value1, ReturnResultValue(1));
     EXPECT_EQ(1, value1);
-    TURBO_ASSIGN_OR_RETURN(const int value2, ReturnStatusOrValue(2));
+    TURBO_ASSIGN_OR_RETURN(const int value2, ReturnResultValue(2));
     EXPECT_EQ(2, value2);
-    TURBO_ASSIGN_OR_RETURN(const int& value3, ReturnStatusOrValue(3));
+    TURBO_ASSIGN_OR_RETURN(const int& value3, ReturnResultValue(3));
     EXPECT_EQ(3, value3);
     TURBO_ASSIGN_OR_RETURN(int value4 [[maybe_unused]],
-                          ReturnStatusOrError("EXPECTED"));
+                          ReturnResultError("EXPECTED"));
     return ReturnError("ERROR");
   };
 
@@ -113,20 +113,20 @@ TEST(AssignOrReturn, Works) {
 TEST(AssignOrReturn, WorksWithReferences) {
   int value = 17;
   auto func = [&]() -> turbo::Status {
-    TURBO_ASSIGN_OR_RETURN(int& value1, ReturnStatusOrRef(value));
+    TURBO_ASSIGN_OR_RETURN(int& value1, ReturnResultRef(value));
     EXPECT_EQ(&value1, &value);
 
-    TURBO_ASSIGN_OR_RETURN(const int& value2, ReturnStatusOrRef(value));
+    TURBO_ASSIGN_OR_RETURN(const int& value2, ReturnResultRef(value));
     EXPECT_EQ(&value2, &value);
 
-    TURBO_ASSIGN_OR_RETURN(int value3, ReturnStatusOrRef(value));
+    TURBO_ASSIGN_OR_RETURN(int value3, ReturnResultRef(value));
     EXPECT_EQ(value3, value);
 
     value = 11;
     EXPECT_NE(value3, value);
 
     TURBO_ASSIGN_OR_RETURN(int value4 [[maybe_unused]],
-                          ReturnStatusOrError("EXPECTED"));
+                          ReturnResultError("EXPECTED"));
     return ReturnError("ERROR");
   };
 
@@ -136,14 +136,14 @@ TEST(AssignOrReturn, WorksWithReferences) {
 TEST(AssignOrReturn, WorksWithCommasInType) {
   auto func = []() -> turbo::Status {
     TURBO_ASSIGN_OR_RETURN((std::tuple<int, int> t1),
-                          ReturnStatusOrTupleValue(1, 1));
+                          ReturnResultTupleValue(1, 1));
     EXPECT_EQ((std::tuple{1, 1}), t1);
     TURBO_ASSIGN_OR_RETURN((const std::tuple<int, std::tuple<int, int>, int> t2),
-                          ReturnStatusOrTupleValue(1, std::tuple{1, 1}, 1));
+                          ReturnResultTupleValue(1, std::tuple{1, 1}, 1));
     EXPECT_EQ((std::tuple{1, std::tuple{1, 1}, 1}), t2);
     TURBO_ASSIGN_OR_RETURN(
         (std::tuple<int, std::tuple<int, int>, int> t3),
-        (ReturnStatusOrTupleError<int, std::tuple<int, int>, int>("EXPECTED")));
+        (ReturnResultTupleError<int, std::tuple<int, int>, int>("EXPECTED")));
     t3 = {};  // fix unused error
     return ReturnError("ERROR");
   };
@@ -155,14 +155,14 @@ TEST(AssignOrReturn, WorksWithStructureBindings) {
   auto func = []() -> turbo::Status {
     TURBO_ASSIGN_OR_RETURN(
         (const auto& [t1, t2, t3, t4, t5]),
-        ReturnStatusOrTupleValue(std::tuple{1, 1}, 1, 2, 3, 4));
+        ReturnResultTupleValue(std::tuple{1, 1}, 1, 2, 3, 4));
     EXPECT_EQ((std::tuple{1, 1}), t1);
     EXPECT_EQ(1, t2);
     EXPECT_EQ(2, t3);
     EXPECT_EQ(3, t4);
     EXPECT_EQ(4, t5);
     TURBO_ASSIGN_OR_RETURN(int t6 [[maybe_unused]],
-                          ReturnStatusOrError("EXPECTED"));
+                          ReturnResultError("EXPECTED"));
     return ReturnError("ERROR");
   };
 
@@ -173,19 +173,19 @@ TEST(AssignOrReturn, WorksWithParenthesesAndDereference) {
   auto func = []() -> turbo::Status {
     int integer;
     int* pointer_to_integer = &integer;
-    TURBO_ASSIGN_OR_RETURN((*pointer_to_integer), ReturnStatusOrValue(1));
+    TURBO_ASSIGN_OR_RETURN((*pointer_to_integer), ReturnResultValue(1));
     EXPECT_EQ(1, integer);
-    TURBO_ASSIGN_OR_RETURN(*pointer_to_integer, ReturnStatusOrValue(2));
+    TURBO_ASSIGN_OR_RETURN(*pointer_to_integer, ReturnResultValue(2));
     EXPECT_EQ(2, integer);
     // Make the test where the order of dereference matters and treat the
     // parentheses.
     pointer_to_integer--;
     int** pointer_to_pointer_to_integer = &pointer_to_integer;
     TURBO_ASSIGN_OR_RETURN((*pointer_to_pointer_to_integer)[1],
-                          ReturnStatusOrValue(3));
+                          ReturnResultValue(3));
     EXPECT_EQ(3, integer);
     TURBO_ASSIGN_OR_RETURN(int t1 [[maybe_unused]],
-                          ReturnStatusOrError("EXPECTED"));
+                          ReturnResultError("EXPECTED"));
     return ReturnError("ERROR");
   };
 
@@ -199,9 +199,9 @@ TEST(AssignOrReturn, WorksWithAppend) {
   };
   auto func = [&]() -> turbo::Status {
     int value [[maybe_unused]];
-    TURBO_ASSIGN_OR_RETURN(value, ReturnStatusOrValue(1),
+    TURBO_ASSIGN_OR_RETURN(value, ReturnResultValue(1),
                           _ << fail_test_if_called());
-    TURBO_ASSIGN_OR_RETURN(value, ReturnStatusOrError("EXPECTED A"),
+    TURBO_ASSIGN_OR_RETURN(value, ReturnResultError("EXPECTED A"),
                           _ << "EXPECTED B");
     return ReturnOk();
   };
@@ -220,9 +220,9 @@ TEST(AssignOrReturn, WorksWithAdaptorFunc) {
   };
   auto func = [&]() -> turbo::Status {
     int value [[maybe_unused]];
-    TURBO_ASSIGN_OR_RETURN(value, ReturnStatusOrValue(1),
+    TURBO_ASSIGN_OR_RETURN(value, ReturnResultValue(1),
                           fail_test_if_called(_));
-    TURBO_ASSIGN_OR_RETURN(value, ReturnStatusOrError("EXPECTED A"), adaptor(_));
+    TURBO_ASSIGN_OR_RETURN(value, ReturnResultError("EXPECTED A"), adaptor(_));
     return ReturnOk();
   };
 
@@ -240,14 +240,14 @@ TEST(AssignOrReturn, WorksWithThirdArgumentAndCommas) {
   };
   auto func = [&]() -> turbo::Status {
     TURBO_ASSIGN_OR_RETURN((const auto& [t1, t2, t3]),
-                          ReturnStatusOrTupleValue(1, 2, 3),
+                          ReturnResultTupleValue(1, 2, 3),
                           fail_test_if_called(_));
     EXPECT_EQ(t1, 1);
     EXPECT_EQ(t2, 2);
     EXPECT_EQ(t3, 3);
     TURBO_ASSIGN_OR_RETURN(
         (const auto& [t4, t5, t6]),
-        (ReturnStatusOrTupleError<int, int, int>("EXPECTED A")), adaptor(_));
+        (ReturnResultTupleError<int, int, int>("EXPECTED A")), adaptor(_));
     // Silence errors about the unused values.
     static_cast<void>(t4);
     static_cast<void>(t5);
@@ -262,7 +262,7 @@ TEST(AssignOrReturn, WorksWithThirdArgumentAndCommas) {
 TEST(AssignOrReturn, WorksWithAppendIncludingLocals) {
   auto func = [&](std::string_view str) -> turbo::Status {
     int value [[maybe_unused]];
-    TURBO_ASSIGN_OR_RETURN(value, ReturnStatusOrError("EXPECTED A"), _ << str);
+    TURBO_ASSIGN_OR_RETURN(value, ReturnResultError("EXPECTED A"), _ << str);
     return ReturnOk();
   };
 
@@ -273,11 +273,11 @@ TEST(AssignOrReturn, WorksWithAppendIncludingLocals) {
 TEST(AssignOrReturn, WorksForExistingVariable) {
   auto func = []() -> turbo::Status {
     int value = 1;
-    TURBO_ASSIGN_OR_RETURN(value, ReturnStatusOrValue(2));
+    TURBO_ASSIGN_OR_RETURN(value, ReturnResultValue(2));
     EXPECT_EQ(2, value);
-    TURBO_ASSIGN_OR_RETURN(value, ReturnStatusOrValue(3));
+    TURBO_ASSIGN_OR_RETURN(value, ReturnResultValue(3));
     EXPECT_EQ(3, value);
-    TURBO_ASSIGN_OR_RETURN(value, ReturnStatusOrError("EXPECTED"));
+    TURBO_ASSIGN_OR_RETURN(value, ReturnResultError("EXPECTED"));
     return ReturnError("ERROR");
   };
 
@@ -286,7 +286,7 @@ TEST(AssignOrReturn, WorksForExistingVariable) {
 
 TEST(AssignOrReturn, UniquePtrWorks) {
   auto func = []() -> turbo::Status {
-    TURBO_ASSIGN_OR_RETURN(std::unique_ptr<int> ptr, ReturnStatusOrPtrValue(1));
+    TURBO_ASSIGN_OR_RETURN(std::unique_ptr<int> ptr, ReturnResultPtrValue(1));
     EXPECT_EQ(*ptr, 1);
     return ReturnError("EXPECTED");
   };
@@ -297,10 +297,10 @@ TEST(AssignOrReturn, UniquePtrWorks) {
 TEST(AssignOrReturn, UniquePtrWorksForExistingVariable) {
   auto func = []() -> turbo::Status {
     std::unique_ptr<int> ptr;
-    TURBO_ASSIGN_OR_RETURN(ptr, ReturnStatusOrPtrValue(1));
+    TURBO_ASSIGN_OR_RETURN(ptr, ReturnResultPtrValue(1));
     EXPECT_EQ(*ptr, 1);
 
-    TURBO_ASSIGN_OR_RETURN(ptr, ReturnStatusOrPtrValue(2));
+    TURBO_ASSIGN_OR_RETURN(ptr, ReturnResultPtrValue(2));
     EXPECT_EQ(*ptr, 2);
     return ReturnError("EXPECTED");
   };
@@ -309,17 +309,17 @@ TEST(AssignOrReturn, UniquePtrWorksForExistingVariable) {
 }
 
 TEST(AssignOrReturn, ChainSourceLocation) {
-  auto func1 = []() -> turbo::StatusOr<std::unique_ptr<int>> {
+  auto func1 = []() -> turbo::Result<std::unique_ptr<int>> {
     std::unique_ptr<int> ptr;
-    TURBO_ASSIGN_OR_RETURN(ptr, ReturnStatusOrPtrValue(1));
+    TURBO_ASSIGN_OR_RETURN(ptr, ReturnResultPtrValue(1));
     return ptr;
   };
-  auto func2 = []() -> turbo::StatusOr<std::unique_ptr<int>> {
+  auto func2 = []() -> turbo::Result<std::unique_ptr<int>> {
     return turbo::Status(turbo::StatusCode::kInternal, "msg");
   };
   int func2_line = __builtin_LINE() - 2;
 
-  auto func3 = [=]() -> turbo::StatusOr<std::unique_ptr<int>> {
+  auto func3 = [=]() -> turbo::Result<std::unique_ptr<int>> {
     std::unique_ptr<int> ptr;
     TURBO_ASSIGN_OR_RETURN(ptr, func1());
     TURBO_ASSIGN_OR_RETURN(ptr, func2());
@@ -327,7 +327,7 @@ TEST(AssignOrReturn, ChainSourceLocation) {
   };
   int func3_line = __builtin_LINE() - 3;
 
-  auto func4 = [=]() -> turbo::StatusOr<std::unique_ptr<int>> {
+  auto func4 = [=]() -> turbo::Result<std::unique_ptr<int>> {
     std::unique_ptr<int> ptr;
     TURBO_ASSIGN_OR_RETURN(ptr, func3());
     TURBO_ASSIGN_OR_RETURN(ptr, func2());
@@ -335,51 +335,51 @@ TEST(AssignOrReturn, ChainSourceLocation) {
   };
   int func4_line = __builtin_LINE() - 4;
 
-  turbo::StatusOr<std::unique_ptr<int>> result = func4();
+  turbo::Result<std::unique_ptr<int>> result = func4();
   EXPECT_EQ(turbo::StatusCode::kInternal, result.status().code());
   CheckSourceLocation(result.status(), {func2_line, func3_line, func4_line});
 }
 
 TEST(AssignOrReturn, NotChainSourceLocationWithEmptyMsg) {
-  auto func1 = []() -> turbo::StatusOr<std::unique_ptr<int>> {
+  auto func1 = []() -> turbo::Result<std::unique_ptr<int>> {
     std::unique_ptr<int> ptr;
-    TURBO_ASSIGN_OR_RETURN(ptr, ReturnStatusOrPtrValue(1));
+    TURBO_ASSIGN_OR_RETURN(ptr, ReturnResultPtrValue(1));
     return ptr;
   };
-  auto func2 = []() -> turbo::StatusOr<std::unique_ptr<int>> {
+  auto func2 = []() -> turbo::Result<std::unique_ptr<int>> {
     return turbo::Status(turbo::StatusCode::kInternal, "");
   };
 
-  auto func3 = [=]() -> turbo::StatusOr<std::unique_ptr<int>> {
+  auto func3 = [=]() -> turbo::Result<std::unique_ptr<int>> {
     std::unique_ptr<int> ptr;
     TURBO_ASSIGN_OR_RETURN(ptr, func1());
     TURBO_ASSIGN_OR_RETURN(ptr, func2());
     return ptr;
   };
 
-  auto func4 = [=]() -> turbo::StatusOr<std::unique_ptr<int>> {
+  auto func4 = [=]() -> turbo::Result<std::unique_ptr<int>> {
     std::unique_ptr<int> ptr;
     TURBO_ASSIGN_OR_RETURN(ptr, func3());
     TURBO_ASSIGN_OR_RETURN(ptr, func2());
     return ptr;
   };
 
-  turbo::StatusOr<std::unique_ptr<int>> result = func4();
+  turbo::Result<std::unique_ptr<int>> result = func4();
   EXPECT_EQ(turbo::StatusCode::kInternal, result.status().code());
   CheckSourceLocation(result.status());
 }
 
 TEST(AssignOrReturn, ChainSourceLocationWith3ArgStatusMacro) {
-  auto func1 = []() -> turbo::StatusOr<std::unique_ptr<int>> {
+  auto func1 = []() -> turbo::Result<std::unique_ptr<int>> {
     std::unique_ptr<int> ptr;
-    TURBO_ASSIGN_OR_RETURN(ptr, ReturnStatusOrPtrValue(1));
+    TURBO_ASSIGN_OR_RETURN(ptr, ReturnResultPtrValue(1));
     return ptr;
   };
-  auto func2 = []() -> turbo::StatusOr<std::unique_ptr<int>> {
+  auto func2 = []() -> turbo::Result<std::unique_ptr<int>> {
     return turbo::Status(turbo::StatusCode::kInternal, "");
   };
 
-  auto func3 = [=]() -> turbo::StatusOr<std::unique_ptr<int>> {
+  auto func3 = [=]() -> turbo::Result<std::unique_ptr<int>> {
     std::unique_ptr<int> ptr;
     TURBO_ASSIGN_OR_RETURN(ptr, func1());
     TURBO_ASSIGN_OR_RETURN(ptr, func2(), _ << "hmm");
@@ -387,7 +387,7 @@ TEST(AssignOrReturn, ChainSourceLocationWith3ArgStatusMacro) {
   };
   int func3_line = __builtin_LINE() - 3;
 
-  auto func4 = [=]() -> turbo::StatusOr<std::unique_ptr<int>> {
+  auto func4 = [=]() -> turbo::Result<std::unique_ptr<int>> {
     std::unique_ptr<int> ptr;
     TURBO_ASSIGN_OR_RETURN(ptr, func3());
     TURBO_ASSIGN_OR_RETURN(ptr, func2());
@@ -395,7 +395,7 @@ TEST(AssignOrReturn, ChainSourceLocationWith3ArgStatusMacro) {
   };
   int func4_line = __builtin_LINE() - 4;
 
-  turbo::StatusOr<std::unique_ptr<int>> result = func4();
+  turbo::Result<std::unique_ptr<int>> result = func4();
   EXPECT_EQ(turbo::StatusCode::kInternal, result.status().code());
   CheckSourceLocation(result.status(), {func3_line, func4_line});
 }
@@ -582,7 +582,7 @@ TEST(ReturnIfError, IfInputIsBuilderDoesNotEagerlyConvertToStatus) {
     // builder it will forget about the SetPrepend and the streaming will happen
     // in the wrong order.
     TURBO_RETURN_IF_ERROR(builder) << "SECOND ";
-    return turbo::OkStatus();
+    return turbo::ok_status();
   };
   EXPECT_THAT(func().message(), Eq("SECOND FIRST"));
 }
@@ -605,7 +605,7 @@ TEST(ReturnIfError, WorksWithAppend) {
   auto func = [&]() -> turbo::Status {
     TURBO_RETURN_IF_ERROR(ReturnOk()) << fail_test_if_called();
     TURBO_RETURN_IF_ERROR(ReturnError("EXPECTED A")) << "EXPECTED B";
-    return turbo::OkStatus();
+    return turbo::ok_status();
   };
 
   EXPECT_THAT(func().message(),

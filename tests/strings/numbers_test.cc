@@ -43,7 +43,6 @@
 #include <turbo/cleanup/cleanup.h>
 #include <turbo/log/klog.h>
 #include <turbo/numeric/int128.h>
-#include <turbo/random/random.h>
 #include <tests/strings/internal/numbers_test_common.h>
 #include <turbo/format/ostringstream.h>
 #include <turbo/strings/internal/pow10_helper.h>
@@ -244,10 +243,10 @@ void CheckInt128(turbo::int128 x) {
 
 void CheckHex64(uint64_t v) {
   char expected[16 + 1];
-  std::string actual = turbo::StrCat(turbo::Hex(v, turbo::kZeroPad16));
+  std::string actual = turbo::str_cat(turbo::Hex(v, turbo::kZeroPad16));
   snprintf(expected, sizeof(expected), "%016" PRIx64, static_cast<uint64_t>(v));
   EXPECT_EQ(expected, actual) << " Input " << v;
-  actual = turbo::StrCat(turbo::Hex(v, turbo::kSpacePad16));
+  actual = turbo::str_cat(turbo::Hex(v, turbo::kSpacePad16));
   snprintf(expected, sizeof(expected), "%16" PRIx64, static_cast<uint64_t>(v));
   EXPECT_EQ(expected, actual) << " Input " << v;
 }
@@ -318,7 +317,7 @@ TEST(Numbers, TestFastPrints) {
 
 template <typename int_type, typename in_val_type>
 void VerifySimpleAtoiGood(in_val_type in_value, int_type exp_value) {
-  std::string s = turbo::StrCat(in_value);
+  std::string s = turbo::str_cat(in_value);
   int_type x = static_cast<int_type>(~exp_value);
   EXPECT_TRUE(SimpleAtoi(s, &x))
       << "in_value=" << in_value << " s=" << s << " x=" << x;
@@ -330,7 +329,7 @@ void VerifySimpleAtoiGood(in_val_type in_value, int_type exp_value) {
 
 template <typename int_type, typename in_val_type>
 void VerifySimpleAtoiBad(in_val_type in_value) {
-  std::string s = turbo::StrCat(in_value);
+  std::string s = turbo::str_cat(in_value);
   int_type x;
   EXPECT_FALSE(SimpleAtoi(s, &x));
   EXPECT_FALSE(SimpleAtoi(s.c_str(), &x));
@@ -811,7 +810,7 @@ void VerifySimpleHexAtoiGood(in_val_type in_value, int_type exp_value) {
   turbo::strings_internal::OStringStream strm(&s);
   if (in_value >= 0) {
     if constexpr (std::is_arithmetic_v<in_val_type>) {
-      turbo::StrAppend(&s, turbo::Hex(in_value));
+      turbo::str_append(&s, turbo::Hex(in_value));
     } else {
       // turbo::Hex doesn't work with turbo::(u)int128.
       strm << std::hex << in_value;
@@ -836,7 +835,7 @@ void VerifySimpleHexAtoiBad(in_val_type in_value) {
   turbo::strings_internal::OStringStream strm(&s);
   if (in_value >= 0) {
     if constexpr (std::is_arithmetic_v<in_val_type>) {
-      turbo::StrAppend(&s, turbo::Hex(in_value));
+      turbo::str_append(&s, turbo::Hex(in_value));
     } else {
       // turbo::Hex doesn't work with turbo::(u)int128.
       strm << std::hex << in_value;
@@ -1442,7 +1441,7 @@ const size_t kNumRandomTests = 10000;
 template <typename IntType,
           bool parse_func(std::string_view, IntType* value, int base)>
 void test_random_integer_parse_base() {
-  turbo::InsecureBitGen rng;
+  std::mt19937 rng;
   std::uniform_int_distribution<IntType> random_int(
       std::numeric_limits<IntType>::min());
   std::uniform_int_distribution<int> random_base(2, 36);
@@ -1459,16 +1458,16 @@ void test_random_integer_parse_base() {
 
     // Test overflow
     EXPECT_FALSE(
-        parse_func(turbo::StrCat(std::numeric_limits<IntType>::max(), value),
+        parse_func(turbo::str_cat(std::numeric_limits<IntType>::max(), value),
                    &parsed_value, base));
 
     // Test underflow
     if (std::numeric_limits<IntType>::min() < 0) {
       EXPECT_FALSE(
-          parse_func(turbo::StrCat(std::numeric_limits<IntType>::min(), value),
+          parse_func(turbo::str_cat(std::numeric_limits<IntType>::min(), value),
                      &parsed_value, base));
     } else {
-      EXPECT_FALSE(parse_func(turbo::StrCat("-", value), &parsed_value, base));
+      EXPECT_FALSE(parse_func(turbo::str_cat("-", value), &parsed_value, base));
     }
   }
 }
@@ -1499,7 +1498,7 @@ TEST(stringtest, safe_strtou128_random) {
   using IntType = turbo::uint128;
   constexpr auto parse_func = &turbo::numbers_internal::safe_strtou128_base;
 
-  turbo::InsecureBitGen rng;
+  std::mt19937 rng;
   std::uniform_int_distribution<uint64_t> random_uint64(
       std::numeric_limits<uint64_t>::min());
   std::uniform_int_distribution<int> random_base(2, 36);
@@ -1518,11 +1517,11 @@ TEST(stringtest, safe_strtou128_random) {
 
     // Test overflow
     EXPECT_FALSE(
-        parse_func(turbo::StrCat(std::numeric_limits<IntType>::max(), value),
+        parse_func(turbo::str_cat(std::numeric_limits<IntType>::max(), value),
                    &parsed_value, base));
 
     // Test underflow
-    EXPECT_FALSE(parse_func(turbo::StrCat("-", value), &parsed_value, base));
+    EXPECT_FALSE(parse_func(turbo::str_cat("-", value), &parsed_value, base));
   }
 }
 TEST(stringtest, safe_strto128_random) {
@@ -1533,7 +1532,7 @@ TEST(stringtest, safe_strto128_random) {
   using IntType = turbo::int128;
   constexpr auto parse_func = &turbo::numbers_internal::safe_strto128_base;
 
-  turbo::InsecureBitGen rng;
+  std::mt19937 rng;
   std::uniform_int_distribution<int64_t> random_int64(
       std::numeric_limits<int64_t>::min());
   std::uniform_int_distribution<uint64_t> random_uint64(
@@ -1556,12 +1555,12 @@ TEST(stringtest, safe_strto128_random) {
 
     // Test overflow
     EXPECT_FALSE(
-        parse_func(turbo::StrCat(std::numeric_limits<IntType>::max(), value),
+        parse_func(turbo::str_cat(std::numeric_limits<IntType>::max(), value),
                    &parsed_value, base));
 
     // Test underflow
     EXPECT_FALSE(
-        parse_func(turbo::StrCat(std::numeric_limits<IntType>::min(), value),
+        parse_func(turbo::str_cat(std::numeric_limits<IntType>::min(), value),
                    &parsed_value, base));
   }
 }
@@ -1585,10 +1584,10 @@ TEST(stringtest, safe_strtou8_exhaustive) {
 
       // Test overflow
       EXPECT_FALSE(
-          parse_func(turbo::StrCat(std::numeric_limits<IntType>::max(), value),
+          parse_func(turbo::str_cat(std::numeric_limits<IntType>::max(), value),
                      &parsed_value, base));
       // Test underflow
-      EXPECT_FALSE(parse_func(turbo::StrCat("-", value), &parsed_value, base));
+      EXPECT_FALSE(parse_func(turbo::str_cat("-", value), &parsed_value, base));
     }
   }
 }
@@ -1612,11 +1611,11 @@ TEST(stringtest, safe_strto8_exhaustive) {
 
       // Test overflow
       EXPECT_FALSE(
-          parse_func(turbo::StrCat(std::numeric_limits<IntType>::max(), value),
+          parse_func(turbo::str_cat(std::numeric_limits<IntType>::max(), value),
                      &parsed_value, base));
       // Test underflow
       EXPECT_FALSE(
-          parse_func(turbo::StrCat(std::numeric_limits<IntType>::min(), value),
+          parse_func(turbo::str_cat(std::numeric_limits<IntType>::min(), value),
                      &parsed_value, base));
     }
   }
@@ -1740,13 +1739,13 @@ TEST(SimpleDtoa, HighPrecisionIsLocaleIndependent) {
   if (!changed) {
     GTEST_SKIP() << "No comma-radix locale available on this system.";
   }
-  EXPECT_EQ(turbo::StrCat(turbo::HighPrecision(0.5)), "0.5");
-  EXPECT_EQ(turbo::StrCat(turbo::HighPrecision(-1.25)), "-1.25");
-  EXPECT_EQ(turbo::StrCat(turbo::HighPrecision(3.14159265358979)),
+  EXPECT_EQ(turbo::str_cat(turbo::HighPrecision(0.5)), "0.5");
+  EXPECT_EQ(turbo::str_cat(turbo::HighPrecision(-1.25)), "-1.25");
+  EXPECT_EQ(turbo::str_cat(turbo::HighPrecision(3.14159265358979)),
             "3.14159265358979");
   double parsed = 0;
   EXPECT_TRUE(
-      turbo::SimpleAtod(turbo::StrCat(turbo::HighPrecision(0.1)), &parsed));
+      turbo::SimpleAtod(turbo::str_cat(turbo::HighPrecision(0.1)), &parsed));
   EXPECT_EQ(parsed, 0.1);
 }
 
@@ -1965,8 +1964,8 @@ TEST(StrToInt8, Partial) {
       {" ", false, 0},
       {"-", false, 0},
       {"123@@@", false, 123},
-      {turbo::StrCat(int8_min, int8_max), false, int8_min},
-      {turbo::StrCat(int8_max, int8_max), false, int8_max},
+      {turbo::str_cat(int8_min, int8_max), false, int8_min},
+      {turbo::str_cat(int8_max, int8_max), false, int8_max},
   };
 
   for (const Int8TestLine& test_line : int8_test_line) {
@@ -1997,7 +1996,7 @@ TEST(StrToUint8, Partial) {
       {" ", false, 0},
       {"-", false, 0},
       {"123@@@", false, 123},
-      {turbo::StrCat(uint8_max, uint8_max), false, uint8_max},
+      {turbo::str_cat(uint8_max, uint8_max), false, uint8_max},
   };
 
   for (const Uint8TestLine& test_line : uint8_test_line) {
@@ -2029,8 +2028,8 @@ TEST(StrToInt16, Partial) {
       {" ", false, 0},
       {"-", false, 0},
       {"123@@@", false, 123},
-      {turbo::StrCat(int16_min, int16_max), false, int16_min},
-      {turbo::StrCat(int16_max, int16_max), false, int16_max},
+      {turbo::str_cat(int16_min, int16_max), false, int16_min},
+      {turbo::str_cat(int16_max, int16_max), false, int16_max},
   };
 
   for (const Int16TestLine& test_line : int16_test_line) {
@@ -2061,7 +2060,7 @@ TEST(StrToUint16, Partial) {
       {" ", false, 0},
       {"-", false, 0},
       {"123@@@", false, 123},
-      {turbo::StrCat(uint16_max, uint16_max), false, uint16_max},
+      {turbo::str_cat(uint16_max, uint16_max), false, uint16_max},
   };
 
   for (const Uint16TestLine& test_line : uint16_test_line) {
@@ -2093,8 +2092,8 @@ TEST(StrToInt32, Partial) {
       {" ", false, 0},
       {"-", false, 0},
       {"123@@@", false, 123},
-      {turbo::StrCat(int32_min, int32_max), false, int32_min},
-      {turbo::StrCat(int32_max, int32_max), false, int32_max},
+      {turbo::str_cat(int32_min, int32_max), false, int32_min},
+      {turbo::str_cat(int32_max, int32_max), false, int32_max},
   };
 
   for (const Int32TestLine& test_line : int32_test_line) {
@@ -2125,7 +2124,7 @@ TEST(StrToUint32, Partial) {
       {" ", false, 0},
       {"-", false, 0},
       {"123@@@", false, 123},
-      {turbo::StrCat(uint32_max, uint32_max), false, uint32_max},
+      {turbo::str_cat(uint32_max, uint32_max), false, uint32_max},
   };
 
   for (const Uint32TestLine& test_line : uint32_test_line) {
@@ -2157,8 +2156,8 @@ TEST(StrToInt64, Partial) {
       {" ", false, 0},
       {"-", false, 0},
       {"123@@@", false, 123},
-      {turbo::StrCat(int64_min, int64_max), false, int64_min},
-      {turbo::StrCat(int64_max, int64_max), false, int64_max},
+      {turbo::str_cat(int64_min, int64_max), false, int64_min},
+      {turbo::str_cat(int64_max, int64_max), false, int64_max},
   };
 
   for (const Int64TestLine& test_line : int64_test_line) {
@@ -2189,7 +2188,7 @@ TEST(StrToUint64, Partial) {
       {" ", false, 0},
       {"-", false, 0},
       {"123@@@", false, 123},
-      {turbo::StrCat(uint64_max, uint64_max), false, uint64_max},
+      {turbo::str_cat(uint64_max, uint64_max), false, uint64_max},
   };
 
   for (const Uint64TestLine& test_line : uint64_test_line) {
@@ -2354,11 +2353,10 @@ TEST(FastHexToBufferZeroPad16, Smoke) {
   TestFastHexToBufferZeroPad16(std::numeric_limits<uint64_t>::max());
   TestFastHexToBufferZeroPad16(std::numeric_limits<int64_t>::min());
   TestFastHexToBufferZeroPad16(std::numeric_limits<int64_t>::max());
-  turbo::BitGen rng;
+  std::mt19937 rng;
+  std::uniform_int_distribution<uint64_t> dist;
   for (int i = 0; i < 100000; ++i) {
-    TestFastHexToBufferZeroPad16(
-        turbo::LogUniform(rng, std::numeric_limits<uint64_t>::min(),
-                         std::numeric_limits<uint64_t>::max()));
+    TestFastHexToBufferZeroPad16(dist(rng));
   }
 }
 

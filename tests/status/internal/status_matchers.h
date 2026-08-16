@@ -19,11 +19,11 @@
 #include <type_traits>
 #include <utility>
 
-#include <gmock/gmock.h>  // gmock_for_status_matchers.h
-#include <turbo/macros/config.h>
-#include <turbo/status/status.h>
-#include <turbo/status/statusor.h>
+#include <gmock/gmock.h> // gmock_for_status_matchers.h
 #include <string_view>
+#include <turbo/macros/config.h>
+#include <turbo/status/result.h>
+#include <turbo/status/status.h>
 
 namespace turbo_testing {
 
@@ -34,20 +34,20 @@ inline const turbo::Status& GetStatus(const turbo::Status& status) {
 }
 
 template <typename T>
-const turbo::Status& GetStatus(const turbo::StatusOr<T>& status) {
+const turbo::Status& GetStatus(const turbo::Result<T>& status) {
   return status.status();
 }
 
 ////////////////////////////////////////////////////////////
 // Implementation of IsOkAndHolds().
 
-// Monomorphic implementation of matcher IsOkAndHolds(m).  StatusOrType is a
-// reference to StatusOr<T>.
-template <typename StatusOrType>
+// Monomorphic implementation of matcher IsOkAndHolds(m).  ResultType is a
+// reference to Result<T>.
+template <typename ResultType>
 class IsOkAndHoldsMatcherImpl
-    : public ::testing::MatcherInterface<StatusOrType> {
+    : public ::testing::MatcherInterface<ResultType> {
  public:
-  typedef typename std::remove_reference_t<StatusOrType>::value_type value_type;
+  typedef typename std::remove_reference_t<ResultType>::value_type value_type;
 
   template <typename InnerMatcher>
   explicit IsOkAndHoldsMatcherImpl(InnerMatcher&& inner_matcher)
@@ -65,7 +65,7 @@ class IsOkAndHoldsMatcherImpl
   }
 
   bool MatchAndExplain(
-      StatusOrType actual_value,
+      ResultType actual_value,
       ::testing::MatchResultListener* result_listener) const override {
     if (!actual_value.ok()) {
       *result_listener << "which has status " << actual_value.status();
@@ -88,12 +88,12 @@ class IsOkAndHoldsMatcher {
       : inner_matcher_(std::forward<InnerMatcher>(inner_matcher)) {}
 
   // Converts this polymorphic matcher to a monomorphic matcher of the
-  // given type.  StatusOrType can be either StatusOr<T> or a
-  // reference to StatusOr<T>.
-  template <typename StatusOrType>
-  operator ::testing::Matcher<StatusOrType>() const {  // NOLINT
-    return ::testing::Matcher<StatusOrType>(
-        new IsOkAndHoldsMatcherImpl<const StatusOrType&>(inner_matcher_));
+  // given type.  ResultType can be either Result<T> or a
+  // reference to Result<T>.
+  template <typename ResultType>
+  operator ::testing::Matcher<ResultType>() const {  // NOLINT
+    return ::testing::Matcher<ResultType>(
+        new IsOkAndHoldsMatcherImpl<const ResultType&>(inner_matcher_));
   }
 
  private:
@@ -124,7 +124,7 @@ class StatusCode {
 
   friend void PrintTo(const StatusCode& code, std::ostream* os) {
     std::string_view text =
-        turbo::StatusCodeToStringView(static_cast<turbo::StatusCode>(code.code_));
+        turbo::status_code_to_string_view(static_cast<turbo::StatusCode>(code.code_));
     if (!text.empty()) {
       *os << text;
     } else {
@@ -168,7 +168,7 @@ class StatusIsMatcherCommonImpl {
 };
 
 // Monomorphic implementation of matcher StatusIs() for a given type
-// T.  T can be Status, StatusOr<>, or a reference to either of them.
+// T.  T can be Status, Result<>, or a reference to either of them.
 template <typename T>
 class MonoStatusIsMatcherImpl : public ::testing::MatcherInterface<T> {
  public:
@@ -207,7 +207,7 @@ class StatusIsMatcher {
   }
 
   // Converts this polymorphic matcher to a monomorphic matcher of the
-  // given type.  T can be StatusOr<>, Status, or a reference to
+  // given type.  T can be Result<>, Status, or a reference to
   // either of them.
   template <typename T>
   /*implicit*/ operator ::testing::Matcher<T>() const {  // NOLINT
@@ -220,7 +220,7 @@ class StatusIsMatcher {
 };
 
 // Monomorphic implementation of matcher IsOk() for a given type T.
-// T can be Status, StatusOr<>, or a reference to either of them.
+// T can be Status, Result<>, or a reference to either of them.
 template <typename T>
 class MonoIsOkMatcherImpl : public ::testing::MatcherInterface<T> {
  public:

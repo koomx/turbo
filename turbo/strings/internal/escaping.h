@@ -21,15 +21,15 @@
 
 namespace turbo {
 
-namespace strings_internal {
+    namespace strings_internal {
 
-// Calculates the length of a Base64 encoding (RFC 4648) of a string of length
-// `input_len`, with or without padding per `do_padding`. Note that 'web-safe'
-// encoding (section 5 of the RFC) does not change this length.
-size_t CalculateBase64EscapedLenInternal(size_t input_len, bool do_padding);
+        // Calculates the length of a Base64 encoding (RFC 4648) of a string of length
+        // `input_len`, with or without padding per `do_padding`. Note that 'web-safe'
+        // encoding (section 5 of the RFC) does not change this length.
+        size_t CalculateBase64EscapedLenInternal(size_t input_len, bool do_padding);
 
-}  // namespace strings_internal
+    } // namespace strings_internal
 
-}  // namespace turbo
+} // namespace turbo
 
-#endif  // TURBO_STRINGS_INTERNAL_ESCAPING_H_
+#endif // TURBO_STRINGS_INTERNAL_ESCAPING_H_

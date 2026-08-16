@@ -40,7 +40,6 @@
 #include <turbo/macros/config.h>
 #include <turbo/memory/memory.h>
 #include <turbo/meta/type_traits.h>
-#include <turbo/random/random.h>
 #include <turbo/types/span.h>
 
 #ifdef __cpp_lib_span
@@ -766,7 +765,7 @@ TEST(MutatingTest, CopyToContainer) {
 TEST(MutatingTest, CopyToSpanRvalue) {
   const std::vector<int> input = {1, 2, 3};
   std::vector<int> actual = {0, 0, 0, 4, 5};
-  turbo::c_copy(input, turbo::MakeSpan(actual));
+  turbo::c_copy(input, turbo::make_span(actual));
   EXPECT_THAT(actual, ElementsAre(1, 2, 3, 4, 5));
 }
 
@@ -780,7 +779,7 @@ TEST(MutatingTest, CopyNToContainer) {
 TEST(MutatingTest, CopyNToSpanRvalue) {
   const std::vector<int> input = {1, 2, 3, 4, 5};
   std::vector<int> actual = {0, 0, 0, 0, 0};
-  turbo::c_copy_n(input, 2, turbo::MakeSpan(actual));
+  turbo::c_copy_n(input, 2, turbo::make_span(actual));
   EXPECT_THAT(actual, ElementsAre(1, 2, 0, 0, 0));
 }
 
@@ -981,7 +980,7 @@ TEST(MutatingTest, CopyIf) {
 TEST(MutatingTest, CopyBackward) {
   std::vector<int> actual = {1, 2, 3, 4, 5};
   std::vector<int> expected = {1, 2, 1, 2, 3};
-  turbo::c_copy_backward(turbo::MakeSpan(actual.data(), 3), actual.end());
+  turbo::c_copy_backward(turbo::make_span(actual.data(), 3), actual.end());
   EXPECT_EQ(expected, actual);
 }
 
@@ -1007,7 +1006,7 @@ TEST(MutatingTest, MoveBackward) {
   actual.emplace_back(std::make_unique<int>(3));
   actual.emplace_back(std::make_unique<int>(4));
   actual.emplace_back(std::make_unique<int>(5));
-  auto subrange = turbo::MakeSpan(actual.data(), 3);
+  auto subrange = turbo::make_span(actual.data(), 3);
   turbo::c_move_backward(subrange, actual.end());
   EXPECT_THAT(actual, ElementsAre(IsNull(), IsNull(), Pointee(1), Pointee(2),
                                   Pointee(3)));
@@ -1057,7 +1056,7 @@ TEST(MutatingTest, MoveToSpanRvalue) {
   input.push_back(std::make_unique<int>(3));
 
   std::vector<std::unique_ptr<int>> actual(5);
-  turbo::c_move(input, turbo::MakeSpan(actual));
+  turbo::c_move(input, turbo::make_span(actual));
 
   EXPECT_EQ(input[0], nullptr);
   EXPECT_EQ(input[1], nullptr);
@@ -1411,7 +1410,7 @@ TEST(MutatingTest, Fill) {
 
 TEST(MutatingTest, FillWithRvalue) {
   std::vector<int> actual(5);
-  turbo::c_fill(turbo::MakeSpan(actual), 1);
+  turbo::c_fill(turbo::make_span(actual), 1);
   EXPECT_THAT(actual, ElementsAre(1, 1, 1, 1, 1));
 }
 
@@ -1423,7 +1422,7 @@ TEST(MutatingTest, FillN) {
 
 TEST(MutatingTest, FillNWithRvalue) {
   std::vector<int> actual(5, 0);
-  turbo::c_fill_n(turbo::MakeSpan(actual), 2, 1);
+  turbo::c_fill_n(turbo::make_span(actual), 2, 1);
   EXPECT_THAT(actual, ElementsAre(1, 1, 0, 0, 0));
 }
 
@@ -1503,14 +1502,14 @@ TEST(MutatingTest, RotateCopy) {
 
 TEST(MutatingTest, Shuffle) {
   std::vector<int> actual = {1, 2, 3, 4, 5};
-  turbo::c_shuffle(actual, turbo::InsecureBitGen());
+  turbo::c_shuffle(actual, std::mt19937());
   EXPECT_THAT(actual, UnorderedElementsAre(1, 2, 3, 4, 5));
 }
 
 TEST(MutatingTest, Sample) {
   std::vector<int> actual;
   turbo::c_sample(std::vector<int>{1, 2, 3, 4, 5}, std::back_inserter(actual), 3,
-                 turbo::InsecureBitGen());
+                 std::mt19937());
   EXPECT_THAT(actual, IsSubsetOf({1, 2, 3, 4, 5}));
   EXPECT_THAT(actual, SizeIs(3));
 }
@@ -1518,9 +1517,9 @@ TEST(MutatingTest, Sample) {
 TEST(MutatingTest, PartialSort) {
   std::vector<int> sequence{5, 3, 42, 0};
   turbo::c_partial_sort(sequence, sequence.begin() + 2);
-  EXPECT_THAT(turbo::MakeSpan(sequence.data(), 2), ElementsAre(0, 3));
+  EXPECT_THAT(turbo::make_span(sequence.data(), 2), ElementsAre(0, 3));
   turbo::c_partial_sort(sequence, sequence.begin() + 2, std::greater<int>());
-  EXPECT_THAT(turbo::MakeSpan(sequence.data(), 2), ElementsAre(42, 5));
+  EXPECT_THAT(turbo::make_span(sequence.data(), 2), ElementsAre(42, 5));
 }
 
 TEST(MutatingTest, PartialSortCopy) {

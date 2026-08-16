@@ -40,7 +40,6 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <turbo/random/random.h>
 #include <turbo/format/str_format.h>
 #include <turbo/time/time.h>
 
@@ -1512,7 +1511,7 @@ TEST(Duration, ToDoubleSecondsCheckEdgeCases) {
 }
 
 TEST(Duration, ToDoubleSecondsCheckRandom) {
-  turbo::InsecureBitGen gen;
+  std::mt19937 gen;
   // We want doubles distributed from 1/8ns up to 2^63, where
   // as many values are tested from 1ns to 2ns as from 1sec to 2sec,
   // so even distribute along a log-scale of those values, and

@@ -46,14 +46,14 @@
 #include <utility>
 
 #include <turbo/algorithm/algorithm.h>
-#include <turbo/macros/config.h>
 #include <turbo/base/internal/hardening.h>
-#include <turbo/meta/internal/iterator_traits.h>
 #include <turbo/base/throw_delegate.h>
-#include <turbo/types/internal/inlined_vector.h>
 #include <turbo/hash/internal/weakly_mixed_integer.h>
+#include <turbo/macros/config.h>
 #include <turbo/memory/memory.h>
+#include <turbo/meta/internal/iterator_traits.h>
 #include <turbo/meta/type_traits.h>
+#include <turbo/types/internal/inlined_vector.h>
 
 namespace turbo {
     // -----------------------------------------------------------------------------
@@ -66,39 +66,37 @@ namespace turbo {
     // capacity, it will trigger an initial allocation on the heap, and will behave
     // as a `std::vector`. The API of the `turbo::InlinedVector` within this file is
     // designed to cover the same API footprint as covered by `std::vector`.
-    template<typename T, size_t N, typename A = std::allocator<T> >
+    template <typename T, size_t N, typename A = std::allocator<T>>
     class KUMO_ATTRIBUTE_WARN_UNUSED InlinedVector {
         static_assert(N > 0, "turbo::InlinedVector requires an inlined capacity.");
 
         using Storage = inlined_vector_internal::Storage<T, N, A>;
 
-        template<typename TheA>
+        template <typename TheA>
         using AllocatorTraits = inlined_vector_internal::AllocatorTraits<TheA>;
-        template<typename TheA>
+        template <typename TheA>
         using MoveIterator = inlined_vector_internal::MoveIterator<TheA>;
-        template<typename TheA>
+        template <typename TheA>
         using IsMoveAssignOk = inlined_vector_internal::IsMoveAssignOk<TheA>;
 
-        template<typename TheA, typename Iterator>
-        using IteratorValueAdapter =
-        inlined_vector_internal::IteratorValueAdapter<TheA, Iterator>;
-        template<typename TheA>
+        template <typename TheA, typename Iterator>
+        using IteratorValueAdapter = inlined_vector_internal::IteratorValueAdapter<TheA, Iterator>;
+        template <typename TheA>
         using CopyValueAdapter = inlined_vector_internal::CopyValueAdapter<TheA>;
-        template<typename TheA>
-        using DefaultValueAdapter =
-        inlined_vector_internal::DefaultValueAdapter<TheA>;
+        template <typename TheA>
+        using DefaultValueAdapter = inlined_vector_internal::DefaultValueAdapter<TheA>;
 
-        template<typename Iterator>
+        template <typename Iterator>
         using EnableIfAtLeastForwardIterator = std::enable_if_t<
             meta_internal::IsAtLeastForwardIterator<Iterator>::value, int>;
-        template<typename Iterator>
+        template <typename Iterator>
         using DisableIfAtLeastForwardIterator = std::enable_if_t<
             !meta_internal::IsAtLeastForwardIterator<Iterator>::value, int>;
 
         using MemcpyPolicy = typename Storage::MemcpyPolicy;
         using ElementwiseAssignPolicy = typename Storage::ElementwiseAssignPolicy;
         using ElementwiseConstructPolicy =
-        typename Storage::ElementwiseConstructPolicy;
+            typename Storage::ElementwiseConstructPolicy;
         using MoveAssignmentPolicy = typename Storage::MoveAssignmentPolicy;
 
     public:
@@ -113,25 +111,25 @@ namespace turbo {
         using iterator = inlined_vector_internal::Iterator<A>;
         using const_iterator = inlined_vector_internal::ConstIterator<A>;
         using reverse_iterator = inlined_vector_internal::ReverseIterator<A>;
-        using const_reverse_iterator =
-        inlined_vector_internal::ConstReverseIterator<A>;
+        using const_reverse_iterator = inlined_vector_internal::ConstReverseIterator<A>;
 
         // ---------------------------------------------------------------------------
         // InlinedVector Constructors and Destructor
         // ---------------------------------------------------------------------------
 
         // Creates an empty inlined vector with a value-initialized allocator.
-        InlinedVector() noexcept(noexcept(allocator_type())) : storage_() {
+        InlinedVector() noexcept(noexcept(allocator_type()))
+            : storage_() {
         }
 
         // Creates an empty inlined vector with a copy of `allocator`.
-        explicit InlinedVector(const allocator_type &allocator) noexcept
+        explicit InlinedVector(const allocator_type& allocator) noexcept
             : storage_(allocator) {
         }
 
         // Creates an inlined vector with `n` copies of `value_type()`.
         explicit InlinedVector(size_type n,
-                               const allocator_type &allocator = allocator_type())
+            const allocator_type& allocator = allocator_type())
             : storage_(allocator) {
             if (KUMO_UNLIKELY(n > max_size())) {
                 ThrowStdLengthError("InlinedVector::InlinedVector failed length check");
@@ -141,7 +139,7 @@ namespace turbo {
 
         // Creates an inlined vector with `n` copies of `v`.
         InlinedVector(size_type n, const_reference v,
-                      const allocator_type &allocator = allocator_type())
+            const allocator_type& allocator = allocator_type())
             : storage_(allocator) {
             if (KUMO_UNLIKELY(n > max_size())) {
                 ThrowStdLengthError("InlinedVector::InlinedVector failed length check");
@@ -151,7 +149,7 @@ namespace turbo {
 
         // Creates an inlined vector with copies of the elements of `list`.
         InlinedVector(std::initializer_list<value_type> list,
-                      const allocator_type &allocator = allocator_type())
+            const allocator_type& allocator = allocator_type())
             : InlinedVector(list.begin(), list.end(), allocator) {
         }
 
@@ -161,10 +159,10 @@ namespace turbo {
         // NOTE: the `enable_if` prevents ambiguous interpretation between a call to
         // this constructor with two integral arguments and a call to the above
         // `InlinedVector(size_type, const_reference)` constructor.
-        template<typename ForwardIterator,
+        template <typename ForwardIterator,
             EnableIfAtLeastForwardIterator<ForwardIterator> = 0>
         InlinedVector(ForwardIterator first, ForwardIterator last,
-                      const allocator_type &allocator = allocator_type())
+            const allocator_type& allocator = allocator_type())
             : storage_(allocator) {
             const size_type s = static_cast<size_type>(std::distance(first, last));
             if (KUMO_UNLIKELY(s > max_size())) {
@@ -175,23 +173,23 @@ namespace turbo {
 
         // Creates an inlined vector with elements constructed from the provided input
         // iterator range [`first`, `last`).
-        template<typename InputIterator,
+        template <typename InputIterator,
             DisableIfAtLeastForwardIterator<InputIterator> = 0>
         InlinedVector(InputIterator first, InputIterator last,
-                      const allocator_type &allocator = allocator_type())
+            const allocator_type& allocator = allocator_type())
             : storage_(allocator) {
             std::copy(first, last, std::back_inserter(*this));
         }
 
         // Creates an inlined vector by copying the contents of `other` using
         // `other`'s allocator.
-        InlinedVector(const InlinedVector &other)
+        InlinedVector(const InlinedVector& other)
             : InlinedVector(other, other.storage_.GetAllocator()) {
         }
 
         // Creates an inlined vector by copying the contents of `other` using the
         // provided `allocator`.
-        InlinedVector(const InlinedVector &other, const allocator_type &allocator)
+        InlinedVector(const InlinedVector& other, const allocator_type& allocator)
             : storage_(allocator) {
             // Fast path: if the other vector is empty, there's nothing for us to do.
             if (other.empty()) {
@@ -202,9 +200,7 @@ namespace turbo {
             // allocator doesn't do anything fancy, and there is nothing on the heap
             // then we know it is legal for us to simply memcpy the other vector's
             // inlined bytes to form our copy of its elements.
-            if (std::is_trivially_copy_constructible_v<value_type> &&
-                std::is_same_v<A, std::allocator<value_type> > &&
-                !other.storage_.GetIsAllocated()) {
+            if (std::is_trivially_copy_constructible_v<value_type> && std::is_same_v<A, std::allocator<value_type>> && !other.storage_.GetIsAllocated()) {
                 storage_.MemcpyFrom(other.storage_);
                 return;
             }
@@ -226,17 +222,15 @@ namespace turbo {
         //     allocation function as the inlined vector's allocator.
         // Thus, the move constructor is non-throwing if the allocator is non-throwing
         // or `value_type`'s move constructor is specified as `noexcept`.
-        InlinedVector(InlinedVector &&other) noexcept(
-            turbo::allocator_is_nothrow<allocator_type>::value ||
-            std::is_nothrow_move_constructible_v<value_type>)
+        InlinedVector(InlinedVector&& other) noexcept(
+            turbo::allocator_is_nothrow<allocator_type>::value || std::is_nothrow_move_constructible_v<value_type>)
             : storage_(other.storage_.GetAllocator()) {
             // Fast path: if the value type can be trivially relocated (i.e. moved from
             // and destroyed), and we know the allocator doesn't do anything fancy, then
             // it's safe for us to simply adopt the contents of the storage for `other`
             // and remove its own reference to them. It's as if we had individually
             // move-constructed each value and then destroyed the original.
-            if (turbo::is_trivially_relocatable<value_type>::value &&
-                std::is_same_v<A, std::allocator<value_type> >) {
+            if (turbo::is_trivially_relocatable<value_type>::value && std::is_same_v<A, std::allocator<value_type>>) {
                 storage_.MemcpyFrom(other.storage_);
                 other.storage_.SetInlinedSize(0);
                 return;
@@ -245,10 +239,8 @@ namespace turbo {
             // Fast path: if the other vector is on the heap, we can simply take over
             // its allocation.
             if (other.storage_.GetIsAllocated()) {
-                storage_.SetAllocation({
-                    other.storage_.GetAllocatedData(),
-                    other.storage_.GetAllocatedCapacity()
-                });
+                storage_.SetAllocation({ other.storage_.GetAllocatedData(),
+                    other.storage_.GetAllocatedCapacity() });
                 storage_.SetAllocatedSize(other.storage_.GetSize());
 
                 other.storage_.SetInlinedSize(0);
@@ -256,7 +248,7 @@ namespace turbo {
             }
 
             // Otherwise we must move each element individually.
-            IteratorValueAdapter<A, MoveIterator<A> > other_values(
+            IteratorValueAdapter<A, MoveIterator<A>> other_values(
                 MoveIterator<A>(other.storage_.GetInlinedData()));
 
             inlined_vector_internal::ConstructElements<A>(
@@ -274,17 +266,16 @@ namespace turbo {
         // allocation is performed, this constructor can only be `noexcept` if the
         // specified allocator is also `noexcept`.
         InlinedVector(
-            InlinedVector &&other,
-            const allocator_type &
-            allocator) noexcept(turbo::allocator_is_nothrow<allocator_type>::value)
+            InlinedVector&& other,
+            const allocator_type&
+                allocator) noexcept(turbo::allocator_is_nothrow<allocator_type>::value)
             : storage_(allocator) {
             // Fast path: if the value type can be trivially relocated (i.e. moved from
             // and destroyed), and we know the allocator doesn't do anything fancy, then
             // it's safe for us to simply adopt the contents of the storage for `other`
             // and remove its own reference to them. It's as if we had individually
             // move-constructed each value and then destroyed the original.
-            if (turbo::is_trivially_relocatable<value_type>::value &&
-                std::is_same_v<A, std::allocator<value_type> >) {
+            if (turbo::is_trivially_relocatable<value_type>::value && std::is_same_v<A, std::allocator<value_type>>) {
                 storage_.MemcpyFrom(other.storage_);
                 other.storage_.SetInlinedSize(0);
                 return;
@@ -292,12 +283,9 @@ namespace turbo {
 
             // Fast path: if the other vector is on the heap and shared the same
             // allocator, we can simply take over its allocation.
-            if ((storage_.GetAllocator() == other.storage_.GetAllocator()) &&
-                other.storage_.GetIsAllocated()) {
-                storage_.SetAllocation({
-                    other.storage_.GetAllocatedData(),
-                    other.storage_.GetAllocatedCapacity()
-                });
+            if ((storage_.GetAllocator() == other.storage_.GetAllocator()) && other.storage_.GetIsAllocated()) {
+                storage_.SetAllocation({ other.storage_.GetAllocatedData(),
+                    other.storage_.GetAllocatedCapacity() });
                 storage_.SetAllocatedSize(other.storage_.GetSize());
 
                 other.storage_.SetInlinedSize(0);
@@ -306,7 +294,7 @@ namespace turbo {
 
             // Otherwise we must move each element individually.
             storage_.Initialize(
-                IteratorValueAdapter<A, MoveIterator<A> >(MoveIterator<A>(other.data())),
+                IteratorValueAdapter<A, MoveIterator<A>>(MoveIterator<A>(other.data())),
                 other.size());
         }
 
@@ -336,7 +324,7 @@ namespace turbo {
             // inlined vector can express is the minimum of the limit of how many
             // objects we can allocate and std::numeric_limits<size_type>::max() / 2.
             return (std::min)(AllocatorTraits<A>::max_size(storage_.GetAllocator()),
-                              (std::numeric_limits<size_type>::max)() / 2);
+                (std::numeric_limits<size_type>::max)() / 2);
         }
 
         // `InlinedVector::capacity()`
@@ -350,8 +338,8 @@ namespace turbo {
         // the allocated memory.
         size_type capacity() const noexcept {
             return storage_.GetIsAllocated()
-                       ? storage_.GetAllocatedCapacity()
-                       : storage_.GetInlinedCapacity();
+                ? storage_.GetAllocatedCapacity()
+                : storage_.GetInlinedCapacity();
         }
 
         // `InlinedVector::data()`
@@ -362,8 +350,8 @@ namespace turbo {
         // NOTE: only elements within [`data()`, `data() + size()`) are valid.
         pointer data() noexcept KUMO_ATTRIBUTE_LIFETIME_BOUND {
             return storage_.GetIsAllocated()
-                       ? storage_.GetAllocatedData()
-                       : storage_.GetInlinedData();
+                ? storage_.GetAllocatedData()
+                : storage_.GetInlinedData();
         }
 
         // Overload of `InlinedVector::data()` that returns a `const_pointer` to the
@@ -373,8 +361,8 @@ namespace turbo {
         // NOTE: only elements within [`data()`, `data() + size()`) are valid.
         const_pointer data() const noexcept KUMO_ATTRIBUTE_LIFETIME_BOUND {
             return storage_.GetIsAllocated()
-                       ? storage_.GetAllocatedData()
-                       : storage_.GetInlinedData();
+                ? storage_.GetAllocatedData()
+                : storage_.GetInlinedData();
         }
 
         // `InlinedVector::operator[](...)`
@@ -515,7 +503,7 @@ namespace turbo {
         //
         // Returns a `const_reverse_iterator` from the end of the inlined vector.
         const_reverse_iterator crbegin() const noexcept
-        KUMO_ATTRIBUTE_LIFETIME_BOUND {
+            KUMO_ATTRIBUTE_LIFETIME_BOUND {
             return rbegin();
         }
 
@@ -540,7 +528,7 @@ namespace turbo {
         //
         // Replaces the elements of the inlined vector with copies of the elements of
         // `list`.
-        InlinedVector &operator=(std::initializer_list<value_type> list) {
+        InlinedVector& operator=(std::initializer_list<value_type> list) {
             assign(list.begin(), list.end());
 
             return *this;
@@ -548,7 +536,7 @@ namespace turbo {
 
         // Overload of `InlinedVector::operator=(...)` that replaces the elements of
         // the inlined vector with copies of the elements of `other`.
-        InlinedVector &operator=(const InlinedVector &other) {
+        InlinedVector& operator=(const InlinedVector& other) {
             if (KUMO_LIKELY(this != std::addressof(other))) {
                 const_pointer other_data = other.data();
                 assign(other_data, other_data + other.size());
@@ -562,9 +550,9 @@ namespace turbo {
         //
         // NOTE: as a result of calling this overload, `other` is left in a valid but
         // unspecified state.
-        InlinedVector &operator=(InlinedVector &&other) {
+        InlinedVector& operator=(InlinedVector&& other) {
             if (KUMO_LIKELY(this != std::addressof(other))) {
-                MoveAssignment(MoveAssignmentPolicy{}, std::move(other));
+                MoveAssignment(MoveAssignmentPolicy { }, std::move(other));
             }
 
             return *this;
@@ -590,7 +578,7 @@ namespace turbo {
         // inlined vector with the range [`first`, `last`).
         //
         // NOTE: this overload is for iterators that are "forward" category or better.
-        template<typename ForwardIterator,
+        template <typename ForwardIterator,
             EnableIfAtLeastForwardIterator<ForwardIterator> = 0>
         void assign(ForwardIterator first, ForwardIterator last) {
             const size_type s = static_cast<size_type>(std::distance(first, last));
@@ -604,7 +592,7 @@ namespace turbo {
         // inlined vector with the range [`first`, `last`).
         //
         // NOTE: this overload is for iterators that are "input" category.
-        template<typename InputIterator,
+        template <typename InputIterator,
             DisableIfAtLeastForwardIterator<InputIterator> = 0>
         void assign(InputIterator first, InputIterator last) {
             size_type i = 0;
@@ -646,14 +634,14 @@ namespace turbo {
         // Inserts a copy of `v` at `pos`, returning an `iterator` to the newly
         // inserted element.
         iterator insert(const_iterator pos,
-                        const_reference v) KUMO_ATTRIBUTE_LIFETIME_BOUND {
+            const_reference v) KUMO_ATTRIBUTE_LIFETIME_BOUND {
             return emplace(pos, v);
         }
 
         // Overload of `InlinedVector::insert(...)` that inserts `v` at `pos` using
         // move semantics, returning an `iterator` to the newly inserted element.
         iterator insert(const_iterator pos,
-                        value_type &&v) KUMO_ATTRIBUTE_LIFETIME_BOUND {
+            value_type&& v) KUMO_ATTRIBUTE_LIFETIME_BOUND {
             return emplace(pos, std::move(v));
         }
 
@@ -661,7 +649,7 @@ namespace turbo {
         // of `v` starting at `pos`, returning an `iterator` pointing to the first of
         // the newly inserted elements.
         iterator insert(const_iterator pos, size_type n,
-                        const_reference v) KUMO_ATTRIBUTE_LIFETIME_BOUND {
+            const_reference v) KUMO_ATTRIBUTE_LIFETIME_BOUND {
             turbo::base_internal::HardeningAssertGE(pos, cbegin());
             turbo::base_internal::HardeningAssertLE(pos, cend());
             if (KUMO_UNLIKELY(n > max_size() - size())) {
@@ -680,7 +668,7 @@ namespace turbo {
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
                 return storage_.Insert(pos, CopyValueAdapter<A>(std::addressof(dealias)),
-                                       n);
+                    n);
 #if !defined(__clang__) && defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
@@ -693,7 +681,7 @@ namespace turbo {
         // elements of `list` starting at `pos`, returning an `iterator` pointing to
         // the first of the newly inserted elements.
         iterator insert(const_iterator pos, std::initializer_list<value_type> list)
-        KUMO_ATTRIBUTE_LIFETIME_BOUND {
+            KUMO_ATTRIBUTE_LIFETIME_BOUND {
             return insert(pos, list.begin(), list.end());
         }
 
@@ -702,10 +690,10 @@ namespace turbo {
         // of the newly inserted elements.
         //
         // NOTE: this overload is for iterators that are "forward" category or better.
-        template<typename ForwardIterator,
+        template <typename ForwardIterator,
             EnableIfAtLeastForwardIterator<ForwardIterator> = 0>
         iterator insert(const_iterator pos, ForwardIterator first,
-                        ForwardIterator last) KUMO_ATTRIBUTE_LIFETIME_BOUND {
+            ForwardIterator last) KUMO_ATTRIBUTE_LIFETIME_BOUND {
             turbo::base_internal::HardeningAssertGE(pos, cbegin());
             turbo::base_internal::HardeningAssertLE(pos, cend());
             const size_type s = static_cast<size_type>(std::distance(first, last));
@@ -726,10 +714,10 @@ namespace turbo {
         // of the newly inserted elements.
         //
         // NOTE: this overload is for iterators that are "input" category.
-        template<typename InputIterator,
+        template <typename InputIterator,
             DisableIfAtLeastForwardIterator<InputIterator> = 0>
         iterator insert(const_iterator pos, InputIterator first,
-                        InputIterator last) KUMO_ATTRIBUTE_LIFETIME_BOUND {
+            InputIterator last) KUMO_ATTRIBUTE_LIFETIME_BOUND {
             turbo::base_internal::HardeningAssertGE(pos, cbegin());
             turbo::base_internal::HardeningAssertLE(pos, cend());
 
@@ -745,9 +733,9 @@ namespace turbo {
         //
         // Constructs and inserts an element using `args...` in the inlined vector at
         // `pos`, returning an `iterator` pointing to the newly emplaced element.
-        template<typename... Args>
+        template <typename... Args>
         iterator emplace(const_iterator pos,
-                         Args &&... args) KUMO_ATTRIBUTE_LIFETIME_BOUND {
+            Args&&... args) KUMO_ATTRIBUTE_LIFETIME_BOUND {
             turbo::base_internal::HardeningAssertGE(pos, cbegin());
             turbo::base_internal::HardeningAssertLE(pos, cend());
             if (KUMO_UNLIKELY(size() == max_size())) {
@@ -765,9 +753,9 @@ namespace turbo {
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
             return storage_.Insert(pos,
-                                   IteratorValueAdapter<A, MoveIterator<A> >(
-                                       MoveIterator<A>(std::addressof(dealias))),
-                                   1);
+                IteratorValueAdapter<A, MoveIterator<A>>(
+                    MoveIterator<A>(std::addressof(dealias))),
+                1);
 #if !defined(__clang__) && defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
@@ -777,8 +765,8 @@ namespace turbo {
         //
         // Constructs and inserts an element using `args...` in the inlined vector at
         // `end()`, returning a `reference` to the newly emplaced element.
-        template<typename... Args>
-        reference emplace_back(Args &&... args) KUMO_ATTRIBUTE_LIFETIME_BOUND {
+        template <typename... Args>
+        reference emplace_back(Args&&... args) KUMO_ATTRIBUTE_LIFETIME_BOUND {
             if (KUMO_UNLIKELY(size() == max_size())) {
                 ThrowStdLengthError("InlinedVector::emplace_back failed length check");
             }
@@ -792,7 +780,7 @@ namespace turbo {
 
         // Overload of `InlinedVector::push_back(...)` for inserting `v` at `end()`
         // using move semantics.
-        void push_back(value_type &&v) {
+        void push_back(value_type&& v) {
             static_cast<void>(emplace_back(std::move(v)));
         }
 
@@ -838,7 +826,7 @@ namespace turbo {
         //
         // NOTE: may return `end()`, which is not dereferenceable.
         iterator erase(const_iterator from,
-                       const_iterator to) KUMO_ATTRIBUTE_LIFETIME_BOUND {
+            const_iterator to) KUMO_ATTRIBUTE_LIFETIME_BOUND {
             turbo::base_internal::HardeningAssertGE(from, cbegin());
             turbo::base_internal::HardeningAssertLE(from, to);
             turbo::base_internal::HardeningAssertLE(to, cend());
@@ -887,22 +875,22 @@ namespace turbo {
         // `InlinedVector::swap(...)`
         //
         // Swaps the contents of the inlined vector with `other`.
-        void swap(InlinedVector &other) {
+        void swap(InlinedVector& other) {
             if (KUMO_LIKELY(this != std::addressof(other))) {
                 storage_.Swap(std::addressof(other.storage_));
             }
         }
 
     private:
-        template<typename H, typename TheT, size_t TheN, typename TheA>
-        friend H TurboHashValue(H h, const turbo::InlinedVector<TheT, TheN, TheA> &a);
+        template <typename H, typename TheT, size_t TheN, typename TheA>
+        friend H TurboHashValue(H h, const turbo::InlinedVector<TheT, TheN, TheA>& a);
 
-        void MoveAssignment(MemcpyPolicy, InlinedVector &&other) {
+        void MoveAssignment(MemcpyPolicy, InlinedVector&& other) {
             // Assumption check: we shouldn't be told to use memcpy to implement move
             // assignment unless we have trivially destructible elements and an
             // allocator that does nothing fancy.
             static_assert(std::is_trivially_destructible_v<value_type>, "");
-            static_assert(std::is_same_v<A, std::allocator<value_type> >, "");
+            static_assert(std::is_same_v<A, std::allocator<value_type>>, "");
 
             // Throw away our existing heap allocation, if any. There is no need to
             // destroy the existing elements one by one because we know they are
@@ -918,7 +906,7 @@ namespace turbo {
         // elements of the other vector.
         //
         // REQUIRES: other.storage_.GetIsAllocated()
-        void DestroyExistingAndAdopt(InlinedVector &&other) {
+        void DestroyExistingAndAdopt(InlinedVector&& other) {
             turbo::base_internal::HardeningAssert(other.storage_.GetIsAllocated());
 
             inlined_vector_internal::DestroyAdapter<A>::DestroyElements(
@@ -929,7 +917,7 @@ namespace turbo {
             other.storage_.SetInlinedSize(0);
         }
 
-        void MoveAssignment(ElementwiseAssignPolicy, InlinedVector &&other) {
+        void MoveAssignment(ElementwiseAssignPolicy, InlinedVector&& other) {
             // Fast path: if the other vector is on the heap then we don't worry about
             // actually move-assigning each element. Instead we only throw away our own
             // existing elements and adopt the heap allocation of the other vector.
@@ -938,12 +926,12 @@ namespace turbo {
                 return;
             }
 
-            storage_.Assign(IteratorValueAdapter<A, MoveIterator<A> >(
+            storage_.Assign(IteratorValueAdapter<A, MoveIterator<A>>(
                                 MoveIterator<A>(other.storage_.GetInlinedData())),
-                            other.size());
+                other.size());
         }
 
-        void MoveAssignment(ElementwiseConstructPolicy, InlinedVector &&other) {
+        void MoveAssignment(ElementwiseConstructPolicy, InlinedVector&& other) {
             // Fast path: if the other vector is on the heap then we don't worry about
             // actually move-assigning each element. Instead we only throw away our own
             // existing elements and adopt the heap allocation of the other vector.
@@ -962,7 +950,7 @@ namespace turbo {
                 storage_.SetInlinedSize(0);
             }
 
-            IteratorValueAdapter<A, MoveIterator<A> > other_values(
+            IteratorValueAdapter<A, MoveIterator<A>> other_values(
                 MoveIterator<A>(other.storage_.GetInlinedData()));
             inlined_vector_internal::ConstructElements<A>(
                 storage_.GetAllocator(), storage_.GetInlinedData(), other_values,
@@ -980,18 +968,18 @@ namespace turbo {
     // `swap(...)`
     //
     // Swaps the contents of two inlined vectors.
-    template<typename T, size_t N, typename A>
-    void swap(turbo::InlinedVector<T, N, A> &a,
-              turbo::InlinedVector<T, N, A> &b) noexcept(noexcept(a.swap(b))) {
+    template <typename T, size_t N, typename A>
+    void swap(turbo::InlinedVector<T, N, A>& a,
+        turbo::InlinedVector<T, N, A>& b) noexcept(noexcept(a.swap(b))) {
         a.swap(b);
     }
 
     // `operator==(...)`
     //
     // Tests for value-equality of two inlined vectors.
-    template<typename T, size_t N, typename A>
-    bool operator==(const turbo::InlinedVector<T, N, A> &a,
-                    const turbo::InlinedVector<T, N, A> &b) {
+    template <typename T, size_t N, typename A>
+    bool operator==(const turbo::InlinedVector<T, N, A>& a,
+        const turbo::InlinedVector<T, N, A>& b) {
         auto a_data = a.data();
         auto b_data = b.data();
         return std::equal(a_data, a_data + a.size(), b_data, b_data + b.size());
@@ -1000,9 +988,9 @@ namespace turbo {
     // `operator!=(...)`
     //
     // Tests for value-inequality of two inlined vectors.
-    template<typename T, size_t N, typename A>
-    bool operator!=(const turbo::InlinedVector<T, N, A> &a,
-                    const turbo::InlinedVector<T, N, A> &b) {
+    template <typename T, size_t N, typename A>
+    bool operator!=(const turbo::InlinedVector<T, N, A>& a,
+        const turbo::InlinedVector<T, N, A>& b) {
         return !(a == b);
     }
 
@@ -1010,22 +998,22 @@ namespace turbo {
     //
     // Tests whether the value of an inlined vector is less than the value of
     // another inlined vector using a lexicographical comparison algorithm.
-    template<typename T, size_t N, typename A>
-    bool operator<(const turbo::InlinedVector<T, N, A> &a,
-                   const turbo::InlinedVector<T, N, A> &b) {
+    template <typename T, size_t N, typename A>
+    bool operator<(const turbo::InlinedVector<T, N, A>& a,
+        const turbo::InlinedVector<T, N, A>& b) {
         auto a_data = a.data();
         auto b_data = b.data();
         return std::lexicographical_compare(a_data, a_data + a.size(), b_data,
-                                            b_data + b.size());
+            b_data + b.size());
     }
 
     // `operator>(...)`
     //
     // Tests whether the value of an inlined vector is greater than the value of
     // another inlined vector using a lexicographical comparison algorithm.
-    template<typename T, size_t N, typename A>
-    bool operator>(const turbo::InlinedVector<T, N, A> &a,
-                   const turbo::InlinedVector<T, N, A> &b) {
+    template <typename T, size_t N, typename A>
+    bool operator>(const turbo::InlinedVector<T, N, A>& a,
+        const turbo::InlinedVector<T, N, A>& b) {
         return b < a;
     }
 
@@ -1033,9 +1021,9 @@ namespace turbo {
     //
     // Tests whether the value of an inlined vector is less than or equal to the
     // value of another inlined vector using a lexicographical comparison algorithm.
-    template<typename T, size_t N, typename A>
-    bool operator<=(const turbo::InlinedVector<T, N, A> &a,
-                    const turbo::InlinedVector<T, N, A> &b) {
+    template <typename T, size_t N, typename A>
+    bool operator<=(const turbo::InlinedVector<T, N, A>& a,
+        const turbo::InlinedVector<T, N, A>& b) {
         return !(b < a);
     }
 
@@ -1043,9 +1031,9 @@ namespace turbo {
     //
     // Tests whether the value of an inlined vector is greater than or equal to the
     // value of another inlined vector using a lexicographical comparison algorithm.
-    template<typename T, size_t N, typename A>
-    bool operator>=(const turbo::InlinedVector<T, N, A> &a,
-                    const turbo::InlinedVector<T, N, A> &b) {
+    template <typename T, size_t N, typename A>
+    bool operator>=(const turbo::InlinedVector<T, N, A>& a,
+        const turbo::InlinedVector<T, N, A>& b) {
         return !(a < b);
     }
 
@@ -1053,14 +1041,14 @@ namespace turbo {
     //
     // Provides `turbo::Hash` support for `turbo::InlinedVector`. It is uncommon to
     // call this directly.
-    template<typename H, typename T, size_t N, typename A>
-    H TurboHashValue(H h, const turbo::InlinedVector<T, N, A> &a) {
+    template <typename H, typename T, size_t N, typename A>
+    H TurboHashValue(H h, const turbo::InlinedVector<T, N, A>& a) {
         return H::combine_contiguous(std::move(h), a.data(), a.size());
     }
 
-    template<typename T, size_t N, typename A, typename Predicate>
+    template <typename T, size_t N, typename A, typename Predicate>
     constexpr typename InlinedVector<T, N, A>::size_type erase_if(
-        InlinedVector<T, N, A> &v, Predicate pred) {
+        InlinedVector<T, N, A>& v, Predicate pred) {
         const auto it = std::remove_if(v.begin(), v.end(), std::move(pred));
         const auto removed = static_cast<typename InlinedVector<T, N, A>::size_type>(
             std::distance(it, v.end()));
@@ -1069,4 +1057,4 @@ namespace turbo {
     }
 } // namespace turbo
 
-#endif  // TURBO_CONTAINER_INLINED_VECTOR_H_
+#endif // TURBO_CONTAINER_INLINED_VECTOR_H_

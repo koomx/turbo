@@ -198,8 +198,8 @@ namespace turbo {
             return os;
         }
 
-        template<typename StatusOrLike>
-        std::ostream &PrintStatusOrLike(std::ostream &os, const StatusOrLike &v) {
+        template<typename ResultLike>
+        std::ostream &PrintResultLike(std::ostream &os, const ResultLike &v) {
             os << "<";
             if (v.ok()) {
                 os << "OK: ";
@@ -247,7 +247,7 @@ namespace turbo {
                 return (PrintSmartPointerContents)(os, v);
             } else if constexpr (turbo::HasTurboStringify<T>::value) {
                 // If someone has specified `turbo_stringify`, we should prefer that.
-                return os << turbo::StrCat(v);
+                return os << turbo::str_cat(v);
             } else if constexpr (meta_internal::Requires<const T>(
                 [&](auto &&w)
             -> decltype((
@@ -275,7 +275,7 @@ namespace turbo {
             } else if constexpr (meta_internal::Requires<const T>(
                 [&](auto &&w) -> decltype(w.ok(), w.status(), *w) {
                 })) {
-                return (PrintStatusOrLike)(os, v);
+                return (PrintResultLike)(os, v);
             } else if constexpr (meta_internal::Requires<const T>(
                 [&](auto &&w) -> decltype(w.has_value(), *w) {
                 })) {
@@ -319,9 +319,9 @@ namespace turbo {
                 return os;
             } else if constexpr (!std::is_enum_v<T> &&
                                  meta_internal::Requires<const T>(
-                                     [&](auto &&w) -> decltype(turbo::StrCat(w)) {
+                                     [&](auto &&w) -> decltype(turbo::str_cat(w)) {
                                      })) {
-                return os << turbo::StrCat(v);
+                return os << turbo::str_cat(v);
             } else if constexpr (meta_internal::Requires<const T>(
                 [&](auto &&w)
             -> decltype(std::declval<std::ostream &>()

@@ -155,7 +155,7 @@
 // options: `turbo_stringify()` or `std::ostream& operator<<(std::ostream&, ...)`.
 // It is recommended that users make their types loggable through
 // `turbo_stringify()` as it is a universal stringification extension that also
-// enables `turbo::str_sprintf` and `turbo::StrCat` support. If both
+// enables `turbo::str_sprintf` and `turbo::str_cat` support. If both
 // `turbo_stringify()` and `std::ostream& operator<<(std::ostream&, ...)` are
 // defined, `turbo_stringify()` will be used.
 //

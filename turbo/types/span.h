@@ -25,7 +25,7 @@
 // non-const T.) A span provides a lightweight way to pass a reference to such
 // data.
 //
-// Additionally, this header file defines `MakeSpan()` and `MakeConstSpan()`
+// Additionally, this header file defines `make_span()` and `make_const_span()`
 // factory functions, for clearly creating spans of type `Span<T>` or read-only
 // `Span<const T>` when such types may be difficult to identify due to issues
 // with implicit conversion.
@@ -34,8 +34,8 @@
 // differences between `turbo::Span` and `std::span` are:
 //    * `turbo::Span` has `operator==` (which is likely a design bug,
 //       per https://abseil.io/blog/20180531-regular-types)
-//    * `turbo::Span` has the factory functions `MakeSpan()` and
-//      `MakeConstSpan()`
+//    * `turbo::Span` has the factory functions `make_span()` and
+//      `make_const_span()`
 //    * bounds-checked access to `turbo::Span` is accomplished with `at()`
 //      however `std::span` now supports the same as of the draft C++26 standard
 //    * `turbo::Span` has compiler-provided move and copy constructors and
@@ -62,15 +62,15 @@
 #include <type_traits>
 #include <utility>
 
-#include <turbo/macros/config.h>
 #include <turbo/base/internal/hardening.h>
 #include <turbo/base/nullability.h>
 #include <turbo/base/throw_delegate.h>
+#include <turbo/macros/config.h>
 #include <turbo/meta/type_traits.h>
 #include <turbo/types/internal/span.h>
 
 namespace turbo {
-    template<typename T>
+    template <typename T>
     class Span;
 } // namespace turbo
 
@@ -80,16 +80,16 @@ namespace turbo {
 #define __has_include(header) 0
 #endif
 #if __has_include(<version>)
-#include <version>  // NOLINT(misc-include-cleaner)
+#include <version> // NOLINT(misc-include-cleaner)
 #endif
 #if defined(__cpp_lib_ranges) && __cpp_lib_ranges >= 201911L
-#include <ranges>  // NOLINT(build/c++20)
-template<typename T>
+#include <ranges> // NOLINT(build/c++20)
+template <typename T>
 // NOLINTNEXTLINE(build/c++20)
-inline constexpr bool std::ranges::enable_view<turbo::Span<T> > = true;
-template<typename T>
+inline constexpr bool std::ranges::enable_view<turbo::Span<T>> = true;
+template <typename T>
 // NOLINTNEXTLINE(build/c++20)
-inline constexpr bool std::ranges::enable_borrowed_range<turbo::Span<T> > = true;
+inline constexpr bool std::ranges::enable_borrowed_range<turbo::Span<T>> = true;
 #endif
 
 namespace turbo {
@@ -126,7 +126,7 @@ namespace turbo {
     //   * Explicitly from a reference to a container type
     //   * Explicitly from a pointer and size
     //   * Implicitly from a container type (but only for spans of type `const T`)
-    //   * Using the `MakeSpan()` or `MakeConstSpan()` factory functions.
+    //   * Using the `make_span()` or `make_const_span()` factory functions.
     //
     // Examples:
     //
@@ -171,23 +171,20 @@ namespace turbo {
     //   // Explicit constructor from pointer,size
     //   int* my_array = new int[10];
     //   MyRoutine(turbo::Span<const int>(my_array, 10));
-    template<typename T>
+    template <typename T>
     class KUMO_ATTRIBUTE_VIEW Span {
     private:
         // Used to determine whether a Span can be constructed from a container of
         // type C.
-        template<typename C>
-        using EnableIfConvertibleFrom =
-        std::enable_if_t<!std::is_same_v<Span, std::remove_reference_t<C> > &&
-                         span_internal::HasData<T, C>::value &&
-                         span_internal::HasSize<C>::value>;
+        template <typename C>
+        using EnableIfConvertibleFrom = std::enable_if_t<!std::is_same_v<Span, std::remove_reference_t<C>> && span_internal::HasData<T, C>::value && span_internal::HasSize<C>::value>;
 
         // Used to SFINAE-enable a function when the slice elements are const.
-        template<typename U>
+        template <typename U>
         using EnableIfValueIsConst = std::enable_if_t<std::is_const_v<T>, U>;
 
         // Used to SFINAE-enable a function when the slice elements are mutable.
-        template<typename U>
+        template <typename U>
         using EnableIfValueIsMutable = std::enable_if_t<!std::is_const_v<T>, U>;
 
     public:
@@ -196,10 +193,10 @@ namespace turbo {
         // TODO(b/316099902) - pointer should be turbo_nullable, but this makes it hard
         // to recognize foreach loops as safe. turbo_nullability_unknown is currently
         // used to suppress -Wnullability-completeness warnings.
-        using pointer = T * turbo_nullability_unknown;
-        using const_pointer = const T * turbo_nullability_unknown;
-        using reference = T &;
-        using const_reference = const T &;
+        using pointer = T* turbo_nullability_unknown;
+        using const_pointer = const T* turbo_nullability_unknown;
+        using reference = T&;
+        using const_reference = const T&;
         using iterator = pointer;
         using const_iterator = const_pointer;
         using reverse_iterator = std::reverse_iterator<iterator>;
@@ -211,38 +208,40 @@ namespace turbo {
         // NOLINTNEXTLINE
         static const size_type npos = ~(size_type(0));
 
-        constexpr Span() noexcept : Span(nullptr, 0) {
+        constexpr Span() noexcept
+            : Span(nullptr, 0) {
         }
 
         constexpr Span(pointer array KUMO_ATTRIBUTE_LIFETIME_BOUND,
-                       size_type length) noexcept
-            : ptr_(array), len_(length) {
+            size_type length) noexcept
+            : ptr_(array)
+            , len_(length) {
         }
 
         // Implicit conversion constructors
-        template<size_t N>
-        constexpr Span(T ( // NOLINT(google-explicit-constructor)
+        template <size_t N>
+        constexpr Span(T( // NOLINT(google-explicit-constructor)
             &a KUMO_ATTRIBUTE_LIFETIME_BOUND)[N]) noexcept
             : Span(a, N) {
         }
 
         // Explicit reference constructor for a mutable `Span<T>` type. Can be
-        // replaced with MakeSpan() to infer the type parameter.
-        template<typename V, typename = EnableIfConvertibleFrom<V>,
+        // replaced with make_span() to infer the type parameter.
+        template <typename V, typename = EnableIfConvertibleFrom<V>,
             typename = EnableIfValueIsMutable<V>,
-            typename = span_internal::EnableIfNotIsView<V> >
+            typename = span_internal::EnableIfNotIsView<V>>
         explicit Span(
-            V &v
-            KUMO_ATTRIBUTE_LIFETIME_BOUND) noexcept // NOLINT(runtime/references)
+            V& v
+                KUMO_ATTRIBUTE_LIFETIME_BOUND) noexcept // NOLINT(runtime/references)
             : Span(span_internal::GetData(v), v.size()) {
         }
 
         // Implicit reference constructor for a read-only `Span<const T>` type
-        template<typename V, typename = EnableIfConvertibleFrom<V>,
+        template <typename V, typename = EnableIfConvertibleFrom<V>,
             typename = EnableIfValueIsConst<V>,
-            typename = span_internal::EnableIfNotIsView<V> >
+            typename = span_internal::EnableIfNotIsView<V>>
         // NOLINTNEXTLINE(google-explicit-constructor)
-        constexpr Span(const V &v KUMO_ATTRIBUTE_LIFETIME_BOUND) noexcept
+        constexpr Span(const V& v KUMO_ATTRIBUTE_LIFETIME_BOUND) noexcept
             : Span(span_internal::GetData(v), v.size()) {
         }
 
@@ -250,17 +249,17 @@ namespace turbo {
         // This is so we can drop the KUMO_ATTRIBUTE_LIFETIME_BOUND annotation. These
         // overloads must be made unique by using a different template parameter list
         // (hence the = 0 for the IsView enabler).
-        template<typename V, typename = EnableIfConvertibleFrom<V>,
+        template <typename V, typename = EnableIfConvertibleFrom<V>,
             typename = EnableIfValueIsMutable<V>,
             span_internal::EnableIfIsView<V> = 0>
-        explicit Span(V &v) noexcept // NOLINT(runtime/references)
+        explicit Span(V& v) noexcept // NOLINT(runtime/references)
             : Span(span_internal::GetData(v), v.size()) {
         }
 
-        template<typename V, typename = EnableIfConvertibleFrom<V>,
+        template <typename V, typename = EnableIfConvertibleFrom<V>,
             typename = EnableIfValueIsConst<V>,
             span_internal::EnableIfIsView<V> = 0>
-        constexpr Span(const V &v) noexcept // NOLINT(google-explicit-constructor)
+        constexpr Span(const V& v) noexcept // NOLINT(google-explicit-constructor)
             : Span(span_internal::GetData(v), v.size()) {
         }
 
@@ -299,10 +298,10 @@ namespace turbo {
         //   turbo::Span<const int> ints = { foo };
         //   Process(ints);
         //
-        template<typename LazyT = T,
-            typename = EnableIfValueIsConst<LazyT> >
+        template <typename LazyT = T,
+            typename = EnableIfValueIsConst<LazyT>>
         Span(std::initializer_list<value_type> v
-            KUMO_ATTRIBUTE_LIFETIME_BOUND) noexcept // NOLINT(runtime/explicit)
+                KUMO_ATTRIBUTE_LIFETIME_BOUND) noexcept // NOLINT(runtime/explicit)
             : Span(v.begin(), v.size()) {
         }
 
@@ -342,9 +341,9 @@ namespace turbo {
         // Returns a reference to the i'th element of this span.
         constexpr reference at(size_type i) const {
             return KUMO_LIKELY(i < size()) //
-                       ? *(data() + i)
-                       : (ThrowStdOutOfRange("Span::at failed bounds check"),
-                          *(data() + i));
+                ? *(data() + i)
+                : (ThrowStdOutOfRange("Span::at failed bounds check"),
+                      *(data() + i));
         }
 
         // Span::front()
@@ -456,15 +455,15 @@ namespace turbo {
         // Examples:
         //
         //   std::vector<int> vec = {10, 11, 12, 13};
-        //   turbo::MakeSpan(vec).subspan(1, 2);  // {11, 12}
-        //   turbo::MakeSpan(vec).subspan(2, 8);  // {12, 13}
-        //   turbo::MakeSpan(vec).subspan(1);     // {11, 12, 13}
-        //   turbo::MakeSpan(vec).subspan(4);     // {}
-        //   turbo::MakeSpan(vec).subspan(5);     // throws std::out_of_range
+        //   turbo::make_span(vec).subspan(1, 2);  // {11, 12}
+        //   turbo::make_span(vec).subspan(2, 8);  // {12, 13}
+        //   turbo::make_span(vec).subspan(1);     // {11, 12, 13}
+        //   turbo::make_span(vec).subspan(4);     // {}
+        //   turbo::make_span(vec).subspan(5);     // throws std::out_of_range
         constexpr Span subspan(size_type pos = 0, size_type len = npos) const {
             return (pos <= size())
-                       ? Span(data() + pos, (std::min)(size() - pos, len))
-                       : (ThrowStdOutOfRange("pos > size()"), Span());
+                ? Span(data() + pos, (std::min)(size() - pos, len))
+                : (ThrowStdOutOfRange("pos > size()"), Span());
         }
 
         // Span::first()
@@ -475,13 +474,13 @@ namespace turbo {
         // Examples:
         //
         //   std::vector<int> vec = {10, 11, 12, 13};
-        //   turbo::MakeSpan(vec).first(1);  // {10}
-        //   turbo::MakeSpan(vec).first(3);  // {10, 11, 12}
-        //   turbo::MakeSpan(vec).first(5);  // throws std::out_of_range
+        //   turbo::make_span(vec).first(1);  // {10}
+        //   turbo::make_span(vec).first(3);  // {10, 11, 12}
+        //   turbo::make_span(vec).first(5);  // throws std::out_of_range
         constexpr Span first(size_type len) const {
             return (len <= size())
-                       ? Span(data(), len)
-                       : (ThrowStdOutOfRange("len > size()"), Span());
+                ? Span(data(), len)
+                : (ThrowStdOutOfRange("len > size()"), Span());
         }
 
         // Span::last()
@@ -492,17 +491,17 @@ namespace turbo {
         // Examples:
         //
         //   std::vector<int> vec = {10, 11, 12, 13};
-        //   turbo::MakeSpan(vec).last(1);  // {13}
-        //   turbo::MakeSpan(vec).last(3);  // {11, 12, 13}
-        //   turbo::MakeSpan(vec).last(5);  // throws std::out_of_range
+        //   turbo::make_span(vec).last(1);  // {13}
+        //   turbo::make_span(vec).last(3);  // {11, 12, 13}
+        //   turbo::make_span(vec).last(5);  // throws std::out_of_range
         constexpr Span last(size_type len) const {
             return (len <= size())
-                       ? Span(size() - len + data(), len)
-                       : (ThrowStdOutOfRange("len > size()"), Span());
+                ? Span(size() - len + data(), len)
+                : (ThrowStdOutOfRange("len > size()"), Span());
         }
 
         // Support for turbo::Hash.
-        template<typename H>
+        template <typename H>
         friend H TurboHashValue(H h, Span v) {
             return H::combine_contiguous(std::move(h), v.data(), v.size());
         }
@@ -512,7 +511,7 @@ namespace turbo {
         size_type len_;
     };
 
-    template<typename T>
+    template <typename T>
     const typename Span<T>::size_type Span<T>::npos;
 
     // Span relationals
@@ -530,186 +529,186 @@ namespace turbo {
     // - (non_deduced<Span<const T>>, Span<T>)
 
     // operator==
-    template<typename T>
+    template <typename T>
     constexpr bool operator==(Span<T> a, Span<T> b) {
         return span_internal::EqualImpl<Span, const T>(a, b);
     }
 
-    template<typename T>
+    template <typename T>
     constexpr bool operator==(Span<const T> a, Span<T> b) {
         return span_internal::EqualImpl<Span, const T>(a, b);
     }
 
-    template<typename T>
+    template <typename T>
     constexpr bool operator==(Span<T> a, Span<const T> b) {
         return span_internal::EqualImpl<Span, const T>(a, b);
     }
 
-    template<
+    template <
         typename T, typename U,
-        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T> > >
-    constexpr bool operator==(const U &a, Span<T> b) {
+        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T>>>
+    constexpr bool operator==(const U& a, Span<T> b) {
         return span_internal::EqualImpl<Span, const T>(a, b);
     }
 
-    template<
+    template <
         typename T, typename U,
-        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T> > >
-    constexpr bool operator==(Span<T> a, const U &b) {
+        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T>>>
+    constexpr bool operator==(Span<T> a, const U& b) {
         return span_internal::EqualImpl<Span, const T>(a, b);
     }
 
     // operator!=
-    template<typename T>
+    template <typename T>
     constexpr bool operator!=(Span<T> a, Span<T> b) {
         return !(a == b);
     }
 
-    template<typename T>
+    template <typename T>
     constexpr bool operator!=(Span<const T> a, Span<T> b) {
         return !(a == b);
     }
 
-    template<typename T>
+    template <typename T>
     constexpr bool operator!=(Span<T> a, Span<const T> b) {
         return !(a == b);
     }
 
-    template<
+    template <
         typename T, typename U,
-        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T> > >
-    constexpr bool operator!=(const U &a, Span<T> b) {
+        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T>>>
+    constexpr bool operator!=(const U& a, Span<T> b) {
         return !(a == b);
     }
 
-    template<
+    template <
         typename T, typename U,
-        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T> > >
-    constexpr bool operator!=(Span<T> a, const U &b) {
+        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T>>>
+    constexpr bool operator!=(Span<T> a, const U& b) {
         return !(a == b);
     }
 
     // operator<
-    template<typename T>
+    template <typename T>
     constexpr bool operator<(Span<T> a, Span<T> b) {
         return span_internal::LessThanImpl<Span, const T>(a, b);
     }
 
-    template<typename T>
+    template <typename T>
     constexpr bool operator<(Span<const T> a, Span<T> b) {
         return span_internal::LessThanImpl<Span, const T>(a, b);
     }
 
-    template<typename T>
+    template <typename T>
     constexpr bool operator<(Span<T> a, Span<const T> b) {
         return span_internal::LessThanImpl<Span, const T>(a, b);
     }
 
-    template<
+    template <
         typename T, typename U,
-        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T> > >
-    constexpr bool operator<(const U &a, Span<T> b) {
+        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T>>>
+    constexpr bool operator<(const U& a, Span<T> b) {
         return span_internal::LessThanImpl<Span, const T>(a, b);
     }
 
-    template<
+    template <
         typename T, typename U,
-        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T> > >
-    constexpr bool operator<(Span<T> a, const U &b) {
+        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T>>>
+    constexpr bool operator<(Span<T> a, const U& b) {
         return span_internal::LessThanImpl<Span, const T>(a, b);
     }
 
     // operator>
-    template<typename T>
+    template <typename T>
     constexpr bool operator>(Span<T> a, Span<T> b) {
         return b < a;
     }
 
-    template<typename T>
+    template <typename T>
     constexpr bool operator>(Span<const T> a, Span<T> b) {
         return b < a;
     }
 
-    template<typename T>
+    template <typename T>
     constexpr bool operator>(Span<T> a, Span<const T> b) {
         return b < a;
     }
 
-    template<
+    template <
         typename T, typename U,
-        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T> > >
-    constexpr bool operator>(const U &a, Span<T> b) {
+        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T>>>
+    constexpr bool operator>(const U& a, Span<T> b) {
         return b < a;
     }
 
-    template<
+    template <
         typename T, typename U,
-        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T> > >
-    constexpr bool operator>(Span<T> a, const U &b) {
+        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T>>>
+    constexpr bool operator>(Span<T> a, const U& b) {
         return b < a;
     }
 
     // operator<=
-    template<typename T>
+    template <typename T>
     constexpr bool operator<=(Span<T> a, Span<T> b) {
         return !(b < a);
     }
 
-    template<typename T>
+    template <typename T>
     constexpr bool operator<=(Span<const T> a, Span<T> b) {
         return !(b < a);
     }
 
-    template<typename T>
+    template <typename T>
     constexpr bool operator<=(Span<T> a, Span<const T> b) {
         return !(b < a);
     }
 
-    template<
+    template <
         typename T, typename U,
-        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T> > >
-    constexpr bool operator<=(const U &a, Span<T> b) {
+        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T>>>
+    constexpr bool operator<=(const U& a, Span<T> b) {
         return !(b < a);
     }
 
-    template<
+    template <
         typename T, typename U,
-        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T> > >
-    constexpr bool operator<=(Span<T> a, const U &b) {
+        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T>>>
+    constexpr bool operator<=(Span<T> a, const U& b) {
         return !(b < a);
     }
 
     // operator>=
-    template<typename T>
+    template <typename T>
     constexpr bool operator>=(Span<T> a, Span<T> b) {
         return !(a < b);
     }
 
-    template<typename T>
+    template <typename T>
     constexpr bool operator>=(Span<const T> a, Span<T> b) {
         return !(a < b);
     }
 
-    template<typename T>
+    template <typename T>
     constexpr bool operator>=(Span<T> a, Span<const T> b) {
         return !(a < b);
     }
 
-    template<
+    template <
         typename T, typename U,
-        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T> > >
-    constexpr bool operator>=(const U &a, Span<T> b) {
+        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T>>>
+    constexpr bool operator>=(const U& a, Span<T> b) {
         return !(a < b);
     }
 
-    template<
+    template <
         typename T, typename U,
-        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T> > >
-    constexpr bool operator>=(Span<T> a, const U &b) {
+        typename = span_internal::EnableIfConvertibleTo<U, turbo::Span<const T>>>
+    constexpr bool operator>=(Span<T> a, const U& b) {
         return !(a < b);
     }
 
-    // MakeSpan()
+    // make_span()
     //
     // Constructs a mutable `Span<T>`, deducing `T` automatically from either a
     // container or pointer+size.
@@ -717,7 +716,7 @@ namespace turbo {
     // Because a read-only `Span<const T>` is implicitly constructed from container
     // types regardless of whether the container itself is a const container,
     // constructing mutable spans of type `Span<T>` from containers requires
-    // explicit constructors. The container-accepting version of `MakeSpan()`
+    // explicit constructors. The container-accepting version of `make_span()`
     // deduces the type of `T` by the constness of the pointer received from the
     // container's `data()` member. Similarly, the pointer-accepting version returns
     // a `Span<const T>` if `T` is `const`, and a `Span<T>` otherwise.
@@ -737,56 +736,56 @@ namespace turbo {
     //   // Explicitly constructing the Span is verbose
     //   MyRoutine(turbo::Span<MyComplicatedType>(my_vector));
     //
-    //   // Use MakeSpan() to make an turbo::Span<T>
-    //   MyRoutine(turbo::MakeSpan(my_vector));
+    //   // Use make_span() to make an turbo::Span<T>
+    //   MyRoutine(turbo::make_span(my_vector));
     //
     //   // Construct a span from an array ptr+size
     //   turbo::Span<T> my_span() {
-    //     return turbo::MakeSpan(&array[0], num_elements_);
+    //     return turbo::make_span(&array[0], num_elements_);
     //   }
     //
     // NOTE: To avoid undefined behavior if the container is empty, use `.data()`
     // or pass the container directly instead of using `&v[0]` or `&v[v.size()]`.
     //
-    template<int &... ExplicitArgumentBarrier, typename T>
-    constexpr Span<T> MakeSpan(T * turbo_nullable ptr KUMO_ATTRIBUTE_LIFETIME_BOUND,
-                               size_t size) noexcept {
+    template <int&... ExplicitArgumentBarrier, typename T>
+    constexpr Span<T> make_span(T* turbo_nullable ptr KUMO_ATTRIBUTE_LIFETIME_BOUND,
+        size_t size) noexcept {
         return Span<T>(ptr, size);
     }
 
-    template<int &... ExplicitArgumentBarrier, typename T>
-    Span<T> MakeSpan(T * turbo_nullable begin KUMO_ATTRIBUTE_LIFETIME_BOUND,
-                     T * turbo_nullable end) noexcept {
+    template <int&... ExplicitArgumentBarrier, typename T>
+    Span<T> make_span(T* turbo_nullable begin KUMO_ATTRIBUTE_LIFETIME_BOUND,
+        T* turbo_nullable end) noexcept {
         turbo::base_internal::HardeningAssertLE(begin, end);
         return Span<T>(begin, static_cast<size_t>(end - begin));
     }
 
-    template<int &... ExplicitArgumentBarrier, typename C>
-    constexpr auto MakeSpan(C &c) noexcept // NOLINT(runtime/references)
+    template <int&... ExplicitArgumentBarrier, typename C>
+    constexpr auto make_span(C& c) noexcept // NOLINT(runtime/references)
         -> std::enable_if_t<span_internal::IsView<C>::value,
-            decltype(turbo::MakeSpan(span_internal::GetData(c),
-                                     c.size()))> {
-        return MakeSpan(span_internal::GetData(c), c.size());
+            decltype(turbo::make_span(span_internal::GetData(c),
+                c.size()))> {
+        return make_span(span_internal::GetData(c), c.size());
     }
 
-    template<int &... ExplicitArgumentBarrier, typename C>
-    constexpr auto MakeSpan(
-        C &c KUMO_ATTRIBUTE_LIFETIME_BOUND) noexcept // NOLINT(runtime/references)
+    template <int&... ExplicitArgumentBarrier, typename C>
+    constexpr auto make_span(
+        C& c KUMO_ATTRIBUTE_LIFETIME_BOUND) noexcept // NOLINT(runtime/references)
         -> std::enable_if_t<!span_internal::IsView<C>::value,
-            decltype(turbo::MakeSpan(span_internal::GetData(c),
-                                     c.size()))> {
-        return MakeSpan(span_internal::GetData(c), c.size());
+            decltype(turbo::make_span(span_internal::GetData(c),
+                c.size()))> {
+        return make_span(span_internal::GetData(c), c.size());
     }
 
-    template<int &... ExplicitArgumentBarrier, typename T, size_t N>
-    constexpr Span<T> MakeSpan(
+    template <int&... ExplicitArgumentBarrier, typename T, size_t N>
+    constexpr Span<T> make_span(
         T (&array KUMO_ATTRIBUTE_LIFETIME_BOUND)[N]) noexcept {
         return Span<T>(array, N);
     }
 
-    // MakeConstSpan()
+    // make_const_span()
     //
-    // Constructs a `Span<const T>` as with `MakeSpan`, deducing `T` automatically,
+    // Constructs a `Span<const T>` as with `make_span`, deducing `T` automatically,
     // but always returning a `Span<const T>`.
     //
     // Examples:
@@ -795,51 +794,51 @@ namespace turbo {
     //
     //   // Call with a pointer and size.
     //   int array[3] = { 0, 0, 0 };
-    //   ProcessInts(turbo::MakeConstSpan(&array[0], 3));
+    //   ProcessInts(turbo::make_const_span(&array[0], 3));
     //
     //   // Call with a [begin, end) pair.
-    //   ProcessInts(turbo::MakeConstSpan(&array[0], &array[3]));
+    //   ProcessInts(turbo::make_const_span(&array[0], &array[3]));
     //
     //   // Call directly with an array.
-    //   ProcessInts(turbo::MakeConstSpan(array));
+    //   ProcessInts(turbo::make_const_span(array));
     //
     //   // Call with a contiguous container.
     //   std::vector<int> some_ints = ...;
-    //   ProcessInts(turbo::MakeConstSpan(some_ints));
-    //   ProcessInts(turbo::MakeConstSpan(std::vector<int>{ 0, 0, 0 }));
+    //   ProcessInts(turbo::make_const_span(some_ints));
+    //   ProcessInts(turbo::make_const_span(std::vector<int>{ 0, 0, 0 }));
     //
-    template<int &... ExplicitArgumentBarrier, typename T>
-    constexpr Span<const T> MakeConstSpan(
-        T * turbo_nullable ptr KUMO_ATTRIBUTE_LIFETIME_BOUND, size_t size) noexcept {
+    template <int&... ExplicitArgumentBarrier, typename T>
+    constexpr Span<const T> make_const_span(
+        T* turbo_nullable ptr KUMO_ATTRIBUTE_LIFETIME_BOUND, size_t size) noexcept {
         return Span<const T>(ptr, size);
     }
 
-    template<int &... ExplicitArgumentBarrier, typename T>
-    Span<const T> MakeConstSpan(T * turbo_nullable begin
-                                KUMO_ATTRIBUTE_LIFETIME_BOUND,
-                                T * turbo_nullable end) noexcept {
+    template <int&... ExplicitArgumentBarrier, typename T>
+    Span<const T> make_const_span(T* turbo_nullable begin
+                                      KUMO_ATTRIBUTE_LIFETIME_BOUND,
+        T* turbo_nullable end) noexcept {
         turbo::base_internal::HardeningAssertLE(begin, end);
         return Span<const T>(begin, end - begin);
     }
 
-    template<int &... ExplicitArgumentBarrier, typename C>
-    constexpr auto MakeConstSpan(const C &c) noexcept
+    template <int&... ExplicitArgumentBarrier, typename C>
+    constexpr auto make_const_span(const C& c) noexcept
         -> std::enable_if_t<span_internal::IsView<C>::value,
-            decltype(MakeSpan(c))> {
-        return MakeSpan(c);
+            decltype(make_span(c))> {
+        return make_span(c);
     }
 
-    template<int &... ExplicitArgumentBarrier, typename C>
-    constexpr auto MakeConstSpan(const C &c KUMO_ATTRIBUTE_LIFETIME_BOUND) noexcept
+    template <int&... ExplicitArgumentBarrier, typename C>
+    constexpr auto make_const_span(const C& c KUMO_ATTRIBUTE_LIFETIME_BOUND) noexcept
         -> std::enable_if_t<!span_internal::IsView<C>::value,
-            decltype(MakeSpan(c))> {
-        return MakeSpan(c);
+            decltype(make_span(c))> {
+        return make_span(c);
     }
 
-    template<int &... ExplicitArgumentBarrier, typename T, size_t N>
-    constexpr Span<const T> MakeConstSpan(
+    template <int&... ExplicitArgumentBarrier, typename T, size_t N>
+    constexpr Span<const T> make_const_span(
         const T (&array KUMO_ATTRIBUTE_LIFETIME_BOUND)[N]) noexcept {
         return Span<const T>(array, N);
     }
 } // namespace turbo
-#endif  // TURBO_TYPES_SPAN_H_
+#endif // TURBO_TYPES_SPAN_H_

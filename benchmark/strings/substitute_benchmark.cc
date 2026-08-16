@@ -26,7 +26,7 @@ void BM_Substitute(benchmark::State& state) {
   std::string s(state.range(0), 'x');
   int64_t bytes = 0;
   for (auto _ : state) {
-    std::string result = turbo::Substitute("$0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $$", s,
+    std::string result = turbo::substitute("$0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $$", s,
                                           s, s, s, s, s, s, s, s, s);
     bytes += result.size();
   }
@@ -36,13 +36,13 @@ BENCHMARK(BM_Substitute)->Range(0, 1024);
 
 // Like BM_Substitute, but use char* strings (which must then be copied
 // to STL strings) for all parameters.  This demonstrates that it is faster
-// to use turbo::Substitute() even if your inputs are char* strings.
+// to use turbo::substitute() even if your inputs are char* strings.
 void BM_SubstituteCstr(benchmark::State& state) {
   std::string s(state.range(0), 'x');
   int64_t bytes = 0;
   for (auto _ : state) {
     std::string result =
-        turbo::Substitute("$0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $$", s.c_str(),
+        turbo::substitute("$0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $$", s.c_str(),
                          s.c_str(), s.c_str(), s.c_str(), s.c_str(), s.c_str(),
                          s.c_str(), s.c_str(), s.c_str(), s.c_str());
     bytes += result.size();
@@ -56,7 +56,7 @@ void BM_StringPrintf(benchmark::State& state) {
   std::string s(state.range(0), 'x');
   int64_t bytes = 0;
   for (auto _ : state) {
-    std::string result = turbo::StrCat(s, " ", s, " ", s, " ", s, " ", s, " ", s,
+    std::string result = turbo::str_cat(s, " ", s, " ", s, " ", s, " ", s, " ", s,
                                       " ", s, " ", s, " ", s, " ", s);
     bytes += result.size();
   }
@@ -64,15 +64,15 @@ void BM_StringPrintf(benchmark::State& state) {
 }
 BENCHMARK(BM_StringPrintf)->Range(0, 1024);
 
-// Benchmark using turbo::Substitute() together with SimpleItoa() to print
-// numbers.  This demonstrates that turbo::Substitute() is faster than
+// Benchmark using turbo::substitute() together with SimpleItoa() to print
+// numbers.  This demonstrates that turbo::substitute() is faster than
 // StringPrintf() even when the inputs are numbers.
 void BM_SubstituteNumber(benchmark::State& state) {
   const int n = state.range(0);
   int64_t bytes = 0;
   for (auto _ : state) {
     std::string result =
-        turbo::Substitute("$0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $$", n, n + 1, n + 2,
+        turbo::substitute("$0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $$", n, n + 1, n + 2,
                          n + 3, n + 4, n + 5, n + 6, n + 7, n + 8, n + 9);
     bytes += result.size();
   }
@@ -86,7 +86,7 @@ void BM_StrCatNumber(benchmark::State& state) {
   int64_t bytes = 0;
   for (auto _ : state) {
     std::string result =
-        turbo::StrCat(n, " ", n + 1, " ", n + 2, " ", n + 3, " ", n + 4, " ",
+        turbo::str_cat(n, " ", n + 1, " ", n + 2, " ", n + 3, " ", n + 4, " ",
                      n + 5, " ", n + 6, " ", n + 7, " ", n + 8, " ", n + 9);
     bytes += result.size();
   }
@@ -94,14 +94,14 @@ void BM_StrCatNumber(benchmark::State& state) {
 }
 BENCHMARK(BM_StrCatNumber)->Arg(0)->Arg(1 << 20);
 
-// Benchmark using turbo::Substitute() with a single substitution, to test the
+// Benchmark using turbo::substitute() with a single substitution, to test the
 // speed at which it copies simple text.  Even in this case, it's faster
 // that StringPrintf().
 void BM_SubstituteSimpleText(benchmark::State& state) {
   std::string s(state.range(0), 'x');
   int64_t bytes = 0;
   for (auto _ : state) {
-    std::string result = turbo::Substitute("$0", s.c_str());
+    std::string result = turbo::substitute("$0", s.c_str());
     bytes += result.size();
   }
   state.SetBytesProcessed(bytes);
@@ -113,7 +113,7 @@ void BM_StrCatSimpleText(benchmark::State& state) {
   std::string s(state.range(0), 'x');
   int64_t bytes = 0;
   for (auto _ : state) {
-    std::string result = turbo::StrCat("", s);
+    std::string result = turbo::str_cat("", s);
     bytes += result.size();
   }
   state.SetBytesProcessed(bytes);
@@ -134,7 +134,7 @@ void BM_SubstituteDensity(benchmark::State& state) {
   const std::string format = MakeFormatByDensity(state.range(0), true);
   int64_t bytes = 0;
   for (auto _ : state) {
-    std::string result = turbo::Substitute(format, s, s, s, s, s, s, s, s, s, s);
+    std::string result = turbo::substitute(format, s, s, s, s, s, s, s, s, s, s);
     bytes += result.size();
   }
   state.SetBytesProcessed(bytes);
@@ -147,7 +147,7 @@ void BM_StrCatDensity(benchmark::State& state) {
   int64_t bytes = 0;
   for (auto _ : state) {
     std::string result =
-        turbo::StrCat(s, format, s, format, s, format, s, format, s, format, s,
+        turbo::str_cat(s, format, s, format, s, format, s, format, s, format, s,
                      format, s, format, s, format, s, format, s, format);
     bytes += result.size();
   }

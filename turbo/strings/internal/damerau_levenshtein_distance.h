@@ -17,19 +17,19 @@
 
 #include <cstdint>
 
-#include <turbo/macros/config.h>
 #include <string_view>
+#include <turbo/macros/config.h>
 
 namespace turbo {
 
-namespace strings_internal {
-// Calculate DamerauLevenshtein distance between two strings.
-// When the distance is larger than cutoff, the code just returns cutoff + 1.
-uint8_t CappedDamerauLevenshteinDistance(std::string_view s1,
-                                         std::string_view s2, uint8_t cutoff);
+    namespace strings_internal {
+        // Calculate DamerauLevenshtein distance between two strings.
+        // When the distance is larger than cutoff, the code just returns cutoff + 1.
+        uint8_t CappedDamerauLevenshteinDistance(std::string_view s1,
+            std::string_view s2, uint8_t cutoff);
 
-}  // namespace strings_internal
+    } // namespace strings_internal
 
-}  // namespace turbo
+} // namespace turbo
 
-#endif  // TURBO_STRINGS_INTERNAL_DAMERAU_LEVENSHTEIN_DISTANCE_H_
+#endif // TURBO_STRINGS_INTERNAL_DAMERAU_LEVENSHTEIN_DISTANCE_H_

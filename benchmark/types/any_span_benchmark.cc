@@ -46,7 +46,7 @@ T MakeElement(int) {
 
 template <>
 std::string MakeElement<std::string>(int i) {
-  return turbo::StrCat(i, i, i);
+  return turbo::str_cat(i, i, i);
 }
 
 template <>

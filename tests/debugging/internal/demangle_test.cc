@@ -2042,6 +2042,12 @@ struct Base {
 struct Derived : public Base {};
 
 TEST(DemangleStringTest, SupportsSymbolNameReturnedByTypeId) {
+#if !KUMO_HAVE_CXA_DEMANGLE
+  // DemangleString falls back to the raw mangled name without __cxa_demangle.
+  // MSVC typeid().name() uses a non-Itanium encoding, so the regex below is
+  // not meaningful on that toolchain.
+  GTEST_SKIP() << "Requires abi::__cxa_demangle (Itanium)";
+#else
   EXPECT_EQ(DemangleString(typeid(int).name()), "int");
   // We want to test that `DemangleString` can demangle the symbol names
   // returned by `typeid`, but without hard-coding the actual demangled values
@@ -2052,6 +2058,7 @@ TEST(DemangleStringTest, SupportsSymbolNameReturnedByTypeId) {
   EXPECT_THAT(DemangleString(typeid(Derived).name()),
               ContainsRegex(
                   "turbo.*debugging_internal.*anonymous namespace.*::Derived"));
+#endif
 }
 
 }  // namespace

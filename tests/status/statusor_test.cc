@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <turbo/status/statusor.h>
+#include <turbo/status/result.h>
 
 #include <any>
 #include <array>
@@ -112,18 +112,18 @@ class CopyNoAssign {
   const CopyNoAssign& operator=(const CopyNoAssign&);
 };
 
-turbo::StatusOr<std::unique_ptr<int>> ReturnUniquePtr() {
+turbo::Result<std::unique_ptr<int>> ReturnUniquePtr() {
   // Uses implicit constructor from T&&
   return std::make_unique<int>(0);
 }
 
-TEST(StatusOr, ElementType) {
-  static_assert(std::is_same<turbo::StatusOr<int>::value_type, int>(), "");
-  static_assert(std::is_same<turbo::StatusOr<char>::value_type, char>(), "");
+TEST(Result, ElementType) {
+  static_assert(std::is_same<turbo::Result<int>::value_type, int>(), "");
+  static_assert(std::is_same<turbo::Result<char>::value_type, char>(), "");
 }
 
-TEST(StatusOr, TestMoveOnlyInitialization) {
-  turbo::StatusOr<std::unique_ptr<int>> thing(ReturnUniquePtr());
+TEST(Result, TestMoveOnlyInitialization) {
+  turbo::Result<std::unique_ptr<int>> thing(ReturnUniquePtr());
   ASSERT_TRUE(thing.ok());
   EXPECT_EQ(0, **thing);
   int* previous = thing->get();
@@ -134,8 +134,8 @@ TEST(StatusOr, TestMoveOnlyInitialization) {
   EXPECT_NE(previous, thing->get());
 }
 
-TEST(StatusOr, TestMoveOnlyValueExtraction) {
-  turbo::StatusOr<std::unique_ptr<int>> thing(ReturnUniquePtr());
+TEST(Result, TestMoveOnlyValueExtraction) {
+  turbo::Result<std::unique_ptr<int>> thing(ReturnUniquePtr());
   ASSERT_TRUE(thing.ok());
   std::unique_ptr<int> ptr = *std::move(thing);
   EXPECT_EQ(0, *ptr);
@@ -145,21 +145,21 @@ TEST(StatusOr, TestMoveOnlyValueExtraction) {
   EXPECT_EQ(0, *ptr);
 }
 
-TEST(StatusOr, TestMoveOnlyInitializationFromTemporaryByValueOrDie) {
+TEST(Result, TestMoveOnlyInitializationFromTemporaryByValueOrDie) {
   std::unique_ptr<int> ptr(*ReturnUniquePtr());
   EXPECT_EQ(0, *ptr);
 }
 
-TEST(StatusOr, TestValueOrDieOverloadForConstTemporary) {
+TEST(Result, TestValueOrDieOverloadForConstTemporary) {
   static_assert(
       std::is_same<
           const int&&,
-          decltype(std::declval<const turbo::StatusOr<int>&&>().value())>(),
+          decltype(std::declval<const turbo::Result<int>&&>().value())>(),
       "value() for const temporaries should return const T&&");
 }
 
-TEST(StatusOr, TestMoveOnlyConversion) {
-  turbo::StatusOr<std::unique_ptr<const int>> const_thing(ReturnUniquePtr());
+TEST(Result, TestMoveOnlyConversion) {
+  turbo::Result<std::unique_ptr<const int>> const_thing(ReturnUniquePtr());
   EXPECT_TRUE(const_thing.ok());
   EXPECT_EQ(0, **const_thing);
 
@@ -171,71 +171,71 @@ TEST(StatusOr, TestMoveOnlyConversion) {
   EXPECT_NE(const_previous, const_thing->get());
 }
 
-TEST(StatusOr, TestMoveOnlyVector) {
-  // Sanity check that turbo::StatusOr<MoveOnly> works in vector.
-  std::vector<turbo::StatusOr<std::unique_ptr<int>>> vec;
+TEST(Result, TestMoveOnlyVector) {
+  // Sanity check that turbo::Result<MoveOnly> works in vector.
+  std::vector<turbo::Result<std::unique_ptr<int>>> vec;
   vec.push_back(ReturnUniquePtr());
   vec.resize(2);
   auto another_vec = std::move(vec);
   EXPECT_EQ(0, **another_vec[0]);
-  EXPECT_EQ(turbo::UnknownError(""), another_vec[1].status());
+  EXPECT_EQ(turbo::unknown_error(""), another_vec[1].status());
 }
 
-TEST(StatusOr, TestDefaultCtor) {
-  turbo::StatusOr<int> thing;
+TEST(Result, TestDefaultCtor) {
+  turbo::Result<int> thing;
   EXPECT_FALSE(thing.ok());
   EXPECT_EQ(thing.status().code(), turbo::StatusCode::kUnknown);
 }
 
-TEST(StatusOr, StatusCtorForwards) {
+TEST(Result, StatusCtorForwards) {
   turbo::Status status(turbo::StatusCode::kInternal, "Some error");
 
-  EXPECT_EQ(turbo::StatusOr<int>(status).status().message(), "Some error");
+  EXPECT_EQ(turbo::Result<int>(status).status().message(), "Some error");
   EXPECT_EQ(status.message(), "Some error");
 
-  EXPECT_EQ(turbo::StatusOr<int>(std::move(status)).status().message(),
+  EXPECT_EQ(turbo::Result<int>(std::move(status)).status().message(),
             "Some error");
   EXPECT_NE(status.message(), "Some error");
 }
 
-TEST(BadStatusOrAccessTest, CopyConstructionWhatOk) {
+TEST(BadResultAccessTest, CopyConstructionWhatOk) {
   turbo::Status error =
-      turbo::InternalError("some arbitrary message too big for the sso buffer");
-  turbo::BadStatusOrAccess e1{error};
-  turbo::BadStatusOrAccess e2{e1};
+      turbo::internal_error("some arbitrary message too big for the sso buffer");
+  turbo::BadResultAccess e1{error};
+  turbo::BadResultAccess e2{e1};
   EXPECT_THAT(e1.what(), HasSubstr(error.ToString()));
   EXPECT_THAT(e2.what(), HasSubstr(error.ToString()));
 }
 
-TEST(BadStatusOrAccessTest, CopyAssignmentWhatOk) {
+TEST(BadResultAccessTest, CopyAssignmentWhatOk) {
   turbo::Status error =
-      turbo::InternalError("some arbitrary message too big for the sso buffer");
-  turbo::BadStatusOrAccess e1{error};
-  turbo::BadStatusOrAccess e2{turbo::InternalError("other")};
+      turbo::internal_error("some arbitrary message too big for the sso buffer");
+  turbo::BadResultAccess e1{error};
+  turbo::BadResultAccess e2{turbo::internal_error("other")};
   e2 = e1;
   EXPECT_THAT(e1.what(), HasSubstr(error.ToString()));
   EXPECT_THAT(e2.what(), HasSubstr(error.ToString()));
 }
 
-TEST(BadStatusOrAccessTest, MoveConstructionWhatOk) {
+TEST(BadResultAccessTest, MoveConstructionWhatOk) {
   turbo::Status error =
-      turbo::InternalError("some arbitrary message too big for the sso buffer");
-  turbo::BadStatusOrAccess e1{error};
-  turbo::BadStatusOrAccess e2{std::move(e1)};
+      turbo::internal_error("some arbitrary message too big for the sso buffer");
+  turbo::BadResultAccess e1{error};
+  turbo::BadResultAccess e2{std::move(e1)};
   EXPECT_THAT(e2.what(), HasSubstr(error.ToString()));
 }
 
-TEST(BadStatusOrAccessTest, MoveAssignmentWhatOk) {
+TEST(BadResultAccessTest, MoveAssignmentWhatOk) {
   turbo::Status error =
-      turbo::InternalError("some arbitrary message too big for the sso buffer");
-  turbo::BadStatusOrAccess e1{error};
-  turbo::BadStatusOrAccess e2{turbo::InternalError("other")};
+      turbo::internal_error("some arbitrary message too big for the sso buffer");
+  turbo::BadResultAccess e1{error};
+  turbo::BadResultAccess e2{turbo::internal_error("other")};
   e2 = std::move(e1);
   EXPECT_THAT(e2.what(), HasSubstr(error.ToString()));
 }
 
-// Define `EXPECT_DEATH_OR_THROW` to test the behavior of `StatusOr::value`,
-// which either throws `BadStatusOrAccess` or `KLOG(FATAL)` based on whether
+// Define `EXPECT_DEATH_OR_THROW` to test the behavior of `Result::value`,
+// which either throws `BadResultAccess` or `KLOG(FATAL)` based on whether
 // exceptions are enabled.
 #if KUMO_HAVE_EXCEPTIONS
 #define EXPECT_DEATH_OR_THROW(statement, status_)                  \
@@ -243,56 +243,56 @@ TEST(BadStatusOrAccessTest, MoveAssignmentWhatOk) {
       {                                                            \
         try {                                                      \
           statement;                                               \
-        } catch (const turbo::BadStatusOrAccess& e) {               \
+        } catch (const turbo::BadResultAccess& e) {               \
           EXPECT_EQ(e.status(), status_);                          \
           EXPECT_THAT(e.what(), HasSubstr(e.status().ToString())); \
           throw;                                                   \
         }                                                          \
       },                                                           \
-      turbo::BadStatusOrAccess);
+      turbo::BadResultAccess);
 #else  // KUMO_HAVE_EXCEPTIONS
 #define EXPECT_DEATH_OR_THROW(statement, status) \
   EXPECT_DEATH_IF_SUPPORTED(statement, status.ToString());
 #endif  // KUMO_HAVE_EXCEPTIONS
 
-TEST(StatusOrDeathTest, TestDefaultCtorValue) {
-  turbo::StatusOr<int> thing;
-  EXPECT_DEATH_OR_THROW(thing.value(), turbo::UnknownError(""));
-  const turbo::StatusOr<int> thing2;
-  EXPECT_DEATH_OR_THROW(thing2.value(), turbo::UnknownError(""));
+TEST(ResultDeathTest, TestDefaultCtorValue) {
+  turbo::Result<int> thing;
+  EXPECT_DEATH_OR_THROW(thing.value(), turbo::unknown_error(""));
+  const turbo::Result<int> thing2;
+  EXPECT_DEATH_OR_THROW(thing2.value(), turbo::unknown_error(""));
 }
 
-TEST(StatusOrDeathTest, TestValueNotOk) {
-  turbo::StatusOr<int> thing(turbo::CancelledError());
-  EXPECT_DEATH_OR_THROW(thing.value(), turbo::CancelledError());
+TEST(ResultDeathTest, TestValueNotOk) {
+  turbo::Result<int> thing(turbo::cancelled_error());
+  EXPECT_DEATH_OR_THROW(thing.value(), turbo::cancelled_error());
 }
 
-TEST(StatusOrDeathTest, TestValueNotOkConst) {
-  const turbo::StatusOr<int> thing(turbo::UnknownError(""));
-  EXPECT_DEATH_OR_THROW(thing.value(), turbo::UnknownError(""));
+TEST(ResultDeathTest, TestValueNotOkConst) {
+  const turbo::Result<int> thing(turbo::unknown_error(""));
+  EXPECT_DEATH_OR_THROW(thing.value(), turbo::unknown_error(""));
 }
 
-TEST(StatusOrDeathTest, TestPointerDefaultCtorValue) {
-  turbo::StatusOr<int*> thing;
-  EXPECT_DEATH_OR_THROW(thing.value(), turbo::UnknownError(""));
+TEST(ResultDeathTest, TestPointerDefaultCtorValue) {
+  turbo::Result<int*> thing;
+  EXPECT_DEATH_OR_THROW(thing.value(), turbo::unknown_error(""));
 }
 
-TEST(StatusOrDeathTest, TestPointerValueNotOk) {
-  turbo::StatusOr<int*> thing(turbo::CancelledError());
-  EXPECT_DEATH_OR_THROW(thing.value(), turbo::CancelledError());
+TEST(ResultDeathTest, TestPointerValueNotOk) {
+  turbo::Result<int*> thing(turbo::cancelled_error());
+  EXPECT_DEATH_OR_THROW(thing.value(), turbo::cancelled_error());
 }
 
-TEST(StatusOrDeathTest, TestPointerValueNotOkConst) {
-  const turbo::StatusOr<int*> thing(turbo::CancelledError());
-  EXPECT_DEATH_OR_THROW(thing.value(), turbo::CancelledError());
+TEST(ResultDeathTest, TestPointerValueNotOkConst) {
+  const turbo::Result<int*> thing(turbo::cancelled_error());
+  EXPECT_DEATH_OR_THROW(thing.value(), turbo::cancelled_error());
 }
 
 #if GTEST_HAS_DEATH_TEST
-TEST(StatusOrDeathTest, TestStatusCtorStatusOk) {
+TEST(ResultDeathTest, TestStatusCtorStatusOk) {
   EXPECT_DEBUG_DEATH(
       {
         // This will DKCHECK
-        turbo::StatusOr<int> thing(turbo::OkStatus());
+        turbo::Result<int> thing(turbo::ok_status());
         // In optimized mode, we are actually going to get error::INTERNAL for
         // status here, rather than crashing, so check that.
         EXPECT_FALSE(thing.ok());
@@ -301,10 +301,10 @@ TEST(StatusOrDeathTest, TestStatusCtorStatusOk) {
       "An OK status is not a valid constructor argument");
 }
 
-TEST(StatusOrDeathTest, TestPointerStatusCtorStatusOk) {
+TEST(ResultDeathTest, TestPointerStatusCtorStatusOk) {
   EXPECT_DEBUG_DEATH(
       {
-        turbo::StatusOr<int*> thing(turbo::OkStatus());
+        turbo::Result<int*> thing(turbo::ok_status());
         // In optimized mode, we are actually going to get error::INTERNAL for
         // status here, rather than crashing, so check that.
         EXPECT_FALSE(thing.ok());
@@ -314,15 +314,15 @@ TEST(StatusOrDeathTest, TestPointerStatusCtorStatusOk) {
 }
 #endif
 
-TEST(StatusOr, ValueAccessor) {
+TEST(Result, ValueAccessor) {
   const int kIntValue = 110;
   {
-    turbo::StatusOr<int> status_or(kIntValue);
+    turbo::Result<int> status_or(kIntValue);
     EXPECT_EQ(kIntValue, status_or.value());
     EXPECT_EQ(kIntValue, std::move(status_or).value());
   }
   {
-    turbo::StatusOr<CopyDetector> status_or(kIntValue);
+    turbo::Result<CopyDetector> status_or(kIntValue);
     EXPECT_THAT(status_or,
                 IsOkAndHolds(CopyDetectorHas(kIntValue, false, false)));
     CopyDetector copy_detector = status_or.value();
@@ -332,21 +332,21 @@ TEST(StatusOr, ValueAccessor) {
   }
 }
 
-TEST(StatusOr, BadValueAccess) {
-  const turbo::Status kError = turbo::CancelledError("message");
-  turbo::StatusOr<int> status_or(kError);
+TEST(Result, BadValueAccess) {
+  const turbo::Status kError = turbo::cancelled_error("message");
+  turbo::Result<int> status_or(kError);
   EXPECT_DEATH_OR_THROW(status_or.value(), kError);
 }
 
-TEST(StatusOr, TestStatusCtor) {
-  turbo::StatusOr<int> thing(turbo::CancelledError());
+TEST(Result, TestStatusCtor) {
+  turbo::Result<int> thing(turbo::cancelled_error());
   EXPECT_FALSE(thing.ok());
   EXPECT_EQ(thing.status().code(), turbo::StatusCode::kCancelled);
 }
 
-TEST(StatusOr, TestValueCtor) {
+TEST(Result, TestValueCtor) {
   const int kI = 4;
-  const turbo::StatusOr<int> thing(kI);
+  const turbo::Result<int> thing(kI);
   EXPECT_TRUE(thing.ok());
   EXPECT_EQ(kI, *thing);
 }
@@ -356,8 +356,8 @@ struct Foo {
   explicit Foo(int y) : x(y) {}
 };
 
-TEST(StatusOr, InPlaceConstruction) {
-  EXPECT_THAT(turbo::StatusOr<Foo>(std::in_place, 10),
+TEST(Result, InPlaceConstruction) {
+  EXPECT_THAT(turbo::Result<Foo>(std::in_place, 10),
               IsOkAndHolds(Field(&Foo::x, 10)));
 }
 
@@ -368,19 +368,19 @@ struct InPlaceHelper {
   std::unique_ptr<int> y;
 };
 
-TEST(StatusOr, InPlaceInitListConstruction) {
-  turbo::StatusOr<InPlaceHelper> status_or(std::in_place, {10, 11, 12},
+TEST(Result, InPlaceInitListConstruction) {
+  turbo::Result<InPlaceHelper> status_or(std::in_place, {10, 11, 12},
                                           std::make_unique<int>(13));
   EXPECT_THAT(status_or, IsOkAndHolds(AllOf(
                              Field(&InPlaceHelper::x, ElementsAre(10, 11, 12)),
                              Field(&InPlaceHelper::y, Pointee(13)))));
 }
 
-TEST(StatusOr, Emplace) {
-  turbo::StatusOr<Foo> status_or_foo(10);
+TEST(Result, Emplace) {
+  turbo::Result<Foo> status_or_foo(10);
   status_or_foo.emplace(20);
   EXPECT_THAT(status_or_foo, IsOkAndHolds(Field(&Foo::x, 20)));
-  status_or_foo = turbo::InvalidArgumentError("msg");
+  status_or_foo = turbo::invalid_argument_error("msg");
   EXPECT_FALSE(status_or_foo.ok());
   EXPECT_EQ(status_or_foo.status().code(), turbo::StatusCode::kInvalidArgument);
   EXPECT_EQ(status_or_foo.status().message(), "msg");
@@ -388,14 +388,14 @@ TEST(StatusOr, Emplace) {
   EXPECT_THAT(status_or_foo, IsOkAndHolds(Field(&Foo::x, 20)));
 }
 
-TEST(StatusOr, EmplaceInitializerList) {
-  turbo::StatusOr<InPlaceHelper> status_or(std::in_place, {10, 11, 12},
+TEST(Result, EmplaceInitializerList) {
+  turbo::Result<InPlaceHelper> status_or(std::in_place, {10, 11, 12},
                                           std::make_unique<int>(13));
   status_or.emplace({1, 2, 3}, std::make_unique<int>(4));
   EXPECT_THAT(status_or,
               IsOkAndHolds(AllOf(Field(&InPlaceHelper::x, ElementsAre(1, 2, 3)),
                                  Field(&InPlaceHelper::y, Pointee(4)))));
-  status_or = turbo::InvalidArgumentError("msg");
+  status_or = turbo::invalid_argument_error("msg");
   EXPECT_FALSE(status_or.ok());
   EXPECT_EQ(status_or.status().code(), turbo::StatusCode::kInvalidArgument);
   EXPECT_EQ(status_or.status().message(), "msg");
@@ -435,10 +435,10 @@ class ThrowOnEmplace {
   int* ptr_ = nullptr;
 };
 
-TEST(StatusOr, EmplaceThrowsExceptionSafety) {
+TEST(Result, EmplaceThrowsExceptionSafety) {
   int destructor_calls = 0;
   {
-    turbo::StatusOr<ThrowOnEmplace> status_or(std::in_place, &destructor_calls,
+    turbo::Result<ThrowOnEmplace> status_or(std::in_place, &destructor_calls,
                                              1);
     EXPECT_TRUE(status_or.ok());
     EXPECT_THROW(status_or.emplace(&destructor_calls, -1), std::runtime_error);
@@ -452,50 +452,50 @@ TEST(StatusOr, EmplaceThrowsExceptionSafety) {
 }
 #endif  // KUMO_HAVE_EXCEPTIONS
 
-TEST(StatusOr, TestCopyCtorStatusOk) {
+TEST(Result, TestCopyCtorStatusOk) {
   const int kI = 4;
-  const turbo::StatusOr<int> original(kI);
-  const turbo::StatusOr<int> copy(original);
+  const turbo::Result<int> original(kI);
+  const turbo::Result<int> copy(original);
   EXPECT_THAT(copy.status(), IsOk());
   EXPECT_EQ(*original, *copy);
 }
 
-TEST(StatusOr, TestCopyCtorStatusNotOk) {
-  turbo::StatusOr<int> original(turbo::CancelledError());
-  turbo::StatusOr<int> copy(original);
+TEST(Result, TestCopyCtorStatusNotOk) {
+  turbo::Result<int> original(turbo::cancelled_error());
+  turbo::Result<int> copy(original);
   EXPECT_EQ(copy.status().code(), turbo::StatusCode::kCancelled);
 }
 
-TEST(StatusOr, TestCopyCtorNonAssignable) {
+TEST(Result, TestCopyCtorNonAssignable) {
   const int kI = 4;
   CopyNoAssign value(kI);
-  turbo::StatusOr<CopyNoAssign> original(value);
-  turbo::StatusOr<CopyNoAssign> copy(original);
+  turbo::Result<CopyNoAssign> original(value);
+  turbo::Result<CopyNoAssign> copy(original);
   EXPECT_THAT(copy.status(), IsOk());
   EXPECT_EQ(original->foo, copy->foo);
 }
 
-TEST(StatusOr, TestCopyCtorStatusOKConverting) {
+TEST(Result, TestCopyCtorStatusOKConverting) {
   const int kI = 4;
-  turbo::StatusOr<int> original(kI);
-  turbo::StatusOr<double> copy(original);
+  turbo::Result<int> original(kI);
+  turbo::Result<double> copy(original);
   EXPECT_THAT(copy.status(), IsOk());
   EXPECT_DOUBLE_EQ(*original, *copy);
 }
 
-TEST(StatusOr, TestCopyCtorStatusNotOkConverting) {
-  turbo::StatusOr<int> original(turbo::CancelledError());
-  turbo::StatusOr<double> copy(original);
+TEST(Result, TestCopyCtorStatusNotOkConverting) {
+  turbo::Result<int> original(turbo::cancelled_error());
+  turbo::Result<double> copy(original);
   EXPECT_EQ(copy.status(), original.status());
 }
 
-TEST(StatusOr, TestAssignmentStatusOk) {
+TEST(Result, TestAssignmentStatusOk) {
   // Copy assignmment
   {
     const auto p = std::make_shared<int>(17);
-    turbo::StatusOr<std::shared_ptr<int>> source(p);
+    turbo::Result<std::shared_ptr<int>> source(p);
 
-    turbo::StatusOr<std::shared_ptr<int>> target;
+    turbo::Result<std::shared_ptr<int>> target;
     target = source;
 
     ASSERT_TRUE(target.ok());
@@ -510,9 +510,9 @@ TEST(StatusOr, TestAssignmentStatusOk) {
   // Move assignment
   {
     const auto p = std::make_shared<int>(17);
-    turbo::StatusOr<std::shared_ptr<int>> source(p);
+    turbo::Result<std::shared_ptr<int>> source(p);
 
-    turbo::StatusOr<std::shared_ptr<int>> target;
+    turbo::Result<std::shared_ptr<int>> target;
     target = std::move(source);
 
     ASSERT_TRUE(target.ok());
@@ -525,13 +525,13 @@ TEST(StatusOr, TestAssignmentStatusOk) {
   }
 }
 
-TEST(StatusOr, TestAssignmentStatusNotOk) {
+TEST(Result, TestAssignmentStatusNotOk) {
   // Copy assignment
   {
-    const turbo::Status expected = turbo::CancelledError();
-    turbo::StatusOr<int> source(expected);
+    const turbo::Status expected = turbo::cancelled_error();
+    turbo::Result<int> source(expected);
 
-    turbo::StatusOr<int> target;
+    turbo::Result<int> target;
     target = source;
 
     EXPECT_FALSE(target.ok());
@@ -543,10 +543,10 @@ TEST(StatusOr, TestAssignmentStatusNotOk) {
 
   // Move assignment
   {
-    const turbo::Status expected = turbo::CancelledError();
-    turbo::StatusOr<int> source(expected);
+    const turbo::Status expected = turbo::cancelled_error();
+    turbo::Result<int> source(expected);
 
-    turbo::StatusOr<int> target;
+    turbo::Result<int> target;
     target = std::move(source);
 
     EXPECT_FALSE(target.ok());
@@ -557,13 +557,13 @@ TEST(StatusOr, TestAssignmentStatusNotOk) {
   }
 }
 
-TEST(StatusOr, TestAssignmentStatusOKConverting) {
+TEST(Result, TestAssignmentStatusOKConverting) {
   // Copy assignment
   {
     const int kI = 4;
-    turbo::StatusOr<int> source(kI);
+    turbo::Result<int> source(kI);
 
-    turbo::StatusOr<double> target;
+    turbo::Result<double> target;
     target = source;
 
     ASSERT_TRUE(target.ok());
@@ -578,9 +578,9 @@ TEST(StatusOr, TestAssignmentStatusOKConverting) {
   // Move assignment
   {
     const auto p = new int(17);
-    turbo::StatusOr<std::unique_ptr<int>> source(turbo::WrapUnique(p));
+    turbo::Result<std::unique_ptr<int>> source(turbo::WrapUnique(p));
 
-    turbo::StatusOr<std::shared_ptr<int>> target;
+    turbo::Result<std::shared_ptr<int>> target;
     target = std::move(source);
 
     ASSERT_TRUE(target.ok());
@@ -606,15 +606,15 @@ struct ImplicitConstructibleFromA {
       : x(a.x), moved(true) {}
 };
 
-TEST(StatusOr, ImplicitConvertingConstructor) {
+TEST(Result, ImplicitConvertingConstructor) {
   EXPECT_THAT(
-      turbo::implicit_cast<turbo::StatusOr<ImplicitConstructibleFromA>>(
-          turbo::StatusOr<A>(A{11})),
+      turbo::implicit_cast<turbo::Result<ImplicitConstructibleFromA>>(
+          turbo::Result<A>(A{11})),
       IsOkAndHolds(AllOf(Field(&ImplicitConstructibleFromA::x, 11),
                          Field(&ImplicitConstructibleFromA::moved, true))));
-  turbo::StatusOr<A> a(A{12});
+  turbo::Result<A> a(A{12});
   EXPECT_THAT(
-      turbo::implicit_cast<turbo::StatusOr<ImplicitConstructibleFromA>>(a),
+      turbo::implicit_cast<turbo::Result<ImplicitConstructibleFromA>>(a),
       IsOkAndHolds(AllOf(Field(&ImplicitConstructibleFromA::x, 12),
                          Field(&ImplicitConstructibleFromA::moved, false))));
 }
@@ -626,20 +626,20 @@ struct ExplicitConstructibleFromA {
   explicit ExplicitConstructibleFromA(A&& a) : x(a.x), moved(true) {}
 };
 
-TEST(StatusOr, ExplicitConvertingConstructor) {
+TEST(Result, ExplicitConvertingConstructor) {
   EXPECT_FALSE(
-      (std::is_convertible_v<const turbo::StatusOr<A>&,
-                             turbo::StatusOr<ExplicitConstructibleFromA>>));
+      (std::is_convertible_v<const turbo::Result<A>&,
+                             turbo::Result<ExplicitConstructibleFromA>>));
   EXPECT_FALSE(
-      (std::is_convertible_v<turbo::StatusOr<A>&&,
-                             turbo::StatusOr<ExplicitConstructibleFromA>>));
+      (std::is_convertible_v<turbo::Result<A>&&,
+                             turbo::Result<ExplicitConstructibleFromA>>));
   EXPECT_THAT(
-      turbo::StatusOr<ExplicitConstructibleFromA>(turbo::StatusOr<A>(A{11})),
+      turbo::Result<ExplicitConstructibleFromA>(turbo::Result<A>(A{11})),
       IsOkAndHolds(AllOf(Field(&ExplicitConstructibleFromA::x, 11),
                          Field(&ExplicitConstructibleFromA::moved, true))));
-  turbo::StatusOr<A> a(A{12});
+  turbo::Result<A> a(A{12});
   EXPECT_THAT(
-      turbo::StatusOr<ExplicitConstructibleFromA>(a),
+      turbo::Result<ExplicitConstructibleFromA>(a),
       IsOkAndHolds(AllOf(Field(&ExplicitConstructibleFromA::x, 12),
                          Field(&ExplicitConstructibleFromA::moved, false))));
 }
@@ -655,78 +655,78 @@ struct ConvertibleToBool {
   bool x = false;
 };
 
-TEST(StatusOr, ImplicitBooleanConstructionWithImplicitCasts) {
-  EXPECT_THAT(turbo::StatusOr<bool>(turbo::StatusOr<ConvertibleToBool>(true)),
+TEST(Result, ImplicitBooleanConstructionWithImplicitCasts) {
+  EXPECT_THAT(turbo::Result<bool>(turbo::Result<ConvertibleToBool>(true)),
               IsOkAndHolds(true));
-  EXPECT_THAT(turbo::StatusOr<bool>(turbo::StatusOr<ConvertibleToBool>(false)),
+  EXPECT_THAT(turbo::Result<bool>(turbo::Result<ConvertibleToBool>(false)),
               IsOkAndHolds(false));
   EXPECT_THAT(
-      turbo::implicit_cast<turbo::StatusOr<ImplicitConstructibleFromBool>>(
-          turbo::StatusOr<bool>(false)),
+      turbo::implicit_cast<turbo::Result<ImplicitConstructibleFromBool>>(
+          turbo::Result<bool>(false)),
       IsOkAndHolds(Field(&ImplicitConstructibleFromBool::x, false)));
   EXPECT_FALSE(
-      (std::is_convertible_v<turbo::StatusOr<ConvertibleToBool>,
-                             turbo::StatusOr<ImplicitConstructibleFromBool>>));
+      (std::is_convertible_v<turbo::Result<ConvertibleToBool>,
+                             turbo::Result<ImplicitConstructibleFromBool>>));
 }
 
-TEST(StatusOr, BooleanConstructionWithImplicitCasts) {
-  EXPECT_THAT(turbo::StatusOr<bool>(turbo::StatusOr<ConvertibleToBool>(true)),
+TEST(Result, BooleanConstructionWithImplicitCasts) {
+  EXPECT_THAT(turbo::Result<bool>(turbo::Result<ConvertibleToBool>(true)),
               IsOkAndHolds(true));
-  EXPECT_THAT(turbo::StatusOr<bool>(turbo::StatusOr<ConvertibleToBool>(false)),
+  EXPECT_THAT(turbo::Result<bool>(turbo::Result<ConvertibleToBool>(false)),
               IsOkAndHolds(false));
   EXPECT_THAT(
-      turbo::StatusOr<ImplicitConstructibleFromBool>{
-          turbo::StatusOr<bool>(false)},
+      turbo::Result<ImplicitConstructibleFromBool>{
+          turbo::Result<bool>(false)},
       IsOkAndHolds(Field(&ImplicitConstructibleFromBool::x, false)));
   EXPECT_THAT(
-      turbo::StatusOr<ImplicitConstructibleFromBool>{
-          turbo::StatusOr<bool>(turbo::InvalidArgumentError(""))},
+      turbo::Result<ImplicitConstructibleFromBool>{
+          turbo::Result<bool>(turbo::invalid_argument_error(""))},
       Not(IsOk()));
 
   EXPECT_THAT(
-      turbo::StatusOr<ImplicitConstructibleFromBool>{
-          turbo::StatusOr<ConvertibleToBool>(ConvertibleToBool{false})},
+      turbo::Result<ImplicitConstructibleFromBool>{
+          turbo::Result<ConvertibleToBool>(ConvertibleToBool{false})},
       IsOkAndHolds(Field(&ImplicitConstructibleFromBool::x, false)));
   EXPECT_THAT(
-      turbo::StatusOr<ImplicitConstructibleFromBool>{
-          turbo::StatusOr<ConvertibleToBool>(turbo::InvalidArgumentError(""))},
+      turbo::Result<ImplicitConstructibleFromBool>{
+          turbo::Result<ConvertibleToBool>(turbo::invalid_argument_error(""))},
       Not(IsOk()));
 }
 
-TEST(StatusOr, ConstImplicitCast) {
-  EXPECT_THAT(turbo::implicit_cast<turbo::StatusOr<bool>>(
-                  turbo::StatusOr<const bool>(true)),
+TEST(Result, ConstImplicitCast) {
+  EXPECT_THAT(turbo::implicit_cast<turbo::Result<bool>>(
+                  turbo::Result<const bool>(true)),
               IsOkAndHolds(true));
-  EXPECT_THAT(turbo::implicit_cast<turbo::StatusOr<bool>>(
-                  turbo::StatusOr<const bool>(false)),
+  EXPECT_THAT(turbo::implicit_cast<turbo::Result<bool>>(
+                  turbo::Result<const bool>(false)),
               IsOkAndHolds(false));
-  EXPECT_THAT(turbo::implicit_cast<turbo::StatusOr<const bool>>(
-                  turbo::StatusOr<bool>(true)),
+  EXPECT_THAT(turbo::implicit_cast<turbo::Result<const bool>>(
+                  turbo::Result<bool>(true)),
               IsOkAndHolds(true));
-  EXPECT_THAT(turbo::implicit_cast<turbo::StatusOr<const bool>>(
-                  turbo::StatusOr<bool>(false)),
+  EXPECT_THAT(turbo::implicit_cast<turbo::Result<const bool>>(
+                  turbo::Result<bool>(false)),
               IsOkAndHolds(false));
-  EXPECT_THAT(turbo::implicit_cast<turbo::StatusOr<const std::string>>(
-                  turbo::StatusOr<std::string>("foo")),
+  EXPECT_THAT(turbo::implicit_cast<turbo::Result<const std::string>>(
+                  turbo::Result<std::string>("foo")),
               IsOkAndHolds("foo"));
-  EXPECT_THAT(turbo::implicit_cast<turbo::StatusOr<std::string>>(
-                  turbo::StatusOr<const std::string>("foo")),
+  EXPECT_THAT(turbo::implicit_cast<turbo::Result<std::string>>(
+                  turbo::Result<const std::string>("foo")),
               IsOkAndHolds("foo"));
   EXPECT_THAT(
-      turbo::implicit_cast<turbo::StatusOr<std::shared_ptr<const std::string>>>(
-          turbo::StatusOr<std::shared_ptr<std::string>>(
+      turbo::implicit_cast<turbo::Result<std::shared_ptr<const std::string>>>(
+          turbo::Result<std::shared_ptr<std::string>>(
               std::make_shared<std::string>("foo"))),
       IsOkAndHolds(Pointee(std::string("foo"))));
 }
 
-TEST(StatusOr, ConstExplicitConstruction) {
-  EXPECT_THAT(turbo::StatusOr<bool>(turbo::StatusOr<const bool>(true)),
+TEST(Result, ConstExplicitConstruction) {
+  EXPECT_THAT(turbo::Result<bool>(turbo::Result<const bool>(true)),
               IsOkAndHolds(true));
-  EXPECT_THAT(turbo::StatusOr<bool>(turbo::StatusOr<const bool>(false)),
+  EXPECT_THAT(turbo::Result<bool>(turbo::Result<const bool>(false)),
               IsOkAndHolds(false));
-  EXPECT_THAT(turbo::StatusOr<const bool>(turbo::StatusOr<bool>(true)),
+  EXPECT_THAT(turbo::Result<const bool>(turbo::Result<bool>(true)),
               IsOkAndHolds(true));
-  EXPECT_THAT(turbo::StatusOr<const bool>(turbo::StatusOr<bool>(false)),
+  EXPECT_THAT(turbo::Result<const bool>(turbo::Result<bool>(false)),
               IsOkAndHolds(false));
 }
 
@@ -735,70 +735,70 @@ struct ExplicitConstructibleFromInt {
   explicit ExplicitConstructibleFromInt(int y) : x(y) {}
 };
 
-TEST(StatusOr, ExplicitConstruction) {
-  EXPECT_THAT(turbo::StatusOr<ExplicitConstructibleFromInt>(10),
+TEST(Result, ExplicitConstruction) {
+  EXPECT_THAT(turbo::Result<ExplicitConstructibleFromInt>(10),
               IsOkAndHolds(Field(&ExplicitConstructibleFromInt::x, 10)));
 }
 
-TEST(StatusOr, ImplicitConstruction) {
+TEST(Result, ImplicitConstruction) {
   // Check implicit casting works.
   auto status_or =
-      turbo::implicit_cast<turbo::StatusOr<std::variant<int, std::string>>>(10);
+      turbo::implicit_cast<turbo::Result<std::variant<int, std::string>>>(10);
   EXPECT_THAT(status_or, IsOkAndHolds(VariantWith<int>(10)));
 }
 
-TEST(StatusOr, ImplicitConstructionFromInitliazerList) {
+TEST(Result, ImplicitConstructionFromInitliazerList) {
   // Note: dropping the explicit std::initializer_list<int> is not supported
-  // by turbo::StatusOr or std::optional.
+  // by turbo::Result or std::optional.
   auto status_or =
-      turbo::implicit_cast<turbo::StatusOr<std::vector<int>>>({{10, 20, 30}});
+      turbo::implicit_cast<turbo::Result<std::vector<int>>>({{10, 20, 30}});
   EXPECT_THAT(status_or, IsOkAndHolds(ElementsAre(10, 20, 30)));
 }
 
-TEST(StatusOr, UniquePtrImplicitConstruction) {
-  auto status_or = turbo::implicit_cast<turbo::StatusOr<std::unique_ptr<Base1>>>(
+TEST(Result, UniquePtrImplicitConstruction) {
+  auto status_or = turbo::implicit_cast<turbo::Result<std::unique_ptr<Base1>>>(
       std::make_unique<Derived>());
   EXPECT_THAT(status_or, IsOkAndHolds(Ne(nullptr)));
 }
 
-TEST(StatusOr, NestedStatusOrCopyAndMoveConstructorTests) {
-  turbo::StatusOr<turbo::StatusOr<CopyDetector>> status_or = CopyDetector(10);
-  turbo::StatusOr<turbo::StatusOr<CopyDetector>> status_error =
-      turbo::InvalidArgumentError("foo");
+TEST(Result, NestedResultCopyAndMoveConstructorTests) {
+  turbo::Result<turbo::Result<CopyDetector>> status_or = CopyDetector(10);
+  turbo::Result<turbo::Result<CopyDetector>> status_error =
+      turbo::invalid_argument_error("foo");
   EXPECT_THAT(status_or,
               IsOkAndHolds(IsOkAndHolds(CopyDetectorHas(10, true, false))));
-  turbo::StatusOr<turbo::StatusOr<CopyDetector>> a = status_or;
+  turbo::Result<turbo::Result<CopyDetector>> a = status_or;
   EXPECT_THAT(a, IsOkAndHolds(IsOkAndHolds(CopyDetectorHas(10, false, true))));
-  turbo::StatusOr<turbo::StatusOr<CopyDetector>> a_err = status_error;
+  turbo::Result<turbo::Result<CopyDetector>> a_err = status_error;
   EXPECT_THAT(a_err, Not(IsOk()));
 
-  const turbo::StatusOr<turbo::StatusOr<CopyDetector>>& cref = status_or;
-  turbo::StatusOr<turbo::StatusOr<CopyDetector>> b = cref;  // NOLINT
+  const turbo::Result<turbo::Result<CopyDetector>>& cref = status_or;
+  turbo::Result<turbo::Result<CopyDetector>> b = cref;  // NOLINT
   EXPECT_THAT(b, IsOkAndHolds(IsOkAndHolds(CopyDetectorHas(10, false, true))));
-  const turbo::StatusOr<turbo::StatusOr<CopyDetector>>& cref_err = status_error;
-  turbo::StatusOr<turbo::StatusOr<CopyDetector>> b_err = cref_err;  // NOLINT
+  const turbo::Result<turbo::Result<CopyDetector>>& cref_err = status_error;
+  turbo::Result<turbo::Result<CopyDetector>> b_err = cref_err;  // NOLINT
   EXPECT_THAT(b_err, Not(IsOk()));
 
-  turbo::StatusOr<turbo::StatusOr<CopyDetector>> c = std::move(status_or);
+  turbo::Result<turbo::Result<CopyDetector>> c = std::move(status_or);
   EXPECT_THAT(c, IsOkAndHolds(IsOkAndHolds(CopyDetectorHas(10, true, false))));
-  turbo::StatusOr<turbo::StatusOr<CopyDetector>> c_err = std::move(status_error);
+  turbo::Result<turbo::Result<CopyDetector>> c_err = std::move(status_error);
   EXPECT_THAT(c_err, Not(IsOk()));
 }
 
-TEST(StatusOr, NestedStatusOrCopyAndMoveAssignment) {
-  turbo::StatusOr<turbo::StatusOr<CopyDetector>> status_or = CopyDetector(10);
-  turbo::StatusOr<turbo::StatusOr<CopyDetector>> status_error =
-      turbo::InvalidArgumentError("foo");
-  turbo::StatusOr<turbo::StatusOr<CopyDetector>> a;
+TEST(Result, NestedResultCopyAndMoveAssignment) {
+  turbo::Result<turbo::Result<CopyDetector>> status_or = CopyDetector(10);
+  turbo::Result<turbo::Result<CopyDetector>> status_error =
+      turbo::invalid_argument_error("foo");
+  turbo::Result<turbo::Result<CopyDetector>> a;
   a = status_or;
   EXPECT_THAT(a, IsOkAndHolds(IsOkAndHolds(CopyDetectorHas(10, false, true))));
   a = status_error;
   EXPECT_THAT(a, Not(IsOk()));
 
-  const turbo::StatusOr<turbo::StatusOr<CopyDetector>>& cref = status_or;
+  const turbo::Result<turbo::Result<CopyDetector>>& cref = status_or;
   a = cref;
   EXPECT_THAT(a, IsOkAndHolds(IsOkAndHolds(CopyDetectorHas(10, false, true))));
-  const turbo::StatusOr<turbo::StatusOr<CopyDetector>>& cref_err = status_error;
+  const turbo::Result<turbo::Result<CopyDetector>>& cref_err = status_error;
   a = cref_err;
   EXPECT_THAT(a, Not(IsOk()));
   a = std::move(status_or);
@@ -827,7 +827,7 @@ struct NonMovable {
   NonMovable& operator=(NonMovable&&) = delete;
 };
 
-TEST(StatusOr, CopyAndMoveAbility) {
+TEST(Result, CopyAndMoveAbility) {
   EXPECT_TRUE(std::is_copy_constructible_v<Copyable>);
   EXPECT_TRUE(std::is_copy_assignable_v<Copyable>);
   EXPECT_TRUE(std::is_move_constructible_v<Copyable>);
@@ -842,50 +842,50 @@ TEST(StatusOr, CopyAndMoveAbility) {
   EXPECT_FALSE(std::is_move_assignable_v<NonMovable>);
 }
 
-TEST(StatusOr, StatusOrAnyCopyAndMoveConstructorTests) {
-  turbo::StatusOr<std::any> status_or = CopyDetector(10);
-  turbo::StatusOr<std::any> status_error = turbo::InvalidArgumentError("foo");
+TEST(Result, ResultAnyCopyAndMoveConstructorTests) {
+  turbo::Result<std::any> status_or = CopyDetector(10);
+  turbo::Result<std::any> status_error = turbo::invalid_argument_error("foo");
   EXPECT_THAT(
       status_or,
       IsOkAndHolds(AnyWith<CopyDetector>(CopyDetectorHas(10, true, false))));
-  turbo::StatusOr<std::any> a = status_or;
+  turbo::Result<std::any> a = status_or;
   EXPECT_THAT(
       a, IsOkAndHolds(AnyWith<CopyDetector>(CopyDetectorHas(10, false, true))));
-  turbo::StatusOr<std::any> a_err = status_error;
+  turbo::Result<std::any> a_err = status_error;
   EXPECT_THAT(a_err, Not(IsOk()));
 
-  const turbo::StatusOr<std::any>& cref = status_or;
+  const turbo::Result<std::any>& cref = status_or;
   // No lint for no-change copy.
-  turbo::StatusOr<std::any> b = cref;  // NOLINT
+  turbo::Result<std::any> b = cref;  // NOLINT
   EXPECT_THAT(
       b, IsOkAndHolds(AnyWith<CopyDetector>(CopyDetectorHas(10, false, true))));
-  const turbo::StatusOr<std::any>& cref_err = status_error;
+  const turbo::Result<std::any>& cref_err = status_error;
   // No lint for no-change copy.
-  turbo::StatusOr<std::any> b_err = cref_err;  // NOLINT
+  turbo::Result<std::any> b_err = cref_err;  // NOLINT
   EXPECT_THAT(b_err, Not(IsOk()));
 
-  turbo::StatusOr<std::any> c = std::move(status_or);
+  turbo::Result<std::any> c = std::move(status_or);
   EXPECT_THAT(
       c, IsOkAndHolds(AnyWith<CopyDetector>(CopyDetectorHas(10, true, false))));
-  turbo::StatusOr<std::any> c_err = std::move(status_error);
+  turbo::Result<std::any> c_err = std::move(status_error);
   EXPECT_THAT(c_err, Not(IsOk()));
 }
 
-TEST(StatusOr, StatusOrAnyCopyAndMoveAssignment) {
-  turbo::StatusOr<std::any> status_or = CopyDetector(10);
-  turbo::StatusOr<std::any> status_error = turbo::InvalidArgumentError("foo");
-  turbo::StatusOr<std::any> a;
+TEST(Result, ResultAnyCopyAndMoveAssignment) {
+  turbo::Result<std::any> status_or = CopyDetector(10);
+  turbo::Result<std::any> status_error = turbo::invalid_argument_error("foo");
+  turbo::Result<std::any> a;
   a = status_or;
   EXPECT_THAT(
       a, IsOkAndHolds(AnyWith<CopyDetector>(CopyDetectorHas(10, false, true))));
   a = status_error;
   EXPECT_THAT(a, Not(IsOk()));
 
-  const turbo::StatusOr<std::any>& cref = status_or;
+  const turbo::Result<std::any>& cref = status_or;
   a = cref;
   EXPECT_THAT(
       a, IsOkAndHolds(AnyWith<CopyDetector>(CopyDetectorHas(10, false, true))));
-  const turbo::StatusOr<std::any>& cref_err = status_error;
+  const turbo::Result<std::any>& cref_err = status_error;
   a = cref_err;
   EXPECT_THAT(a, Not(IsOk()));
   a = std::move(status_or);
@@ -895,82 +895,82 @@ TEST(StatusOr, StatusOrAnyCopyAndMoveAssignment) {
   EXPECT_THAT(a, Not(IsOk()));
 }
 
-TEST(StatusOr, StatusOrCopyAndMoveTestsConstructor) {
-  turbo::StatusOr<CopyDetector> status_or(10);
+TEST(Result, ResultCopyAndMoveTestsConstructor) {
+  turbo::Result<CopyDetector> status_or(10);
   ASSERT_THAT(status_or, IsOkAndHolds(CopyDetectorHas(10, false, false)));
-  turbo::StatusOr<CopyDetector> a(status_or);
+  turbo::Result<CopyDetector> a(status_or);
   EXPECT_THAT(a, IsOkAndHolds(CopyDetectorHas(10, false, true)));
-  const turbo::StatusOr<CopyDetector>& cref = status_or;
-  turbo::StatusOr<CopyDetector> b(cref);  // NOLINT
+  const turbo::Result<CopyDetector>& cref = status_or;
+  turbo::Result<CopyDetector> b(cref);  // NOLINT
   EXPECT_THAT(b, IsOkAndHolds(CopyDetectorHas(10, false, true)));
-  turbo::StatusOr<CopyDetector> c(std::move(status_or));
+  turbo::Result<CopyDetector> c(std::move(status_or));
   EXPECT_THAT(c, IsOkAndHolds(CopyDetectorHas(10, true, false)));
 }
 
-TEST(StatusOr, StatusOrCopyAndMoveTestsAssignment) {
-  turbo::StatusOr<CopyDetector> status_or(10);
+TEST(Result, ResultCopyAndMoveTestsAssignment) {
+  turbo::Result<CopyDetector> status_or(10);
   ASSERT_THAT(status_or, IsOkAndHolds(CopyDetectorHas(10, false, false)));
-  turbo::StatusOr<CopyDetector> a;
+  turbo::Result<CopyDetector> a;
   a = status_or;
   EXPECT_THAT(a, IsOkAndHolds(CopyDetectorHas(10, false, true)));
-  const turbo::StatusOr<CopyDetector>& cref = status_or;
-  turbo::StatusOr<CopyDetector> b;
+  const turbo::Result<CopyDetector>& cref = status_or;
+  turbo::Result<CopyDetector> b;
   b = cref;
   EXPECT_THAT(b, IsOkAndHolds(CopyDetectorHas(10, false, true)));
-  turbo::StatusOr<CopyDetector> c;
+  turbo::Result<CopyDetector> c;
   c = std::move(status_or);
   EXPECT_THAT(c, IsOkAndHolds(CopyDetectorHas(10, true, false)));
 }
 
-TEST(StatusOr, TurboAnyAssignment) {
+TEST(Result, TurboAnyAssignment) {
   EXPECT_FALSE(
-      (std::is_assignable_v<turbo::StatusOr<std::any>, turbo::StatusOr<int>>));
-  turbo::StatusOr<std::any> status_or;
-  status_or = turbo::InvalidArgumentError("foo");
+      (std::is_assignable_v<turbo::Result<std::any>, turbo::Result<int>>));
+  turbo::Result<std::any> status_or;
+  status_or = turbo::invalid_argument_error("foo");
   EXPECT_THAT(status_or, Not(IsOk()));
 }
 
-TEST(StatusOr, ImplicitAssignment) {
-  turbo::StatusOr<std::variant<int, std::string>> status_or;
+TEST(Result, ImplicitAssignment) {
+  turbo::Result<std::variant<int, std::string>> status_or;
   status_or = 10;
   EXPECT_THAT(status_or, IsOkAndHolds(VariantWith<int>(10)));
 }
 
-TEST(StatusOr, SelfDirectInitAssignment) {
-  turbo::StatusOr<std::vector<int>> status_or = {{10, 20, 30}};
+TEST(Result, SelfDirectInitAssignment) {
+  turbo::Result<std::vector<int>> status_or = {{10, 20, 30}};
   status_or = *status_or;
   EXPECT_THAT(status_or, IsOkAndHolds(ElementsAre(10, 20, 30)));
 }
 
-TEST(StatusOr, ImplicitCastFromInitializerList) {
-  turbo::StatusOr<std::vector<int>> status_or = {{10, 20, 30}};
+TEST(Result, ImplicitCastFromInitializerList) {
+  turbo::Result<std::vector<int>> status_or = {{10, 20, 30}};
   EXPECT_THAT(status_or, IsOkAndHolds(ElementsAre(10, 20, 30)));
 }
 
-TEST(StatusOr, UniquePtrImplicitAssignment) {
-  turbo::StatusOr<std::unique_ptr<Base1>> status_or;
+TEST(Result, UniquePtrImplicitAssignment) {
+  turbo::Result<std::unique_ptr<Base1>> status_or;
   status_or = std::make_unique<Derived>();
   EXPECT_THAT(status_or, IsOkAndHolds(Ne(nullptr)));
 }
 
-TEST(StatusOr, Pointer) {
+TEST(Result, Pointer) {
   struct A {};
   struct B : public A {};
   struct C : private A {};
 
-  EXPECT_TRUE((std::is_constructible_v<turbo::StatusOr<A*>, B*>));
-  EXPECT_TRUE((std::is_convertible_v<B*, turbo::StatusOr<A*>>));
-  EXPECT_FALSE((std::is_constructible_v<turbo::StatusOr<A*>, C*>));
-  EXPECT_FALSE((std::is_convertible_v<C*, turbo::StatusOr<A*>>));
+  EXPECT_TRUE((std::is_constructible_v<turbo::Result<A*>, B*>));
+  EXPECT_TRUE((std::is_convertible_v<B*, turbo::Result<A*>>));
+  EXPECT_FALSE((std::is_constructible_v<turbo::Result<A*>, C*>));
+  EXPECT_FALSE((std::is_convertible_v<C*, turbo::Result<A*>>));
 }
 
-TEST(StatusOr, TestAssignmentStatusNotOkConverting) {
+TEST(Result, TestAssignmentStatusNotOkConverting) {
   // Copy assignment
   {
-    const turbo::Status expected = turbo::CancelledError();
-    turbo::StatusOr<int> source(expected);
+    const turbo::Status expected = turbo::cancelled_error();
+    turbo::Result<int> source(expected);
 
-    turbo::StatusOr<double> target;
+    turbo::Result<double> target;
     target = source;
 
     EXPECT_FALSE(target.ok());
@@ -982,10 +982,10 @@ TEST(StatusOr, TestAssignmentStatusNotOkConverting) {
 
   // Move assignment
   {
-    const turbo::Status expected = turbo::CancelledError();
-    turbo::StatusOr<int> source(expected);
+    const turbo::Status expected = turbo::cancelled_error();
+    turbo::Result<int> source(expected);
 
-    turbo::StatusOr<double> target;
+    turbo::Result<double> target;
     target = std::move(source);
 
     EXPECT_FALSE(target.ok());
@@ -996,14 +996,14 @@ TEST(StatusOr, TestAssignmentStatusNotOkConverting) {
   }
 }
 
-TEST(StatusOr, SelfAssignment) {
+TEST(Result, SelfAssignment) {
   // Copy-assignment, status OK
   {
     // A string long enough that it's likely to defeat any inline representation
     // optimization.
     const std::string long_str(128, 'a');
 
-    turbo::StatusOr<std::string> so = long_str;
+    turbo::Result<std::string> so = long_str;
     so = *&so;
 
     ASSERT_TRUE(so.ok());
@@ -1013,7 +1013,7 @@ TEST(StatusOr, SelfAssignment) {
 
   // Copy-assignment, error status
   {
-    turbo::StatusOr<int> so = turbo::NotFoundError("taco");
+    turbo::Result<int> so = turbo::not_found_error("taco");
     so = *&so;
 
     EXPECT_FALSE(so.ok());
@@ -1023,7 +1023,7 @@ TEST(StatusOr, SelfAssignment) {
 
   // Move-assignment with copyable type, status OK
   {
-    turbo::StatusOr<int> so = 17;
+    turbo::Result<int> so = 17;
 
     // Fool the compiler, which otherwise complains.
     auto& same = so;
@@ -1036,7 +1036,7 @@ TEST(StatusOr, SelfAssignment) {
 
   // Move-assignment with copyable type, error status
   {
-    turbo::StatusOr<int> so = turbo::NotFoundError("taco");
+    turbo::Result<int> so = turbo::not_found_error("taco");
 
     // Fool the compiler, which otherwise complains.
     auto& same = so;
@@ -1050,7 +1050,7 @@ TEST(StatusOr, SelfAssignment) {
   // Move-assignment with non-copyable type, status OK
   {
     const auto raw = new int(17);
-    turbo::StatusOr<std::unique_ptr<int>> so = turbo::WrapUnique(raw);
+    turbo::Result<std::unique_ptr<int>> so = turbo::WrapUnique(raw);
 
     // Fool the compiler, which otherwise complains.
     auto& same = so;
@@ -1063,7 +1063,7 @@ TEST(StatusOr, SelfAssignment) {
 
   // Move-assignment with non-copyable type, error status
   {
-    turbo::StatusOr<std::unique_ptr<int>> so = turbo::NotFoundError("taco");
+    turbo::Result<std::unique_ptr<int>> so = turbo::not_found_error("taco");
 
     // Fool the compiler, which otherwise complains.
     auto& same = so;
@@ -1083,7 +1083,7 @@ struct FromConstructibleAssignableRvalue {};
 struct FromImplicitConstructibleOnly {};
 struct FromAssignableOnly {};
 
-// This class is for testing the forwarding value assignments of `StatusOr`.
+// This class is for testing the forwarding value assignments of `Result`.
 // `from_rvalue` indicates whether the constructor or the assignment taking
 // rvalue reference is called. `from_assignment` indicates whether any
 // assignment is called.
@@ -1122,10 +1122,10 @@ struct MockValue {
 };
 
 // operator=(U&&)
-TEST(StatusOr, PerfectForwardingAssignment) {
+TEST(Result, PerfectForwardingAssignment) {
   // U == T
   constexpr int kValue1 = 10, kValue2 = 20;
-  turbo::StatusOr<CopyDetector> status_or;
+  turbo::Result<CopyDetector> status_or;
   CopyDetector lvalue(kValue1);
   status_or = lvalue;
   EXPECT_THAT(status_or, IsOkAndHolds(CopyDetectorHas(kValue1, false, true)));
@@ -1133,117 +1133,117 @@ TEST(StatusOr, PerfectForwardingAssignment) {
   EXPECT_THAT(status_or, IsOkAndHolds(CopyDetectorHas(kValue2, true, false)));
 
   // U != T
-  EXPECT_TRUE((std::is_assignable_v<turbo::StatusOr<MockValue>&,
+  EXPECT_TRUE((std::is_assignable_v<turbo::Result<MockValue>&,
                                     const FromConstructibleAssignableLvalue&>));
-  EXPECT_TRUE((std::is_assignable_v<turbo::StatusOr<MockValue>&,
+  EXPECT_TRUE((std::is_assignable_v<turbo::Result<MockValue>&,
                                     FromConstructibleAssignableLvalue&&>));
   EXPECT_FALSE(
-      (std::is_assignable_v<turbo::StatusOr<MockValue>&,
+      (std::is_assignable_v<turbo::Result<MockValue>&,
                             const FromConstructibleAssignableRvalue&>));
-  EXPECT_TRUE((std::is_assignable_v<turbo::StatusOr<MockValue>&,
+  EXPECT_TRUE((std::is_assignable_v<turbo::Result<MockValue>&,
                                     FromConstructibleAssignableRvalue&&>));
-  EXPECT_TRUE((std::is_assignable_v<turbo::StatusOr<MockValue>&,
+  EXPECT_TRUE((std::is_assignable_v<turbo::Result<MockValue>&,
                                     const FromImplicitConstructibleOnly&>));
-  EXPECT_FALSE((std::is_assignable_v<turbo::StatusOr<MockValue>&,
+  EXPECT_FALSE((std::is_assignable_v<turbo::Result<MockValue>&,
                                      const FromAssignableOnly&>));
 
-  turbo::StatusOr<MockValue> from_lvalue(FromConstructibleAssignableLvalue{});
+  turbo::Result<MockValue> from_lvalue(FromConstructibleAssignableLvalue{});
   EXPECT_FALSE(from_lvalue->from_rvalue);
   EXPECT_FALSE(from_lvalue->assigned);
   from_lvalue = FromConstructibleAssignableLvalue{};
   EXPECT_FALSE(from_lvalue->from_rvalue);
   EXPECT_TRUE(from_lvalue->assigned);
 
-  turbo::StatusOr<MockValue> from_rvalue(FromConstructibleAssignableRvalue{});
+  turbo::Result<MockValue> from_rvalue(FromConstructibleAssignableRvalue{});
   EXPECT_TRUE(from_rvalue->from_rvalue);
   EXPECT_FALSE(from_rvalue->assigned);
   from_rvalue = FromConstructibleAssignableRvalue{};
   EXPECT_TRUE(from_rvalue->from_rvalue);
   EXPECT_TRUE(from_rvalue->assigned);
 
-  turbo::StatusOr<MockValue> from_implicit_constructible(
+  turbo::Result<MockValue> from_implicit_constructible(
       FromImplicitConstructibleOnly{});
   EXPECT_FALSE(from_implicit_constructible->from_rvalue);
   EXPECT_FALSE(from_implicit_constructible->assigned);
-  // construct a temporary `StatusOr` object and invoke the `StatusOr` move
+  // construct a temporary `Result` object and invoke the `Result` move
   // assignment operator.
   from_implicit_constructible = FromImplicitConstructibleOnly{};
   EXPECT_FALSE(from_implicit_constructible->from_rvalue);
   EXPECT_FALSE(from_implicit_constructible->assigned);
 }
 
-TEST(StatusOr, TestStatus) {
-  turbo::StatusOr<int> good(4);
+TEST(Result, TestStatus) {
+  turbo::Result<int> good(4);
   EXPECT_TRUE(good.ok());
-  turbo::StatusOr<int> bad(turbo::CancelledError());
+  turbo::Result<int> bad(turbo::cancelled_error());
   EXPECT_FALSE(bad.ok());
   EXPECT_EQ(bad.status().code(), turbo::StatusCode::kCancelled);
 }
 
-TEST(StatusOr, OperatorStarRefQualifiers) {
+TEST(Result, OperatorStarRefQualifiers) {
   static_assert(
       std::is_same<const int&,
-                   decltype(*std::declval<const turbo::StatusOr<int>&>())>(),
+                   decltype(*std::declval<const turbo::Result<int>&>())>(),
       "Unexpected ref-qualifiers");
   static_assert(
-      std::is_same<int&, decltype(*std::declval<turbo::StatusOr<int>&>())>(),
+      std::is_same<int&, decltype(*std::declval<turbo::Result<int>&>())>(),
       "Unexpected ref-qualifiers");
   static_assert(
       std::is_same<const int&&,
-                   decltype(*std::declval<const turbo::StatusOr<int>&&>())>(),
+                   decltype(*std::declval<const turbo::Result<int>&&>())>(),
       "Unexpected ref-qualifiers");
   static_assert(
-      std::is_same<int&&, decltype(*std::declval<turbo::StatusOr<int>&&>())>(),
+      std::is_same<int&&, decltype(*std::declval<turbo::Result<int>&&>())>(),
       "Unexpected ref-qualifiers");
 }
 
-TEST(StatusOr, OperatorStar) {
-  const turbo::StatusOr<std::string> const_lvalue("hello");
+TEST(Result, OperatorStar) {
+  const turbo::Result<std::string> const_lvalue("hello");
   EXPECT_EQ("hello", *const_lvalue);
 
-  turbo::StatusOr<std::string> lvalue("hello");
+  turbo::Result<std::string> lvalue("hello");
   EXPECT_EQ("hello", *lvalue);
 
   // Note: Recall that std::move() is equivalent to a static_cast to an rvalue
   // reference type.
-  const turbo::StatusOr<std::string> const_rvalue("hello");
+  const turbo::Result<std::string> const_rvalue("hello");
   EXPECT_EQ("hello", *std::move(const_rvalue));  // NOLINT
 
-  turbo::StatusOr<std::string> rvalue("hello");
+  turbo::Result<std::string> rvalue("hello");
   EXPECT_EQ("hello", *std::move(rvalue));
 }
 
-TEST(StatusOr, OperatorArrowQualifiers) {
+TEST(Result, OperatorArrowQualifiers) {
   static_assert(
       std::is_same<
           const int*,
-          decltype(std::declval<const turbo::StatusOr<int>&>().operator->())>(),
+          decltype(std::declval<const turbo::Result<int>&>().operator->())>(),
       "Unexpected qualifiers");
   static_assert(
       std::is_same<
-          int*, decltype(std::declval<turbo::StatusOr<int>&>().operator->())>(),
+          int*, decltype(std::declval<turbo::Result<int>&>().operator->())>(),
       "Unexpected qualifiers");
   static_assert(
       std::is_same<
           const int*,
-          decltype(std::declval<const turbo::StatusOr<int>&&>().operator->())>(),
+          decltype(std::declval<const turbo::Result<int>&&>().operator->())>(),
       "Unexpected qualifiers");
   static_assert(
       std::is_same<
-          int*, decltype(std::declval<turbo::StatusOr<int>&&>().operator->())>(),
+          int*, decltype(std::declval<turbo::Result<int>&&>().operator->())>(),
       "Unexpected qualifiers");
 }
 
-TEST(StatusOr, OperatorArrow) {
-  const turbo::StatusOr<std::string> const_lvalue("hello");
+TEST(Result, OperatorArrow) {
+  const turbo::Result<std::string> const_lvalue("hello");
   EXPECT_EQ(std::string("hello"), const_lvalue->c_str());
 
-  turbo::StatusOr<std::string> lvalue("hello");
+  turbo::Result<std::string> lvalue("hello");
   EXPECT_EQ(std::string("hello"), lvalue->c_str());
 }
 
-TEST(StatusOr, RValueStatus) {
-  turbo::StatusOr<int> so(turbo::NotFoundError("taco"));
+TEST(Result, RValueStatus) {
+  turbo::Result<int> so(turbo::not_found_error("taco"));
   const turbo::Status s = std::move(so).status();
 
   EXPECT_EQ(s.code(), turbo::StatusCode::kNotFound);
@@ -1257,36 +1257,36 @@ TEST(StatusOr, RValueStatus) {
   EXPECT_EQ(so.status().message(), "Status accessed after move.");
 }
 
-TEST(StatusOr, TestValue) {
+TEST(Result, TestValue) {
   const int kI = 4;
-  turbo::StatusOr<int> thing(kI);
+  turbo::Result<int> thing(kI);
   EXPECT_EQ(kI, *thing);
 }
 
-TEST(StatusOr, TestValueConst) {
+TEST(Result, TestValueConst) {
   const int kI = 4;
-  const turbo::StatusOr<int> thing(kI);
+  const turbo::Result<int> thing(kI);
   EXPECT_EQ(kI, *thing);
 }
 
-TEST(StatusOr, TestPointerDefaultCtor) {
-  turbo::StatusOr<int*> thing;
+TEST(Result, TestPointerDefaultCtor) {
+  turbo::Result<int*> thing;
   EXPECT_FALSE(thing.ok());
   EXPECT_EQ(thing.status().code(), turbo::StatusCode::kUnknown);
 }
 
-TEST(StatusOr, TestPointerStatusCtor) {
-  turbo::StatusOr<int*> thing(turbo::CancelledError());
+TEST(Result, TestPointerStatusCtor) {
+  turbo::Result<int*> thing(turbo::cancelled_error());
   EXPECT_FALSE(thing.ok());
   EXPECT_EQ(thing.status().code(), turbo::StatusCode::kCancelled);
 }
 
-TEST(StatusOr, TestPointerValueCtor) {
+TEST(Result, TestPointerValueCtor) {
   const int kI = 4;
 
   // Construction from a non-null pointer
   {
-    turbo::StatusOr<const int*> so(&kI);
+    turbo::Result<const int*> so(&kI);
     EXPECT_TRUE(so.ok());
     EXPECT_THAT(so.status(), IsOk());
     EXPECT_EQ(&kI, *so);
@@ -1294,7 +1294,7 @@ TEST(StatusOr, TestPointerValueCtor) {
 
   // Construction from a null pointer constant
   {
-    turbo::StatusOr<const int*> so(nullptr);
+    turbo::Result<const int*> so(nullptr);
     EXPECT_TRUE(so.ok());
     EXPECT_THAT(so.status(), IsOk());
     EXPECT_EQ(nullptr, *so);
@@ -1304,123 +1304,123 @@ TEST(StatusOr, TestPointerValueCtor) {
   {
     const int* const p = nullptr;
 
-    turbo::StatusOr<const int*> so(p);
+    turbo::Result<const int*> so(p);
     EXPECT_TRUE(so.ok());
     EXPECT_THAT(so.status(), IsOk());
     EXPECT_EQ(nullptr, *so);
   }
 }
 
-TEST(StatusOr, TestPointerCopyCtorStatusOk) {
+TEST(Result, TestPointerCopyCtorStatusOk) {
   const int kI = 0;
-  turbo::StatusOr<const int*> original(&kI);
-  turbo::StatusOr<const int*> copy(original);
+  turbo::Result<const int*> original(&kI);
+  turbo::Result<const int*> copy(original);
   EXPECT_THAT(copy.status(), IsOk());
   EXPECT_EQ(*original, *copy);
 }
 
-TEST(StatusOr, TestPointerCopyCtorStatusNotOk) {
-  turbo::StatusOr<int*> original(turbo::CancelledError());
-  turbo::StatusOr<int*> copy(original);
+TEST(Result, TestPointerCopyCtorStatusNotOk) {
+  turbo::Result<int*> original(turbo::cancelled_error());
+  turbo::Result<int*> copy(original);
   EXPECT_EQ(copy.status().code(), turbo::StatusCode::kCancelled);
 }
 
-TEST(StatusOr, TestPointerCopyCtorStatusOKConverting) {
+TEST(Result, TestPointerCopyCtorStatusOKConverting) {
   Derived derived;
-  turbo::StatusOr<Derived*> original(&derived);
-  turbo::StatusOr<Base2*> copy(original);
+  turbo::Result<Derived*> original(&derived);
+  turbo::Result<Base2*> copy(original);
   EXPECT_THAT(copy.status(), IsOk());
   EXPECT_EQ(static_cast<const Base2*>(*original), *copy);
 }
 
-TEST(StatusOr, TestPointerCopyCtorStatusNotOkConverting) {
-  turbo::StatusOr<Derived*> original(turbo::CancelledError());
-  turbo::StatusOr<Base2*> copy(original);
+TEST(Result, TestPointerCopyCtorStatusNotOkConverting) {
+  turbo::Result<Derived*> original(turbo::cancelled_error());
+  turbo::Result<Base2*> copy(original);
   EXPECT_EQ(copy.status().code(), turbo::StatusCode::kCancelled);
 }
 
-TEST(StatusOr, TestPointerAssignmentStatusOk) {
+TEST(Result, TestPointerAssignmentStatusOk) {
   const int kI = 0;
-  turbo::StatusOr<const int*> source(&kI);
-  turbo::StatusOr<const int*> target;
+  turbo::Result<const int*> source(&kI);
+  turbo::Result<const int*> target;
   target = source;
   EXPECT_THAT(target.status(), IsOk());
   EXPECT_EQ(*source, *target);
 }
 
-TEST(StatusOr, TestPointerAssignmentStatusNotOk) {
-  turbo::StatusOr<int*> source(turbo::CancelledError());
-  turbo::StatusOr<int*> target;
+TEST(Result, TestPointerAssignmentStatusNotOk) {
+  turbo::Result<int*> source(turbo::cancelled_error());
+  turbo::Result<int*> target;
   target = source;
   EXPECT_EQ(target.status().code(), turbo::StatusCode::kCancelled);
 }
 
-TEST(StatusOr, TestPointerAssignmentStatusOKConverting) {
+TEST(Result, TestPointerAssignmentStatusOKConverting) {
   Derived derived;
-  turbo::StatusOr<Derived*> source(&derived);
-  turbo::StatusOr<Base2*> target;
+  turbo::Result<Derived*> source(&derived);
+  turbo::Result<Base2*> target;
   target = source;
   EXPECT_THAT(target.status(), IsOk());
   EXPECT_EQ(static_cast<const Base2*>(*source), *target);
 }
 
-TEST(StatusOr, TestPointerAssignmentStatusNotOkConverting) {
-  turbo::StatusOr<Derived*> source(turbo::CancelledError());
-  turbo::StatusOr<Base2*> target;
+TEST(Result, TestPointerAssignmentStatusNotOkConverting) {
+  turbo::Result<Derived*> source(turbo::cancelled_error());
+  turbo::Result<Base2*> target;
   target = source;
   EXPECT_EQ(target.status(), source.status());
 }
 
-TEST(StatusOr, TestPointerStatus) {
+TEST(Result, TestPointerStatus) {
   const int kI = 0;
-  turbo::StatusOr<const int*> good(&kI);
+  turbo::Result<const int*> good(&kI);
   EXPECT_TRUE(good.ok());
-  turbo::StatusOr<const int*> bad(turbo::CancelledError());
+  turbo::Result<const int*> bad(turbo::cancelled_error());
   EXPECT_EQ(bad.status().code(), turbo::StatusCode::kCancelled);
 }
 
-TEST(StatusOr, TestPointerValue) {
+TEST(Result, TestPointerValue) {
   const int kI = 0;
-  turbo::StatusOr<const int*> thing(&kI);
+  turbo::Result<const int*> thing(&kI);
   EXPECT_EQ(&kI, *thing);
 }
 
-TEST(StatusOr, TestPointerValueConst) {
+TEST(Result, TestPointerValueConst) {
   const int kI = 0;
-  const turbo::StatusOr<const int*> thing(&kI);
+  const turbo::Result<const int*> thing(&kI);
   EXPECT_EQ(&kI, *thing);
 }
 
-TEST(StatusOr, StatusOrVectorOfUniquePointerCanReserveAndResize) {
+TEST(Result, ResultVectorOfUniquePointerCanReserveAndResize) {
   using EvilType = std::vector<std::unique_ptr<int>>;
   static_assert(std::is_copy_constructible_v<EvilType>, "");
-  std::vector<::turbo::StatusOr<EvilType>> v(5);
+  std::vector<::turbo::Result<EvilType>> v(5);
   v.reserve(v.capacity() + 10);
   v.resize(v.capacity() + 10);
 }
 
-TEST(StatusOr, ConstPayload) {
+TEST(Result, ConstPayload) {
   // A reduced version of a problematic type found in the wild. All of the
   // operations below should compile.
-  turbo::StatusOr<const int> a;
+  turbo::Result<const int> a;
 
   // Copy-construction
-  turbo::StatusOr<const int> b(a);
+  turbo::Result<const int> b(a);
 
   // Copy-assignment
-  EXPECT_FALSE(std::is_copy_assignable_v<turbo::StatusOr<const int>>);
+  EXPECT_FALSE(std::is_copy_assignable_v<turbo::Result<const int>>);
 
   // Move-construction
-  turbo::StatusOr<const int> c(std::move(a));
+  turbo::Result<const int> c(std::move(a));
 
   // Move-assignment
-  EXPECT_FALSE(std::is_move_assignable_v<turbo::StatusOr<const int>>);
+  EXPECT_FALSE(std::is_move_assignable_v<turbo::Result<const int>>);
 }
 
-TEST(StatusOr, MapToStatusOrUniquePtr) {
+TEST(Result, MapToResultUniquePtr) {
   // A reduced version of a problematic type found in the wild. All of the
   // operations below should compile.
-  using MapType = std::map<std::string, turbo::StatusOr<std::unique_ptr<int>>>;
+  using MapType = std::map<std::string, turbo::Result<std::unique_ptr<int>>>;
 
   MapType a;
 
@@ -1431,42 +1431,42 @@ TEST(StatusOr, MapToStatusOrUniquePtr) {
   a = std::move(b);
 }
 
-TEST(StatusOr, ValueOrOk) {
-  const turbo::StatusOr<int> status_or = 0;
+TEST(Result, ValueOrOk) {
+  const turbo::Result<int> status_or = 0;
   EXPECT_EQ(status_or.value_or(-1), 0);
 }
 
-TEST(StatusOr, ValueOrDefault) {
-  const turbo::StatusOr<int> status_or = turbo::CancelledError();
+TEST(Result, ValueOrDefault) {
+  const turbo::Result<int> status_or = turbo::cancelled_error();
   EXPECT_EQ(status_or.value_or(-1), -1);
 }
 
-TEST(StatusOr, MoveOnlyValueOrOk) {
-  EXPECT_THAT(turbo::StatusOr<std::unique_ptr<int>>(std::make_unique<int>(0))
+TEST(Result, MoveOnlyValueOrOk) {
+  EXPECT_THAT(turbo::Result<std::unique_ptr<int>>(std::make_unique<int>(0))
                   .value_or(std::make_unique<int>(-1)),
               Pointee(0));
 }
 
-TEST(StatusOr, MoveOnlyValueOrDefault) {
-  EXPECT_THAT(turbo::StatusOr<std::unique_ptr<int>>(turbo::CancelledError())
+TEST(Result, MoveOnlyValueOrDefault) {
+  EXPECT_THAT(turbo::Result<std::unique_ptr<int>>(turbo::cancelled_error())
                   .value_or(std::make_unique<int>(-1)),
               Pointee(-1));
 }
 
-static turbo::StatusOr<int> MakeStatus() { return 100; }
+static turbo::Result<int> MakeStatus() { return 100; }
 
-TEST(StatusOr, TestIgnoreError) { MakeStatus().IgnoreError(); }
+TEST(Result, TestIgnoreError) { MakeStatus().ignore_error(); }
 
-TEST(StatusOr, EqualityOperator) {
+TEST(Result, EqualityOperator) {
   constexpr size_t kNumCases = 4;
-  std::array<turbo::StatusOr<int>, kNumCases> group1 = {
-      turbo::StatusOr<int>(1), turbo::StatusOr<int>(2),
-      turbo::StatusOr<int>(turbo::InvalidArgumentError("msg")),
-      turbo::StatusOr<int>(turbo::InternalError("msg"))};
-  std::array<turbo::StatusOr<int>, kNumCases> group2 = {
-      turbo::StatusOr<int>(1), turbo::StatusOr<int>(2),
-      turbo::StatusOr<int>(turbo::InvalidArgumentError("msg")),
-      turbo::StatusOr<int>(turbo::InternalError("msg"))};
+  std::array<turbo::Result<int>, kNumCases> group1 = {
+      turbo::Result<int>(1), turbo::Result<int>(2),
+      turbo::Result<int>(turbo::invalid_argument_error("msg")),
+      turbo::Result<int>(turbo::internal_error("msg"))};
+  std::array<turbo::Result<int>, kNumCases> group2 = {
+      turbo::Result<int>(1), turbo::Result<int>(2),
+      turbo::Result<int>(turbo::invalid_argument_error("msg")),
+      turbo::Result<int>(turbo::internal_error("msg"))};
   for (size_t i = 0; i < kNumCases; ++i) {
     for (size_t j = 0; j < kNumCases; ++j) {
       if (i == j) {
@@ -1486,28 +1486,28 @@ struct MyType {
 
 enum class ConvTraits { kNone = 0, kImplicit = 1, kExplicit = 2 };
 
-// This class has conversion operator to `StatusOr<T>` based on value of
+// This class has conversion operator to `Result<T>` based on value of
 // `conv_traits`.
 template <typename T, ConvTraits conv_traits = ConvTraits::kNone>
-struct StatusOrConversionBase {};
+struct ResultConversionBase {};
 
 template <typename T>
-struct StatusOrConversionBase<T, ConvTraits::kImplicit> {
-  operator turbo::StatusOr<T>() const& {  // NOLINT
-    return turbo::InvalidArgumentError("conversion to turbo::StatusOr");
+struct ResultConversionBase<T, ConvTraits::kImplicit> {
+  operator turbo::Result<T>() const& {  // NOLINT
+    return turbo::invalid_argument_error("conversion to turbo::Result");
   }
-  operator turbo::StatusOr<T>() && {  // NOLINT
-    return turbo::InvalidArgumentError("conversion to turbo::StatusOr");
+  operator turbo::Result<T>() && {  // NOLINT
+    return turbo::invalid_argument_error("conversion to turbo::Result");
   }
 };
 
 template <typename T>
-struct StatusOrConversionBase<T, ConvTraits::kExplicit> {
-  explicit operator turbo::StatusOr<T>() const& {
-    return turbo::InvalidArgumentError("conversion to turbo::StatusOr");
+struct ResultConversionBase<T, ConvTraits::kExplicit> {
+  explicit operator turbo::Result<T>() const& {
+    return turbo::invalid_argument_error("conversion to turbo::Result");
   }
-  explicit operator turbo::StatusOr<T>() && {
-    return turbo::InvalidArgumentError("conversion to turbo::StatusOr");
+  explicit operator turbo::Result<T>() && {
+    return turbo::invalid_argument_error("conversion to turbo::Result");
   }
 };
 
@@ -1538,25 +1538,25 @@ struct StatusConversionBase {};
 template <>
 struct StatusConversionBase<ConvTraits::kImplicit> {
   operator turbo::Status() const& {  // NOLINT
-    return turbo::InternalError("conversion to Status");
+    return turbo::internal_error("conversion to Status");
   }
   operator turbo::Status() && {  // NOLINT
-    return turbo::InternalError("conversion to Status");
+    return turbo::internal_error("conversion to Status");
   }
 };
 
 template <>
 struct StatusConversionBase<ConvTraits::kExplicit> {
   explicit operator turbo::Status() const& {  // NOLINT
-    return turbo::InternalError("conversion to Status");
+    return turbo::internal_error("conversion to Status");
   }
   explicit operator turbo::Status() && {  // NOLINT
-    return turbo::InternalError("conversion to Status");
+    return turbo::internal_error("conversion to Status");
   }
 };
 
 static constexpr int kConvToStatus = 1;
-static constexpr int kConvToStatusOr = 2;
+static constexpr int kConvToResult = 2;
 static constexpr int kConvToT = 4;
 static constexpr int kConvExplicit = 8;
 
@@ -1568,246 +1568,246 @@ constexpr ConvTraits GetConvTraits(int bit, int config) {
 }
 
 // This class conditionally has conversion operator to `turbo::Status`, `T`,
-// `StatusOr<T>`, based on values of the template parameters.
+// `Result<T>`, based on values of the template parameters.
 template <typename T, int config>
 struct CustomType
-    : StatusOrConversionBase<T, GetConvTraits(kConvToStatusOr, config)>,
+    : ResultConversionBase<T, GetConvTraits(kConvToResult, config)>,
       ConversionBase<T, GetConvTraits(kConvToT, config)>,
       StatusConversionBase<GetConvTraits(kConvToStatus, config)> {};
 
-struct ConvertibleToAnyStatusOr {
+struct ConvertibleToAnyResult {
   template <typename T>
-  operator turbo::StatusOr<T>() const {  // NOLINT
-    return turbo::InvalidArgumentError("Conversion to turbo::StatusOr");
+  operator turbo::Result<T>() const {  // NOLINT
+    return turbo::invalid_argument_error("Conversion to turbo::Result");
   }
 };
 
-// Test the rank of overload resolution for `StatusOr<T>` constructor and
+// Test the rank of overload resolution for `Result<T>` constructor and
 // assignment, from highest to lowest:
 // 1. T/Status
-// 2. U that has conversion operator to turbo::StatusOr<T>
+// 2. U that has conversion operator to turbo::Result<T>
 // 3. U that is convertible to Status
 // 4. U that is convertible to T
-TEST(StatusOr, ConstructionFromT) {
-  // Construct turbo::StatusOr<T> from T when T is convertible to
-  // turbo::StatusOr<T>
+TEST(Result, ConstructionFromT) {
+  // Construct turbo::Result<T> from T when T is convertible to
+  // turbo::Result<T>
   {
-    ConvertibleToAnyStatusOr v;
-    turbo::StatusOr<ConvertibleToAnyStatusOr> statusor(v);
+    ConvertibleToAnyResult v;
+    turbo::Result<ConvertibleToAnyResult> statusor(v);
     EXPECT_TRUE(statusor.ok());
   }
   {
-    ConvertibleToAnyStatusOr v;
-    turbo::StatusOr<ConvertibleToAnyStatusOr> statusor = v;
+    ConvertibleToAnyResult v;
+    turbo::Result<ConvertibleToAnyResult> statusor = v;
     EXPECT_TRUE(statusor.ok());
   }
-  // Construct turbo::StatusOr<T> from T when T is explicitly convertible to
+  // Construct turbo::Result<T> from T when T is explicitly convertible to
   // Status
   {
     CustomType<MyType, kConvToStatus | kConvExplicit> v;
-    turbo::StatusOr<CustomType<MyType, kConvToStatus | kConvExplicit>> statusor(
+    turbo::Result<CustomType<MyType, kConvToStatus | kConvExplicit>> statusor(
         v);
     EXPECT_TRUE(statusor.ok());
   }
   {
     CustomType<MyType, kConvToStatus | kConvExplicit> v;
-    turbo::StatusOr<CustomType<MyType, kConvToStatus | kConvExplicit>> statusor =
+    turbo::Result<CustomType<MyType, kConvToStatus | kConvExplicit>> statusor =
         v;
     EXPECT_TRUE(statusor.ok());
   }
 }
 
-// Construct turbo::StatusOr<T> from U when U is explicitly convertible to T
-TEST(StatusOr, ConstructionFromTypeConvertibleToT) {
+// Construct turbo::Result<T> from U when U is explicitly convertible to T
+TEST(Result, ConstructionFromTypeConvertibleToT) {
   {
     CustomType<MyType, kConvToT | kConvExplicit> v;
-    turbo::StatusOr<MyType> statusor(v);
+    turbo::Result<MyType> statusor(v);
     EXPECT_TRUE(statusor.ok());
   }
   {
     CustomType<MyType, kConvToT> v;
-    turbo::StatusOr<MyType> statusor = v;
+    turbo::Result<MyType> statusor = v;
     EXPECT_TRUE(statusor.ok());
   }
 }
 
-// Construct turbo::StatusOr<T> from U when U has explicit conversion operator to
-// turbo::StatusOr<T>
-TEST(StatusOr, ConstructionFromTypeWithConversionOperatorToStatusOrT) {
+// Construct turbo::Result<T> from U when U has explicit conversion operator to
+// turbo::Result<T>
+TEST(Result, ConstructionFromTypeWithConversionOperatorToResultT) {
   {
-    CustomType<MyType, kConvToStatusOr | kConvExplicit> v;
-    turbo::StatusOr<MyType> statusor(v);
-    EXPECT_EQ(statusor, v.operator turbo::StatusOr<MyType>());
+    CustomType<MyType, kConvToResult | kConvExplicit> v;
+    turbo::Result<MyType> statusor(v);
+    EXPECT_EQ(statusor, v.operator turbo::Result<MyType>());
   }
   {
-    CustomType<MyType, kConvToT | kConvToStatusOr | kConvExplicit> v;
-    turbo::StatusOr<MyType> statusor(v);
-    EXPECT_EQ(statusor, v.operator turbo::StatusOr<MyType>());
+    CustomType<MyType, kConvToT | kConvToResult | kConvExplicit> v;
+    turbo::Result<MyType> statusor(v);
+    EXPECT_EQ(statusor, v.operator turbo::Result<MyType>());
   }
   {
-    CustomType<MyType, kConvToStatusOr | kConvToStatus | kConvExplicit> v;
-    turbo::StatusOr<MyType> statusor(v);
-    EXPECT_EQ(statusor, v.operator turbo::StatusOr<MyType>());
+    CustomType<MyType, kConvToResult | kConvToStatus | kConvExplicit> v;
+    turbo::Result<MyType> statusor(v);
+    EXPECT_EQ(statusor, v.operator turbo::Result<MyType>());
   }
   {
     CustomType<MyType,
-               kConvToT | kConvToStatusOr | kConvToStatus | kConvExplicit>
+               kConvToT | kConvToResult | kConvToStatus | kConvExplicit>
         v;
-    turbo::StatusOr<MyType> statusor(v);
-    EXPECT_EQ(statusor, v.operator turbo::StatusOr<MyType>());
+    turbo::Result<MyType> statusor(v);
+    EXPECT_EQ(statusor, v.operator turbo::Result<MyType>());
   }
   {
-    CustomType<MyType, kConvToStatusOr> v;
-    turbo::StatusOr<MyType> statusor = v;
-    EXPECT_EQ(statusor, v.operator turbo::StatusOr<MyType>());
+    CustomType<MyType, kConvToResult> v;
+    turbo::Result<MyType> statusor = v;
+    EXPECT_EQ(statusor, v.operator turbo::Result<MyType>());
   }
   {
-    CustomType<MyType, kConvToT | kConvToStatusOr> v;
-    turbo::StatusOr<MyType> statusor = v;
-    EXPECT_EQ(statusor, v.operator turbo::StatusOr<MyType>());
+    CustomType<MyType, kConvToT | kConvToResult> v;
+    turbo::Result<MyType> statusor = v;
+    EXPECT_EQ(statusor, v.operator turbo::Result<MyType>());
   }
   {
-    CustomType<MyType, kConvToStatusOr | kConvToStatus> v;
-    turbo::StatusOr<MyType> statusor = v;
-    EXPECT_EQ(statusor, v.operator turbo::StatusOr<MyType>());
+    CustomType<MyType, kConvToResult | kConvToStatus> v;
+    turbo::Result<MyType> statusor = v;
+    EXPECT_EQ(statusor, v.operator turbo::Result<MyType>());
   }
   {
-    CustomType<MyType, kConvToT | kConvToStatusOr | kConvToStatus> v;
-    turbo::StatusOr<MyType> statusor = v;
-    EXPECT_EQ(statusor, v.operator turbo::StatusOr<MyType>());
+    CustomType<MyType, kConvToT | kConvToResult | kConvToStatus> v;
+    turbo::Result<MyType> statusor = v;
+    EXPECT_EQ(statusor, v.operator turbo::Result<MyType>());
   }
 }
 
-TEST(StatusOr, ConstructionFromTypeConvertibleToStatus) {
+TEST(Result, ConstructionFromTypeConvertibleToStatus) {
   // Construction fails because conversion to `Status` is explicit.
   {
     CustomType<MyType, kConvToStatus | kConvExplicit> v;
-    turbo::StatusOr<MyType> statusor(v);
+    turbo::Result<MyType> statusor(v);
     EXPECT_FALSE(statusor.ok());
     EXPECT_EQ(statusor.status(), static_cast<turbo::Status>(v));
   }
   {
     CustomType<MyType, kConvToT | kConvToStatus | kConvExplicit> v;
-    turbo::StatusOr<MyType> statusor(v);
+    turbo::Result<MyType> statusor(v);
     EXPECT_FALSE(statusor.ok());
     EXPECT_EQ(statusor.status(), static_cast<turbo::Status>(v));
   }
   {
     CustomType<MyType, kConvToStatus> v;
-    turbo::StatusOr<MyType> statusor = v;
+    turbo::Result<MyType> statusor = v;
     EXPECT_FALSE(statusor.ok());
     EXPECT_EQ(statusor.status(), static_cast<turbo::Status>(v));
   }
   {
     CustomType<MyType, kConvToT | kConvToStatus> v;
-    turbo::StatusOr<MyType> statusor = v;
+    turbo::Result<MyType> statusor = v;
     EXPECT_FALSE(statusor.ok());
     EXPECT_EQ(statusor.status(), static_cast<turbo::Status>(v));
   }
 }
 
-TEST(StatusOr, AssignmentFromT) {
-  // Assign to turbo::StatusOr<T> from T when T is convertible to
-  // turbo::StatusOr<T>
+TEST(Result, AssignmentFromT) {
+  // Assign to turbo::Result<T> from T when T is convertible to
+  // turbo::Result<T>
   {
-    ConvertibleToAnyStatusOr v;
-    turbo::StatusOr<ConvertibleToAnyStatusOr> statusor;
+    ConvertibleToAnyResult v;
+    turbo::Result<ConvertibleToAnyResult> statusor;
     statusor = v;
     EXPECT_TRUE(statusor.ok());
   }
-  // Assign to turbo::StatusOr<T> from T when T is convertible to Status
+  // Assign to turbo::Result<T> from T when T is convertible to Status
   {
     CustomType<MyType, kConvToStatus> v;
-    turbo::StatusOr<CustomType<MyType, kConvToStatus>> statusor;
+    turbo::Result<CustomType<MyType, kConvToStatus>> statusor;
     statusor = v;
     EXPECT_TRUE(statusor.ok());
   }
 }
 
-TEST(StatusOr, AssignmentFromTypeConvertibleToT) {
-  // Assign to turbo::StatusOr<T> from U when U is convertible to T
+TEST(Result, AssignmentFromTypeConvertibleToT) {
+  // Assign to turbo::Result<T> from U when U is convertible to T
   {
     CustomType<MyType, kConvToT> v;
-    turbo::StatusOr<MyType> statusor;
+    turbo::Result<MyType> statusor;
     statusor = v;
     EXPECT_TRUE(statusor.ok());
   }
 }
 
-TEST(StatusOr, AssignmentFromTypeWithConversionOperatortoStatusOrT) {
-  // Assign to turbo::StatusOr<T> from U when U has conversion operator to
-  // turbo::StatusOr<T>
+TEST(Result, AssignmentFromTypeWithConversionOperatortoResultT) {
+  // Assign to turbo::Result<T> from U when U has conversion operator to
+  // turbo::Result<T>
   {
-    CustomType<MyType, kConvToStatusOr> v;
-    turbo::StatusOr<MyType> statusor;
+    CustomType<MyType, kConvToResult> v;
+    turbo::Result<MyType> statusor;
     statusor = v;
-    EXPECT_EQ(statusor, v.operator turbo::StatusOr<MyType>());
+    EXPECT_EQ(statusor, v.operator turbo::Result<MyType>());
   }
   {
-    CustomType<MyType, kConvToT | kConvToStatusOr> v;
-    turbo::StatusOr<MyType> statusor;
+    CustomType<MyType, kConvToT | kConvToResult> v;
+    turbo::Result<MyType> statusor;
     statusor = v;
-    EXPECT_EQ(statusor, v.operator turbo::StatusOr<MyType>());
+    EXPECT_EQ(statusor, v.operator turbo::Result<MyType>());
   }
   {
-    CustomType<MyType, kConvToStatusOr | kConvToStatus> v;
-    turbo::StatusOr<MyType> statusor;
+    CustomType<MyType, kConvToResult | kConvToStatus> v;
+    turbo::Result<MyType> statusor;
     statusor = v;
-    EXPECT_EQ(statusor, v.operator turbo::StatusOr<MyType>());
+    EXPECT_EQ(statusor, v.operator turbo::Result<MyType>());
   }
   {
-    CustomType<MyType, kConvToT | kConvToStatusOr | kConvToStatus> v;
-    turbo::StatusOr<MyType> statusor;
+    CustomType<MyType, kConvToT | kConvToResult | kConvToStatus> v;
+    turbo::Result<MyType> statusor;
     statusor = v;
-    EXPECT_EQ(statusor, v.operator turbo::StatusOr<MyType>());
+    EXPECT_EQ(statusor, v.operator turbo::Result<MyType>());
   }
 }
 
-TEST(StatusOr, AssignmentFromTypeConvertibleToStatus) {
-  // Assign to turbo::StatusOr<T> from U when U is convertible to Status
+TEST(Result, AssignmentFromTypeConvertibleToStatus) {
+  // Assign to turbo::Result<T> from U when U is convertible to Status
   {
     CustomType<MyType, kConvToStatus> v;
-    turbo::StatusOr<MyType> statusor;
+    turbo::Result<MyType> statusor;
     statusor = v;
     EXPECT_FALSE(statusor.ok());
     EXPECT_EQ(statusor.status(), static_cast<turbo::Status>(v));
   }
   {
     CustomType<MyType, kConvToT | kConvToStatus> v;
-    turbo::StatusOr<MyType> statusor;
+    turbo::Result<MyType> statusor;
     statusor = v;
     EXPECT_FALSE(statusor.ok());
     EXPECT_EQ(statusor.status(), static_cast<turbo::Status>(v));
   }
 }
 
-TEST(StatusOr, StatusAssignmentFromStatusError) {
-  turbo::StatusOr<turbo::Status> statusor;
-  statusor.AssignStatus(turbo::CancelledError());
+TEST(Result, StatusAssignmentFromStatusError) {
+  turbo::Result<turbo::Status> statusor;
+  statusor.AssignStatus(turbo::cancelled_error());
 
   EXPECT_FALSE(statusor.ok());
-  EXPECT_EQ(statusor.status(), turbo::CancelledError());
+  EXPECT_EQ(statusor.status(), turbo::cancelled_error());
 }
 
 #if GTEST_HAS_DEATH_TEST
-TEST(StatusOr, StatusAssignmentFromStatusOk) {
+TEST(Result, StatusAssignmentFromStatusOk) {
   EXPECT_DEBUG_DEATH(
       {
-        turbo::StatusOr<turbo::Status> statusor;
+        turbo::Result<turbo::Status> statusor;
         // This will DKCHECK.
-        statusor.AssignStatus(turbo::OkStatus());
+        statusor.AssignStatus(turbo::ok_status());
         // In optimized mode, we are actually going to get error::INTERNAL for
         // status here, rather than crashing, so check that.
         EXPECT_FALSE(statusor.ok());
         EXPECT_EQ(statusor.status().code(), turbo::StatusCode::kInternal);
       },
-      "An OK status is not a valid constructor argument to StatusOr<T>");
+      "An OK status is not a valid constructor argument to Result<T>");
 }
 #endif
 
-TEST(StatusOr, StatusAssignmentFromTypeConvertibleToStatus) {
+TEST(Result, StatusAssignmentFromTypeConvertibleToStatus) {
   CustomType<MyType, kConvToStatus> v;
-  turbo::StatusOr<MyType> statusor;
+  turbo::Result<MyType> statusor;
   statusor.AssignStatus(v);
 
   EXPECT_FALSE(statusor.ok());
@@ -1825,16 +1825,16 @@ struct PrintTestStruct {
   }
 };
 
-TEST(StatusOr, OkPrinting) {
-  turbo::StatusOr<PrintTestStruct> print_me = PrintTestStruct{};
+TEST(Result, OkPrinting) {
+  turbo::Result<PrintTestStruct> print_me = PrintTestStruct{};
   std::stringstream stream;
   stream << print_me;
   EXPECT_EQ(stream.str(), "ostream");
-  EXPECT_EQ(turbo::StrCat(print_me), "stringify");
+  EXPECT_EQ(turbo::str_cat(print_me), "stringify");
 }
 
-TEST(StatusOr, ErrorPrinting) {
-  turbo::StatusOr<PrintTestStruct> print_me = turbo::UnknownError("error");
+TEST(Result, ErrorPrinting) {
+  turbo::Result<PrintTestStruct> print_me = turbo::unknown_error("error");
   std::stringstream stream;
   stream << print_me;
   const auto error_matcher =
@@ -1842,7 +1842,7 @@ TEST(StatusOr, ErrorPrinting) {
             AnyOf(AllOf(StartsWith("("), EndsWith(")")),
                   AllOf(StartsWith("["), EndsWith("]"))));
   EXPECT_THAT(stream.str(), error_matcher);
-  EXPECT_THAT(turbo::StrCat(print_me), error_matcher);
+  EXPECT_THAT(turbo::str_cat(print_me), error_matcher);
 }
 
 #if KUMO_HAVE_BUILTIN_LINE_FILE
@@ -1853,7 +1853,7 @@ TEST(StatusOr, ErrorPrinting) {
 
 template <typename T>
 void CheckSourceLocation(
-    const turbo::StatusOr<T>& status_or, std::vector<int> lines = {},
+    const turbo::Result<T>& status_or, std::vector<int> lines = {},
     turbo::SourceLocation loc = turbo::SourceLocation::current()) {
   ASSERT_EQ(status_or.GetSourceLocations().size(), lines.size())
       << "Size check failed at " << loc.line();
@@ -1866,196 +1866,196 @@ void CheckSourceLocation(
   }
 }
 
-TEST(StatusOr, AddSourceLocation) {
+TEST(Result, add_source_location) {
   constexpr int kMaxIter = 10;
   {
     // Status that ignores source location.
-    turbo::StatusOr<int> status_ignores_source_location[] = {
+    turbo::Result<int> status_ignores_source_location[] = {
         123, turbo::Status(turbo::StatusCode::kInternal, "")};
-    for (turbo::StatusOr<int>& s : status_ignores_source_location) {
+    for (turbo::Result<int>& s : status_ignores_source_location) {
       for (int i = 0; i < kMaxIter; ++i) {
-        s.AddSourceLocation(turbo::SourceLocation::current());
-        s.AddSourceLocation(turbo::SourceLocation());
+        s.add_source_location(turbo::SourceLocation::current());
+        s.add_source_location(turbo::SourceLocation());
       }
       CheckSourceLocation(s);
     }
   }
   {
-    // Default SourceLocation is not added.
-    turbo::StatusOr<int> status = turbo::Status(
+    // Default turbo::SourceLocation is not added.
+    turbo::Result<int> status = turbo::Status(
         turbo::StatusCode::kInternal, "foo", turbo::SourceLocation::current());
     int line = GET_SOURCE_LOCATION(1);
     for (int i = 0; i < kMaxIter; ++i) {
-      status.AddSourceLocation(turbo::SourceLocation());
+      status.add_source_location(turbo::SourceLocation());
     }
     CheckSourceLocation(status, {line});
   }
   {
-    // Default SourceLocation is not added.
-    turbo::StatusOr<int> status = turbo::Status(
+    // Default turbo::SourceLocation is not added.
+    turbo::Result<int> status = turbo::Status(
         turbo::StatusCode::kInternal, "foo", turbo::SourceLocation::current());
     int line = GET_SOURCE_LOCATION(1);
     std::vector<int> lines = {line};
     lines.reserve(1 + kMaxIter);
     for (int i = 0; i < kMaxIter; ++i) {
-      status.AddSourceLocation(turbo::SourceLocation::current());
+      status.add_source_location(turbo::SourceLocation::current());
       lines.push_back(GET_SOURCE_LOCATION(1));
     }
     CheckSourceLocation(status, lines);
   }
 }
 
-turbo::StatusOr<int>&& IsRvalueStatus(turbo::StatusOr<int>&& s) {
+turbo::Result<int>&& IsRvalueStatus(turbo::Result<int>&& s) {
   return std::move(s);
 }
 
-TEST(StatusOr, WithSourceLocationMove) {
-  turbo::StatusOr<int> original = turbo::Status(
+TEST(Result, WithSourceLocationMove) {
+  turbo::Result<int> original = turbo::Status(
       turbo::StatusCode::kInternal, "message", turbo::SourceLocation::current());
   int line = GET_SOURCE_LOCATION(1);
 
-  const turbo::StatusOr<int> status_or = IsRvalueStatus(
-      std::move(original).WithSourceLocation(turbo::SourceLocation::current()));
+  const turbo::Result<int> status_or = IsRvalueStatus(
+      std::move(original).with_source_location(turbo::SourceLocation::current()));
   int line2 = GET_SOURCE_LOCATION(1);
 
   CheckSourceLocation(status_or, {line, line2});
   EXPECT_FALSE(status_or.ok());
 }
 
-TEST(StatusOr, WithSourceLocationReturn) {
+TEST(Result, WithSourceLocationReturn) {
   turbo::SourceLocation loc1 = turbo::SourceLocation::current();
   int line1 = GET_SOURCE_LOCATION(1);
   turbo::SourceLocation loc2 = turbo::SourceLocation::current();
   int line2 = GET_SOURCE_LOCATION(1);
 
-  const auto return_error = [&loc1]() -> turbo::StatusOr<int> {
-    return turbo::InvalidArgumentError("I am error", loc1);
+  const auto return_error = [&loc1]() -> turbo::Result<int> {
+    return turbo::invalid_argument_error("I am error", loc1);
   };
   const auto return_error_with_source_location =
-      [&return_error, &loc2]() -> turbo::StatusOr<int> {
-    return return_error().WithSourceLocation(loc2);
+      [&return_error, &loc2]() -> turbo::Result<int> {
+    return return_error().with_source_location(loc2);
   };
 
-  turbo::StatusOr<int> status_or = return_error_with_source_location();
+  turbo::Result<int> status_or = return_error_with_source_location();
   CheckSourceLocation(status_or, {line1, line2});
   EXPECT_FALSE(status_or.ok());
 }
 
-TEST(StatusOr, SupportsReferenceTypes) {
+TEST(Result, SupportsReferenceTypes) {
   int i = 1;
-  turbo::StatusOr<int&> s = i;
+  turbo::Result<int&> s = i;
   EXPECT_EQ(&i, &*s);
   *s = 10;
   EXPECT_EQ(i, 10);
 }
 
-TEST(StatusOr, ReferenceFromStatus) {
+TEST(Result, ReferenceFromStatus) {
   int i = 10;
-  turbo::StatusOr<int&> s = i;
-  s = turbo::InternalError("foo");
+  turbo::Result<int&> s = i;
+  s = turbo::internal_error("foo");
   EXPECT_EQ(s.status().message(), "foo");
 
-  turbo::StatusOr<int&> s2 = turbo::InternalError("foo2");
+  turbo::Result<int&> s2 = turbo::internal_error("foo2");
   EXPECT_EQ(s2.status().message(), "foo2");
 }
 
-TEST(StatusOr, SupportReferenceValueConstructor) {
+TEST(Result, SupportReferenceValueConstructor) {
   int i = 1;
-  turbo::StatusOr<int&> s = i;
-  turbo::StatusOr<const int&> cs = i;
-  turbo::StatusOr<const int&> cs2 = std::move(i);  // `T&&` to `const T&` is ok.
+  turbo::Result<int&> s = i;
+  turbo::Result<const int&> cs = i;
+  turbo::Result<const int&> cs2 = std::move(i);  // `T&&` to `const T&` is ok.
 
   EXPECT_EQ(&i, &*s);
   EXPECT_EQ(&i, &*cs);
 
   Derived d;
-  turbo::StatusOr<const Base1&> b = d;
+  turbo::Result<const Base1&> b = d;
   EXPECT_EQ(&d, &*b);
 
   // We disallow constructions that cause temporaries.
-  EXPECT_FALSE((std::is_constructible_v<turbo::StatusOr<const int&>, double>));
+  EXPECT_FALSE((std::is_constructible_v<turbo::Result<const int&>, double>));
   EXPECT_FALSE(
-      (std::is_constructible_v<turbo::StatusOr<const int&>, const double&>));
+      (std::is_constructible_v<turbo::Result<const int&>, const double&>));
   EXPECT_FALSE(
-      (std::is_constructible_v<turbo::StatusOr<const std::string_view&>,
+      (std::is_constructible_v<turbo::Result<const std::string_view&>,
                                std::string>));
 
   // We disallow constructions with wrong reference.
-  EXPECT_FALSE((std::is_constructible_v<turbo::StatusOr<int&>, int&&>));
-  EXPECT_FALSE((std::is_constructible_v<turbo::StatusOr<int&>, const int&>));
+  EXPECT_FALSE((std::is_constructible_v<turbo::Result<int&>, int&&>));
+  EXPECT_FALSE((std::is_constructible_v<turbo::Result<int&>, const int&>));
 }
 
-TEST(StatusOr, SupportReferenceConvertingConstructor) {
+TEST(Result, SupportReferenceConvertingConstructor) {
   int i = 1;
-  turbo::StatusOr<int&> s = i;
-  turbo::StatusOr<const int&> cs = s;
+  turbo::Result<int&> s = i;
+  turbo::Result<const int&> cs = s;
 
   EXPECT_EQ(&i, &*s);
   EXPECT_EQ(&i, &*cs);
 
   // The other direction is not allowed.
-  EXPECT_FALSE((std::is_constructible_v<turbo::StatusOr<int&>,
-                                        turbo::StatusOr<const int&>>));
+  EXPECT_FALSE((std::is_constructible_v<turbo::Result<int&>,
+                                        turbo::Result<const int&>>));
 
   Derived d;
-  turbo::StatusOr<const Base1&> b = turbo::StatusOr<const Derived&>(d);
+  turbo::Result<const Base1&> b = turbo::Result<const Derived&>(d);
   EXPECT_EQ(&d, &*b);
 
   // The other direction is not allowed.
-  EXPECT_FALSE((std::is_constructible_v<turbo::StatusOr<const Derived&>,
-                                        turbo::StatusOr<const Base1&>>));
+  EXPECT_FALSE((std::is_constructible_v<turbo::Result<const Derived&>,
+                                        turbo::Result<const Base1&>>));
 
   // We disallow conversions that cause temporaries.
-  EXPECT_FALSE((std::is_constructible_v<turbo::StatusOr<const int&>,
-                                        turbo::StatusOr<int>>));
-  EXPECT_FALSE((std::is_constructible_v<turbo::StatusOr<const int&>,
-                                        turbo::StatusOr<double>>));
-  EXPECT_FALSE((std::is_constructible_v<turbo::StatusOr<const int&>,
-                                        turbo::StatusOr<const double&>>));
-  EXPECT_FALSE((std::is_constructible_v<turbo::StatusOr<const double&>,
-                                        turbo::StatusOr<const int&>>));
+  EXPECT_FALSE((std::is_constructible_v<turbo::Result<const int&>,
+                                        turbo::Result<int>>));
+  EXPECT_FALSE((std::is_constructible_v<turbo::Result<const int&>,
+                                        turbo::Result<double>>));
+  EXPECT_FALSE((std::is_constructible_v<turbo::Result<const int&>,
+                                        turbo::Result<const double&>>));
+  EXPECT_FALSE((std::is_constructible_v<turbo::Result<const double&>,
+                                        turbo::Result<const int&>>));
   EXPECT_FALSE(
-      (std::is_constructible_v<turbo::StatusOr<const std::string_view&>,
-                               turbo::StatusOr<std::string>>));
+      (std::is_constructible_v<turbo::Result<const std::string_view&>,
+                               turbo::Result<std::string>>));
 
   // We disallow constructions with wrong reference.
-  EXPECT_FALSE((std::is_constructible_v<turbo::StatusOr<int&>,
-                                        turbo::StatusOr<const int&>>));
+  EXPECT_FALSE((std::is_constructible_v<turbo::Result<int&>,
+                                        turbo::Result<const int&>>));
 }
 
-TEST(StatusOr, SupportReferenceValueAssignment) {
+TEST(Result, SupportReferenceValueAssignment) {
   int i = 1;
-  turbo::StatusOr<int&> s = i;
-  turbo::StatusOr<const int&> cs;
+  turbo::Result<int&> s = i;
+  turbo::Result<const int&> cs;
   cs = i;
-  turbo::StatusOr<const int&> cs2;
+  turbo::Result<const int&> cs2;
   cs2 = std::move(i);  // `T&&` to `const T&` is ok.
 
   EXPECT_EQ(&i, &*s);
   EXPECT_EQ(&i, &*cs);
 
   Derived d;
-  turbo::StatusOr<const Base1&> b;
+  turbo::Result<const Base1&> b;
   b = d;
   EXPECT_EQ(&d, &*b);
 
   // We disallow constructions that cause temporaries.
-  EXPECT_FALSE((std::is_assignable_v<turbo::StatusOr<const int&>, double>));
+  EXPECT_FALSE((std::is_assignable_v<turbo::Result<const int&>, double>));
   EXPECT_FALSE(
-      (std::is_assignable_v<turbo::StatusOr<const int&>, const double&>));
-  EXPECT_FALSE((std::is_assignable_v<turbo::StatusOr<const std::string_view&>,
+      (std::is_assignable_v<turbo::Result<const int&>, const double&>));
+  EXPECT_FALSE((std::is_assignable_v<turbo::Result<const std::string_view&>,
                                      std::string>));
 
   // We disallow constructions with wrong reference.
-  EXPECT_FALSE((std::is_assignable_v<turbo::StatusOr<int&>, int&&>));
-  EXPECT_FALSE((std::is_assignable_v<turbo::StatusOr<int&>, const int&>));
+  EXPECT_FALSE((std::is_assignable_v<turbo::Result<int&>, int&&>));
+  EXPECT_FALSE((std::is_assignable_v<turbo::Result<int&>, const int&>));
 }
 
-TEST(StatusOr, SupportReferenceConvertingAssignment) {
+TEST(Result, SupportReferenceConvertingAssignment) {
   int i = 1;
-  turbo::StatusOr<int&> s;
+  turbo::Result<int&> s;
   s = i;
-  turbo::StatusOr<const int&> cs;
+  turbo::Result<const int&> cs;
   cs = s;
 
   EXPECT_EQ(&i, &*s);
@@ -2063,85 +2063,85 @@ TEST(StatusOr, SupportReferenceConvertingAssignment) {
 
   // The other direction is not allowed.
   EXPECT_FALSE(
-      (std::is_assignable_v<turbo::StatusOr<int&>, turbo::StatusOr<const int&>>));
+      (std::is_assignable_v<turbo::Result<int&>, turbo::Result<const int&>>));
 
   Derived d;
-  turbo::StatusOr<const Base1&> b;
-  b = turbo::StatusOr<const Derived&>(d);
+  turbo::Result<const Base1&> b;
+  b = turbo::Result<const Derived&>(d);
   EXPECT_EQ(&d, &*b);
 
   // The other direction is not allowed.
-  EXPECT_FALSE((std::is_assignable_v<turbo::StatusOr<const Derived&>,
-                                     turbo::StatusOr<const Base1&>>));
+  EXPECT_FALSE((std::is_assignable_v<turbo::Result<const Derived&>,
+                                     turbo::Result<const Base1&>>));
 
   // We disallow conversions that cause temporaries.
-  EXPECT_FALSE((std::is_assignable_v<turbo::StatusOr<const int&>,
-                                     turbo::StatusOr<const double&>>));
-  EXPECT_FALSE((std::is_assignable_v<turbo::StatusOr<const int&>,
-                                     turbo::StatusOr<double>>));
-  EXPECT_FALSE((std::is_assignable_v<turbo::StatusOr<const std::string_view&>,
-                                     turbo::StatusOr<std::string>>));
+  EXPECT_FALSE((std::is_assignable_v<turbo::Result<const int&>,
+                                     turbo::Result<const double&>>));
+  EXPECT_FALSE((std::is_assignable_v<turbo::Result<const int&>,
+                                     turbo::Result<double>>));
+  EXPECT_FALSE((std::is_assignable_v<turbo::Result<const std::string_view&>,
+                                     turbo::Result<std::string>>));
 
   // We disallow constructions with wrong reference.
   EXPECT_FALSE(
-      (std::is_assignable_v<turbo::StatusOr<int&>, turbo::StatusOr<const int&>>));
+      (std::is_assignable_v<turbo::Result<int&>, turbo::Result<const int&>>));
 }
 
-TEST(StatusOr, SupportReferenceToNonReferenceConversions) {
+TEST(Result, SupportReferenceToNonReferenceConversions) {
   int i = 17;
-  turbo::StatusOr<int&> si = i;
-  turbo::StatusOr<float> sf = si;
+  turbo::Result<int&> si = i;
+  turbo::Result<float> sf = si;
   EXPECT_THAT(sf, IsOkAndHolds(17.));
 
   i = 20;
   sf = si;
   EXPECT_THAT(sf, IsOkAndHolds(20.));
 
-  EXPECT_THAT(turbo::StatusOr<int64_t>(turbo::StatusOr<int&>(i)),
+  EXPECT_THAT(turbo::Result<int64_t>(turbo::Result<int&>(i)),
               IsOkAndHolds(20));
-  EXPECT_THAT(turbo::StatusOr<int64_t>(turbo::StatusOr<const int&>(i)),
+  EXPECT_THAT(turbo::Result<int64_t>(turbo::Result<const int&>(i)),
               IsOkAndHolds(20));
 
   std::string str = "str";
-  turbo::StatusOr<std::string> sos = turbo::StatusOr<std::string&>(str);
+  turbo::Result<std::string> sos = turbo::Result<std::string&>(str);
   EXPECT_THAT(sos, IsOkAndHolds("str"));
   str = "str2";
   EXPECT_THAT(sos, IsOkAndHolds("str"));
-  sos = turbo::StatusOr<std::string&>(str);
+  sos = turbo::Result<std::string&>(str);
   EXPECT_THAT(sos, IsOkAndHolds("str2"));
 
-  turbo::StatusOr<std::string_view> sosv = turbo::StatusOr<std::string&>(str);
+  turbo::Result<std::string_view> sosv = turbo::Result<std::string&>(str);
   EXPECT_THAT(sosv, IsOkAndHolds("str2"));
   str = "str3";
-  sosv = turbo::StatusOr<std::string&>(str);
+  sosv = turbo::Result<std::string&>(str);
   EXPECT_THAT(sosv, IsOkAndHolds("str3"));
 
   std::string_view view = "view";
   // This way it is constructible, but not convertible because
   // std::string_view->string is explicit
   EXPECT_THAT(
-      turbo::StatusOr<std::string>(turbo::StatusOr<std::string_view&>(view)),
+      turbo::Result<std::string>(turbo::Result<std::string_view&>(view)),
       IsOkAndHolds("view"));
   // The assignment doesn't work with normal std::string_view because
   // std::string doesn't know about it.
-  sos = turbo::StatusOr<std::string_view&>(view);
+  sos = turbo::Result<std::string_view&>(view);
   EXPECT_THAT(sos, IsOkAndHolds("view"));
 
-  EXPECT_FALSE((std::is_convertible_v<turbo::StatusOr<std::string_view&>,
-                                      turbo::StatusOr<std::string>>));
+  EXPECT_FALSE((std::is_convertible_v<turbo::Result<std::string_view&>,
+                                      turbo::Result<std::string>>));
 }
 
-TEST(StatusOr, ReferenceOperatorStarAndArrow) {
+TEST(Result, ReferenceOperatorStarAndArrow) {
   std::string str = "Foo";
-  turbo::StatusOr<std::string&> s = str;
+  turbo::Result<std::string&> s = str;
   s->assign("Bar");
   EXPECT_EQ(str, "Bar");
 
   *s = "Baz";
   EXPECT_EQ(str, "Baz");
 
-  const turbo::StatusOr<std::string&> cs = str;
-  // Even if the StatusOr is const, the reference it gives is non-const so we
+  const turbo::Result<std::string&> cs = str;
+  // Even if the Result is const, the reference it gives is non-const so we
   // can still assign.
   *cs = "Finally";
   EXPECT_EQ(str, "Finally");
@@ -2151,17 +2151,17 @@ TEST(StatusOr, ReferenceOperatorStarAndArrow) {
   EXPECT_EQ(str, "");
 }
 
-TEST(StatusOr, ReferenceValueOr) {
+TEST(Result, ReferenceValueOr) {
   int i = 17;
-  turbo::StatusOr<int&> si = i;
+  turbo::Result<int&> si = i;
 
   int other = 20;
   EXPECT_EQ(&i, &si.value_or(other));
 
-  si = turbo::UnknownError("");
+  si = turbo::unknown_error("");
   EXPECT_EQ(&other, &si.value_or(other));
 
-  turbo::StatusOr<const int&> csi = i;
+  turbo::Result<const int&> csi = i;
   EXPECT_EQ(&i, &csi.value_or(1));
 
   const auto value_or_call = [](auto&& sor, auto&& v)
@@ -2169,18 +2169,18 @@ TEST(StatusOr, ReferenceValueOr) {
           std::forward<decltype(v)>(v))) {};
   using Probe = decltype(value_or_call);
   // Just to verify that Probe works as expected in the good cases.
-  EXPECT_TRUE((std::is_invocable_v<Probe, turbo::StatusOr<const int&>, int&&>));
+  EXPECT_TRUE((std::is_invocable_v<Probe, turbo::Result<const int&>, int&&>));
   // Causes temporary conversion.
   EXPECT_FALSE(
-      (std::is_invocable_v<Probe, turbo::StatusOr<const int&>, double&&>));
+      (std::is_invocable_v<Probe, turbo::Result<const int&>, double&&>));
   // Const invalid.
-  EXPECT_FALSE((std::is_invocable_v<Probe, turbo::StatusOr<int&>, const int&>));
+  EXPECT_FALSE((std::is_invocable_v<Probe, turbo::Result<int&>, const int&>));
 }
 
-TEST(StatusOr, ReferenceAssignmentFromStatusOr) {
+TEST(Result, ReferenceAssignmentFromResult) {
   std::vector<int> v = {1, 2, 3};
-  turbo::StatusOr<int&> si = v[0];
-  turbo::StatusOr<int&> si2 = v[1];
+  turbo::Result<int&> si = v[0];
+  turbo::Result<int&> si2 = v[1];
 
   EXPECT_THAT(v, ElementsAre(1, 2, 3));
   EXPECT_THAT(si, IsOkAndHolds(1));
@@ -2194,9 +2194,9 @@ TEST(StatusOr, ReferenceAssignmentFromStatusOr) {
   EXPECT_EQ(&*si, &*si2);
 }
 
-TEST(StatusOr, ReferenceAssignFromReference) {
+TEST(Result, ReferenceAssignFromReference) {
   std::vector<int> v = {1, 2, 3};
-  turbo::StatusOr<int&> si = v[0];
+  turbo::Result<int&> si = v[0];
 
   EXPECT_THAT(v, ElementsAre(1, 2, 3));
   EXPECT_THAT(si, IsOkAndHolds(1));
@@ -2208,14 +2208,14 @@ TEST(StatusOr, ReferenceAssignFromReference) {
   EXPECT_EQ(&*si, &v[2]);
 }
 
-TEST(StatusOr, ReferenceIsNotLifetimeBoundForStarValue) {
+TEST(Result, ReferenceIsNotLifetimeBoundForStarValue) {
   int i = 0;
 
   // op*/value should not be LIFETIME_BOUND because the ref is not limited to
-  // the lifetime of the StatusOr.
-  int& r = *turbo::StatusOr<int&>(i);
+  // the lifetime of the Result.
+  int& r = *turbo::Result<int&>(i);
   EXPECT_EQ(&r, &i);
-  int& r2 = turbo::StatusOr<int&>(i).value();
+  int& r2 = turbo::Result<int&>(i).value();
   EXPECT_EQ(&r2, &i);
 
   struct S {
@@ -2223,7 +2223,7 @@ TEST(StatusOr, ReferenceIsNotLifetimeBoundForStarValue) {
   };
   S s;
   // op-> should also not be LIFETIME_BOUND for refs.
-  int& r3 = turbo::StatusOr<S&>(s)->i;
+  int& r3 = turbo::Result<S&>(s)->i;
   EXPECT_EQ(&r3, &s.i);
 }
 
@@ -2233,31 +2233,31 @@ void TestReferenceDeref() {
   static_assert(std::is_same_v<Expected, decltype(std::declval<T>().value())>);
 }
 
-TEST(StatusOr, ReferenceTypeIsMaintainedOnDeref) {
-  TestReferenceDeref<int&, turbo::StatusOr<int&>&>();
-  TestReferenceDeref<int&, turbo::StatusOr<int&>&&>();
-  TestReferenceDeref<int&, const turbo::StatusOr<int&>&>();
-  TestReferenceDeref<int&, const turbo::StatusOr<int&>&&>();
+TEST(Result, ReferenceTypeIsMaintainedOnDeref) {
+  TestReferenceDeref<int&, turbo::Result<int&>&>();
+  TestReferenceDeref<int&, turbo::Result<int&>&&>();
+  TestReferenceDeref<int&, const turbo::Result<int&>&>();
+  TestReferenceDeref<int&, const turbo::Result<int&>&&>();
 
-  TestReferenceDeref<const int&, turbo::StatusOr<const int&>&>();
-  TestReferenceDeref<const int&, turbo::StatusOr<const int&>&&>();
-  TestReferenceDeref<const int&, const turbo::StatusOr<const int&>&>();
-  TestReferenceDeref<const int&, const turbo::StatusOr<const int&>&&>();
+  TestReferenceDeref<const int&, turbo::Result<const int&>&>();
+  TestReferenceDeref<const int&, turbo::Result<const int&>&&>();
+  TestReferenceDeref<const int&, const turbo::Result<const int&>&>();
+  TestReferenceDeref<const int&, const turbo::Result<const int&>&&>();
 
   struct Struct {
     int value;
   };
   EXPECT_TRUE(
       (std::is_same_v<
-          int&, decltype((std::declval<turbo::StatusOr<Struct&>>()->value))>));
+          int&, decltype((std::declval<turbo::Result<Struct&>>()->value))>));
   EXPECT_TRUE(
       (std::is_same_v<
           int&,
-          decltype((std::declval<const turbo::StatusOr<Struct&>>()->value))>));
+          decltype((std::declval<const turbo::Result<Struct&>>()->value))>));
   EXPECT_TRUE(
       (std::is_same_v<
           const int&,
-          decltype((std::declval<turbo::StatusOr<const Struct&>>()->value))>));
+          decltype((std::declval<turbo::Result<const Struct&>>()->value))>));
 }
 
 }  // namespace

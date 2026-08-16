@@ -17,14 +17,17 @@
 
 configure_file(${PROJECT_SOURCE_DIR}/tests/config.h.in ${PROJECT_SOURCE_DIR}/tests/config.h @ONLY)
 
-find_package(GTest REQUIRED)
+if (NOT TARGET GTest::gtest)
+    find_package(GTest REQUIRED)
+endif ()
+
 
 add_subdirectory(algorithm)
 add_subdirectory(base)
 add_subdirectory(bits)
 add_subdirectory(cctz)
 add_subdirectory(cleanup)
-add_subdirectory(container)
+add_subdirectory(cli)
 add_subdirectory(cord)
 add_subdirectory(crc)
 add_subdirectory(debugging)
@@ -37,10 +40,9 @@ add_subdirectory(macros)
 add_subdirectory(memory)
 add_subdirectory(meta)
 add_subdirectory(numeric)
-add_subdirectory(random)
 add_subdirectory(status)
 add_subdirectory(strings)
-#add_subdirectory(synchronization)
+add_subdirectory(test_utils)
 add_subdirectory(time)
 add_subdirectory(types)
 

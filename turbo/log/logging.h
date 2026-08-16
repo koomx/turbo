@@ -259,7 +259,7 @@
 //   ZCHECK_GE(a, b, "fmt");
 //   ZCHECK_GT(a, b, "fmt");
 //
-//   ZCHECK_OK(status, "fmt");               // validates a turbo::Status/StatusOr
+//   ZCHECK_OK(status, "fmt");               // validates a turbo::Status/Result
 //   ZCHECK_STREQ(argv[0], "./skynet", "fmt");
 //   ZCHECK_STRNE(s1, s2, "fmt");
 //   ZCHECK_STRCASEEQ(s1, s2, "fmt");        // case-insensitive

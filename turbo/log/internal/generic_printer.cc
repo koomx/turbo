@@ -29,7 +29,7 @@ namespace turbo {
     namespace internal_generic_printer {
         // Out-of-line helper for PrintAsStringWithEscaping.
         std::ostream &PrintEscapedString(std::ostream &os, std::string_view v) {
-            return os << "\"" << turbo::CHexEscape(v) << "\"";
+            return os << "\"" << turbo::c_hex_escape(v) << "\"";
         }
 
         // Retuns a string representation of 'v', shortened if possible.

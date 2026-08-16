@@ -20,6 +20,7 @@
 #include <cstring>
 #include <string>
 
+#include <turbo/strings/strip.h>
 #include <gtest/gtest.h>
 #include <turbo/macros/config.h>
 #include <string_view>
@@ -194,17 +195,17 @@ TEST(AsciiStrTo, Lower) {
   std::string mutable_str("_`?@[{AMNOPQRSTUVWXYZ");
   auto fun = []() -> std::string { return "PQRSTU"; };
 
-  EXPECT_EQ("abcdef", turbo::AsciiStrToLower(buf));
-  EXPECT_EQ("ghijkl", turbo::AsciiStrToLower(str));
-  EXPECT_EQ("mnopqr", turbo::AsciiStrToLower(sp));
-  EXPECT_EQ("abcdefghijklmnopqrstuvwxyz1!a", turbo::AsciiStrToLower(long_str));
-  EXPECT_EQ("pqrstu", turbo::AsciiStrToLower(fun()));
+  EXPECT_EQ("abcdef", turbo::str_to_lower(buf));
+  EXPECT_EQ("ghijkl", turbo::str_to_lower(str));
+  EXPECT_EQ("mnopqr", turbo::str_to_lower(sp));
+  EXPECT_EQ("abcdefghijklmnopqrstuvwxyz1!a", turbo::str_to_lower(long_str));
+  EXPECT_EQ("pqrstu", turbo::str_to_lower(fun()));
 
   // An empty `string_view` specifically exercises the case where a null data
   // pointer is passed to internal functions.
-  EXPECT_EQ("", turbo::AsciiStrToLower(std::string_view()));
+  EXPECT_EQ("", turbo::str_to_lower(std::string_view()));
 
-  turbo::AsciiStrToLower(&mutable_str);
+  turbo::str_to_lower(&mutable_str);
   EXPECT_EQ("_`?@[{amnopqrstuvwxyz", mutable_str);
 
   char mutable_buf[] = "Mutable";
@@ -221,15 +222,15 @@ TEST(AsciiStrTo, Upper) {
   const std::string long_str("abcdefghijklmnopqrstuvwxyz1!A");
   auto fun = []() -> std::string { return "pqrstu"; };
 
-  EXPECT_EQ("ABCDEF", turbo::AsciiStrToUpper(buf));
-  EXPECT_EQ("GHIJKL", turbo::AsciiStrToUpper(str));
-  EXPECT_EQ("_`?@[{AMNOPQRSTUVWXYZ", turbo::AsciiStrToUpper(sp));
-  EXPECT_EQ("ABCDEFGHIJKLMNOPQRSTUVWXYZ1!A", turbo::AsciiStrToUpper(long_str));
-  EXPECT_EQ("PQRSTU", turbo::AsciiStrToUpper(fun()));
+  EXPECT_EQ("ABCDEF", turbo::str_to_upper(buf));
+  EXPECT_EQ("GHIJKL", turbo::str_to_upper(str));
+  EXPECT_EQ("_`?@[{AMNOPQRSTUVWXYZ", turbo::str_to_upper(sp));
+  EXPECT_EQ("ABCDEFGHIJKLMNOPQRSTUVWXYZ1!A", turbo::str_to_upper(long_str));
+  EXPECT_EQ("PQRSTU", turbo::str_to_upper(fun()));
 
   // An empty `string_view` specifically exercises the case where a null data
   // pointer is passed to internal functions.
-  EXPECT_EQ("", turbo::AsciiStrToUpper(std::string_view()));
+  EXPECT_EQ("", turbo::str_to_upper(std::string_view()));
 
   char mutable_buf[] = "Mutable";
   std::transform(mutable_buf, mutable_buf + strlen(mutable_buf),
@@ -237,110 +238,110 @@ TEST(AsciiStrTo, Upper) {
   EXPECT_STREQ("MUTABLE", mutable_buf);
 }
 
-TEST(StripLeadingAsciiWhitespace, FromStringView) {
+TEST(trim_left, FromStringView) {
   EXPECT_EQ(std::string_view{},
-            turbo::StripLeadingAsciiWhitespace(std::string_view{}));
-  EXPECT_EQ("foo", turbo::StripLeadingAsciiWhitespace({"foo"}));
-  EXPECT_EQ("foo", turbo::StripLeadingAsciiWhitespace({"\t  \n\f\r\n\vfoo"}));
+            turbo::trim_left(std::string_view{}));
+  EXPECT_EQ("foo", turbo::trim_left({"foo"}));
+  EXPECT_EQ("foo", turbo::trim_left({"\t  \n\f\r\n\vfoo"}));
   EXPECT_EQ("foo foo\n ",
-            turbo::StripLeadingAsciiWhitespace({"\t  \n\f\r\n\vfoo foo\n "}));
-  EXPECT_EQ(std::string_view{}, turbo::StripLeadingAsciiWhitespace(
+            turbo::trim_left({"\t  \n\f\r\n\vfoo foo\n "}));
+  EXPECT_EQ(std::string_view{}, turbo::trim_left(
                                      {"\t  \n\f\r\v\n\t  \n\f\r\v\n"}));
 }
 
-TEST(StripLeadingAsciiWhitespace, InPlace) {
+TEST(trim_left, InPlace) {
   std::string str;
 
-  turbo::StripLeadingAsciiWhitespace(&str);
+  turbo::trim_left(&str);
   EXPECT_EQ("", str);
 
   str = "foo";
-  turbo::StripLeadingAsciiWhitespace(&str);
+  turbo::trim_left(&str);
   EXPECT_EQ("foo", str);
 
   str = "\t  \n\f\r\n\vfoo";
-  turbo::StripLeadingAsciiWhitespace(&str);
+  turbo::trim_left(&str);
   EXPECT_EQ("foo", str);
 
   str = "\t  \n\f\r\n\vfoo foo\n ";
-  turbo::StripLeadingAsciiWhitespace(&str);
+  turbo::trim_left(&str);
   EXPECT_EQ("foo foo\n ", str);
 
   str = "\t  \n\f\r\v\n\t  \n\f\r\v\n";
-  turbo::StripLeadingAsciiWhitespace(&str);
+  turbo::trim_left(&str);
   EXPECT_EQ(std::string_view{}, str);
 }
 
-TEST(StripTrailingAsciiWhitespace, FromStringView) {
+TEST(trim_right, FromStringView) {
   EXPECT_EQ(std::string_view{},
-            turbo::StripTrailingAsciiWhitespace(std::string_view{}));
-  EXPECT_EQ("foo", turbo::StripTrailingAsciiWhitespace({"foo"}));
-  EXPECT_EQ("foo", turbo::StripTrailingAsciiWhitespace({"foo\t  \n\f\r\n\v"}));
+            turbo::trim_right(std::string_view{}));
+  EXPECT_EQ("foo", turbo::trim_right({"foo"}));
+  EXPECT_EQ("foo", turbo::trim_right({"foo\t  \n\f\r\n\v"}));
   EXPECT_EQ(" \nfoo foo",
-            turbo::StripTrailingAsciiWhitespace({" \nfoo foo\t  \n\f\r\n\v"}));
-  EXPECT_EQ(std::string_view{}, turbo::StripTrailingAsciiWhitespace(
+            turbo::trim_right({" \nfoo foo\t  \n\f\r\n\v"}));
+  EXPECT_EQ(std::string_view{}, turbo::trim_right(
                                      {"\t  \n\f\r\v\n\t  \n\f\r\v\n"}));
 }
 
-TEST(StripTrailingAsciiWhitespace, InPlace) {
+TEST(trim_right, InPlace) {
   std::string str;
 
-  turbo::StripTrailingAsciiWhitespace(&str);
+  turbo::trim_right(&str);
   EXPECT_EQ("", str);
 
   str = "foo";
-  turbo::StripTrailingAsciiWhitespace(&str);
+  turbo::trim_right(&str);
   EXPECT_EQ("foo", str);
 
   str = "foo\t  \n\f\r\n\v";
-  turbo::StripTrailingAsciiWhitespace(&str);
+  turbo::trim_right(&str);
   EXPECT_EQ("foo", str);
 
   str = " \nfoo foo\t  \n\f\r\n\v";
-  turbo::StripTrailingAsciiWhitespace(&str);
+  turbo::trim_right(&str);
   EXPECT_EQ(" \nfoo foo", str);
 
   str = "\t  \n\f\r\v\n\t  \n\f\r\v\n";
-  turbo::StripTrailingAsciiWhitespace(&str);
+  turbo::trim_right(&str);
   EXPECT_EQ(std::string_view{}, str);
 }
 
-TEST(StripAsciiWhitespace, FromStringView) {
+TEST(trim_all, FromStringView) {
   EXPECT_EQ(std::string_view{},
-            turbo::StripAsciiWhitespace(std::string_view{}));
-  EXPECT_EQ("foo", turbo::StripAsciiWhitespace({"foo"}));
+            turbo::trim_all(std::string_view{}));
+  EXPECT_EQ("foo", turbo::trim_all({"foo"}));
   EXPECT_EQ("foo",
-            turbo::StripAsciiWhitespace({"\t  \n\f\r\n\vfoo\t  \n\f\r\n\v"}));
-  EXPECT_EQ("foo foo", turbo::StripAsciiWhitespace(
+            turbo::trim_all({"\t  \n\f\r\n\vfoo\t  \n\f\r\n\v"}));
+  EXPECT_EQ("foo foo", turbo::trim_all(
                            {"\t  \n\f\r\n\vfoo foo\t  \n\f\r\n\v"}));
   EXPECT_EQ(std::string_view{},
-            turbo::StripAsciiWhitespace({"\t  \n\f\r\v\n\t  \n\f\r\v\n"}));
+            turbo::trim_all({"\t  \n\f\r\v\n\t  \n\f\r\v\n"}));
 }
 
-TEST(StripAsciiWhitespace, InPlace) {
+TEST(trim_all, InPlace) {
   std::string str;
 
-  turbo::StripAsciiWhitespace(&str);
+  turbo::trim_all(&str);
   EXPECT_EQ("", str);
 
   str = "foo";
-  turbo::StripAsciiWhitespace(&str);
+  turbo::trim_all(&str);
   EXPECT_EQ("foo", str);
 
   str = "\t  \n\f\r\n\vfoo\t  \n\f\r\n\v";
-  turbo::StripAsciiWhitespace(&str);
+  turbo::trim_all(&str);
   EXPECT_EQ("foo", str);
 
   str = "\t  \n\f\r\n\vfoo foo\t  \n\f\r\n\v";
-  turbo::StripAsciiWhitespace(&str);
+  turbo::trim_all(&str);
   EXPECT_EQ("foo foo", str);
 
   str = "\t  \n\f\r\v\n\t  \n\f\r\v\n";
-  turbo::StripAsciiWhitespace(&str);
+  turbo::trim_all(&str);
   EXPECT_EQ(std::string_view{}, str);
 }
 
-TEST(RemoveExtraAsciiWhitespace, InPlace) {
+TEST(trim_in_place, InPlace) {
   const char* inputs[] = {"No extra space",
                           "  Leading whitespace",
                           "Trailing whitespace  ",
@@ -366,7 +367,7 @@ TEST(RemoveExtraAsciiWhitespace, InPlace) {
 
   for (int i = 0; i < NUM_TESTS; i++) {
     std::string s(inputs[i]);
-    turbo::RemoveExtraAsciiWhitespace(&s);
+    turbo::trim_in_place(&s);
     EXPECT_EQ(outputs[i], s);
   }
 }

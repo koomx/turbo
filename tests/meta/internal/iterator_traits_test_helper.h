@@ -91,7 +91,7 @@ struct std::iterator_traits<
 
 #if defined(__cpp_lib_concepts)
 static_assert(
-    std::forward_iterator<turbo::base_internal::Cpp20ForwardZipIterator<int*>>);
+    std::forward_iterator<turbo::meta_internal::Cpp20ForwardZipIterator<int*>>);
 #endif  // defined(__cpp_lib_concepts)
 
 #endif  // TURBO_BASE_INTERNAL_ITERATOR_TRAITS_TEST_HELPER_H_

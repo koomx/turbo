@@ -20,8 +20,6 @@
 #include <vector>
 
 #include <turbo/base/internal/raw_logging.h>
-#include <turbo/random/distributions.h>
-#include <turbo/random/random.h>
 #include <turbo/strings/numbers.h>
 #include <string_view>
 #include "benchmark/benchmark.h"
@@ -265,13 +263,12 @@ BENCHMARK_TEMPLATE(BM_SimpleAtod, std::string)
     ->ArgPair(10, 8);
 
 void BM_FastHexToBufferZeroPad16(benchmark::State& state) {
-  turbo::BitGen rng;
+  std::mt19937 rng;
   std::vector<uint64_t> nums;
   nums.resize(1000);
-  auto min = std::numeric_limits<uint64_t>::min();
-  auto max = std::numeric_limits<uint64_t>::max();
+  std::uniform_int_distribution<uint64_t> dist;
   for (auto& num : nums) {
-    num = turbo::LogUniform(rng, min, max);
+    num = dist(rng);
   }
 
   char buf[16];

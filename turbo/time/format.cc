@@ -17,7 +17,7 @@
 #include <cctype>
 #include <cstdint>
 #include <utility>
-
+#include <turbo/strings/strip.h>
 #include <turbo/strings/ascii.h>
 #include <turbo/strings/match.h>
 #include <string_view>
@@ -107,12 +107,12 @@ bool ParseTime(std::string_view format, std::string_view input,
       {kInfiniteFutureStr, InfiniteFuture()},
       {kInfinitePastStr, InfinitePast()},
   };
-  input = StripLeadingAsciiWhitespace(input);
+  input = trim_left(input);
   for (const auto& lit : kLiterals) {
-    if (turbo::StartsWith(input, lit.name)) {
+    if (turbo::starts_with(input, lit.name)) {
       std::string_view tail = input.substr(lit.name.size());
       // The trailing portion must be empty or whitespace.
-      if (StripLeadingAsciiWhitespace(tail).empty()) {
+      if (trim_left(tail).empty()) {
         *time = lit.value;
         return true;
       }
@@ -133,11 +133,11 @@ bool ParseTime(std::string_view format, std::string_view input,
 }
 
 // Functions required to support turbo::Time flags.
-bool TurboParseFlag(std::string_view text, turbo::Time* t, std::string* error) {
+bool turbo_parse_flag(std::string_view text, turbo::Time* t, std::string* error) {
   return turbo::ParseTime(RFC3339_full, text, turbo::UTCTimeZone(), t, error);
 }
 
-std::string TurboUnparseFlag(turbo::Time t) {
+std::string turbo_unparse_flag(turbo::Time t) {
   return turbo::FormatTime(RFC3339_full, t, turbo::UTCTimeZone());
 }
 

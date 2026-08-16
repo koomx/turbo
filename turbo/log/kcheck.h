@@ -153,7 +153,7 @@
   TURBO_LOG_INTERNAL_DCHECK_GT_IMPL((val1), #val1, (val2), #val2)
 
 // `KCHECK_OK` and friends validate that the provided `turbo::Status` or
-// `turbo::StatusOr<T>` is OK.  If it isn't, they print a failure message that
+// `turbo::Result<T>` is OK.  If it isn't, they print a failure message that
 // includes the actual status and terminate the program.
 //
 // As with all `DKCHECK` variants, `DKCHECK` has no effect (not even

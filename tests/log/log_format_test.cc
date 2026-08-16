@@ -82,7 +82,7 @@ TEST(LogFormatTest, NoMessage) {
 
   EXPECT_CALL(test_sink,
               send(AllOf(TextMessage(MatchesOstream(ComparisonStream())),
-                         TextPrefix(AsString(EndsWith(turbo::StrCat(
+                         TextPrefix(AsString(EndsWith(turbo::str_cat(
                              " log_format_test.cc:", log_line, "] ")))),
                          TextMessage(IsEmpty()),
                          ENCODED_MESSAGE(HasValues(IsEmpty())))));
@@ -297,7 +297,7 @@ TEST(SourceLocationTest, str_printf_to) {
   EXPECT_CALL(test_sink, send).Times(0);
 
   turbo::SourceLocation loc = turbo::SourceLocation::current();
-  std::string expected = turbo::StrCat(__FILE__, ":", __LINE__ - 1);
+  std::string expected = turbo::str_cat(__FILE__, ":", __LINE__ - 1);
 
   EXPECT_CALL(test_sink, send(AllOf(TextMessage(Eq(expected)),
                                     ENCODED_MESSAGE(HasValues(ElementsAre(
@@ -1252,7 +1252,7 @@ TEST(LogFormatTest, TurboStringifyExample) {
 
   EXPECT_CALL(
       test_sink,
-      send(AllOf(TextMessage(Eq("(10, 20)")), TextMessage(Eq(turbo::StrCat(p))),
+      send(AllOf(TextMessage(Eq("(10, 20)")), TextMessage(Eq(turbo::str_cat(p))),
                  ENCODED_MESSAGE(
                      HasValues(ElementsAre(ValueWithStr(Eq("(10, 20)"))))))));
 
@@ -1284,7 +1284,7 @@ TEST(LogFormatTest, CustomWithTurboStringifyAndOstream) {
 
   EXPECT_CALL(
       test_sink,
-      send(AllOf(TextMessage(Eq("(10, 20)")), TextMessage(Eq(turbo::StrCat(p))),
+      send(AllOf(TextMessage(Eq("(10, 20)")), TextMessage(Eq(turbo::str_cat(p))),
                  ENCODED_MESSAGE(
                      HasValues(ElementsAre(ValueWithStr(Eq("(10, 20)"))))))));
 
@@ -1309,7 +1309,7 @@ TEST(LogFormatTest, TurboStringifyStreamsNothing) {
   EXPECT_CALL(
       test_sink,
       send(AllOf(
-          TextMessage(Eq("77")), TextMessage(Eq(turbo::StrCat(p, 77))),
+          TextMessage(Eq("77")), TextMessage(Eq(turbo::str_cat(p, 77))),
           ENCODED_MESSAGE(HasValues(ElementsAre(ValueWithStr(Eq("77"))))))));
 
   test_sink.StartCapturingLogs();
@@ -1320,7 +1320,7 @@ struct PointMultipleAppend {
   template <typename Sink>
   friend void turbo_stringify(Sink& sink, const PointMultipleAppend& p) {
     sink.Append("(");
-    sink.Append(turbo::StrCat(p.x, ", ", p.y, ")"));
+    sink.Append(turbo::str_cat(p.x, ", ", p.y, ")"));
   }
 
   int x = 10;
@@ -1335,7 +1335,7 @@ TEST(LogFormatTest, TurboStringifyMultipleAppend) {
 
   EXPECT_CALL(
       test_sink,
-      send(AllOf(TextMessage(Eq("(10, 20)")), TextMessage(Eq(turbo::StrCat(p))),
+      send(AllOf(TextMessage(Eq("(10, 20)")), TextMessage(Eq(turbo::str_cat(p))),
                  ENCODED_MESSAGE(HasValues(ElementsAre(
                      ValueWithStr(Eq("(")), ValueWithStr(Eq("10, 20)"))))))));
 
@@ -2011,7 +2011,7 @@ TEST(ManipulatorLogFormatTest, IOManipsDoNotAffectTurboStringify) {
 
   EXPECT_CALL(
       test_sink,
-      send(AllOf(TextMessage(Eq("(10, 20)")), TextMessage(Eq(turbo::StrCat(p))),
+      send(AllOf(TextMessage(Eq("(10, 20)")), TextMessage(Eq(turbo::str_cat(p))),
                  ENCODED_MESSAGE(
                      HasValues(ElementsAre(ValueWithStr(Eq("(10, 20)"))))))));
 

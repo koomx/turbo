@@ -41,8 +41,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <turbo/macros/config.h>
-#include <turbo/container/flat_hash_map.h>
-#include <turbo/container/flat_hash_set.h>
 #include <tests/hash/hash_testing.h>
 #include <tests/hash/internal/hash_test.h>
 #include <tests/hash/internal/spy_hash_state.h>
@@ -59,8 +57,6 @@
 namespace {
 
 using ::turbo::Hash;
-using ::turbo::container_internal::hashtable_debug_internal::
-    HashtableDebugAccess;
 using ::turbo::hash_internal::SpyHashState;
 using ::turbo::hash_test_internal::is_hashable;
 using ::turbo::hash_test_internal::TypeErasedContainer;
@@ -408,7 +404,7 @@ TEST(HashValueTest, TestIntrinsicInt128) {
   EXPECT_TRUE((is_hashable<__int128_t>::value));
   EXPECT_TRUE((is_hashable<__uint128_t>::value));
 
-  turbo::flat_hash_map<size_t, int> hash_to_index;
+  std::unordered_map<size_t, int> hash_to_index;
   std::vector<__uint128_t> values;
   for (int i = 0; i < 128; ++i) {
     // Some arbitrary pattern to check if changing each bit changes the hash.
@@ -557,6 +553,15 @@ TEST(HashValueTest, U32StringView) {
 TEST(HashValueTest, StdFilesystemPath) {
 #ifndef TURBO_INTERNAL_STD_FILESYSTEM_PATH_HASH_AVAILABLE
   GTEST_SKIP() << "std::filesystem::path is unavailable on this platform";
+#elif defined(_WIN32)
+  // MSVC/STL path equality and iteration differ from libstdc++/libc++ for
+  // mixed '/' '\\' and drive-root forms; keep a small unambiguous subset.
+  EXPECT_TRUE((is_hashable<std::filesystem::path>::value));
+  EXPECT_TRUE(turbo::VerifyTypeImplementsTurboHashCorrectly(std::make_tuple(
+      std::filesystem::path(), std::filesystem::path("a"),
+      std::filesystem::path("a/b"), std::filesystem::path("a/c"),
+      std::filesystem::path("b/a"), std::filesystem::path("c:/a"),
+      std::filesystem::path("d:/a"))));
 #else
   EXPECT_TRUE((is_hashable<std::filesystem::path>::value));
 
@@ -1143,14 +1148,6 @@ TEST(HashTest, TypeErased) {
 
   EXPECT_EQ(SpyHash(std::make_pair(TypeErasedValue<size_t>(7), 17)),
             SpyHash(std::make_pair(size_t{7}, 17)));
-
-  turbo::flat_hash_set<turbo::flat_hash_set<int>> ss = {{1, 2}, {3, 4}};
-  TypeErasedContainer<turbo::flat_hash_set<turbo::flat_hash_set<int>>> es = {
-      turbo::flat_hash_set<int>{1, 2}, {3, 4}};
-  turbo::flat_hash_set<TypeErasedContainer<turbo::flat_hash_set<int>>> se = {
-      {1, 2}, {3, 4}};
-  EXPECT_EQ(SpyHash(ss), SpyHash(es));
-  EXPECT_EQ(SpyHash(ss), SpyHash(se));
 }
 
 struct ValueWithBoolConversion {
@@ -1286,54 +1283,5 @@ TEST(PrecombineLengthMix, ShortStringCollision) {
   }
 }
 
-// Test that we don't cause excessive collisions on the hash table for
-// doubles in the range [-1024, 1024]. See cl/773069881 for more information.
-TEST(SwisstableCollisions, DoubleRange) {
-  turbo::flat_hash_set<double> set;
-  for (double t = -1024.0; t < 1024.0; t += 1.0) {
-    set.insert(t);
-    ASSERT_LT(HashtableDebugAccess<decltype(set)>::GetNumProbes(set, t), 64)
-        << t;
-  }
-}
-
-// Test that for each pair of adjacent bytes in a string, if there's only
-// entropy in those two bytes, then we don't have excessive collisions.
-TEST(SwisstableCollisions, LowEntropyStrings) {
-  constexpr char kMinChar = 0;
-  constexpr char kMaxChar = 64;
-  // These sizes cover the different hashing cases.
-  for (size_t size : {8u, 16u, 32u, 64u, 128u}) {
-    for (size_t b = 0; b < size - 1; ++b) {
-      turbo::flat_hash_set<std::string> set;
-      std::string s(size, '\0');
-      for (char c1 = kMinChar; c1 < kMaxChar; ++c1) {
-        for (char c2 = kMinChar; c2 < kMaxChar; ++c2) {
-          s[b] = c1;
-          s[b + 1] = c2;
-          set.insert(s);
-          ASSERT_LT(HashtableDebugAccess<decltype(set)>::GetNumProbes(set, s),
-                    64)
-              << "size: " << size << "; bit: " << b;
-        }
-      }
-    }
-  }
-}
-
-// Test that we don't have excessive collisions when keys are consecutive
-// integers rotated by N bits.
-TEST(SwisstableCollisions, LowEntropyInts) {
-  constexpr int kSizeTBits = sizeof(size_t) * 8;
-  for (int bit = 0; bit < kSizeTBits; ++bit) {
-    turbo::flat_hash_set<size_t> set;
-    for (size_t i = 0; i < 128 * 1024; ++i) {
-      size_t v = turbo::rotl(i, bit);
-      set.insert(v);
-      ASSERT_LT(HashtableDebugAccess<decltype(set)>::GetNumProbes(set, v), 48)
-          << bit << " " << i;
-    }
-  }
-}
 
 }  // namespace

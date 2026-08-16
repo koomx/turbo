@@ -37,4 +37,11 @@ foreach (case IN LISTS DBG_TESTS)
             ${KMCMAKE_DEPS_LINK}
     )
 endforeach ()
+
+# MSVC dbghelp needs PDB debug info to resolve symbols (same as Abseil).
+if (MSVC AND TARGET dbg_symbolize_test)
+    target_compile_options(dbg_symbolize_test PRIVATE /Z7)
+    target_link_options(dbg_symbolize_test PRIVATE /DEBUG)
+endif ()
+
 add_subdirectory(internal)

@@ -100,9 +100,9 @@ struct CustomUDT {
   int a;
   int b;
 };
-bool TurboParseFlag(std::string_view in, CustomUDT* f, std::string*) {
+bool turbo_parse_flag(std::string_view in, CustomUDT* f, std::string*) {
   std::vector<std::string_view> parts =
-      turbo::StrSplit(in, ':', turbo::SkipWhitespace());
+      turbo::str_split(in, ':', turbo::SkipWhitespace());
 
   if (parts.size() != 2) return false;
 
@@ -112,8 +112,8 @@ bool TurboParseFlag(std::string_view in, CustomUDT* f, std::string*) {
 
   return true;
 }
-std::string TurboUnparseFlag(const CustomUDT& f) {
-  return turbo::StrCat(f.a, ":", f.b);
+std::string turbo_unparse_flag(const CustomUDT& f) {
+  return turbo::str_cat(f.a, ":", f.b);
 }
 
 }  // namespace
@@ -133,7 +133,7 @@ TURBO_FLAG(float, test_flag_10, 1.234e12f, "");
 TURBO_FLAG(std::string, test_flag_11, "", "");
 TURBO_FLAG(turbo::Duration, test_flag_12, turbo::Minutes(10), "");
 static int counter = 0;
-TURBO_FLAG(int, test_flag_13, 200, "").OnUpdate([]() { counter++; });
+TURBO_FLAG(int, test_flag_13, 200, "").on_update([]() { counter++; });
 TURBO_FLAG(CustomUDT, test_flag_14, {}, "");
 
 namespace {

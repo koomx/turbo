@@ -18,7 +18,7 @@
 // -----------------------------------------------------------------------------
 //
 // This package contains functions for efficiently concatenating and appending
-// strings: `StrCat()` and `StrAppend()`. Most of the work within these routines
+// strings: `str_cat()` and `str_append()`. Most of the work within these routines
 // is actually handled through use of a special AlphaNum type, which was
 // designed to be used as a parameter type that efficiently manages conversion
 // to strings and avoids copies in the above operations.
@@ -52,7 +52,7 @@
 //
 // You can convert to hexadecimal output rather than decimal output using the
 // `Hex` type contained here. To do so, pass `Hex(my_int)` as a parameter to
-// `StrCat()` or `StrAppend()`. You may specify a minimum hex field width using
+// `str_cat()` or `str_append()`. You may specify a minimum hex field width using
 // a `PadSpec` enum.
 //
 // User-defined types can be formatted with the `turbo_stringify()` customization
@@ -70,14 +70,14 @@
 // file and namespace as said type.
 //
 // Note that `turbo_stringify()` also supports use with `turbo::str_sprintf()` and
-// `turbo::Substitute()`.
+// `turbo::substitute()`.
 //
 // Example:
 //
 // struct Point {
 //   // To add formatting support to `Point`, we simply need to add a free
 //   // (non-member) function `turbo_stringify()`. This method specifies how
-//   // Point should be printed when turbo::StrCat() is called on it. You can add
+//   // Point should be printed when turbo::str_cat() is called on it. You can add
 //   // such a free function using a friend declaration within the body of the
 //   // class. The sink parameter is a templated type to avoid requiring
 //   // dependencies.
@@ -107,10 +107,10 @@
 #include <utility>
 #include <vector>
 
-#include <turbo/macros/config.h>
 #include <turbo/base/nullability.h>
-#include <turbo/meta/type_traits.h>
 #include <turbo/format/has_turbo_stringify.h>
+#include <turbo/macros/config.h>
+#include <turbo/meta/type_traits.h>
 #include <turbo/strings/internal/stringify_sink.h>
 #include <turbo/strings/numbers.h>
 #include <turbo/strings/resize_and_overwrite.h>
@@ -118,10 +118,10 @@
 
 namespace turbo {
     namespace strings_internal {
-        // AlphaNumBuffer allows a way to pass a string to StrCat without having to do
+        // AlphaNumBuffer allows a way to pass a string to str_cat without having to do
         // memory allocation.  It is simply a pair of a fixed-size character array, and
         // a size.  Please don't use outside of turbo, yet.
-        template<size_t max_size>
+        template <size_t max_size>
         struct AlphaNumBuffer {
             std::array<char, max_size> data;
             size_t size;
@@ -186,48 +186,47 @@ namespace turbo {
         uint8_t width;
         char fill;
 
-        template<typename Int>
+        template <typename Int>
         explicit Hex(Int v, PadSpec spec = turbo::kNoPad,
-                     std::enable_if_t<sizeof(Int) == 1 && !std::is_pointer_v<Int>,
-                         bool> = true)
+            std::enable_if_t<sizeof(Int) == 1 && !std::is_pointer_v<Int>,
+                bool> = true)
             : Hex(spec, static_cast<uint8_t>(v)) {
         }
 
-        template<typename Int>
+        template <typename Int>
         explicit Hex(Int v, PadSpec spec = turbo::kNoPad,
-                     std::enable_if_t<sizeof(Int) == 2 && !std::is_pointer_v<Int>,
-                         bool> = true)
+            std::enable_if_t<sizeof(Int) == 2 && !std::is_pointer_v<Int>,
+                bool> = true)
             : Hex(spec, static_cast<uint16_t>(v)) {
         }
 
-        template<typename Int>
+        template <typename Int>
         explicit Hex(Int v, PadSpec spec = turbo::kNoPad,
-                     std::enable_if_t<sizeof(Int) == 4 && !std::is_pointer_v<Int>,
-                         bool> = true)
+            std::enable_if_t<sizeof(Int) == 4 && !std::is_pointer_v<Int>,
+                bool> = true)
             : Hex(spec, static_cast<uint32_t>(v)) {
         }
 
-        template<typename Int>
+        template <typename Int>
         explicit Hex(Int v, PadSpec spec = turbo::kNoPad,
-                     std::enable_if_t<sizeof(Int) == 8 && !std::is_pointer_v<Int>,
-                         bool> = true)
+            std::enable_if_t<sizeof(Int) == 8 && !std::is_pointer_v<Int>,
+                bool> = true)
             : Hex(spec, static_cast<uint64_t>(v)) {
         }
 
-        template<typename Pointee>
-        explicit Hex(Pointee * turbo_nullable v, PadSpec spec = turbo::kNoPad)
+        template <typename Pointee>
+        explicit Hex(Pointee* turbo_nullable v, PadSpec spec = turbo::kNoPad)
             : Hex(spec, reinterpret_cast<uintptr_t>(v)) {
         }
 
-        template<typename S>
-        friend void turbo_stringify(S &sink, Hex hex) {
+        template <typename S>
+        friend void turbo_stringify(S& sink, Hex hex) {
             static_assert(
                 format_internal::kFastToBufferSize >= 32,
                 "This function only works when output buffer >= 32 bytes long");
             char buffer[format_internal::kFastToBufferSize];
-            char *const end = &buffer[format_internal::kFastToBufferSize];
-            auto real_width =
-                    turbo::numbers_internal::FastHexToBufferZeroPad16(hex.value, end - 16);
+            char* const end = &buffer[format_internal::kFastToBufferSize];
+            auto real_width = turbo::numbers_internal::FastHexToBufferZeroPad16(hex.value, end - 16);
             if (real_width >= hex.width) {
                 sink.Append(std::string_view(end - real_width, real_width));
             } else {
@@ -242,13 +241,13 @@ namespace turbo {
 
     private:
         Hex(PadSpec spec, uint64_t v)
-            : value(v),
-              width(spec == turbo::kNoPad
-                        ? 1
-                        : spec >= turbo::kSpacePad2
-                              ? spec - turbo::kSpacePad2 + 2
-                              : spec - turbo::kZeroPad2 + 2),
-              fill(spec >= turbo::kSpacePad2 ? ' ' : '0') {
+            : value(v)
+            , width(spec == turbo::kNoPad
+                      ? 1
+                      : spec >= turbo::kSpacePad2
+                      ? spec - turbo::kSpacePad2 + 2
+                      : spec - turbo::kZeroPad2 + 2)
+            , fill(spec >= turbo::kSpacePad2 ? ' ' : '0') {
         }
     };
 
@@ -265,35 +264,36 @@ namespace turbo {
         char fill;
         bool neg;
 
-        template<typename Int>
+        template <typename Int>
         explicit Dec(Int v, PadSpec spec = turbo::kNoPad,
-                     std::enable_if_t<sizeof(Int) <= 8, bool> = true)
+            std::enable_if_t<sizeof(Int) <= 8, bool> = true)
             : value(v >= 0
-                        ? static_cast<uint64_t>(v)
-                        : uint64_t{0} - static_cast<uint64_t>(v)),
-              width(spec == turbo::kNoPad
-                        ? 1
-                        : spec >= turbo::kSpacePad2
-                              ? spec - turbo::kSpacePad2 + 2
-                              : spec - turbo::kZeroPad2 + 2),
-              fill(spec >= turbo::kSpacePad2 ? ' ' : '0'),
-              neg(v < 0) {
+                      ? static_cast<uint64_t>(v)
+                      : uint64_t { 0 } - static_cast<uint64_t>(v))
+            , width(spec == turbo::kNoPad
+                      ? 1
+                      : spec >= turbo::kSpacePad2
+                      ? spec - turbo::kSpacePad2 + 2
+                      : spec - turbo::kZeroPad2 + 2)
+            , fill(spec >= turbo::kSpacePad2 ? ' ' : '0')
+            , neg(v < 0) {
         }
 
-        template<typename S>
-        friend void turbo_stringify(S &sink, Dec dec) {
+        template <typename S>
+        friend void turbo_stringify(S& sink, Dec dec) {
             assert(dec.width <= format_internal::kFastToBufferSize);
             char buffer[format_internal::kFastToBufferSize];
-            char *const end = &buffer[format_internal::kFastToBufferSize];
-            char *const minfill = end - dec.width;
-            char *writer = end;
+            char* const end = &buffer[format_internal::kFastToBufferSize];
+            char* const minfill = end - dec.width;
+            char* writer = end;
             uint64_t val = dec.value;
             while (val > 9) {
                 *--writer = '0' + (val % 10);
                 val /= 10;
             }
             *--writer = '0' + static_cast<char>(val);
-            if (dec.neg) *--writer = '-';
+            if (dec.neg)
+                *--writer = '-';
 
             ptrdiff_t fillers = writer - minfill;
             if (fillers > 0) {
@@ -307,7 +307,8 @@ namespace turbo {
                 }
                 writer -= fillers;
                 std::fill_n(writer, fillers, dec.fill);
-                if (add_sign_again) *--writer = '-';
+                if (add_sign_again)
+                    *--writer = '-';
             }
 
             sink.Append(std::string_view(writer, static_cast<size_t>(end - writer)));
@@ -330,16 +331,14 @@ namespace turbo {
     inline strings_internal::AlphaNumBuffer<format_internal::kFastToBufferSize>
     HighPrecision(float f) {
         strings_internal::AlphaNumBuffer<format_internal::kFastToBufferSize> result;
-        result.size =
-                strlen(format_internal::round_trip_float_to_buffer(f, &result.data[0]));
+        result.size = strlen(format_internal::round_trip_float_to_buffer(f, &result.data[0]));
         return result;
     }
 
     inline strings_internal::AlphaNumBuffer<format_internal::kFastToBufferSize>
     HighPrecision(double d) {
         strings_internal::AlphaNumBuffer<format_internal::kFastToBufferSize> result;
-        result.size =
-                strlen(format_internal::round_trip_double_to_buffer(d, &result.data[0]));
+        result.size = strlen(format_internal::round_trip_double_to_buffer(d, &result.data[0]));
         return result;
     }
 
@@ -347,8 +346,8 @@ namespace turbo {
     // AlphaNum
     // -----------------------------------------------------------------------------
     //
-    // The `AlphaNum` class acts as the main parameter type for `StrCat()` and
-    // `StrAppend()`, providing efficient conversion of numeric, boolean, decimal,
+    // The `AlphaNum` class acts as the main parameter type for `str_cat()` and
+    // `str_append()`, providing efficient conversion of numeric, boolean, decimal,
     // and hexadecimal values (through the `Dec` and `Hex` types) into strings.
     // `AlphaNum` should only be used as a function parameter. Do not instantiate
     //  `AlphaNum` directly as a stack variable.
@@ -359,43 +358,31 @@ namespace turbo {
         // A bool ctor would also convert incoming pointers (bletch).
 
         // Prevent brace initialization
-        template<typename T>
+        template <typename T>
         AlphaNum(std::initializer_list<T>) = delete; // NOLINT(runtime/explicit)
 
         AlphaNum(int x) // NOLINT(runtime/explicit)
-            : piece_(digits_, static_cast<size_t>(
-                         format_internal::fast_int_to_buffer(x, digits_) -
-                         &digits_[0])) {
+            : piece_(digits_, static_cast<size_t>(format_internal::fast_int_to_buffer(x, digits_) - &digits_[0])) {
         }
 
         AlphaNum(unsigned int x) // NOLINT(runtime/explicit)
-            : piece_(digits_, static_cast<size_t>(
-                         format_internal::fast_int_to_buffer(x, digits_) -
-                         &digits_[0])) {
+            : piece_(digits_, static_cast<size_t>(format_internal::fast_int_to_buffer(x, digits_) - &digits_[0])) {
         }
 
         AlphaNum(long x) // NOLINT(*)
-            : piece_(digits_, static_cast<size_t>(
-                         format_internal::fast_int_to_buffer(x, digits_) -
-                         &digits_[0])) {
+            : piece_(digits_, static_cast<size_t>(format_internal::fast_int_to_buffer(x, digits_) - &digits_[0])) {
         }
 
         AlphaNum(unsigned long x) // NOLINT(*)
-            : piece_(digits_, static_cast<size_t>(
-                         format_internal::fast_int_to_buffer(x, digits_) -
-                         &digits_[0])) {
+            : piece_(digits_, static_cast<size_t>(format_internal::fast_int_to_buffer(x, digits_) - &digits_[0])) {
         }
 
         AlphaNum(long long x) // NOLINT(*)
-            : piece_(digits_, static_cast<size_t>(
-                         format_internal::fast_int_to_buffer(x, digits_) -
-                         &digits_[0])) {
+            : piece_(digits_, static_cast<size_t>(format_internal::fast_int_to_buffer(x, digits_) - &digits_[0])) {
         }
 
         AlphaNum(unsigned long long x) // NOLINT(*)
-            : piece_(digits_, static_cast<size_t>(
-                         format_internal::fast_int_to_buffer(x, digits_) -
-                         &digits_[0])) {
+            : piece_(digits_, static_cast<size_t>(format_internal::fast_int_to_buffer(x, digits_) - &digits_[0])) {
         }
 
         AlphaNum(float f) // NOLINT(runtime/explicit)
@@ -406,77 +393,72 @@ namespace turbo {
             : piece_(digits_, format_internal::six_digits_to_buffer(f, digits_)) {
         }
 
-        template<size_t size>
+        template <size_t size>
         AlphaNum( // NOLINT(runtime/explicit)
-            const strings_internal::AlphaNumBuffer<size> &buf
-            KUMO_ATTRIBUTE_LIFETIME_BOUND)
+            const strings_internal::AlphaNumBuffer<size>& buf
+                KUMO_ATTRIBUTE_LIFETIME_BOUND)
             : piece_(&buf.data[0], buf.size) {
         }
 
-        AlphaNum(const char * turbo_nullable c_str // NOLINT(runtime/explicit)
-            KUMO_ATTRIBUTE_LIFETIME_BOUND)
+        AlphaNum(const char* turbo_nullable c_str // NOLINT(runtime/explicit)
+                KUMO_ATTRIBUTE_LIFETIME_BOUND)
             : piece_(NullSafeStringView(c_str)) {
         }
 
         AlphaNum(std::string_view pc // NOLINT(runtime/explicit)
-            KUMO_ATTRIBUTE_LIFETIME_BOUND)
+                KUMO_ATTRIBUTE_LIFETIME_BOUND)
             : piece_(pc) {
         }
 
-        template<typename T, typename = std::enable_if_t<HasTurboStringify<T>::value> >
+        template <typename T, typename = std::enable_if_t<HasTurboStringify<T>::value>>
         AlphaNum( // NOLINT(runtime/explicit)
-            const T &v KUMO_ATTRIBUTE_LIFETIME_BOUND,
-            strings_internal::StringifySink &&sink KUMO_ATTRIBUTE_LIFETIME_BOUND = {})
+            const T& v KUMO_ATTRIBUTE_LIFETIME_BOUND,
+            strings_internal::StringifySink&& sink KUMO_ATTRIBUTE_LIFETIME_BOUND = { })
             : piece_(strings_internal::ExtractStringification(sink, v)) {
         }
 
-        template<typename Allocator>
+        template <typename Allocator>
         AlphaNum( // NOLINT(runtime/explicit)
-            const std::basic_string<char, std::char_traits<char>, Allocator> &str
-            KUMO_ATTRIBUTE_LIFETIME_BOUND)
+            const std::basic_string<char, std::char_traits<char>, Allocator>& str
+                KUMO_ATTRIBUTE_LIFETIME_BOUND)
             : piece_(str) {
         }
 
         // Use string literals ":" instead of character literals ':'.
         AlphaNum(char c) = delete; // NOLINT(runtime/explicit)
 
-        AlphaNum(const AlphaNum &) = delete;
+        AlphaNum(const AlphaNum&) = delete;
 
-        AlphaNum &operator=(const AlphaNum &) = delete;
+        AlphaNum& operator=(const AlphaNum&) = delete;
 
         std::string_view::size_type size() const { return piece_.size(); }
-        const char * turbo_nullable data() const { return piece_.data(); }
+        const char* turbo_nullable data() const { return piece_.data(); }
         std::string_view Piece() const { return piece_; }
 
         // Match unscoped enums.  Use integral promotion so that a `char`-backed
         // enum becomes a wider integral type AlphaNum will accept.
-        template<typename T,
-            typename = std::enable_if_t<std::is_enum<T>{} &&
-                                        std::is_convertible<T, int>{} &&
-                                        !HasTurboStringify<T>::value> >
+        template <typename T,
+            typename = std::enable_if_t<std::is_enum<T> { } && std::is_convertible<T, int> { } && !HasTurboStringify<T>::value>>
         AlphaNum(T e) // NOLINT(runtime/explicit)
             : AlphaNum(+e) {
         }
 
         // This overload matches scoped enums.  We must explicitly cast to the
         // underlying type, but use integral promotion for the same reason as above.
-        template<typename T, std::enable_if_t<std::is_enum<T>{} &&
-                                              !std::is_convertible<T, int>{} &&
-                                              !HasTurboStringify<T>::value,
-            char *> = nullptr>
+        template <typename T, std::enable_if_t<std::is_enum<T> { } && !std::is_convertible<T, int> { } && !HasTurboStringify<T>::value,
+                                  char*> = nullptr>
         AlphaNum(T e) // NOLINT(runtime/explicit)
             : AlphaNum(+static_cast<std::underlying_type_t<T>>(e)) {
         }
 
         // vector<bool>::reference and const_reference require special help to
         // convert to `AlphaNum` because it requires two user defined conversions.
-        template<
+        template <
             typename T,
             std::enable_if_t<
-                std::is_class_v<T> &&
-                (std::is_same_v<T, std::vector<bool>::reference> ||
-                 std::is_same_v<T, std::vector<bool>::const_reference>)>* = nullptr>
-        AlphaNum(T e) : AlphaNum(static_cast<bool>(e)) {
+                std::is_class_v<T> && (std::is_same_v<T, std::vector<bool>::reference> || std::is_same_v<T, std::vector<bool>::const_reference>)>* = nullptr>
+        AlphaNum(T e)
+            : AlphaNum(static_cast<bool>(e)) {
         } // NOLINT(runtime/explicit)
 
     private:
@@ -485,50 +467,50 @@ namespace turbo {
     };
 
     // -----------------------------------------------------------------------------
-    // StrCat()
+    // str_cat()
     // -----------------------------------------------------------------------------
     //
     // Merges given strings or numbers, using no delimiter(s), returning the merged
     // result as a string.
     //
-    // `StrCat()` is designed to be the fastest possible way to construct a string
+    // `str_cat()` is designed to be the fastest possible way to construct a string
     // out of a mix of raw C strings, string_views, strings, bool values,
     // and numeric values.
     //
-    // Don't use `StrCat()` for user-visible strings. The localization process
+    // Don't use `str_cat()` for user-visible strings. The localization process
     // works poorly on strings built up out of fragments.
     //
-    // For clarity and performance, don't use `StrCat()` when appending to a
-    // string. Use `StrAppend()` instead. In particular, avoid using any of these
+    // For clarity and performance, don't use `str_cat()` when appending to a
+    // string. Use `str_append()` instead. In particular, avoid using any of these
     // (anti-)patterns:
     //
-    //   str.append(StrCat(...))
-    //   str += StrCat(...)
-    //   str = StrCat(str, ...)
+    //   str.append(str_cat(...))
+    //   str += str_cat(...)
+    //   str = str_cat(str, ...)
     //
     // The last case is the worst, with a potential to change a loop
     // from a linear time operation with O(1) dynamic allocations into a
     // quadratic time operation with O(n) dynamic allocations.
     //
-    // See `StrAppend()` below for more information.
+    // See `str_append()` below for more information.
 
     namespace strings_internal {
         // Do not call directly - this is not part of the public API.
         std::string CatPieces(std::initializer_list<std::string_view> pieces);
 
-        void AppendPieces(std::string * turbo_nonnull dest,
-                          std::initializer_list<std::string_view> pieces);
+        void AppendPieces(std::string* turbo_nonnull dest,
+            std::initializer_list<std::string_view> pieces);
 
-        template<typename Integer>
+        template <typename Integer>
         std::string IntegerToString(Integer i) {
             // Any integer (signed/unsigned) up to 64 bits can be formatted into a buffer
             // with 22 bytes (including NULL at the end).
             constexpr size_t kMaxDigits10 = 22;
             std::string result;
             StringResizeAndOverwrite(
-                result, kMaxDigits10, [i](char *start, size_t buf_size) {
+                result, kMaxDigits10, [i](char* start, size_t buf_size) {
                     // Note: This can be optimized to not write last zero.
-                    char *end = format_internal::fast_int_to_buffer(i, start);
+                    char* end = format_internal::fast_int_to_buffer(i, start);
                     auto size = static_cast<size_t>(end - start);
                     KUMO_ASSERT(size < buf_size);
                     return size;
@@ -536,16 +518,15 @@ namespace turbo {
             return result;
         }
 
-        template<typename Float>
+        template <typename Float>
         std::string FloatToString(Float f) {
             std::string result;
             StringResizeAndOverwrite(result, format_internal::kSixDigitsToBufferSize,
-                                     [f](char *start, size_t buf_size) {
-                                         size_t size =
-                                                 format_internal::six_digits_to_buffer(f, start);
-                                         KUMO_ASSERT(size < buf_size);
-                                         return size;
-                                     });
+                [f](char* start, size_t buf_size) {
+                    size_t size = format_internal::six_digits_to_buffer(f, start);
+                    KUMO_ASSERT(size < buf_size);
+                    return size;
+                });
             return result;
         }
 
@@ -553,28 +534,38 @@ namespace turbo {
         // (signed / unsigned) to avoid ambiguity on the call side. If we used int32_t
         // and int64_t, then at least one of the three (`int` / `long` / `long long`)
         // would have been ambiguous when passed to `SingleArgStrCat`.
-        inline std::string SingleArgStrCat(int x) { return IntegerToString(x); }
+        inline std::string SingleArgStrCat(int x) {
+            return IntegerToString(x);
+        }
 
         inline std::string SingleArgStrCat(unsigned int x) {
             return IntegerToString(x);
         }
 
         // NOLINTNEXTLINE
-        inline std::string SingleArgStrCat(long x) { return IntegerToString(x); }
+        inline std::string SingleArgStrCat(long x) {
+            return IntegerToString(x);
+        }
         // NOLINTNEXTLINE
         inline std::string SingleArgStrCat(unsigned long x) {
             return IntegerToString(x);
         }
 
         // NOLINTNEXTLINE
-        inline std::string SingleArgStrCat(long long x) { return IntegerToString(x); }
+        inline std::string SingleArgStrCat(long long x) {
+            return IntegerToString(x);
+        }
         // NOLINTNEXTLINE
         inline std::string SingleArgStrCat(unsigned long long x) {
             return IntegerToString(x);
         }
 
-        inline std::string SingleArgStrCat(float x) { return FloatToString(x); }
-        inline std::string SingleArgStrCat(double x) { return FloatToString(x); }
+        inline std::string SingleArgStrCat(float x) {
+            return FloatToString(x);
+        }
+        inline std::string SingleArgStrCat(double x) {
+            return FloatToString(x);
+        }
 
         // As of September 2023, the SingleArgStrCat() optimization is only enabled for
         // libc++. The reasons for this are:
@@ -591,55 +582,53 @@ namespace turbo {
 #define TURBO_INTERNAL_STRCAT_ENABLE_FAST_CASE false
 #endif
 
-        template<typename T, typename = std::enable_if_t<
-            TURBO_INTERNAL_STRCAT_ENABLE_FAST_CASE &&
-            std::is_arithmetic<T>{} && !std::is_same<T, char>{}> >
+        template <typename T, typename = std::enable_if_t<TURBO_INTERNAL_STRCAT_ENABLE_FAST_CASE && std::is_arithmetic<T> { } && !std::is_same<T, char> { }>>
         using EnableIfFastCase = T;
 
 #undef TURBO_INTERNAL_STRCAT_ENABLE_FAST_CASE
     } // namespace strings_internal
 
-    [[nodiscard]] inline std::string StrCat() { return std::string(); }
+    [[nodiscard]] inline std::string str_cat() {
+        return std::string();
+    }
 
-    template<typename T>
-    [[nodiscard]] inline std::string StrCat(
+    template <typename T>
+    [[nodiscard]] inline std::string str_cat(
         strings_internal::EnableIfFastCase<T> a) {
         return strings_internal::SingleArgStrCat(a);
     }
 
-    [[nodiscard]] inline std::string StrCat(const AlphaNum &a) {
+    [[nodiscard]] inline std::string str_cat(const AlphaNum& a) {
         return std::string(a.data(), a.size());
     }
 
-    [[nodiscard]] std::string StrCat(const AlphaNum &a, const AlphaNum &b);
+    [[nodiscard]] std::string str_cat(const AlphaNum& a, const AlphaNum& b);
 
-    [[nodiscard]] std::string StrCat(const AlphaNum &a, const AlphaNum &b,
-                                     const AlphaNum &c);
+    [[nodiscard]] std::string str_cat(const AlphaNum& a, const AlphaNum& b,
+        const AlphaNum& c);
 
-    [[nodiscard]] std::string StrCat(const AlphaNum &a, const AlphaNum &b,
-                                     const AlphaNum &c, const AlphaNum &d);
+    [[nodiscard]] std::string str_cat(const AlphaNum& a, const AlphaNum& b,
+        const AlphaNum& c, const AlphaNum& d);
 
     // Support 5 or more arguments
-    template<typename... AV>
-    [[nodiscard]] inline std::string StrCat(const AlphaNum &a, const AlphaNum &b,
-                                            const AlphaNum &c, const AlphaNum &d,
-                                            const AlphaNum &e, const AV &... args) {
+    template <typename... AV>
+    [[nodiscard]] inline std::string str_cat(const AlphaNum& a, const AlphaNum& b,
+        const AlphaNum& c, const AlphaNum& d,
+        const AlphaNum& e, const AV&... args) {
         return strings_internal::CatPieces(
-            {
-                a.Piece(), b.Piece(), c.Piece(), d.Piece(), e.Piece(),
-                static_cast<const AlphaNum &>(args).Piece()...
-            });
+            { a.Piece(), b.Piece(), c.Piece(), d.Piece(), e.Piece(),
+                static_cast<const AlphaNum&>(args).Piece()... });
     }
 
     // -----------------------------------------------------------------------------
-    // StrAppend()
+    // str_append()
     // -----------------------------------------------------------------------------
     //
     // Appends a string or set of strings to an existing string, in a similar
-    // fashion to `StrCat()`.
+    // fashion to `str_cat()`.
     //
-    // WARNING: `StrAppend(&str, a, b, c, ...)` requires that none of the
-    // a, b, c, parameters be a reference into str. For speed, `StrAppend()` does
+    // WARNING: `str_append(&str, a, b, c, ...)` requires that none of the
+    // a, b, c, parameters be a reference into str. For speed, `str_append()` does
     // not try to check each of its input arguments to be sure that they are not
     // a subset of the string being appended to. That is, while this will work:
     //
@@ -649,51 +638,48 @@ namespace turbo {
     // This output is undefined:
     //
     //   std::string s = "foo";
-    //   StrAppend(&s, s);
+    //   str_append(&s, s);
     //
     // This output is undefined as well, since `std::string_view` does not own its
     // data:
     //
     //   std::string s = "foobar";
     //   std::string_view p = s;
-    //   StrAppend(&s, p);
+    //   str_append(&s, p);
 
-    inline void StrAppend(std::string * turbo_nonnull) {
+    inline void str_append(std::string* turbo_nonnull) {
     }
 
-    void StrAppend(std::string * turbo_nonnull dest, const AlphaNum &a);
+    void str_append(std::string* turbo_nonnull dest, const AlphaNum& a);
 
-    void StrAppend(std::string * turbo_nonnull dest, const AlphaNum &a,
-                   const AlphaNum &b);
+    void str_append(std::string* turbo_nonnull dest, const AlphaNum& a,
+        const AlphaNum& b);
 
-    void StrAppend(std::string * turbo_nonnull dest, const AlphaNum &a,
-                   const AlphaNum &b, const AlphaNum &c);
+    void str_append(std::string* turbo_nonnull dest, const AlphaNum& a,
+        const AlphaNum& b, const AlphaNum& c);
 
-    void StrAppend(std::string * turbo_nonnull dest, const AlphaNum &a,
-                   const AlphaNum &b, const AlphaNum &c, const AlphaNum &d);
+    void str_append(std::string* turbo_nonnull dest, const AlphaNum& a,
+        const AlphaNum& b, const AlphaNum& c, const AlphaNum& d);
 
     // Support 5 or more arguments
-    template<typename... AV>
-    inline void StrAppend(std::string * turbo_nonnull dest, const AlphaNum &a,
-                          const AlphaNum &b, const AlphaNum &c, const AlphaNum &d,
-                          const AlphaNum &e, const AV &... args) {
+    template <typename... AV>
+    inline void str_append(std::string* turbo_nonnull dest, const AlphaNum& a,
+        const AlphaNum& b, const AlphaNum& c, const AlphaNum& d,
+        const AlphaNum& e, const AV&... args) {
         strings_internal::AppendPieces(
-            dest, {
-                a.Piece(), b.Piece(), c.Piece(), d.Piece(), e.Piece(),
-                static_cast<const AlphaNum &>(args).Piece()...
-            });
+            dest, { a.Piece(), b.Piece(), c.Piece(), d.Piece(), e.Piece(), static_cast<const AlphaNum&>(args).Piece()... });
     }
 
-    // Helper function for the future StrCat default floating-point format, %.6g
+    // Helper function for the future str_cat default floating-point format, %.6g
     // This is fast.
     inline strings_internal::AlphaNumBuffer<
         format_internal::kSixDigitsToBufferSize>
     SixDigits(double d) {
         strings_internal::AlphaNumBuffer<format_internal::kSixDigitsToBufferSize>
-                result;
+            result;
         result.size = format_internal::six_digits_to_buffer(d, &result.data[0]);
         return result;
     }
 } // namespace turbo
 
-#endif  // TURBO_STRINGS_STR_CAT_H_
+#endif // TURBO_STRINGS_STR_CAT_H_

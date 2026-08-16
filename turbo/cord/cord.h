@@ -385,17 +385,17 @@ class Cord {
   int Compare(std::string_view rhs) const;
   int Compare(const Cord& rhs) const;
 
-  // Cord::StartsWith()
+  // Cord::starts_with()
   //
   // Determines whether the Cord starts with the passed string data `rhs`.
-  bool StartsWith(const Cord& rhs) const;
-  bool StartsWith(std::string_view rhs) const;
+  bool starts_with(const Cord& rhs) const;
+  bool starts_with(std::string_view rhs) const;
 
-  // Cord::EndsWith()
+  // Cord::ends_with()
   //
   // Determines whether the Cord ends with the passed string data `rhs`.
-  bool EndsWith(std::string_view rhs) const;
-  bool EndsWith(const Cord& rhs) const;
+  bool ends_with(std::string_view rhs) const;
+  bool ends_with(const Cord& rhs) const;
 
   // Cord::Contains()
   //
@@ -793,7 +793,7 @@ class Cord {
     cord->Append(part);
   }
 
-  // Support automatic stringification with turbo::StrCat and turbo::str_sprintf.
+  // Support automatic stringification with turbo::str_cat and turbo::str_sprintf.
   template <typename Sink>
   friend void turbo_stringify(Sink& sink, const turbo::Cord& cord) {
     for (std::string_view chunk : cord.Chunks()) {
@@ -1443,14 +1443,14 @@ inline int Cord::Compare(const Cord& rhs) const {
 }
 
 // Does 'this' cord start/end with rhs
-inline bool Cord::StartsWith(const Cord& rhs) const {
+inline bool Cord::starts_with(const Cord& rhs) const {
   if (contents_.IsSame(rhs.contents_)) return true;
   size_t rhs_size = rhs.size();
   if (size() < rhs_size) return false;
   return EqualsImpl(rhs, rhs_size);
 }
 
-inline bool Cord::StartsWith(std::string_view rhs) const {
+inline bool Cord::starts_with(std::string_view rhs) const {
   size_t rhs_size = rhs.size();
   if (size() < rhs_size) return false;
   return EqualsImpl(rhs, rhs_size);

@@ -32,15 +32,14 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <turbo/macros/config.h>
-#include <turbo/macros/config.h>
 #include <turbo/cleanup/cleanup.h>
-#include <turbo/container/flat_hash_map.h>
-#include <turbo/status/status.h>
-#include <turbo/status/statusor.h>
-#include <turbo/strings/str_cat.h>
 #include <turbo/format/str_format.h>
+#include <turbo/macros/config.h>
+#include <turbo/status/result.h>
+#include <turbo/status/status.h>
+#include <turbo/strings/str_cat.h>
 #include <turbo/strings/substitute.h>
+#include <unordered_map>
 
 namespace generic_logging_test {
 struct NotStreamable {};
@@ -97,8 +96,8 @@ auto HasExactlyNInstancesOf(int n, std::string_view me) {
 #else
   std::string_view value_m_times = "(.*$0){$1}.*";
 
-  return AllOf(MatchesRegex(turbo::Substitute(value_m_times, me, n)),
-               Not(MatchesRegex(turbo::Substitute(value_m_times, me, n + 1))));
+  return AllOf(MatchesRegex(turbo::substitute(value_m_times, me, n)),
+               Not(MatchesRegex(turbo::substitute(value_m_times, me, n + 1))));
 #endif
 }
 
@@ -292,7 +291,7 @@ TEST(GenericPrinterTest, DebugString) {
   struct WithDebugString {
     std::string val;
     std::string DebugString() const {
-      return turbo::StrCat("WithDebugString{", val, "}");
+      return turbo::str_cat("WithDebugString{", val, "}");
     }
   };
   EXPECT_EQ("WithDebugString{foo}",
@@ -311,8 +310,8 @@ TEST(GenericPrinterTest, StreamableVector) {
 }
 
 TEST(GenericPrinterTest, Map) {
-  turbo::flat_hash_map<
-      std::string, turbo::flat_hash_map<std::string, std::pair<double, double>>>
+  std::unordered_map<
+      std::string, std::unordered_map<std::string, std::pair<double, double>>>
       v = {{"A", {{"B", {.5, .25}}}}};
 
   EXPECT_THAT(GenericPrintToString(v), R"([<"A", [<"B", <0.5, 0.25>>]>])");
@@ -461,35 +460,35 @@ TEST(GenericPrinterTest, VariantInPlace) {
                                       std::in_place_index<1>, 17)));
 }
 
-TEST(GenericPrinterTest, StatusOrLikeOkPrintsValue) {
+TEST(GenericPrinterTest, ResultLikeOkPrintsValue) {
   EXPECT_EQ(R"(<OK: "cow">)",
-            GenericPrintToString(turbo::StatusOr<std::string>("cow")));
+            GenericPrintToString(turbo::Result<std::string>("cow")));
 
-  EXPECT_EQ(R"(<OK: 1.1f>)", GenericPrintToString(turbo::StatusOr<float>(1.1F)));
+  EXPECT_EQ(R"(<OK: 1.1f>)", GenericPrintToString(turbo::Result<float>(1.1F)));
 }
 
-TEST(GenericPrinterTest, StatusOrLikeNonOkPrintsStatus) {
+TEST(GenericPrinterTest, ResultLikeNonOkPrintsStatus) {
   EXPECT_THAT(
-      GenericPrintToString(turbo::StatusOr<float>(
-          turbo::InvalidArgumentError("my error message"))),
+      GenericPrintToString(turbo::Result<float>(
+          turbo::invalid_argument_error("my error message"))),
       AllOf(HasSubstr("my error message"), HasSubstr("INVALID_ARGUMENT")));
 
   EXPECT_THAT(GenericPrintToString(
-                  turbo::StatusOr<int>(turbo::AbortedError("other message"))),
+                  turbo::Result<int>(turbo::aborted_error("other message"))),
               AllOf(HasSubstr("other message"), HasSubstr("ABORTED")));
 }
 
-TEST(GenericPrinterTest, StatusOrLikeNonStreamableValueUnprintable) {
+TEST(GenericPrinterTest, ResultLikeNonStreamableValueUnprintable) {
   EXPECT_THAT(
-      GenericPrintToString(turbo::StatusOr<generic_logging_test::NotStreamable>(
+      GenericPrintToString(turbo::Result<generic_logging_test::NotStreamable>(
           generic_logging_test::NotStreamable{})),
       IsUnprintable());
 }
 
-TEST(GenericPrinterTest, StatusOrLikeNonStreamableErrorStillPrintable) {
+TEST(GenericPrinterTest, ResultLikeNonStreamableErrorStillPrintable) {
   EXPECT_THAT(
-      GenericPrintToString(turbo::StatusOr<generic_logging_test::NotStreamable>(
-          turbo::AbortedError("other message"))),
+      GenericPrintToString(turbo::Result<generic_logging_test::NotStreamable>(
+          turbo::aborted_error("other message"))),
       AllOf(HasSubstr("other message"), HasSubstr("ABORTED")));
 }
 
@@ -653,7 +652,7 @@ enum class WideBasedEnum : uint64_t {
   kValue = std::numeric_limits<uint64_t>::max()
 };
 TEST(GenericPrinterTest, WideBasedEnum) {
-  EXPECT_EQ(turbo::StrCat(std::numeric_limits<uint64_t>::max()),
+  EXPECT_EQ(turbo::str_cat(std::numeric_limits<uint64_t>::max()),
             GenericPrintToString(WideBasedEnum::kValue));
 }
 

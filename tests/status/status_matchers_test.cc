@@ -20,12 +20,12 @@
 #include <string>
 #include <vector>
 
-#include <gmock/gmock.h>
 #include "gtest/gtest-spi.h"
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <turbo/status/status.h>
-#include <turbo/status/statusor.h>
 #include <string_view>
+#include <turbo/status/result.h>
+#include <turbo/status/status.h>
 
 namespace {
 
@@ -40,21 +40,21 @@ using ::testing::Not;
 using ::testing::Ref;
 
 TEST(StatusMatcherTest, TurboExpectAssertOk) {
-  TURBO_EXPECT_OK(turbo::OkStatus());
-  TURBO_ASSERT_OK(turbo::OkStatus());
-  EXPECT_NONFATAL_FAILURE(TURBO_EXPECT_OK(turbo::InternalError("Smigla error")),
+  TURBO_EXPECT_OK(turbo::ok_status());
+  TURBO_ASSERT_OK(turbo::ok_status());
+  EXPECT_NONFATAL_FAILURE(TURBO_EXPECT_OK(turbo::internal_error("Smigla error")),
                           "Smigla error");
-  EXPECT_FATAL_FAILURE(TURBO_ASSERT_OK(turbo::InternalError("Smigla error")),
+  EXPECT_FATAL_FAILURE(TURBO_ASSERT_OK(turbo::internal_error("Smigla error")),
                        "Smigla error");
 }
 
 TEST(StatusMatcherTest, ExpectAssertOk) {
 #ifdef TURBO_DEFINE_UNQUALIFIED_STATUS_TESTING_MACROS
-  EXPECT_OK(turbo::OkStatus());
-  ASSERT_OK(turbo::OkStatus());
-  EXPECT_NONFATAL_FAILURE(EXPECT_OK(turbo::InternalError("Smigla error")),
+  EXPECT_OK(turbo::ok_status());
+  ASSERT_OK(turbo::ok_status());
+  EXPECT_NONFATAL_FAILURE(EXPECT_OK(turbo::internal_error("Smigla error")),
                           "Smigla error");
-  EXPECT_FATAL_FAILURE(ASSERT_OK(turbo::InternalError("Smigla error")),
+  EXPECT_FATAL_FAILURE(ASSERT_OK(turbo::internal_error("Smigla error")),
                        "Smigla error");
 #else
 #ifdef EXPECT_OK
@@ -66,35 +66,35 @@ TEST(StatusMatcherTest, ExpectAssertOk) {
 #endif  // TURBO_DEFINE_UNQUALIFIED_STATUS_TESTING_MACROS
 }
 
-TEST(StatusMatcherTest, StatusIsOk) { EXPECT_THAT(turbo::OkStatus(), IsOk()); }
+TEST(StatusMatcherTest, StatusIsOk) { EXPECT_THAT(turbo::ok_status(), IsOk()); }
 
-TEST(StatusMatcherTest, StatusOrIsOk) {
-  turbo::StatusOr<int> ok_int = {0};
+TEST(StatusMatcherTest, ResultIsOk) {
+  turbo::Result<int> ok_int = {0};
   EXPECT_THAT(ok_int, IsOk());
 }
 
 TEST(StatusMatcherTest, StatusIsNotOk) {
-  turbo::Status error = turbo::UnknownError("Smigla");
+  turbo::Status error = turbo::unknown_error("Smigla");
   EXPECT_NONFATAL_FAILURE(EXPECT_THAT(error, IsOk()), "Smigla");
 }
 
-TEST(StatusMatcherTest, StatusOrIsNotOk) {
-  turbo::StatusOr<int> error = turbo::UnknownError("Smigla");
+TEST(StatusMatcherTest, ResultIsNotOk) {
+  turbo::Result<int> error = turbo::unknown_error("Smigla");
   EXPECT_NONFATAL_FAILURE(EXPECT_THAT(error, IsOk()), "Smigla");
 }
 
 TEST(StatusMatcherTest, IsOkAndHolds) {
-  turbo::StatusOr<int> ok_int = {4};
-  turbo::StatusOr<std::string_view> ok_str = {"text"};
+  turbo::Result<int> ok_int = {4};
+  turbo::Result<std::string_view> ok_str = {"text"};
   EXPECT_THAT(ok_int, IsOkAndHolds(4));
   EXPECT_THAT(ok_int, IsOkAndHolds(Gt(0)));
   EXPECT_THAT(ok_str, IsOkAndHolds("text"));
 }
 
 TEST(StatusMatcherTest, IsOkAndHoldsFailure) {
-  turbo::StatusOr<int> ok_int = {502};
-  turbo::StatusOr<int> error = turbo::UnknownError("Smigla");
-  turbo::StatusOr<std::string_view> ok_str = {"actual"};
+  turbo::Result<int> ok_int = {502};
+  turbo::Result<int> error = turbo::unknown_error("Smigla");
+  turbo::Result<std::string_view> ok_str = {"actual"};
   EXPECT_NONFATAL_FAILURE(EXPECT_THAT(ok_int, IsOkAndHolds(0)), "502");
   EXPECT_NONFATAL_FAILURE(EXPECT_THAT(error, IsOkAndHolds(0)), "Smigla");
   EXPECT_NONFATAL_FAILURE(EXPECT_THAT(ok_str, IsOkAndHolds("expected")),
@@ -109,10 +109,10 @@ std::string Explain(const MatcherType& m, const Value& x) {
 }
 
 TEST(StatusMatcherTest, StatusIs) {
-  turbo::Status unknown = turbo::UnknownError("unbekannt");
-  turbo::Status invalid = turbo::InvalidArgumentError("ungueltig");
-  EXPECT_THAT(turbo::OkStatus(), StatusIs(turbo::StatusCode::kOk));
-  EXPECT_THAT(turbo::OkStatus(), StatusIs(0));
+  turbo::Status unknown = turbo::unknown_error("unbekannt");
+  turbo::Status invalid = turbo::invalid_argument_error("ungueltig");
+  EXPECT_THAT(turbo::ok_status(), StatusIs(turbo::StatusCode::kOk));
+  EXPECT_THAT(turbo::ok_status(), StatusIs(0));
   EXPECT_THAT(unknown, StatusIs(turbo::StatusCode::kUnknown));
   EXPECT_THAT(unknown, StatusIs(2));
   EXPECT_THAT(unknown, StatusIs(turbo::StatusCode::kUnknown, "unbekannt"));
@@ -129,17 +129,17 @@ TEST(StatusMatcherTest, StatusIs) {
       ::testing::DescribeMatcher<turbo::Status>(m, /*negation=*/true),
       MatchesRegex(
           "either has a status code that .*, or has an error message that .*"));
-  EXPECT_THAT(Explain(m, turbo::InvalidArgumentError("internal error")),
+  EXPECT_THAT(Explain(m, turbo::invalid_argument_error("internal error")),
               Eq("whose status code is wrong"));
-  EXPECT_THAT(Explain(m, turbo::InternalError("unexpected error")),
+  EXPECT_THAT(Explain(m, turbo::internal_error("unexpected error")),
               Eq("whose error message is wrong"));
 }
 
-TEST(StatusMatcherTest, StatusOrIs) {
-  turbo::StatusOr<int> ok = {42};
-  turbo::StatusOr<int> unknown = turbo::UnknownError("unbekannt");
-  turbo::StatusOr<std::string_view> invalid =
-      turbo::InvalidArgumentError("ungueltig");
+TEST(StatusMatcherTest, ResultIs) {
+  turbo::Result<int> ok = {42};
+  turbo::Result<int> unknown = turbo::unknown_error("unbekannt");
+  turbo::Result<std::string_view> invalid =
+      turbo::invalid_argument_error("ungueltig");
   EXPECT_THAT(ok, StatusIs(turbo::StatusCode::kOk));
   EXPECT_THAT(ok, StatusIs(0));
   EXPECT_THAT(unknown, StatusIs(turbo::StatusCode::kUnknown));
@@ -152,27 +152,27 @@ TEST(StatusMatcherTest, StatusOrIs) {
 
   auto m = StatusIs(turbo::StatusCode::kInternal, "internal error");
   EXPECT_THAT(
-      ::testing::DescribeMatcher<turbo::StatusOr<int>>(m),
+      ::testing::DescribeMatcher<turbo::Result<int>>(m),
       MatchesRegex(
           "has a status code that .*, and has an error message that .*"));
   EXPECT_THAT(
-      ::testing::DescribeMatcher<turbo::StatusOr<int>>(m, /*negation=*/true),
+      ::testing::DescribeMatcher<turbo::Result<int>>(m, /*negation=*/true),
       MatchesRegex(
           "either has a status code that .*, or has an error message that .*"));
-  EXPECT_THAT(Explain(m, turbo::StatusOr<int>(57)), Eq("which is OK"));
-  EXPECT_THAT(Explain(m, turbo::StatusOr<int>(
-                             turbo::InvalidArgumentError("internal error"))),
+  EXPECT_THAT(Explain(m, turbo::Result<int>(57)), Eq("which is OK"));
+  EXPECT_THAT(Explain(m, turbo::Result<int>(
+                             turbo::invalid_argument_error("internal error"))),
               Eq("whose status code is wrong"));
   EXPECT_THAT(
-      Explain(m, turbo::StatusOr<int>(turbo::InternalError("unexpected error"))),
+      Explain(m, turbo::Result<int>(turbo::internal_error("unexpected error"))),
       Eq("whose error message is wrong"));
 }
 
 TEST(StatusMatcherTest, StatusIsFailure) {
-  turbo::Status unknown = turbo::UnknownError("unbekannt");
-  turbo::Status invalid = turbo::InvalidArgumentError("ungueltig");
+  turbo::Status unknown = turbo::unknown_error("unbekannt");
+  turbo::Status invalid = turbo::invalid_argument_error("ungueltig");
   EXPECT_NONFATAL_FAILURE(
-      EXPECT_THAT(turbo::OkStatus(),
+      EXPECT_THAT(turbo::ok_status(),
                   StatusIs(turbo::StatusCode::kInvalidArgument)),
       "OK");
   EXPECT_NONFATAL_FAILURE(
@@ -191,19 +191,19 @@ TEST(StatusMatcherTest, StatusIsFailure) {
 TEST(StatusMatcherTest, ReferencesWork) {
   int i = 17;
   int j = 19;
-  EXPECT_THAT(turbo::StatusOr<int&>(i), IsOkAndHolds(17));
-  EXPECT_THAT(turbo::StatusOr<int&>(i), Not(IsOkAndHolds(19)));
-  EXPECT_THAT(turbo::StatusOr<const int&>(i), IsOkAndHolds(17));
+  EXPECT_THAT(turbo::Result<int&>(i), IsOkAndHolds(17));
+  EXPECT_THAT(turbo::Result<int&>(i), Not(IsOkAndHolds(19)));
+  EXPECT_THAT(turbo::Result<const int&>(i), IsOkAndHolds(17));
 
   // Reference testing works as expected.
-  EXPECT_THAT(turbo::StatusOr<int&>(i), IsOkAndHolds(Ref(i)));
-  EXPECT_THAT(turbo::StatusOr<int&>(i), Not(IsOkAndHolds(Ref(j))));
+  EXPECT_THAT(turbo::Result<int&>(i), IsOkAndHolds(Ref(i)));
+  EXPECT_THAT(turbo::Result<int&>(i), Not(IsOkAndHolds(Ref(j))));
 
   // Try a more complex one.
   std::vector<std::string> vec = {"A", "B", "C"};
-  EXPECT_THAT(turbo::StatusOr<std::vector<std::string>&>(vec),
+  EXPECT_THAT(turbo::Result<std::vector<std::string>&>(vec),
               IsOkAndHolds(ElementsAre("A", "B", "C")));
-  EXPECT_THAT(turbo::StatusOr<std::vector<std::string>&>(vec),
+  EXPECT_THAT(turbo::Result<std::vector<std::string>&>(vec),
               Not(IsOkAndHolds(ElementsAre("A", "X", "C"))));
 }
 

@@ -207,7 +207,7 @@ namespace turbo {
 
             LogMessage &operator<<(wchar_t v);
 
-            // Overload for turbo::SourceLocation or the std::source_location alias.
+            // Overload for turbo::SourceLocation.
             LogMessage &operator<<(const turbo::SourceLocation &loc) {
                 OstreamView view(*data_);
                 view.stream() << loc.file_name() << ':' << loc.line();

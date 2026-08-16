@@ -118,7 +118,7 @@ namespace turbo {
                 T value KUMO_ATTRIBUTE_LIFETIME_BOUND,
                 StructuredProtoField field KUMO_ATTRIBUTE_LIFETIME_BOUND,
                 ValueFormatter value_formatter =
-                        [](T value) { return turbo::StrCat(value); })
+                        [](T value) { return turbo::str_cat(value); })
                 : value_(value),
                   field_(field),
                   value_formatter_(std::move(value_formatter)) {

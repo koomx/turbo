@@ -22,6 +22,8 @@
 #include "gtest/gtest-spi.h"
 #include <gtest/gtest.h>
 #include <turbo/macros/config.h>
+#include <turbo/types/barrier.h>
+#include <turbo/types/latch.h>
 #include <turbo/base/log_severity.h>
 #include <turbo/log/globals.h>
 #include <tests/log/internal/test_helpers.h>
@@ -30,8 +32,6 @@
 #include <turbo/memory/memory.h>
 #include <turbo/strings/match.h>
 #include <string_view>
-#include <turbo/synchronization/barrier.h>
-#include <turbo/synchronization/notification.h>
 
 namespace {
 
@@ -105,7 +105,7 @@ TEST(ScopedMockLogTest, LogMockCatchAndMatchSendExpectations) {
                  SourceBasename(Eq("very_long_source_file.cc")),
                  SourceLine(Eq(777)), ThreadID(Eq(turbo::LogEntry::tid_t{1234})),
                  TextMessageWithPrefix(Truly([](std::string_view msg) {
-                   return turbo::EndsWith(
+                   return turbo::ends_with(
                        msg, " very_long_source_file.cc:777] Info message");
                  })))));
 
@@ -225,13 +225,13 @@ TEST(ScopedMockLogTest, LogFromMultipleThreads) {
 
   log.StartCapturingLogs();
 
-  turbo::Barrier barrier(2);
+  turbo::barrier barrier(2);
   std::thread thread1([&barrier]() {
-    barrier.Block();
+    barrier.arrive_and_wait();
     KLOG(INFO) << "Thread 1";
   });
   std::thread thread2([&barrier]() {
-    barrier.Block();
+    barrier.arrive_and_wait();
     KLOG(INFO) << "Thread 2";
   });
 
@@ -245,10 +245,10 @@ TEST(ScopedMockLogTest, LogFromMultipleThreads) {
 TEST(ScopedMockLogTest, NoSequenceWithMultipleThreads) {
   turbo::ScopedMockLog log;
 
-  turbo::Barrier barrier(2);
+  turbo::barrier barrier(2);
   EXPECT_CALL(log, Log(turbo::LogSeverity::kInfo, _, _))
       .Times(2)
-      .WillRepeatedly([&barrier]() { barrier.Block(); });
+      .WillRepeatedly([&barrier]() { barrier.arrive_and_wait(); });
 
   log.StartCapturingLogs();
 
@@ -267,16 +267,18 @@ TEST(ScopedMockLogTsanTest,
 
   log->StartCapturingLogs();
 
-  turbo::Notification logging_started;
+  turbo::latch logging_started(1);
 
   std::thread thread([&logging_started]() {
     for (int i = 0; i < 100; ++i) {
-      if (i == 50) logging_started.Notify();
+      if (i == 50) {
+        logging_started.count_down();
+      }
       KLOG(INFO) << "Thread log";
     }
   });
 
-  logging_started.WaitForNotification();
+  logging_started.wait();
   log.reset();
   thread.join();
 }

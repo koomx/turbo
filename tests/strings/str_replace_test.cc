@@ -159,7 +159,7 @@ TEST(StrReplaceAll, ManyReplacementsInMap) {
 TEST(StrReplaceAll, ReplacementsInPlace) {
   std::string s = std::string("$who bought $count #Noun. Thanks $who!");
   int count;
-  count = turbo::StrReplaceAll({{"$count", turbo::StrCat(5)},
+  count = turbo::StrReplaceAll({{"$count", turbo::str_cat(5)},
                               {"$who", "Bob"},
                               {"#Noun", "Apples"}}, &s);
   EXPECT_EQ(count, 4);
@@ -187,7 +187,7 @@ struct Cont {
 
 template <int index>
 std::string_view get(const Cont& c) {
-  auto splitter = turbo::StrSplit(c.data, ':');
+  auto splitter = turbo::str_split(c.data, ':');
   auto it = splitter.begin();
   for (int i = 0; i < index; ++i) ++it;
 

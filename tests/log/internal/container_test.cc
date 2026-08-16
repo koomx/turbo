@@ -183,7 +183,7 @@ class C {
  private:
   // This is intentionally made private for the purposes of the test;
   //` turbo_stringify` isn't meant to be called directly, and instead invoked
-  // via `StrCat` and friends.
+  // via `str_cat` and friends.
   template <typename Sink>
   friend void turbo_stringify(Sink& sink, const C& p) {
     turbo::str_printf_to(&sink, "C(%d)", p.x_);

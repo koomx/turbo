@@ -29,22 +29,21 @@
 
 namespace turbo {
 
-namespace flags_internal {
+    namespace flags_internal {
 
-// turbo::Flag<T> represents a flag of type 'T' created by TURBO_FLAG.
-template <typename T>
-class Flag;
+        // turbo::Flag<T> represents a flag of type 'T' created by TURBO_FLAG.
+        template <typename T>
+        class Flag;
 
-}  // namespace flags_internal
+    } // namespace flags_internal
 
-// Flag
-//
-// Forward declaration of the `turbo::Flag` type for use in defining the macro.
-template <typename T>
-using Flag = flags_internal::Flag<T>;
+    // Flag
+    //
+    // Forward declaration of the `turbo::Flag` type for use in defining the macro.
+    template <typename T>
+    using Flag = flags_internal::Flag<T>;
 
-
-}  // namespace turbo
+} // namespace turbo
 
 // TURBO_DECLARE_FLAG()
 //
@@ -65,13 +64,13 @@ using Flag = flags_internal::Flag<T>;
 // compile error (C4273) in MSVC if a `__declspec` is prepended to the macro.
 #if defined(_MSC_VER)
 #define TURBO_DECLARE_FLAG_INTERNAL(type, name) \
-  extern turbo::Flag<type> FLAGS_##name
+    extern turbo::Flag<type> FLAGS_##name
 #else
-#define TURBO_DECLARE_FLAG_INTERNAL(type, name)               \
-  extern turbo::Flag<type> FLAGS_##name;                      \
-  namespace turbo /* block flags in namespaces */ {}          \
-  /* second redeclaration is to allow applying attributes */ \
-  extern turbo::Flag<type> FLAGS_##name
-#endif  // _MSC_VER
+#define TURBO_DECLARE_FLAG_INTERNAL(type, name)                \
+    extern turbo::Flag<type> FLAGS_##name;                     \
+    namespace turbo /* block flags in namespaces */ { }        \
+    /* second redeclaration is to allow applying attributes */ \
+    extern turbo::Flag<type> FLAGS_##name
+#endif // _MSC_VER
 
-#endif  // TURBO_FLAGS_DECLARE_H_
+#endif // TURBO_FLAGS_DECLARE_H_

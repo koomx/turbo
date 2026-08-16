@@ -32,40 +32,39 @@
 
 namespace turbo {
 
-namespace variant_internal {
-// Helper visitor for converting a variant<Ts...>` into another type (mostly
-// variant) that can be constructed from any type.
-template <typename To>
-struct ConversionVisitor {
-  template <typename T>
-  To operator()(T&& v) const {
-    return To(std::forward<T>(v));
-  }
-};
-}  // namespace variant_internal
+    namespace variant_internal {
+        // Helper visitor for converting a variant<Ts...>` into another type (mostly
+        // variant) that can be constructed from any type.
+        template <typename To>
+        struct ConversionVisitor {
+            template <typename T>
+            To operator()(T&& v) const {
+                return To(std::forward<T>(v));
+            }
+        };
+    } // namespace variant_internal
 
-// convert_variant_to()
-//
-// Helper functions to convert an `std::variant` to a variant of another set of
-// types, provided that the alternative type of the new variant type can be
-// converted from any type in the source variant.
-//
-// Example:
-//
-//   std::variant<name1, name2, float> InternalReq(const Req&);
-//
-//   // name1 and name2 are convertible to name
-//   std::variant<name, float> ExternalReq(const Req& req) {
-//     return turbo::convert_variant_to<std::variant<name, float>>(
-//              InternalReq(req));
-//   }
-template <typename To, typename Variant>
-To convert_variant_to(Variant&& variant) {
-  return std::visit(variant_internal::ConversionVisitor<To>{},
-                    std::forward<Variant>(variant));
-}
+    // convert_variant_to()
+    //
+    // Helper functions to convert an `std::variant` to a variant of another set of
+    // types, provided that the alternative type of the new variant type can be
+    // converted from any type in the source variant.
+    //
+    // Example:
+    //
+    //   std::variant<name1, name2, float> InternalReq(const Req&);
+    //
+    //   // name1 and name2 are convertible to name
+    //   std::variant<name, float> ExternalReq(const Req& req) {
+    //     return turbo::convert_variant_to<std::variant<name, float>>(
+    //              InternalReq(req));
+    //   }
+    template <typename To, typename Variant>
+    To convert_variant_to(Variant&& variant) {
+        return std::visit(variant_internal::ConversionVisitor<To> { },
+            std::forward<Variant>(variant));
+    }
 
+} // namespace turbo
 
-}  // namespace turbo
-
-#endif  // TURBO_TYPES_VARIANT_H_
+#endif // TURBO_TYPES_VARIANT_H_

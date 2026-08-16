@@ -24,6 +24,10 @@ set(TYPES_TESTS
         fixed_array_test
         inlined_vector_exception_safety_test
         inlined_vector_test
+        expected_test
+        expected_extensions_test
+        expected_assertions_test
+        bitmap_view_test
 )
 
 foreach (case IN LISTS TYPES_TESTS)
@@ -38,7 +42,7 @@ foreach (case IN LISTS TYPES_TESTS)
             GTest::gtest
             GTest::gmock
             GTest::gtest_main
-            turbo::container_testing_static
+            turbo::test_utils_static
             turbo::base_testing_static
             turbo::turbo_static
             ${KMCMAKE_DEPS_LINK}

@@ -45,13 +45,13 @@
 #include <cstdint>
 #include <type_traits>
 
-#include <turbo/macros/config.h>
 #include <turbo/base/nullability.h>
+#include <turbo/macros/config.h>
 
 // This needs to come after turbo/macros/config.h, which is responsible for
 // defining KUMO_HAVE_STD_SOURCE_LOCATION
 #if KUMO_HAVE_STD_SOURCE_LOCATION
-#include <source_location>  // NOLINT(build/c++20)
+#include <source_location> // NOLINT(build/c++20)
 #endif
 
 // For OSS release, whether to alias to std::source_location is configurable via
@@ -59,113 +59,112 @@
 #if KUMO_USES_STD_SOURCE_LOCATION && KUMO_HAVE_STD_SOURCE_LOCATION
 namespace turbo {
 
-using SourceLocation = std::source_location;
+    using SourceLocation = std::source_location;
 
-}  // namespace turbo
+} // namespace turbo
 
-#else  // KUMO_HAVE_STD_SOURCE_LOCATION
+#else // KUMO_HAVE_STD_SOURCE_LOCATION
 
 namespace turbo {
 
+    // C++17-compatible class representing a specific location in the source code of
+    // a program. Similar to std::source_location, but with a few key differences
+    // explained above.
+    class SourceLocation {
+        struct PrivateTag {
+        private:
+            explicit PrivateTag() = default;
+            friend class SourceLocation;
+        };
 
-// C++17-compatible class representing a specific location in the source code of
-// a program. Similar to std::source_location, but with a few key differences
-// explained above.
-class SourceLocation {
-  struct PrivateTag {
-   private:
-    explicit PrivateTag() = default;
-    friend class SourceLocation;
-  };
-
- public:
-  // Avoid this constructor; it populates the object with dummy values.
-  SourceLocation() = default;
+    public:
+        // Avoid this constructor; it populates the object with dummy values.
+        SourceLocation() = default;
 
 #if KUMO_HAVE_STD_SOURCE_LOCATION
-  constexpr SourceLocation(  // NOLINT(google-explicit-constructor)
-      std::source_location loc)
-      : SourceLocation(loc.line(), loc.file_name()) {}
+        constexpr SourceLocation( // NOLINT(google-explicit-constructor)
+            std::source_location loc)
+            : SourceLocation(loc.line(), loc.file_name()) { }
 #endif
 
 #if KUMO_HAVE_BUILTIN_LINE_FILE
-  // SourceLocation::current
-  //
-  // Creates a `SourceLocation` based on the current source location. Currently,
-  // it only captures file and line information for efficiency purposes, but
-  // that is subject to change. APIs that accept a `SourceLocation` as a default
-  // parameter can use this to capture their caller's locations.
-  //
-  // Example:
-  //
-  //   void TracedAdd(int i, SourceLocation loc = SourceLocation::current()) {
-  //     std::cout << loc.file_name() << ":" << loc.line() << " added " << i;
-  //     ...
-  //   }
-  //
-  //   void UserCode() {
-  //     TracedAdd(1);
-  //     TracedAdd(2);
-  //   }
-  static constexpr SourceLocation current(
-      PrivateTag = PrivateTag{}, std::uint_least32_t line = __builtin_LINE(),
-      const char* turbo_nonnull file_name = __builtin_FILE()) {
-    return SourceLocation(line, file_name);
-  }
+        // SourceLocation::current
+        //
+        // Creates a `SourceLocation` based on the current source location. Currently,
+        // it only captures file and line information for efficiency purposes, but
+        // that is subject to change. APIs that accept a `SourceLocation` as a default
+        // parameter can use this to capture their caller's locations.
+        //
+        // Example:
+        //
+        //   void TracedAdd(int i, SourceLocation loc = SourceLocation::current()) {
+        //     std::cout << loc.file_name() << ":" << loc.line() << " added " << i;
+        //     ...
+        //   }
+        //
+        //   void UserCode() {
+        //     TracedAdd(1);
+        //     TracedAdd(2);
+        //   }
+        static constexpr SourceLocation current(
+            PrivateTag = PrivateTag { }, std::uint_least32_t line = __builtin_LINE(),
+            const char* turbo_nonnull file_name = __builtin_FILE()) {
+            return SourceLocation(line, file_name);
+        }
 #else
-  // Creates a dummy `SourceLocation` of "<source_location>" at line number 1,
-  // if no `SourceLocation::current()` implementation is available.
-  static constexpr SourceLocation current() {
-    return SourceLocation(1, "<source_location>");
-  }
+        // Creates a dummy `SourceLocation` of "<source_location>" at line number 1,
+        // if no `SourceLocation::current()` implementation is available.
+        static constexpr SourceLocation current() {
+            return SourceLocation(1, "<source_location>");
+        }
 #endif
-  // The line number of the captured source location, or an unspecified value
-  // if this information is not available.
-  constexpr std::uint_least32_t line() const noexcept { return line_; }
+        // The line number of the captured source location, or an unspecified value
+        // if this information is not available.
+        constexpr std::uint_least32_t line() const noexcept { return line_; }
 
-  // The column number of the captured source location, or an unspecified value
-  // if this information is not available.
-  constexpr std::uint_least32_t column() const noexcept { return 0; }
+        // The column number of the captured source location, or an unspecified value
+        // if this information is not available.
+        constexpr std::uint_least32_t column() const noexcept { return 0; }
 
-  // The file name of the captured source location, or an unspecified string
-  // if this information is not available. Guaranteed to never be NULL.
-  constexpr const char* turbo_nonnull file_name() const noexcept {
-    return file_name_;
-  }
+        // The file name of the captured source location, or an unspecified string
+        // if this information is not available. Guaranteed to never be NULL.
+        constexpr const char* turbo_nonnull file_name() const noexcept {
+            return file_name_;
+        }
 
-  // The function name of the captured source location, or an unspecified string
-  // if this information is not available. Guaranteed to never be NULL.
-  //
-  // NOTE: Currently, we deliberately avoid providing the function name, as it
-  // can bloat binary sizes and is non-critical. This may change in the future.
-  constexpr const char* turbo_nonnull function_name() const noexcept {
-    return "";
-  }
+        // The function name of the captured source location, or an unspecified string
+        // if this information is not available. Guaranteed to never be NULL.
+        //
+        // NOTE: Currently, we deliberately avoid providing the function name, as it
+        // can bloat binary sizes and is non-critical. This may change in the future.
+        constexpr const char* turbo_nonnull function_name() const noexcept {
+            return "";
+        }
 
- private:
-  // `file_name` must outlive all copies of the `turbo::SourceLocation` object,
-  // so in practice it should be a string literal.
-  constexpr SourceLocation(std::uint_least32_t line,
-                           const char* turbo_nonnull file_name)
-      : line_(line), file_name_(file_name) {}
+    private:
+        // `file_name` must outlive all copies of the `turbo::SourceLocation` object,
+        // so in practice it should be a string literal.
+        constexpr SourceLocation(std::uint_least32_t line,
+            const char* turbo_nonnull file_name)
+            : line_(line)
+            , file_name_(file_name) { }
 
-  // We would use [[maybe_unused]] here, but it doesn't work on all supported
-  // toolchains at the moment.
-  friend constexpr int UseUnused() {
-    static_assert(SourceLocation(0, nullptr).unused_column_ == 0,
-                  "Use the otherwise-unused member.");
-    return 0;
-  }
+        // We would use [[maybe_unused]] here, but it doesn't work on all supported
+        // toolchains at the moment.
+        friend constexpr int UseUnused() {
+            static_assert(SourceLocation(0, nullptr).unused_column_ == 0,
+                "Use the otherwise-unused member.");
+            return 0;
+        }
 
-  // "unused" members are present to minimize future changes in the size of this
-  // type.
-  std::uint_least32_t line_ = 0;
-  std::uint_least32_t unused_column_ = 0;
-  const char* turbo_nonnull file_name_ = "";
-};
+        // "unused" members are present to minimize future changes in the size of this
+        // type.
+        std::uint_least32_t line_ = 0;
+        std::uint_least32_t unused_column_ = 0;
+        const char* turbo_nonnull file_name_ = "";
+    };
 
+} // namespace turbo
+#endif // KUMO_HAVE_STD_SOURCE_LOCATION
 
-}  // namespace turbo
-#endif  // KUMO_HAVE_STD_SOURCE_LOCATION
-
-#endif  // TURBO_TYPES_SOURCE_LOCATION_H_
+#endif // TURBO_TYPES_SOURCE_LOCATION_H_

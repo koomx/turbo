@@ -211,347 +211,334 @@
 #include <type_traits>
 #include <utility>
 
-#include <turbo/macros/config.h>
 #include <turbo/base/internal/hardening.h>
 #include <turbo/base/internal/raw_logging.h>
 #include <turbo/base/nullability.h>
 #include <turbo/base/throw_delegate.h>
+#include <turbo/macros/config.h>
 #include <turbo/meta/type_traits.h>
 #include <turbo/types/internal/any_span.h>
 
 namespace turbo {
 
+    // The accessors in the 'any_span_transform' namespace return references to
+    // Transform functors that may be passed to AnySpan. Generally you should
+    // prefer to use these functors whenever possible, as they may trigger internal
+    // optimizations that are otherwise not possible, and they are valid for the
+    // duration of the program, so you do not have to worry about their lifetime.
+    namespace any_span_transform {
 
-// The accessors in the 'any_span_transform' namespace return references to
-// Transform functors that may be passed to AnySpan. Generally you should
-// prefer to use these functors whenever possible, as they may trigger internal
-// optimizations that are otherwise not possible, and they are valid for the
-// duration of the program, so you do not have to worry about their lifetime.
-namespace any_span_transform {
+        //
+        // Identity() returns a functor that returns whatever is passed to it. Generally
+        // you should prefer to use AnySpan's implicit constructor directly, but this
+        // may be useful if you are writing templates on top of AnySpan.
+        //
+        // Returns a const reference so that callers don't have to worry about
+        // lifetime of the functor.
+        //
 
-//
-// Identity() returns a functor that returns whatever is passed to it. Generally
-// you should prefer to use AnySpan's implicit constructor directly, but this
-// may be useful if you are writing templates on top of AnySpan.
-//
-// Returns a const reference so that callers don't have to worry about
-// lifetime of the functor.
-//
+        struct IdentityT {
+            template <typename T>
+            T& operator()(T& v) const { // NOLINT(runtime/references)
+                return v;
+            }
+        };
 
-struct IdentityT {
-  template <typename T>
-  T& operator()(T& v) const {  // NOLINT(runtime/references)
-    return v;
-  }
-};
+        inline const IdentityT& Identity() {
+            static const IdentityT f = { };
+            return f;
+        }
 
-inline const IdentityT& Identity() {
-  static const IdentityT f = {};
-  return f;
-}
+        struct DerefT {
+            template <typename Ptr>
+            auto operator()(Ptr& ptr) const // NOLINT(runtime/references)
+                -> decltype(*ptr) {
+                TURBO_RAW_DCHECK(ptr, "Cannot dereference null pointer");
+                return *ptr;
+            }
+        };
 
-struct DerefT {
-  template <typename Ptr>
-  auto operator()(Ptr& ptr) const  // NOLINT(runtime/references)
-      -> decltype(*ptr) {
-    TURBO_RAW_DCHECK(ptr, "Cannot dereference null pointer");
-    return *ptr;
-  }
-};
+        // Deref() returns a functor that dereferences whatever is passed to it. It
+        // works for smart and raw pointers, as well as std::optional. Do not use this
+        // with containers that may contain elements that cannot be dereferenced, such
+        // as null pointers.
+        //
+        // Returns a const reference so that callers don't have to worry about lifetime
+        // of the functor.
+        inline const DerefT& Deref() {
+            static const DerefT f = { };
+            return f;
+        }
 
-// Deref() returns a functor that dereferences whatever is passed to it. It
-// works for smart and raw pointers, as well as std::optional. Do not use this
-// with containers that may contain elements that cannot be dereferenced, such
-// as null pointers.
-//
-// Returns a const reference so that callers don't have to worry about lifetime
-// of the functor.
-inline const DerefT& Deref() {
-  static const DerefT f = {};
-  return f;
-}
+    } // namespace any_span_transform
 
-}  // namespace any_span_transform
+    // Utilities for adapting things to look like the interface that AnySpan
+    // expects. For the most part this is based on iterators and views, and is
+    // intended to be composed with turbo/types/iterator_adaptors.h.
+    namespace any_span_adaptor {
 
-// Utilities for adapting things to look like the interface that AnySpan
-// expects. For the most part this is based on iterators and views, and is
-// intended to be composed with turbo/types/iterator_adaptors.h.
-namespace any_span_adaptor {
+        // Adapts a pair of iterators into a container-like object that AnySpan can
+        // wrap. This is useful if you are faced with a range or view of random access
+        // iterators. Iter must be a valid random access iterator.
+        template <typename Iter>
+        class Range {
+        public:
+            static_assert(
+                std::is_same_v<typename std::iterator_traits<Iter>::iterator_category,
+                    std::random_access_iterator_tag>,
+                "Iter must be a random access iterator.");
 
-// Adapts a pair of iterators into a container-like object that AnySpan can
-// wrap. This is useful if you are faced with a range or view of random access
-// iterators. Iter must be a valid random access iterator.
-template <typename Iter>
-class Range {
- public:
-  static_assert(
-      std::is_same_v<typename std::iterator_traits<Iter>::iterator_category,
-                     std::random_access_iterator_tag>,
-      "Iter must be a random access iterator.");
+            Range(Iter begin, Iter end) {
+                turbo::base_internal::HardeningAssertLE(begin, end);
+                begin_ = begin;
+                end_ = end;
+            }
 
-  Range(Iter begin, Iter end) {
-    turbo::base_internal::HardeningAssertLE(begin, end);
-    begin_ = begin;
-    end_ = end;
-  }
+            std::size_t size() const { return end_ - begin_; }
 
-  std::size_t size() const { return end_ - begin_; }
+            decltype(std::declval<Iter>()[0]) operator[](std::size_t i) const {
+                turbo::base_internal::HardeningAssertLT(i, size());
+                return begin_[i];
+            }
 
-  decltype(std::declval<Iter>()[0]) operator[](std::size_t i) const {
-    turbo::base_internal::HardeningAssertLT(i, size());
-    return begin_[i];
-  }
+        private:
+            Iter begin_;
+            Iter end_;
+        };
 
- private:
-  Iter begin_;
-  Iter end_;
-};
+        // Returns a Range adaptor that wraps the given pair of iterators. The return
+        // value of this function must outlive any spans that use it. Iter must be a
+        // valid random access iterator.
+        template <typename Iter>
+        Range<Iter> MakeAdaptorFromRange(Iter begin, Iter end) {
+            return Range<Iter>(begin, end);
+        }
 
-// Returns a Range adaptor that wraps the given pair of iterators. The return
-// value of this function must outlive any spans that use it. Iter must be a
-// valid random access iterator.
-template <typename Iter>
-Range<Iter> MakeAdaptorFromRange(Iter begin, Iter end) {
-  return Range<Iter>(begin, end);
-}
+        // Returns a Range adaptor that wraps the given view. The begin() and end()
+        // functions of the given view must return valid random access iterators. The
+        // return value of this function must outlive any spans that use it.
+        template <typename View>
+        auto MakeAdaptorFromView(View& view) // NOLINT(runtime/references)
+            -> Range<decltype(view.begin())> {
+            return Range<decltype(view.begin())>(view.begin(), view.end());
+        }
 
-// Returns a Range adaptor that wraps the given view. The begin() and end()
-// functions of the given view must return valid random access iterators. The
-// return value of this function must outlive any spans that use it.
-template <typename View>
-auto MakeAdaptorFromView(View& view)  // NOLINT(runtime/references)
-    -> Range<decltype(view.begin())> {
-  return Range<decltype(view.begin())>(view.begin(), view.end());
-}
+    } // namespace any_span_adaptor
 
-}  // namespace any_span_adaptor
+    template <typename T>
+    class AnySpan;
 
-template <typename T>
-class AnySpan;
+    template <typename T>
+    class KUMO_ATTRIBUTE_VIEW AnySpan {
+    private:
+        template <typename Iter, typename Value>
+        class IteratorBase;
 
-template <typename T>
-class KUMO_ATTRIBUTE_VIEW AnySpan {
- private:
-  template <typename Iter, typename Value>
-  class IteratorBase;
+        template <typename U>
+        using EnableIfMutable = std::enable_if_t<!std::is_const_v<T>, U>;
 
-  template <typename U>
-  using EnableIfMutable = std::enable_if_t<!std::is_const_v<T>, U>;
+        template <typename U>
+        using EnableIfConst = std::enable_if_t<std::is_const_v<T>, U>;
 
-  template <typename U>
-  using EnableIfConst = std::enable_if_t<std::is_const_v<T>, U>;
-
-  static std::true_type CreatesATemporaryImpl(std::decay_t<T>&&);
-  static std::false_type CreatesATemporaryImpl(const T&);
-  template <typename U,
+        static std::true_type CreatesATemporaryImpl(std::decay_t<T>&&);
+        static std::false_type CreatesATemporaryImpl(const T&);
+        template <typename U,
             typename B = decltype(CreatesATemporaryImpl(std::declval<U>()))>
-  struct CreatesATemporary : B {};
+        struct CreatesATemporary : B { };
 
-  // Enable if invoke(transform, element) is valid and if a reference to T can
-  // bind to its output. This prevents situations where the constructor may be
-  // ambiguous.
-  // We also verify that the conversion from TransformResult to T& does not
-  // create a temporary. Otherwise, we would get a false positive in the
-  // enabler where `const char*` looks like can be converted to
-  // `const std::string&`.
-  template <typename Transform, typename Element,
+        // Enable if invoke(transform, element) is valid and if a reference to T can
+        // bind to its output. This prevents situations where the constructor may be
+        // ambiguous.
+        // We also verify that the conversion from TransformResult to T& does not
+        // create a temporary. Otherwise, we would get a false positive in the
+        // enabler where `const char*` looks like can be converted to
+        // `const std::string&`.
+        template <typename Transform, typename Element,
             typename TransformResult = decltype(std::invoke(
                 std::declval<const Transform&>(), std::declval<Element>()))>
-  using EnableIfTransformIsValid =
-      std::enable_if_t<std::is_convertible_v<TransformResult, T&> &&
-                       !CreatesATemporary<TransformResult>::value>;
+        using EnableIfTransformIsValid = std::enable_if_t<std::is_convertible_v<TransformResult, T&> && !CreatesATemporary<TransformResult>::value>;
 
-  // Enable if Container appears to be a valid container. Just checks for size()
-  // and makes sure the class is not an AnySpan for now.
-  template <typename Container>
-  using EnableIfContainer =
-      std::enable_if_t<any_span_internal::HasSize<Container>::value &&
-                       !any_span_internal::IsAnySpan<Container>::value>;
+        // Enable if Container appears to be a valid container. Just checks for size()
+        // and makes sure the class is not an AnySpan for now.
+        template <typename Container>
+        using EnableIfContainer = std::enable_if_t<any_span_internal::HasSize<Container>::value && !any_span_internal::IsAnySpan<Container>::value>;
 
-  template <typename Element>
-  using EnableIfDifferentElementType =
-      std::enable_if_t<!std::is_same_v<T, Element> &&
-                       !std::is_same_v<T, const Element>>;
+        template <typename Element>
+        using EnableIfDifferentElementType = std::enable_if_t<!std::is_same_v<T, Element> && !std::is_same_v<T, const Element>>;
 
-  template <typename Transform>
-  using EnableIfTransformIsByCopy =
-      std::enable_if_t<any_span_internal::kIsTransformCopied<Transform>, bool>;
-  template <typename Transform>
-  using EnableIfTransformIsByRef =
-      std::enable_if_t<!any_span_internal::kIsTransformCopied<Transform>, bool>;
+        template <typename Transform>
+        using EnableIfTransformIsByCopy = std::enable_if_t<any_span_internal::kIsTransformCopied<Transform>, bool>;
+        template <typename Transform>
+        using EnableIfTransformIsByRef = std::enable_if_t<!any_span_internal::kIsTransformCopied<Transform>, bool>;
 
- public:
-  using element_type = T;
-  using value_type = std::remove_const_t<T>;
-  using size_type = std::size_t;
-  using difference_type = std::ptrdiff_t;
-  using turbo_internal_is_view = std::true_type;
+    public:
+        using element_type = T;
+        using value_type = std::remove_const_t<T>;
+        using size_type = std::size_t;
+        using difference_type = std::ptrdiff_t;
+        using turbo_internal_is_view = std::true_type;
 
-  static const size_type npos = static_cast<size_type>(-1);  // NOLINT
+        static const size_type npos = static_cast<size_type>(-1); // NOLINT
 
-  using reference = T&;
-  using const_reference = std::add_const_t<T>&;
+        using reference = T&;
+        using const_reference = std::add_const_t<T>&;
 
-  using pointer = T*;
-  using const_pointer = std::add_const_t<T>*;
+        using pointer = T*;
+        using const_pointer = std::add_const_t<T>*;
 
-  // Note that iterator will be const if T is const.
-  class iterator;
-  class const_iterator;
+        // Note that iterator will be const if T is const.
+        class iterator;
+        class const_iterator;
 
-  using reverse_iterator = std::reverse_iterator<iterator>;
-  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+        using reverse_iterator = std::reverse_iterator<iterator>;
+        using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-  // Null and empty by default.
-  AnySpan() = default;
+        // Null and empty by default.
+        AnySpan() = default;
 
-  // Creates a span that wraps an initializer list. This makes it possible to
-  // pass a brace-enclosed initializer list to a function expecting an AnySpan.
-  //
-  // Example:
-  //
-  //   void Process(AnySpan<const int> x);
-  //   Process({1, 2, 3});
-  //
-  // The initializer_list must outlive this AnySpan.
-  constexpr AnySpan(  // NOLINT(google-explicit-constructor)
-      std::initializer_list<value_type> l KUMO_ATTRIBUTE_LIFETIME_BOUND)
-      : AnySpan(l.begin(), l.size()) {}
+        // Creates a span that wraps an initializer list. This makes it possible to
+        // pass a brace-enclosed initializer list to a function expecting an AnySpan.
+        //
+        // Example:
+        //
+        //   void Process(AnySpan<const int> x);
+        //   Process({1, 2, 3});
+        //
+        // The initializer_list must outlive this AnySpan.
+        constexpr AnySpan( // NOLINT(google-explicit-constructor)
+            std::initializer_list<value_type> l KUMO_ATTRIBUTE_LIFETIME_BOUND)
+            : AnySpan(l.begin(), l.size()) { }
 
-  // Creates a span that wraps an initializer list of a type other than
-  // value_type, or with an explicit transform. Applies the optional transform
-  // to elements before returning them.
-  //
-  // Example:
-  //
-  //   struct Base {};
-  //   struct Derived : Base {};
-  //
-  //   void Process(AnySpan<const Base> x);
-  //   Process({Derived(a), Derived(b), Derived(c)});
-  //
-  //     where the default identity transform would apply an implicit
-  //     derived-to-base  conversion.
-  //
-  // The initializer_list must outlive this AnySpan.
-  template <typename Element, typename Transform,
+        // Creates a span that wraps an initializer list of a type other than
+        // value_type, or with an explicit transform. Applies the optional transform
+        // to elements before returning them.
+        //
+        // Example:
+        //
+        //   struct Base {};
+        //   struct Derived : Base {};
+        //
+        //   void Process(AnySpan<const Base> x);
+        //   Process({Derived(a), Derived(b), Derived(c)});
+        //
+        //     where the default identity transform would apply an implicit
+        //     derived-to-base  conversion.
+        //
+        // The initializer_list must outlive this AnySpan.
+        template <typename Element, typename Transform,
             typename = EnableIfTransformIsValid<Transform, const Element&>,
             EnableIfTransformIsByCopy<Transform> = true>
-  constexpr AnySpan(std::initializer_list<Element> l
-                        KUMO_ATTRIBUTE_LIFETIME_BOUND,
-                    const Transform& transform)
-      : AnySpan(l.begin(), l.size(), transform) {}
-  template <typename Element,
+        constexpr AnySpan(std::initializer_list<Element> l
+                              KUMO_ATTRIBUTE_LIFETIME_BOUND,
+            const Transform& transform)
+            : AnySpan(l.begin(), l.size(), transform) { }
+        template <typename Element,
             typename Transform = any_span_transform::IdentityT,
             typename = EnableIfTransformIsValid<Transform, const Element&>,
             EnableIfTransformIsByRef<Transform> = true>
-  constexpr AnySpan(std::initializer_list<Element> l
-                        KUMO_ATTRIBUTE_LIFETIME_BOUND,
-                    const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND =
-                        any_span_transform::Identity())
-      : AnySpan(l.begin(), l.size(), transform) {}
+        constexpr AnySpan(std::initializer_list<Element> l
+                              KUMO_ATTRIBUTE_LIFETIME_BOUND,
+            const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND = any_span_transform::Identity())
+            : AnySpan(l.begin(), l.size(), transform) { }
 
-  // Creates a span that wraps an array. Applies the optional transform to
-  // elements before returning them.
-  //
-  // Transform must be a function object with a const operator() that takes
-  // Element as an argument and return a reference to T or compatible object.
-  //
-  // Both the transform and array must outlive this span.
-  template <typename Element, typename Transform,
+        // Creates a span that wraps an array. Applies the optional transform to
+        // elements before returning them.
+        //
+        // Transform must be a function object with a const operator() that takes
+        // Element as an argument and return a reference to T or compatible object.
+        //
+        // Both the transform and array must outlive this span.
+        template <typename Element, typename Transform,
             typename = EnableIfTransformIsValid<Transform, const Element&>,
             EnableIfTransformIsByCopy<Transform> = true>
-  constexpr AnySpan(const Element* turbo_nullable ptr
-                        KUMO_ATTRIBUTE_LIFETIME_BOUND,
-                    size_type size, const Transform& transform)
-      : AnySpan(any_span_internal::MakeArrayGetter<T>(ptr, transform), size) {}
-  template <typename Element,
+        constexpr AnySpan(const Element* turbo_nullable ptr
+                              KUMO_ATTRIBUTE_LIFETIME_BOUND,
+            size_type size, const Transform& transform)
+            : AnySpan(any_span_internal::MakeArrayGetter<T>(ptr, transform), size) { }
+        template <typename Element,
             typename Transform = any_span_transform::IdentityT,
             typename = EnableIfTransformIsValid<Transform, const Element&>,
             EnableIfTransformIsByRef<Transform> = true>
-  constexpr AnySpan(const Element* turbo_nullable ptr
-                        KUMO_ATTRIBUTE_LIFETIME_BOUND,
-                    size_type size,
-                    const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND =
-                        any_span_transform::Identity())
-      : AnySpan(any_span_internal::MakeArrayGetter<T>(ptr, transform), size) {}
+        constexpr AnySpan(const Element* turbo_nullable ptr
+                              KUMO_ATTRIBUTE_LIFETIME_BOUND,
+            size_type size,
+            const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND = any_span_transform::Identity())
+            : AnySpan(any_span_internal::MakeArrayGetter<T>(ptr, transform), size) { }
 
-  // Creates a span that wraps an array of fixed size. Applies the optional
-  // transform to elements before returning them.
-  //
-  // Transform must be a function object with a const operator() that takes
-  // Element as an argument and return a reference to T or compatible object.
-  //
-  // Both the transform and array must outlive this span.
-  template <typename Element, size_type N, typename Transform,
+        // Creates a span that wraps an array of fixed size. Applies the optional
+        // transform to elements before returning them.
+        //
+        // Transform must be a function object with a const operator() that takes
+        // Element as an argument and return a reference to T or compatible object.
+        //
+        // Both the transform and array must outlive this span.
+        template <typename Element, size_type N, typename Transform,
             typename = EnableIfTransformIsValid<Transform, const Element&>,
             EnableIfTransformIsByCopy<Transform> = true>
-  constexpr AnySpan(  // NOLINT(google-explicit-constructor)
-      const Element (&array KUMO_ATTRIBUTE_LIFETIME_BOUND)[N],
-      const Transform& transform)
-      : AnySpan(array, N, transform) {}
-  template <typename Element, size_type N,
+        constexpr AnySpan( // NOLINT(google-explicit-constructor)
+            const Element (&array KUMO_ATTRIBUTE_LIFETIME_BOUND)[N],
+            const Transform& transform)
+            : AnySpan(array, N, transform) { }
+        template <typename Element, size_type N,
             typename Transform = any_span_transform::IdentityT,
             typename = EnableIfTransformIsValid<Transform, const Element&>,
             EnableIfTransformIsByRef<Transform> = true>
-  constexpr AnySpan(  // NOLINT(google-explicit-constructor)
-      const Element (&array KUMO_ATTRIBUTE_LIFETIME_BOUND)[N],
-      const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND =
-          any_span_transform::Identity())
-      : AnySpan(array, N, transform) {}
+        constexpr AnySpan( // NOLINT(google-explicit-constructor)
+            const Element (&array KUMO_ATTRIBUTE_LIFETIME_BOUND)[N],
+            const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND = any_span_transform::Identity())
+            : AnySpan(array, N, transform) { }
 
-  // Creates a span that wraps a const container. Applies the optional transform
-  // to elements before returning them.
-  //
-  // This constructor is enabled even for mutable spans, since some
-  // container-like objects provide mutable element access even when the object
-  // itself is const (such as turbo::Span)
-  //
-  // Transform must be a function object with a const operator() that takes the
-  // value type of Container as an argument and return a reference to T or
-  // compatible object.
-  //
-  // The transform, container, and the container's underlying storage must
-  // outlive this span. Any operation that may reallocate the container's
-  // storage or change its size will invalidate the span.
-  template <typename Container, typename Transform,
+        // Creates a span that wraps a const container. Applies the optional transform
+        // to elements before returning them.
+        //
+        // This constructor is enabled even for mutable spans, since some
+        // container-like objects provide mutable element access even when the object
+        // itself is const (such as turbo::Span)
+        //
+        // Transform must be a function object with a const operator() that takes the
+        // value type of Container as an argument and return a reference to T or
+        // compatible object.
+        //
+        // The transform, container, and the container's underlying storage must
+        // outlive this span. Any operation that may reallocate the container's
+        // storage or change its size will invalidate the span.
+        template <typename Container, typename Transform,
             typename = EnableIfContainer<Container>,
             typename = EnableIfTransformIsValid<
                 Transform, decltype(std::declval<const Container&>()[0])>,
             EnableIfTransformIsByCopy<std::enable_if_t<
                 turbo::type_traits_internal::IsView<Container>::value,
                 Transform>> = true>
-  constexpr AnySpan(  // NOLINT(google-explicit-constructor)
-      const Container& container, const Transform& transform)
-      : AnySpan(any_span_internal::MakeContainerGetter<T>(container, transform),
-                container.size()) {}
-  template <typename Container, typename Transform,
+        constexpr AnySpan( // NOLINT(google-explicit-constructor)
+            const Container& container, const Transform& transform)
+            : AnySpan(any_span_internal::MakeContainerGetter<T>(container, transform),
+                  container.size()) { }
+        template <typename Container, typename Transform,
             typename = EnableIfContainer<Container>,
             typename = EnableIfTransformIsValid<
                 Transform, decltype(std::declval<const Container&>()[0])>,
             EnableIfTransformIsByCopy<std::enable_if_t<
                 !turbo::type_traits_internal::IsView<Container>::value,
                 Transform>> = true>
-  constexpr AnySpan(  // NOLINT(google-explicit-constructor)
-      const Container& container KUMO_ATTRIBUTE_LIFETIME_BOUND,
-      const Transform& transform)
-      : AnySpan(any_span_internal::MakeContainerGetter<T>(container, transform),
-                container.size()) {}
-  template <
-      typename Container, typename Transform = any_span_transform::IdentityT,
-      typename = EnableIfContainer<Container>,
-      typename = EnableIfTransformIsValid<
-          Transform, decltype(std::declval<const Container&>()[0])>,
-      EnableIfTransformIsByRef<
-          std::enable_if_t<turbo::type_traits_internal::IsView<Container>::value,
-                           Transform>> = true>
-  constexpr AnySpan(  // NOLINT(google-explicit-constructor)
-      const Container& container,
-      const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND =
-          any_span_transform::Identity())
-      : AnySpan(any_span_internal::MakeContainerGetter<T>(container, transform),
-                container.size()) {}
-  template <typename Container,
+        constexpr AnySpan( // NOLINT(google-explicit-constructor)
+            const Container& container KUMO_ATTRIBUTE_LIFETIME_BOUND,
+            const Transform& transform)
+            : AnySpan(any_span_internal::MakeContainerGetter<T>(container, transform),
+                  container.size()) { }
+        template <
+            typename Container, typename Transform = any_span_transform::IdentityT,
+            typename = EnableIfContainer<Container>,
+            typename = EnableIfTransformIsValid<
+                Transform, decltype(std::declval<const Container&>()[0])>,
+            EnableIfTransformIsByRef<
+                std::enable_if_t<turbo::type_traits_internal::IsView<Container>::value,
+                    Transform>> = true>
+        constexpr AnySpan( // NOLINT(google-explicit-constructor)
+            const Container& container,
+            const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND = any_span_transform::Identity())
+            : AnySpan(any_span_internal::MakeContainerGetter<T>(container, transform),
+                  container.size()) { }
+        template <typename Container,
             typename Transform = any_span_transform::IdentityT,
             typename = EnableIfContainer<Container>,
             typename = EnableIfTransformIsValid<
@@ -559,499 +546,497 @@ class KUMO_ATTRIBUTE_VIEW AnySpan {
             EnableIfTransformIsByRef<std::enable_if_t<
                 !turbo::type_traits_internal::IsView<Container>::value,
                 Transform>> = true>
-  constexpr AnySpan(  // NOLINT(google-explicit-constructor)
-      const Container& container KUMO_ATTRIBUTE_LIFETIME_BOUND,
-      const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND =
-          any_span_transform::Identity())
-      : AnySpan(any_span_internal::MakeContainerGetter<T>(container, transform),
-                container.size()) {}
+        constexpr AnySpan( // NOLINT(google-explicit-constructor)
+            const Container& container KUMO_ATTRIBUTE_LIFETIME_BOUND,
+            const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND = any_span_transform::Identity())
+            : AnySpan(any_span_internal::MakeContainerGetter<T>(container, transform),
+                  container.size()) { }
 
-  // Creates a span that wraps a mutable array. Applies the optional transform
-  // to elements before returning them.
-  //
-  // Transform must be a function object with a const operator() that takes
-  // Element as an argument and return a reference to T or compatible object.
-  //
-  // Both the transform and array must outlive this span.
-  template <typename Element, typename Transform,
+        // Creates a span that wraps a mutable array. Applies the optional transform
+        // to elements before returning them.
+        //
+        // Transform must be a function object with a const operator() that takes
+        // Element as an argument and return a reference to T or compatible object.
+        //
+        // Both the transform and array must outlive this span.
+        template <typename Element, typename Transform,
             typename = EnableIfMutable<Element>,
             typename = EnableIfTransformIsValid<Transform, Element&>,
             EnableIfTransformIsByCopy<Transform> = true>
-  constexpr AnySpan(Element* turbo_nullable ptr KUMO_ATTRIBUTE_LIFETIME_BOUND,
-                    size_type size, const Transform& transform)
-      : AnySpan(any_span_internal::MakeArrayGetter<T>(ptr, transform), size) {}
-  template <typename Element,
+        constexpr AnySpan(Element* turbo_nullable ptr KUMO_ATTRIBUTE_LIFETIME_BOUND,
+            size_type size, const Transform& transform)
+            : AnySpan(any_span_internal::MakeArrayGetter<T>(ptr, transform), size) { }
+        template <typename Element,
             typename Transform = any_span_transform::IdentityT,
             typename = EnableIfMutable<Element>,
             typename = EnableIfTransformIsValid<Transform, Element&>,
             EnableIfTransformIsByRef<Transform> = true>
-  constexpr AnySpan(Element* turbo_nullable ptr KUMO_ATTRIBUTE_LIFETIME_BOUND,
-                    size_type size,
-                    const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND =
-                        any_span_transform::Identity())
-      : AnySpan(any_span_internal::MakeArrayGetter<T>(ptr, transform), size) {}
+        constexpr AnySpan(Element* turbo_nullable ptr KUMO_ATTRIBUTE_LIFETIME_BOUND,
+            size_type size,
+            const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND = any_span_transform::Identity())
+            : AnySpan(any_span_internal::MakeArrayGetter<T>(ptr, transform), size) { }
 
-  // Creates a span that wraps a mutable array of fixed size. Applies the
-  // optional transform to elements before returning them.
-  //
-  // Transform must be a function object with a const operator() that takes
-  // Element as an argument and return a reference to T or compatible object.
-  //
-  // Both the transform and array must outlive this span.
-  template <typename Element, size_type N, typename Transform,
+        // Creates a span that wraps a mutable array of fixed size. Applies the
+        // optional transform to elements before returning them.
+        //
+        // Transform must be a function object with a const operator() that takes
+        // Element as an argument and return a reference to T or compatible object.
+        //
+        // Both the transform and array must outlive this span.
+        template <typename Element, size_type N, typename Transform,
             typename = EnableIfMutable<Element>,
             typename = EnableIfTransformIsValid<Transform, Element&>,
             EnableIfTransformIsByCopy<Transform> = true>
-  constexpr AnySpan(  // NOLINT(google-explicit-constructor)
-      Element (&array KUMO_ATTRIBUTE_LIFETIME_BOUND)[N],
-      const Transform& transform)
-      : AnySpan(array, N, transform) {}
-  template <typename Element, size_type N,
+        constexpr AnySpan( // NOLINT(google-explicit-constructor)
+            Element (&array KUMO_ATTRIBUTE_LIFETIME_BOUND)[N],
+            const Transform& transform)
+            : AnySpan(array, N, transform) { }
+        template <typename Element, size_type N,
             typename Transform = any_span_transform::IdentityT,
             typename = EnableIfMutable<Element>,
             typename = EnableIfTransformIsValid<Transform, Element&>,
             EnableIfTransformIsByRef<Transform> = true>
-  constexpr AnySpan(  // NOLINT(google-explicit-constructor)
-      Element (&array KUMO_ATTRIBUTE_LIFETIME_BOUND)[N],
-      const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND =
-          any_span_transform::Identity())
-      : AnySpan(array, N, transform) {}
+        constexpr AnySpan( // NOLINT(google-explicit-constructor)
+            Element (&array KUMO_ATTRIBUTE_LIFETIME_BOUND)[N],
+            const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND = any_span_transform::Identity())
+            : AnySpan(array, N, transform) { }
 
-  // Creates a span that wraps a mutable container. Only enabled if T is
-  // mutable. Applies the optional transform to elements before returning them.
-  //
-  // Transform must be a function object with a const operator() that takes the
-  // value type of Container as an argument and return a reference to T or
-  // compatible object.
-  //
-  // The transform, container, and the container's underlying storage must
-  // outlive this span. Any operation that may reallocate the container's
-  // storage or change its size will invalidate the span.
-  template <typename Container, typename Transform,
+        // Creates a span that wraps a mutable container. Only enabled if T is
+        // mutable. Applies the optional transform to elements before returning them.
+        //
+        // Transform must be a function object with a const operator() that takes the
+        // value type of Container as an argument and return a reference to T or
+        // compatible object.
+        //
+        // The transform, container, and the container's underlying storage must
+        // outlive this span. Any operation that may reallocate the container's
+        // storage or change its size will invalidate the span.
+        template <typename Container, typename Transform,
             typename = EnableIfMutable<Container>,
             typename = EnableIfContainer<Container>,
             typename = EnableIfTransformIsValid<
                 Transform, decltype(std::declval<Container&>()[0])>,
             EnableIfTransformIsByCopy<Transform> = true>
-  constexpr explicit AnySpan(  // NOLINT(google-explicit-constructor)
-      Container& container KUMO_ATTRIBUTE_LIFETIME_BOUND,
-      const Transform& transform)
-      : AnySpan(any_span_internal::MakeContainerGetter<T>(container, transform),
-                container.size()) {}
-  template <typename Container,
+        constexpr explicit AnySpan( // NOLINT(google-explicit-constructor)
+            Container& container KUMO_ATTRIBUTE_LIFETIME_BOUND,
+            const Transform& transform)
+            : AnySpan(any_span_internal::MakeContainerGetter<T>(container, transform),
+                  container.size()) { }
+        template <typename Container,
             typename Transform = any_span_transform::IdentityT,
             typename = EnableIfMutable<Container>,
             typename = EnableIfContainer<Container>,
             typename = EnableIfTransformIsValid<
                 Transform, decltype(std::declval<Container&>()[0])>,
             EnableIfTransformIsByRef<Transform> = true>
-  constexpr explicit AnySpan(  // NOLINT(google-explicit-constructor)
-      Container& container KUMO_ATTRIBUTE_LIFETIME_BOUND,
-      const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND =
-          any_span_transform::Identity())
-      : AnySpan(any_span_internal::MakeContainerGetter<T>(container, transform),
-                container.size()) {}
+        constexpr explicit AnySpan( // NOLINT(google-explicit-constructor)
+            Container& container KUMO_ATTRIBUTE_LIFETIME_BOUND,
+            const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND = any_span_transform::Identity())
+            : AnySpan(any_span_internal::MakeContainerGetter<T>(container, transform),
+                  container.size()) { }
 
-  // Converts a mutable span to a const span by copying the internal state
-  // (rather than wrapping the other span).
-  // TODO(b/179783710): add KUMO_ATTRIBUTE_LIFETIME_BOUND.
-  template <typename LazyT = T, typename = EnableIfConst<LazyT>>
-  constexpr AnySpan(  // NOLINT(google-explicit-constructor)
-      const AnySpan<std::remove_const_t<T>>& other)
-      : getter_(other.getter_), size_(other.size()) {}
+        // Converts a mutable span to a const span by copying the internal state
+        // (rather than wrapping the other span).
+        // TODO(b/179783710): add KUMO_ATTRIBUTE_LIFETIME_BOUND.
+        template <typename LazyT = T, typename = EnableIfConst<LazyT>>
+        constexpr AnySpan( // NOLINT(google-explicit-constructor)
+            const AnySpan<std::remove_const_t<T>>& other)
+            : getter_(other.getter_)
+            , size_(other.size()) { }
 
-  // Creates a span that wraps around another span of different type.
-  //
-  // This has performance and lifetime consequences, and can easily happen by
-  // mistake. We make such conversions explicit here.
-  template <typename Element, typename = EnableIfDifferentElementType<Element>,
+        // Creates a span that wraps around another span of different type.
+        //
+        // This has performance and lifetime consequences, and can easily happen by
+        // mistake. We make such conversions explicit here.
+        template <typename Element, typename = EnableIfDifferentElementType<Element>,
             typename = EnableIfTransformIsValid<any_span_transform::IdentityT,
-                                                Element&>>
-  constexpr explicit AnySpan(
-      const AnySpan<Element>& other KUMO_ATTRIBUTE_LIFETIME_BOUND)
-      : AnySpan(any_span_internal::MakeContainerGetter<T>(
-                    other, any_span_transform::Identity()),
-                other.size()) {}
+                Element&>>
+        constexpr explicit AnySpan(
+            const AnySpan<Element>& other KUMO_ATTRIBUTE_LIFETIME_BOUND)
+            : AnySpan(any_span_internal::MakeContainerGetter<T>(
+                          other, any_span_transform::Identity()),
+                  other.size()) { }
 
-  // Creates a span that wraps around another span. Applies the non-optional
-  // transform to elements before returning them.
-  //
-  // This has lifetime consequences, and may happen by mistake. We make it
-  // explicit here.
-  template <typename Element, typename Transform,
+        // Creates a span that wraps around another span. Applies the non-optional
+        // transform to elements before returning them.
+        //
+        // This has lifetime consequences, and may happen by mistake. We make it
+        // explicit here.
+        template <typename Element, typename Transform,
             typename = EnableIfTransformIsValid<Transform, Element&>,
             EnableIfTransformIsByCopy<Transform> = true>
-  constexpr explicit AnySpan(const AnySpan<Element>& other
-                                 KUMO_ATTRIBUTE_LIFETIME_BOUND,
-                             const Transform& transform)
-      : AnySpan(any_span_internal::MakeContainerGetter<T>(other, transform),
-                other.size()) {}
-  template <typename Element, typename Transform,
+        constexpr explicit AnySpan(const AnySpan<Element>& other
+                                       KUMO_ATTRIBUTE_LIFETIME_BOUND,
+            const Transform& transform)
+            : AnySpan(any_span_internal::MakeContainerGetter<T>(other, transform),
+                  other.size()) { }
+        template <typename Element, typename Transform,
             typename = EnableIfTransformIsValid<Transform, Element&>,
             EnableIfTransformIsByRef<Transform> = true>
-  constexpr explicit AnySpan(
-      const AnySpan<Element>& other KUMO_ATTRIBUTE_LIFETIME_BOUND,
-      const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND)
-      : AnySpan(any_span_internal::MakeContainerGetter<T>(other, transform),
-                other.size()) {}
+        constexpr explicit AnySpan(
+            const AnySpan<Element>& other KUMO_ATTRIBUTE_LIFETIME_BOUND,
+            const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND)
+            : AnySpan(any_span_internal::MakeContainerGetter<T>(other, transform),
+                  other.size()) { }
 
-  // Returns a subspan of this span. This span may become invalid before the
-  // subspan, but both the container and transform must remain valid.
-  // pos must be non-negative and <= size().
-  // len must be non-negative and <= size() - pos, or equal to npos.
-  // If len==npos, the subspan continues till the end of this span.
-  constexpr AnySpan subspan(size_type pos, size_type len = npos) const {
-    const size_t this_size = size();
-    if (len == AnySpan<T>::npos) {
-      len = this_size - pos;
-    }
-    turbo::base_internal::HardeningAssertLE(pos, this_size);
-    turbo::base_internal::HardeningAssertLE(
-        len, static_cast<size_type>(this_size - pos));
-    return AnySpan<T>(getter_.Offset(pos), len);
-  }
+        // Returns a subspan of this span. This span may become invalid before the
+        // subspan, but both the container and transform must remain valid.
+        // pos must be non-negative and <= size().
+        // len must be non-negative and <= size() - pos, or equal to npos.
+        // If len==npos, the subspan continues till the end of this span.
+        constexpr AnySpan subspan(size_type pos, size_type len = npos) const {
+            const size_t this_size = size();
+            if (len == AnySpan<T>::npos) {
+                len = this_size - pos;
+            }
+            turbo::base_internal::HardeningAssertLE(pos, this_size);
+            turbo::base_internal::HardeningAssertLE(
+                len, static_cast<size_type>(this_size - pos));
+            return AnySpan<T>(getter_.Offset(pos), len);
+        }
 
-  // Returns a `AnySpan` containing first `len` elements. Parameter `len` must
-  // be non-negative and <= size().
-  constexpr AnySpan first(size_type len) const {
-    turbo::base_internal::HardeningAssert(len != npos);
-    return subspan(0, len);
-  }
+        // Returns a `AnySpan` containing first `len` elements. Parameter `len` must
+        // be non-negative and <= size().
+        constexpr AnySpan first(size_type len) const {
+            turbo::base_internal::HardeningAssert(len != npos);
+            return subspan(0, len);
+        }
 
-  // Returns a `AnySpan` containing last `len` elements. Parameter `len` must be
-  // non-negative and <= size().
-  constexpr AnySpan last(size_type len) const { return subspan(size() - len); }
+        // Returns a `AnySpan` containing last `len` elements. Parameter `len` must be
+        // non-negative and <= size().
+        constexpr AnySpan last(size_type len) const { return subspan(size() - len); }
 
-  // Size operations.
-  constexpr size_type size() const { return size_; }
-  constexpr bool empty() const { return size() == 0; }
+        // Size operations.
+        constexpr size_type size() const { return size_; }
+        constexpr bool empty() const { return size() == 0; }
 
-  // Element access.
-  constexpr reference operator[](size_type index) const {
-    turbo::base_internal::HardeningAssertLT(index, size());
-    return getter_.Get(index);
-  }
-  constexpr reference at(size_type index) const {
-    if (KUMO_UNLIKELY(index >= size())) {
-      turbo::ThrowStdOutOfRange("AnySpan::at failed bounds check");
-    }
-    return getter_.Get(index);
-  }
-  constexpr reference front() const {
-    turbo::base_internal::HardeningAssertGT(size(), size_type{0});
-    return (*this)[0];
-  }
-  constexpr reference back() const {
-    turbo::base_internal::HardeningAssertGT(size(), size_type{0});
-    return (*this)[size() - 1];
-  }
+        // Element access.
+        constexpr reference operator[](size_type index) const {
+            turbo::base_internal::HardeningAssertLT(index, size());
+            return getter_.Get(index);
+        }
+        constexpr reference at(size_type index) const {
+            if (KUMO_UNLIKELY(index >= size())) {
+                turbo::ThrowStdOutOfRange("AnySpan::at failed bounds check");
+            }
+            return getter_.Get(index);
+        }
+        constexpr reference front() const {
+            turbo::base_internal::HardeningAssertGT(size(), size_type { 0 });
+            return (*this)[0];
+        }
+        constexpr reference back() const {
+            turbo::base_internal::HardeningAssertGT(size(), size_type { 0 });
+            return (*this)[size() - 1];
+        }
 
-  // Iterator accessors.
-  constexpr iterator begin() const { return iterator(this, 0); }
-  constexpr iterator end() const { return iterator(this, size_); }
-  constexpr reverse_iterator rbegin() const { return reverse_iterator(end()); }
-  constexpr reverse_iterator rend() const { return reverse_iterator(begin()); }
-  constexpr const_iterator cbegin() const { return const_iterator(this, 0); }
-  constexpr const_iterator cend() const { return const_iterator(this, size_); }
-  constexpr const_reverse_iterator crbegin() const { return rbegin(); }
-  constexpr const_reverse_iterator crend() const { return rend(); }
+        // Iterator accessors.
+        constexpr iterator begin() const { return iterator(this, 0); }
+        constexpr iterator end() const { return iterator(this, size_); }
+        constexpr reverse_iterator rbegin() const { return reverse_iterator(end()); }
+        constexpr reverse_iterator rend() const { return reverse_iterator(begin()); }
+        constexpr const_iterator cbegin() const { return const_iterator(this, 0); }
+        constexpr const_iterator cend() const { return const_iterator(this, size_); }
+        constexpr const_reverse_iterator crbegin() const { return rbegin(); }
+        constexpr const_reverse_iterator crend() const { return rend(); }
 
-  // Constructs from a getter and size. Not for external use.
-  AnySpan(any_span_internal::Getter<T> getter, size_type size)
-      : getter_(getter), size_(size) {}
+        // Constructs from a getter and size. Not for external use.
+        AnySpan(any_span_internal::Getter<T> getter, size_type size)
+            : getter_(getter)
+            , size_(size) { }
 
-  // Support for turbo::Hash.
-  template <typename H>
-  friend constexpr H TurboHashValue(H state, AnySpan any_span) {
-    for (const auto& v : any_span) {
-      state = H::combine(std::move(state), v);
-    }
-    return H::combine(std::move(state), any_span.size());
-  }
+        // Support for turbo::Hash.
+        template <typename H>
+        friend constexpr H TurboHashValue(H state, AnySpan any_span) {
+            for (const auto& v : any_span) {
+                state = H::combine(std::move(state), v);
+            }
+            return H::combine(std::move(state), any_span.size());
+        }
 
- private:
-  template <typename U>
-  friend class AnySpan;
+    private:
+        template <typename U>
+        friend class AnySpan;
 
-  template <typename U>
-  friend bool any_span_internal::IsCheap(AnySpan<U> s);
+        template <typename U>
+        friend bool any_span_internal::IsCheap(AnySpan<U> s);
 
-  // Getter to access elements.
-  any_span_internal::Getter<T> getter_;
+        // Getter to access elements.
+        any_span_internal::Getter<T> getter_;
 
-  // The size of this span.
-  size_type size_ = 0;
+        // The size of this span.
+        size_type size_ = 0;
 
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnon-template-friend"
 #endif
-  // The technical reasons we need to declare these friends in this manner are
-  // quite subtle and confusing, but they're necessary on some toolchains to
-  // allow all mutable/const combinations with this & other range types while
-  // avoiding symbol collisions or ODR violations.
-  friend bool operator==(AnySpan<const T> a, AnySpan<const T> b);
-  friend bool operator!=(AnySpan<const T> a, AnySpan<const T> b);
+        // The technical reasons we need to declare these friends in this manner are
+        // quite subtle and confusing, but they're necessary on some toolchains to
+        // allow all mutable/const combinations with this & other range types while
+        // avoiding symbol collisions or ODR violations.
+        friend bool operator==(AnySpan<const T> a, AnySpan<const T> b);
+        friend bool operator!=(AnySpan<const T> a, AnySpan<const T> b);
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
 
-  // operator==
-  friend bool operator==(AnySpan a, AnySpan b) {
-    return any_span_internal::EqualImpl<const T>(a, b);
-  }
-  friend bool operator!=(AnySpan a, AnySpan b) { return !(a == b); }
-};
+        // operator==
+        friend bool operator==(AnySpan a, AnySpan b) {
+            return any_span_internal::EqualImpl<const T>(a, b);
+        }
+        friend bool operator!=(AnySpan a, AnySpan b) { return !(a == b); }
+    };
 
-// Constructs an AnySpan from a container or array.
-template <int&... ExplicitArgumentBarrier, typename Container,
-          typename T = any_span_internal::ElementType<Container>>
-std::enable_if_t<
-    turbo::type_traits_internal::IsView<std::remove_cv_t<Container>>::value,
-    AnySpan<T>>
-MakeAnySpan(Container& c) {
-  return AnySpan<T>(c);
-}
-template <int&... ExplicitArgumentBarrier, typename Container,
-          typename T = any_span_internal::ElementType<Container>>
-std::enable_if_t<
-    !turbo::type_traits_internal::IsView<std::remove_cv_t<Container>>::value,
-    AnySpan<T>>
-MakeAnySpan(Container& c KUMO_ATTRIBUTE_LIFETIME_BOUND) {
-  return AnySpan<T>(c);
-}
+    // Constructs an AnySpan from a container or array.
+    template <int&... ExplicitArgumentBarrier, typename Container,
+        typename T = any_span_internal::ElementType<Container>>
+    std::enable_if_t<
+        turbo::type_traits_internal::IsView<std::remove_cv_t<Container>>::value,
+        AnySpan<T>>
+    MakeAnySpan(Container& c) {
+        return AnySpan<T>(c);
+    }
+    template <int&... ExplicitArgumentBarrier, typename Container,
+        typename T = any_span_internal::ElementType<Container>>
+    std::enable_if_t<
+        !turbo::type_traits_internal::IsView<std::remove_cv_t<Container>>::value,
+        AnySpan<T>>
+    MakeAnySpan(Container& c KUMO_ATTRIBUTE_LIFETIME_BOUND) {
+        return AnySpan<T>(c);
+    }
 
-// Constructs an AnySpan that dereferences a container or array of pointers.
-template <int&... ExplicitArgumentBarrier, typename Container,
-          typename T = any_span_internal::DerefElementType<Container>>
-std::enable_if_t<
-    turbo::type_traits_internal::IsView<std::remove_cv_t<Container>>::value,
-    AnySpan<T>>
-MakeDerefAnySpan(Container& c) {
-  return AnySpan<T>(c, any_span_transform::Deref());
-}
-template <int&... ExplicitArgumentBarrier, typename Container,
-          typename T = any_span_internal::DerefElementType<Container>>
-std::enable_if_t<
-    !turbo::type_traits_internal::IsView<std::remove_cv_t<Container>>::value,
-    AnySpan<T>>
-MakeDerefAnySpan(Container& c KUMO_ATTRIBUTE_LIFETIME_BOUND) {
-  return AnySpan<T>(c, any_span_transform::Deref());
-}
+    // Constructs an AnySpan that dereferences a container or array of pointers.
+    template <int&... ExplicitArgumentBarrier, typename Container,
+        typename T = any_span_internal::DerefElementType<Container>>
+    std::enable_if_t<
+        turbo::type_traits_internal::IsView<std::remove_cv_t<Container>>::value,
+        AnySpan<T>>
+    MakeDerefAnySpan(Container& c) {
+        return AnySpan<T>(c, any_span_transform::Deref());
+    }
+    template <int&... ExplicitArgumentBarrier, typename Container,
+        typename T = any_span_internal::DerefElementType<Container>>
+    std::enable_if_t<
+        !turbo::type_traits_internal::IsView<std::remove_cv_t<Container>>::value,
+        AnySpan<T>>
+    MakeDerefAnySpan(Container& c KUMO_ATTRIBUTE_LIFETIME_BOUND) {
+        return AnySpan<T>(c, any_span_transform::Deref());
+    }
 
-// Constructs an AnySpan from a pointer and size.
-template <int&... ExplicitArgumentBarrier, typename T>
-AnySpan<T> MakeAnySpan(T* turbo_nullable ptr KUMO_ATTRIBUTE_LIFETIME_BOUND,
-                       std::size_t size) {
-  return AnySpan<T>(ptr, size);
-}
+    // Constructs an AnySpan from a pointer and size.
+    template <int&... ExplicitArgumentBarrier, typename T>
+    AnySpan<T> MakeAnySpan(T* turbo_nullable ptr KUMO_ATTRIBUTE_LIFETIME_BOUND,
+        std::size_t size) {
+        return AnySpan<T>(ptr, size);
+    }
 
-// Constructs a const AnySpan from a container or array.
-template <int&... ExplicitArgumentBarrier, typename Container,
-          typename T = any_span_internal::ElementType<const Container>>
-std::enable_if_t<turbo::type_traits_internal::IsView<Container>::value,
-                 AnySpan<const T>>
-MakeConstAnySpan(const Container& c) {
-  return AnySpan<const T>(c);
-}
-template <int&... ExplicitArgumentBarrier, typename Container,
-          typename T = any_span_internal::ElementType<const Container>>
-std::enable_if_t<!turbo::type_traits_internal::IsView<Container>::value,
-                 AnySpan<const T>>
-MakeConstAnySpan(const Container& c KUMO_ATTRIBUTE_LIFETIME_BOUND) {
-  return AnySpan<const T>(c);
-}
+    // Constructs a const AnySpan from a container or array.
+    template <int&... ExplicitArgumentBarrier, typename Container,
+        typename T = any_span_internal::ElementType<const Container>>
+    std::enable_if_t<turbo::type_traits_internal::IsView<Container>::value,
+        AnySpan<const T>>
+    MakeConstAnySpan(const Container& c) {
+        return AnySpan<const T>(c);
+    }
+    template <int&... ExplicitArgumentBarrier, typename Container,
+        typename T = any_span_internal::ElementType<const Container>>
+    std::enable_if_t<!turbo::type_traits_internal::IsView<Container>::value,
+        AnySpan<const T>>
+    MakeConstAnySpan(const Container& c KUMO_ATTRIBUTE_LIFETIME_BOUND) {
+        return AnySpan<const T>(c);
+    }
 
-// Constructs a const AnySpan that dereferences a container or array of
-// pointers.
-template <int&... ExplicitArgumentBarrier, typename Container,
-          typename T = any_span_internal::DerefElementType<const Container>>
-std::enable_if_t<turbo::type_traits_internal::IsView<Container>::value,
-                 AnySpan<const T>>
-MakeConstDerefAnySpan(const Container& c) {
-  return AnySpan<const T>(c, any_span_transform::Deref());
-}
-template <int&... ExplicitArgumentBarrier, typename Container,
-          typename T = any_span_internal::DerefElementType<const Container>>
-std::enable_if_t<!turbo::type_traits_internal::IsView<Container>::value,
-                 AnySpan<const T>>
-MakeConstDerefAnySpan(const Container& c KUMO_ATTRIBUTE_LIFETIME_BOUND) {
-  return AnySpan<const T>(c, any_span_transform::Deref());
-}
+    // Constructs a const AnySpan that dereferences a container or array of
+    // pointers.
+    template <int&... ExplicitArgumentBarrier, typename Container,
+        typename T = any_span_internal::DerefElementType<const Container>>
+    std::enable_if_t<turbo::type_traits_internal::IsView<Container>::value,
+        AnySpan<const T>>
+    MakeConstDerefAnySpan(const Container& c) {
+        return AnySpan<const T>(c, any_span_transform::Deref());
+    }
+    template <int&... ExplicitArgumentBarrier, typename Container,
+        typename T = any_span_internal::DerefElementType<const Container>>
+    std::enable_if_t<!turbo::type_traits_internal::IsView<Container>::value,
+        AnySpan<const T>>
+    MakeConstDerefAnySpan(const Container& c KUMO_ATTRIBUTE_LIFETIME_BOUND) {
+        return AnySpan<const T>(c, any_span_transform::Deref());
+    }
 
-// Constructs an AnySpan from a pointer and size.
-template <int&... ExplicitArgumentBarrier, typename T>
-AnySpan<const T> MakeConstAnySpan(const T* turbo_nullable ptr,
-                                  std::size_t size) {
-  return AnySpan<const T>(ptr, size);
-}
+    // Constructs an AnySpan from a pointer and size.
+    template <int&... ExplicitArgumentBarrier, typename T>
+    AnySpan<const T> MakeConstAnySpan(const T* turbo_nullable ptr,
+        std::size_t size) {
+        return AnySpan<const T>(ptr, size);
+    }
 
-//
-// Implementation details follow.
-//
+    //
+    // Implementation details follow.
+    //
 
-template <typename T>
-const typename AnySpan<T>::size_type AnySpan<T>::npos;
+    template <typename T>
+    const typename AnySpan<T>::size_type AnySpan<T>::npos;
 
-// Iterator base class. Uses CRTP (Iter should be the child class). Constness of
-// the iterator is determined by the constness of Value.
-template <typename T>
-template <typename Iter, typename Value>
-class KUMO_ATTRIBUTE_VIEW AnySpan<T>::IteratorBase {
- private:
-  // Returns a reference to this as the child class.
-  const Iter& self() const { return static_cast<const Iter&>(*this); }
-  Iter& self() { return static_cast<Iter&>(*this); }
+    // Iterator base class. Uses CRTP (Iter should be the child class). Constness of
+    // the iterator is determined by the constness of Value.
+    template <typename T>
+    template <typename Iter, typename Value>
+    class KUMO_ATTRIBUTE_VIEW AnySpan<T>::IteratorBase {
+    private:
+        // Returns a reference to this as the child class.
+        const Iter& self() const { return static_cast<const Iter&>(*this); }
+        Iter& self() { return static_cast<Iter&>(*this); }
 
- public:
-  using iterator_category = std::random_access_iterator_tag;
-  using value_type = std::remove_const_t<Value>;
-  using difference_type = std::ptrdiff_t;
-  using reference = Value&;
-  using pointer = Value*;
+    public:
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type = std::remove_const_t<Value>;
+        using difference_type = std::ptrdiff_t;
+        using reference = Value&;
+        using pointer = Value*;
 
-  // Constructs an invalid iterator.
-  IteratorBase() = default;
+        // Constructs an invalid iterator.
+        IteratorBase() = default;
 
-  reference operator*() const { return (*container_)[index_]; }
+        reference operator*() const { return (*container_)[index_]; }
 
-  pointer turbo_nonnull operator->() const { return &(*container_)[index_]; }
+        pointer turbo_nonnull operator->() const { return &(*container_)[index_]; }
 
-  reference operator[](difference_type i) const {
-    return (*container_)[index_ + i];
-  }
+        reference operator[](difference_type i) const {
+            return (*container_)[index_ + i];
+        }
 
-  Iter& operator+=(difference_type d) {
-    index_ += d;
-    return self();
-  }
+        Iter& operator+=(difference_type d) {
+            index_ += d;
+            return self();
+        }
 
-  Iter& operator-=(difference_type d) { return self() += -d; }
+        Iter& operator-=(difference_type d) { return self() += -d; }
 
-  Iter& operator++() {
-    self() += 1;
-    return self();
-  }
+        Iter& operator++() {
+            self() += 1;
+            return self();
+        }
 
-  Iter operator++(int) {
-    Iter copy(self());
-    ++self();
-    return copy;
-  }
+        Iter operator++(int) {
+            Iter copy(self());
+            ++self();
+            return copy;
+        }
 
-  Iter& operator--() {
-    self() -= 1;
-    return self();
-  }
+        Iter& operator--() {
+            self() -= 1;
+            return self();
+        }
 
-  Iter operator--(int) {
-    Iter copy(self());
-    --self();
-    return copy;
-  }
+        Iter operator--(int) {
+            Iter copy(self());
+            --self();
+            return copy;
+        }
 
-  Iter operator+(difference_type d) const {
-    Iter tmp = self();
-    tmp += d;
-    return tmp;
-  }
+        Iter operator+(difference_type d) const {
+            Iter tmp = self();
+            tmp += d;
+            return tmp;
+        }
 
-  friend Iter operator+(difference_type d, Iter i) { return i + d; }
+        friend Iter operator+(difference_type d, Iter i) { return i + d; }
 
-  Iter operator-(difference_type d) const { return self() + (-d); }
+        Iter operator-(difference_type d) const { return self() + (-d); }
 
-  difference_type operator-(const Iter& other) const {
-    return index_ - other.index_;
-  }
+        difference_type operator-(const Iter& other) const {
+            return index_ - other.index_;
+        }
 
-  friend bool operator==(const Iter& a, const Iter& b) {
-    return a.index_ == b.index_;
-  }
+        friend bool operator==(const Iter& a, const Iter& b) {
+            return a.index_ == b.index_;
+        }
 
-  friend bool operator!=(const Iter& a, const Iter& b) {
-    return a.index_ != b.index_;
-  }
+        friend bool operator!=(const Iter& a, const Iter& b) {
+            return a.index_ != b.index_;
+        }
 
-  friend bool operator<(const Iter& a, const Iter& b) {
-    return a.index_ < b.index_;
-  }
+        friend bool operator<(const Iter& a, const Iter& b) {
+            return a.index_ < b.index_;
+        }
 
-  friend bool operator<=(const Iter& a, const Iter& b) {
-    return a.index_ <= b.index_;
-  }
+        friend bool operator<=(const Iter& a, const Iter& b) {
+            return a.index_ <= b.index_;
+        }
 
-  friend bool operator>(const Iter& a, const Iter& b) {
-    return a.index_ > b.index_;
-  }
+        friend bool operator>(const Iter& a, const Iter& b) {
+            return a.index_ > b.index_;
+        }
 
-  friend bool operator>=(const Iter& a, const Iter& b) {
-    return a.index_ >= b.index_;
-  }
+        friend bool operator>=(const Iter& a, const Iter& b) {
+            return a.index_ >= b.index_;
+        }
 
- protected:
-  // Constructs an iterator that points to the given index of the given span.
-  IteratorBase(const AnySpan* turbo_nullable container, size_type index)
-      : container_(container), index_(index) {}
+    protected:
+        // Constructs an iterator that points to the given index of the given span.
+        IteratorBase(const AnySpan* turbo_nullable container, size_type index)
+            : container_(container)
+            , index_(index) { }
 
-  const AnySpan* turbo_nullable container_ = nullptr;
-  size_type index_ = 0;
-};
+        const AnySpan* turbo_nullable container_ = nullptr;
+        size_type index_ = 0;
+    };
 
-// iterator implementation. This mostly just forwards to IteratorBase.
-template <typename T>
-class KUMO_ATTRIBUTE_VIEW AnySpan<T>::iterator
-    : public IteratorBase<iterator, T> {
- private:
-  using Base = IteratorBase<iterator, T>;
+    // iterator implementation. This mostly just forwards to IteratorBase.
+    template <typename T>
+    class KUMO_ATTRIBUTE_VIEW AnySpan<T>::iterator
+        : public IteratorBase<iterator, T> {
+    private:
+        using Base = IteratorBase<iterator, T>;
 
- public:
-  using typename Base::difference_type;
-  using typename Base::iterator_category;
-  using typename Base::pointer;
-  using typename Base::reference;
-  using typename Base::value_type;
+    public:
+        using typename Base::difference_type;
+        using typename Base::iterator_category;
+        using typename Base::pointer;
+        using typename Base::reference;
+        using typename Base::value_type;
 
-  iterator() = default;
+        iterator() = default;
 
- private:
-  // Only let AnySpan construct valid instances.
-  friend class AnySpan;
+    private:
+        // Only let AnySpan construct valid instances.
+        friend class AnySpan;
 
-  iterator(const AnySpan* turbo_nullable container, size_type index)
-      : Base(container, index) {}
-};
+        iterator(const AnySpan* turbo_nullable container, size_type index)
+            : Base(container, index) { }
+    };
 
-// const_iterator implementation. This mostly just forwards to IteratorBase,
-// but also provides conversion from MutableIterator.
-template <typename T>
-class AnySpan<T>::const_iterator
-    : public IteratorBase<const_iterator, std::add_const_t<T>> {
- private:
-  using Base = IteratorBase<const_iterator, std::add_const_t<T>>;
+    // const_iterator implementation. This mostly just forwards to IteratorBase,
+    // but also provides conversion from MutableIterator.
+    template <typename T>
+    class AnySpan<T>::const_iterator
+        : public IteratorBase<const_iterator, std::add_const_t<T>> {
+    private:
+        using Base = IteratorBase<const_iterator, std::add_const_t<T>>;
 
- public:
-  using typename Base::difference_type;
-  using typename Base::iterator_category;
-  using typename Base::pointer;
-  using typename Base::reference;
-  using typename Base::value_type;
+    public:
+        using typename Base::difference_type;
+        using typename Base::iterator_category;
+        using typename Base::pointer;
+        using typename Base::reference;
+        using typename Base::value_type;
 
-  const_iterator() = default;
+        const_iterator() = default;
 
-  // Support conversion from mutable iterators.
-  // NOLINTNEXTLINE(google-explicit-constructor)
-  const_iterator(const iterator& other)  // NOLINT(runtime/explicit)
-      : Base(other.container_, other.index_) {}
+        // Support conversion from mutable iterators.
+        // NOLINTNEXTLINE(google-explicit-constructor)
+        const_iterator(const iterator& other) // NOLINT(runtime/explicit)
+            : Base(other.container_, other.index_) { }
 
- private:
-  // Only let AnySpan construct valid instances.
-  friend class AnySpan;
+    private:
+        // Only let AnySpan construct valid instances.
+        friend class AnySpan;
 
-  const_iterator(const AnySpan* turbo_nullable container, size_type index)
-      : Base(container, index) {}
-};
+        const_iterator(const AnySpan* turbo_nullable container, size_type index)
+            : Base(container, index) { }
+    };
 
+} // namespace turbo
 
-}  // namespace turbo
-
-#endif  // TURBO_TYPES_ANY_SPAN_H_
+#endif // TURBO_TYPES_ANY_SPAN_H_

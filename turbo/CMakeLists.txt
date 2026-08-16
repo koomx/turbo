@@ -46,10 +46,6 @@ set(BITS_SRC
 )
 
 
-set(CONTAINER_SRC
-        container/internal/raw_hash_set.cc
-)
-
 set(CRC_SRC
         crc/crc32c.cc
         crc/internal/crc.cc
@@ -94,12 +90,9 @@ set(FLAGS_SRC
         flags/internal/commandlineflag.cc
         flags/internal/flag.cc
         flags/internal/private_handle_accessor.cc
-        flags/internal/program_name.cc
-        flags/internal/usage.cc
+        flags/argv.cc
         flags/marshalling.cc
-        flags/parse.cc
         flags/reflection.cc
-        flags/usage.cc
         flags/usage_config.cc
 )
 
@@ -114,7 +107,6 @@ set(LOG_SRC
         log/initialize.cc
         log/internal/check_op.cc
         log/internal/conditions.cc
-        log/internal/fnmatch.cc
         log/internal/globals.cc
         log/internal/log_format.cc
         log/internal/log_message.cc
@@ -127,6 +119,7 @@ set(LOG_SRC
         log/log_sink.cc
         log/sinks/android_log_sink.cc
         log/sinks/ansi_color_sink.cc
+        log/sinks/async_sink.cc
         log/sinks/daily_file_sink.cc
         log/sinks/hourly_file_sink.cc
         log/sinks/internal/append_file.cc
@@ -145,28 +138,13 @@ set(NUM_SRC
 )
 
 
-set(RANDOM_SRC
-        random/discrete_distribution.cc
-        random/gaussian_distribution.cc
-        random/internal/entropy_pool.cc
-        random/internal/gaussian_distribution_gentables.cc
-        random/internal/nanobenchmark.cc
-        random/internal/randen.cc
-        random/internal/randen_detect.cc
-        random/internal/randen_hwaes.cc
-        random/internal/randen_round_keys.cc
-        random/internal/randen_slow.cc
-        random/internal/seed_material.cc
-        random/seed_gen_exception.cc
-        random/seed_sequences.cc
-)
 
 set(STATUS_SRC
         status/internal/status_internal.cc
         status/status.cc
         status/status_builder.cc
         status/status_payload_printer.cc
-        status/statusor.cc
+        status/result.cc
 )
 
 set(STRINGS_SRC
@@ -187,6 +165,7 @@ set(STRINGS_SRC
         strings/str_replace.cc
         strings/str_split.cc
         strings/substitute.cc
+        strings/strip.cc
 )
 
 set(CORD_SRC
@@ -213,23 +192,6 @@ set(FORMAT_SRC
 )
 
 
-set(SYNC_SRC
-        synchronization/barrier.cc
-        synchronization/blocking_counter.cc
-        synchronization/internal/create_thread_identity.cc
-        synchronization/internal/futex_waiter.cc
-        synchronization/internal/graphcycles.cc
-        synchronization/internal/kernel_timeout.cc
-        synchronization/internal/per_thread_sem.cc
-        synchronization/internal/pthread_waiter.cc
-        synchronization/internal/sem_waiter.cc
-        synchronization/internal/stdcpp_waiter.cc
-        synchronization/internal/waiter_base.cc
-        synchronization/internal/win32_waiter.cc
-        synchronization/mutex.cc
-        synchronization/notification.cc
-)
-
 set(TIME_SRC
         time/civil_time.cc
         time/clock.cc
@@ -255,10 +217,10 @@ set(CCTZ_SRC
 set(TYPES_SRC
         types/source_location.cc
 )
+
 set(TURBO_SRC
         ${BASE_SRC}
         ${BITS_SRC}
-        ${CONTAINER_SRC}
         ${CORD_SRC}
         ${CRC_SRC}
         ${DBG_SRC}
@@ -267,10 +229,8 @@ set(TURBO_SRC
         ${HASH_SRC}
         ${LOG_SRC}
         ${NUM_SRC}
-        ${RANDOM_SRC}
         ${STATUS_SRC}
         ${STRINGS_SRC}
-        ${SYNC_SRC}
         ${TIME_SRC}
         ${CCTZ_SRC}
         ${TYPES_SRC}

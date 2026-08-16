@@ -15,6 +15,7 @@
 
 set(MEMORY_TESTS
         memory_test
+        container_memory_test
 )
 
 foreach (case IN LISTS MEMORY_TESTS)
@@ -29,6 +30,7 @@ foreach (case IN LISTS MEMORY_TESTS)
             GTest::gtest
             GTest::gmock
             GTest::gtest_main
+            turbo::test_utils_static
             turbo::turbo_static
             ${KMCMAKE_DEPS_LINK}
     )

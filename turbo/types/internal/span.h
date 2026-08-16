@@ -19,38 +19,37 @@
 #include <algorithm>
 #include <cstddef>
 #include <string>
-#include <type_traits>
 #include <turbo/macros/config.h>
 #include <turbo/meta/type_traits.h>
+#include <type_traits>
 
 namespace turbo {
-    template<typename T>
+    template <typename T>
     class Span;
 
     namespace span_internal {
         // Wrappers for access to container data pointers.
-        template<typename C>
-        constexpr auto GetDataImpl(C &c, char) noexcept // NOLINT(runtime/references)
+        template <typename C>
+        constexpr auto GetDataImpl(C& c, char) noexcept // NOLINT(runtime/references)
             -> decltype(c.data()) {
             return c.data();
         }
 
         // Before C++17, std::string::data returns a const char* in all cases.
-        inline char *GetDataImpl(std::string &s, // NOLINT(runtime/references)
-                                 int) noexcept {
+        inline char* GetDataImpl(std::string& s, // NOLINT(runtime/references)
+            int) noexcept {
             return &s[0];
         }
 
-        template<typename C>
-        constexpr auto GetData(C &c) noexcept // NOLINT(runtime/references)
+        template <typename C>
+        constexpr auto GetData(C& c) noexcept // NOLINT(runtime/references)
             -> decltype(GetDataImpl(c, 0)) {
             return GetDataImpl(c, 0);
         }
 
         // Detection idioms for size() and data().
-        template<typename C>
-        using HasSize =
-        std::is_integral<std::decay_t<decltype(std::declval<C &>().size())> >;
+        template <typename C>
+        using HasSize = std::is_integral<std::decay_t<decltype(std::declval<C&>().size())>>;
 
         // We want to enable conversion from vector<T*> to Span<const T* const> but
         // disable conversion from vector<Derived> to Span<Base>. Here we use
@@ -58,35 +57,34 @@ namespace turbo {
         // type or a more cv-qualified version of U.  We also decay the result type of
         // data() to avoid problems with classes which have a member function data()
         // which returns a reference.
-        template<typename T, typename C>
-        using HasData =
-        std::is_convertible<std::decay_t<decltype(GetData(std::declval<C &>()))> *,
-            T * const*>;
+        template <typename T, typename C>
+        using HasData = std::is_convertible<std::decay_t<decltype(GetData(std::declval<C&>()))>*,
+            T* const*>;
 
         // Extracts value type from a Container
-        template<typename C>
+        template <typename C>
         struct ElementType {
             using type = typename std::remove_reference_t<C>::value_type;
         };
 
-        template<typename T, size_t N>
+        template <typename T, size_t N>
         struct ElementType<T (&)[N]> {
             using type = T;
         };
 
-        template<typename C>
+        template <typename C>
         using ElementT = typename ElementType<C>::type;
 
-        template<typename T>
+        template <typename T>
         using EnableIfMutable = std::enable_if_t<!std::is_const_v<T>, int>;
 
-        template<template <typename> class SpanT, typename T>
+        template <template <typename> class SpanT, typename T>
         constexpr bool EqualImpl(SpanT<T> a, SpanT<T> b) {
             static_assert(std::is_const_v<T>, "");
             return std::equal(a.begin(), a.end(), b.begin(), b.end());
         }
 
-        template<template <typename> class SpanT, typename T>
+        template <template <typename> class SpanT, typename T>
         constexpr bool LessThanImpl(SpanT<T> a, SpanT<T> b) {
             // We can't use value_type since that is remove_cv_t<T>, so we go the long way
             // around.
@@ -94,26 +92,25 @@ namespace turbo {
             return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
         }
 
-        template<typename From, typename To>
-        using EnableIfConvertibleTo = std::enable_if_t<std::is_convertible_v<From, To> >;
+        template <typename From, typename To>
+        using EnableIfConvertibleTo = std::enable_if_t<std::is_convertible_v<From, To>>;
 
         // IsView is true for types where the return type of .data() is the same for
         // mutable and const instances. This isn't foolproof, but it's only used to
         // enable a compiler warning.
-        template<typename T, typename = void, typename = void>
+        template <typename T, typename = void, typename = void>
         struct IsView {
             static constexpr bool value = false;
         };
 
-        template<typename T>
+        template <typename T>
         struct IsView<
-                    T, std::void_t<decltype(span_internal::GetData(std::declval<const T &>()))>,
-                    std::void_t<decltype(span_internal::GetData(std::declval<T &>()))> > {
+            T, std::void_t<decltype(span_internal::GetData(std::declval<const T&>()))>,
+            std::void_t<decltype(span_internal::GetData(std::declval<T&>()))>> {
         private:
             using Container = std::remove_const_t<T>;
-            using ConstData =
-            decltype(span_internal::GetData(std::declval<const Container &>()));
-            using MutData = decltype(span_internal::GetData(std::declval<Container &>()));
+            using ConstData = decltype(span_internal::GetData(std::declval<const Container&>()));
+            using MutData = decltype(span_internal::GetData(std::declval<Container&>()));
 
         public:
             static constexpr bool value = std::is_same_v<ConstData, MutData>;
@@ -121,12 +118,12 @@ namespace turbo {
 
         // These enablers result in 'int' so they can be used as typenames or defaults
         // in template parameters lists.
-        template<typename T>
+        template <typename T>
         using EnableIfIsView = std::enable_if_t<IsView<T>::value, int>;
 
-        template<typename T>
+        template <typename T>
         using EnableIfNotIsView = std::enable_if_t<!IsView<T>::value, int>;
     } // namespace span_internal
 } // namespace turbo
 
-#endif  // TURBO_TYPES_INTERNAL_SPAN_H_
+#endif // TURBO_TYPES_INTERNAL_SPAN_H_

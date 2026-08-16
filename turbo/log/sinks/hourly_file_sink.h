@@ -20,7 +20,7 @@
 #include <string>
 #include <string_view>
 
-#include <turbo/log/log_sink.h>
+#include <turbo/log/sinks/async_sink.h>
 #include <turbo/log/sinks/log_filename.h>
 #include <turbo/time/time.h>
 
@@ -29,8 +29,7 @@ namespace log_internal {
     class AppendFile;
 }  // namespace log_internal
 
-    // No per-sink mutex: LogSinkSet serializes send/flush.
-    class HourlyFileSink : public LogSink {
+    class HourlyFileSink : public AsyncSink {
     public:
         HourlyFileSink(std::string_view base_filename, uint16_t max_files = 84,
                        int check_interval_s = 60, bool truncate = false,
@@ -38,8 +37,11 @@ namespace log_internal {
 
         ~HourlyFileSink() override;
 
-        void send(const turbo::LogEntry &entry) override;
-        void flush() override;
+    protected:
+        void emit(std::string_view text, turbo::Time timestamp) override;
+        void emit_flush() override;
+        bool need_rewind(size_t addition_size, turbo::Time timestamp) override;
+        void reopen() override;
 
     private:
         void rotate_file(turbo::Time stamp);
@@ -48,8 +50,6 @@ namespace log_internal {
         bool _truncate;
         bool _utc;
         uint16_t _max_files;
-        int _check_interval_s;
-        turbo::Time _next_check{};
         std::deque<std::string> _files;
         std::unique_ptr<log_internal::AppendFile> _file;
     };
