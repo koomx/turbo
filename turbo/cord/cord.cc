@@ -50,7 +50,7 @@
 #include <turbo/cord/internal/cord_rep_crc.h>
 #include <turbo/cord/internal/cord_rep_flat.h>
 #include <turbo/strings/match.h>
-#include <turbo/strings/resize_and_overwrite.h>
+#include <turbo/base/resize_and_overwrite.h>
 #include <turbo/strings/str_cat.h>
 #include <string_view>
 #include <turbo/strings/strip.h>

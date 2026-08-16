@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <turbo/strings/resize_and_overwrite.h>
+#include <turbo/base/resize_and_overwrite.h>
 
 #include <algorithm>
 #include <cstddef>

@@ -1,10 +1,10 @@
-// Copyright 2017 The Abseil Authors.
+// Copyright (C) 2026 Kumo inc. and its affiliates. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      https://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,18 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// This test contains common things needed by both escaping_test.cc and
-// escaping_benchmark.cc.
 
-#ifndef TURBO_STRINGS_INTERNAL_ESCAPING_TEST_COMMON_H_
-#define TURBO_STRINGS_INTERNAL_ESCAPING_TEST_COMMON_H_
+#pragma once
 
 #include <array>
 #include <string_view>
 
 namespace turbo {
 
-namespace strings_internal {
+namespace encoding_internal {
 
 struct base64_testcase {
   std::string_view plaintext;
@@ -126,8 +123,6 @@ inline const std::array<base64_testcase, 5>& base64_strings() {
   return testcase;
 }
 
-}  // namespace strings_internal
+}  // namespace encoding_internal
 
 }  // namespace turbo
-
-#endif  // TURBO_STRINGS_INTERNAL_ESCAPING_TEST_COMMON_H_

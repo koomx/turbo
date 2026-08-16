@@ -43,8 +43,7 @@
 // https://en.cppreference.com/w/cpp/string/basic_string/resize_and_overwrite.html
 // https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1072r10.html
 
-#ifndef TURBO_STRINGS_RESIZE_AND_OVERWRITE_H_
-#define TURBO_STRINGS_RESIZE_AND_OVERWRITE_H_
+#pragma once
 
 #include <cstddef>
 #include <string> // IWYU pragma: keep
@@ -188,5 +187,3 @@ namespace turbo {
 } // namespace turbo
 
 #undef TURBO_INTERNAL_HAS_RESIZE_AND_OVERWRITE
-
-#endif // TURBO_STRINGS_RESIZE_AND_OVERWRITE_H_

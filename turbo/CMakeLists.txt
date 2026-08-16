@@ -85,6 +85,14 @@ set(DBG_SRC
         debugging/symbolize_unimplemented.inc
         debugging/symbolize_win32.inc
 )
+
+
+set(ENCODING_SRC
+        encoding/base58.cc
+        encoding/base64.cc
+        encoding/url.cc
+)
+
 set(FLAGS_SRC
         flags/commandlineflag.cc
         flags/internal/commandlineflag.cc
@@ -154,7 +162,6 @@ set(STRINGS_SRC
         strings/internal/charconv_bigint.cc
         strings/internal/charconv_parse.cc
         strings/internal/damerau_levenshtein_distance.cc
-        strings/internal/escaping.cc
         log/internal/generic_printer.cc
         strings/internal/memutil.cc
         strings/internal/pow10_helper.cc
@@ -224,6 +231,7 @@ set(TURBO_SRC
         ${CORD_SRC}
         ${CRC_SRC}
         ${DBG_SRC}
+        ${ENCODING_SRC}
         ${FLAGS_SRC}
         ${FORMAT_SRC}
         ${HASH_SRC}

@@ -50,7 +50,7 @@ void BM_WebSafeBase64Escape_string(benchmark::State& state) {
     }
   }
   for (auto _ : state) {
-    std::string escaped = turbo::web_safe_base64_escape(raw);
+    std::string escaped = turbo::web_safe_base64_encode(raw);
     benchmark::DoNotOptimize(escaped);
   }
 }
@@ -98,8 +98,8 @@ static void BM_UrlEscape(benchmark::State& state) {
   }
 
   for (auto _ : state) {
-    benchmark::DoNotOptimize(turbo::UrlEscape(all));
-    benchmark::DoNotOptimize(turbo::UrlEscape(alnum));
+    benchmark::DoNotOptimize(turbo::url_encode(all));
+    benchmark::DoNotOptimize(turbo::url_encode(alnum));
   }
 }
 BENCHMARK(BM_UrlEscape);
@@ -116,8 +116,8 @@ static void BM_UrlEscapePlus(benchmark::State& state) {
   }
 
   for (auto _ : state) {
-    benchmark::DoNotOptimize(turbo::UrlEscapePlus(all));
-    benchmark::DoNotOptimize(turbo::UrlEscapePlus(alnum));
+    benchmark::DoNotOptimize(turbo::url_encode_plus(all));
+    benchmark::DoNotOptimize(turbo::url_encode_plus(alnum));
   }
 }
 BENCHMARK(BM_UrlEscapePlus);

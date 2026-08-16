@@ -24,7 +24,6 @@ set(STRINGS_TESTS
         has_ostream_operator_test
         match_test
         numbers_test
-        resize_and_overwrite_test
         str_cat_test
         str_join_test
         str_replace_test

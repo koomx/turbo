@@ -113,7 +113,7 @@
 #include <turbo/meta/type_traits.h>
 #include <turbo/strings/internal/stringify_sink.h>
 #include <turbo/strings/numbers.h>
-#include <turbo/strings/resize_and_overwrite.h>
+#include <turbo/base/resize_and_overwrite.h>
 #include <turbo/strings/string_view.h>
 
 namespace turbo {

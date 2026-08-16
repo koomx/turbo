@@ -47,7 +47,7 @@
 #include <turbo/format/ostringstream.h>
 #include <turbo/macros/config.h>
 #include <turbo/meta/internal/iterator_traits.h>
-#include <turbo/strings/resize_and_overwrite.h>
+#include <turbo/base/resize_and_overwrite.h>
 #include <turbo/strings/str_cat.h>
 
 namespace turbo {

@@ -18,7 +18,7 @@
 #include <turbo/base/internal/hardening.h>
 #include <turbo/base/throw_delegate.h>
 #include <turbo/macros/config.h>
-#include <turbo/strings/resize_and_overwrite.h>
+#include <turbo/base/resize_and_overwrite.h>
 
 namespace turbo {
 

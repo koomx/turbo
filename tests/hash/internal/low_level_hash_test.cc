@@ -21,7 +21,7 @@
 #include <turbo/hash/hash.h>
 #include <turbo/strings/escaping.h>
 #include <string_view>
-
+#include <turbo/encoding/base64.h>
 #define UPDATE_GOLDEN 0
 
 namespace {
@@ -484,7 +484,7 @@ TEST(LowLevelHashTest, VerifyGolden) {
   (void)kGolden;  // Silence warning.
   for (size_t i = 0; i < kNumGoldenOutputs; ++i) {
     std::string str;
-    ASSERT_TRUE(turbo::base64_unescape(cases[i].base64_data, &str));
+    ASSERT_TRUE(turbo::base64_decode(cases[i].base64_data, &str));
     ASSERT_GT(str.size(), 32);
     uint64_t h = hash_fn(str, cases[i].seed);
     printf("0x%016" PRIx64 ", ", h);
@@ -499,7 +499,7 @@ TEST(LowLevelHashTest, VerifyGolden) {
     SCOPED_TRACE(::testing::Message()
                  << "i = " << i << "; input = " << cases[i].base64_data);
     std::string str;
-    ASSERT_TRUE(turbo::base64_unescape(cases[i].base64_data, &str));
+    ASSERT_TRUE(turbo::base64_decode(cases[i].base64_data, &str));
     ASSERT_GT(str.size(), 32);
     EXPECT_EQ(hash_fn(str, cases[i].seed), kGolden[i]);
   }

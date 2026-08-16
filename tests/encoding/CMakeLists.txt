@@ -13,39 +13,17 @@
 # limitations under the License.
 #
 
-kmcmake_cc_library(
-        NAMESPACE ${PROJECT_NAME}
-        NAME base_testing
-        SOURCES
-        internal/atomic_hook_test_helper.cc
-        internal/exception_safety_testing.cc
-        CXXOPTS
-        ${KMCMAKE_CXX_OPTIONS}
-        PLINKS
-        GTest::gtest
-        GTest::gmock
-        turbo::turbo_static
-        ${KMCMAKE_DEPS_LINK}
+set(ENCODING_TESTS
+        base32_test
+        base58_test
+        base64_test
+        url_test
 )
 
-set(BASE_TESTS
-        spinlock_test_common
-        call_once_test
-        fast_type_id_test
-        throw_delegate_test
-        log_severity_test
-        raw_logging_test
-        resize_and_overwrite_test
-        nullability_default_nonnull_test
-        exception_safety_testing_test
-        nullability_test
-        no_destructor_test
-)
-
-foreach (case IN LISTS BASE_TESTS)
+foreach (case IN LISTS ENCODING_TESTS)
     kmcmake_cc_test(
             NAME ${case}
-            MODULE base
+            MODULE encoding
             SOURCES
             ${case}.cc
             CXXOPTS
@@ -54,10 +32,7 @@ foreach (case IN LISTS BASE_TESTS)
             GTest::gtest
             GTest::gmock
             GTest::gtest_main
-            turbo::base_testing_static
             turbo::turbo_static
             ${KMCMAKE_DEPS_LINK}
     )
 endforeach ()
-
-add_subdirectory(internal)
