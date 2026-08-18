@@ -3,24 +3,18 @@
 #ifndef SIMDUTF_SIMDUTF_VERSION_H
 #define SIMDUTF_SIMDUTF_VERSION_H
 
-/** The version of simdutf being used (major.minor.revision) */
+/// The version of simdutf being used (major.minor.revision)
 #define SIMDUTF_VERSION "9.0.0"
 
 namespace simdutf {
-enum {
-  /**
-   * The major version (MAJOR.minor.revision) of simdutf being used.
-   */
-  SIMDUTF_VERSION_MAJOR = 9,
-  /**
-   * The minor version (major.MINOR.revision) of simdutf being used.
-   */
-  SIMDUTF_VERSION_MINOR = 0,
-  /**
-   * The revision (major.minor.REVISION) of simdutf being used.
-   */
-  SIMDUTF_VERSION_REVISION = 0
-};
+    enum {
+        /// The major version (MAJOR.minor.revision) of simdutf being used.
+        SIMDUTF_VERSION_MAJOR = 9,
+        /// The minor version (major.MINOR.revision) of simdutf being used.
+        SIMDUTF_VERSION_MINOR = 0,
+        /// The revision (major.minor.REVISION) of simdutf being used.
+        SIMDUTF_VERSION_REVISION = 0
+    };
 } // namespace simdutf
 
 #endif // SIMDUTF_SIMDUTF_VERSION_H

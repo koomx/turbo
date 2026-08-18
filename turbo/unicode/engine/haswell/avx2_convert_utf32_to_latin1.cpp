@@ -1,29 +1,27 @@
-std::pair<const char32_t *, char *>
-avx2_convert_utf32_to_latin1(const char32_t *buf, size_t len,
-                             char *latin1_output) {
-  const size_t rounded_len =
-      len & ~0x1F; // Round down to nearest multiple of 32
+std::pair<const char32_t*, char*>
+avx2_convert_utf32_to_latin1(const char32_t* buf, size_t len,
+    char* latin1_output) {
+    const size_t rounded_len = len & ~0x1F; // Round down to nearest multiple of 32
 
-  const __m256i high_bytes_mask = _mm256_set1_epi32(0xFFFFFF00);
+    const __m256i high_bytes_mask = _mm256_set1_epi32(0xFFFFFF00);
 
-  for (size_t i = 0; i < rounded_len; i += 4 * 8) {
-    __m256i a = _mm256_loadu_si256((__m256i *)(buf + 0 * 8));
-    __m256i b = _mm256_loadu_si256((__m256i *)(buf + 1 * 8));
-    __m256i c = _mm256_loadu_si256((__m256i *)(buf + 2 * 8));
-    __m256i d = _mm256_loadu_si256((__m256i *)(buf + 3 * 8));
+    for (size_t i = 0; i < rounded_len; i += 4 * 8) {
+        __m256i a = _mm256_loadu_si256((__m256i*)(buf + 0 * 8));
+        __m256i b = _mm256_loadu_si256((__m256i*)(buf + 1 * 8));
+        __m256i c = _mm256_loadu_si256((__m256i*)(buf + 2 * 8));
+        __m256i d = _mm256_loadu_si256((__m256i*)(buf + 3 * 8));
 
-    const __m256i check_combined =
-        _mm256_or_si256(_mm256_or_si256(a, b), _mm256_or_si256(c, d));
+        const __m256i check_combined = _mm256_or_si256(_mm256_or_si256(a, b), _mm256_or_si256(c, d));
 
-    if (!_mm256_testz_si256(check_combined, high_bytes_mask)) {
-      return std::make_pair(nullptr, latin1_output);
-    }
+        if (!_mm256_testz_si256(check_combined, high_bytes_mask)) {
+            return std::make_pair(nullptr, latin1_output);
+        }
 
-    b = _mm256_slli_epi32(b, 1 * 8);
-    c = _mm256_slli_epi32(c, 2 * 8);
-    d = _mm256_slli_epi32(d, 3 * 8);
+        b = _mm256_slli_epi32(b, 1 * 8);
+        c = _mm256_slli_epi32(c, 2 * 8);
+        d = _mm256_slli_epi32(d, 3 * 8);
 
-    // clang-format off
+        // clang-format off
 
     // a  = [.. .. .. a7|.. .. .. a6|.. .. .. a5|.. .. .. a4||.. .. .. a3|.. .. .. a2|.. .. .. a1|.. .. .. a0]
     // b  = [.. .. b7 ..|.. .. b6 ..|.. .. b5 ..|.. .. b4 ..||.. .. b3 ..|.. .. b2 ..|.. .. b1 ..|.. .. b0 ..]

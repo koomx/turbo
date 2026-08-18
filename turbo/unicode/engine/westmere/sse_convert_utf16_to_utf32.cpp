@@ -52,75 +52,71 @@
   A scalar routine should carry on the conversion of the tail.
 */
 template <endianness big_endian>
-std::pair<const char16_t *, char32_t *>
-sse_convert_utf16_to_utf32(const char16_t *buf, size_t len,
-                           char32_t *utf32_output) {
-  const char16_t *end = buf + len;
+std::pair<const char16_t*, char32_t*>
+sse_convert_utf16_to_utf32(const char16_t* buf, size_t len,
+    char32_t* utf32_output) {
+    const char16_t* end = buf + len;
 
-  const __m128i v_f800 = _mm_set1_epi16((int16_t)0xf800);
-  const __m128i v_d800 = _mm_set1_epi16((int16_t)0xd800);
+    const __m128i v_f800 = _mm_set1_epi16((int16_t)0xf800);
+    const __m128i v_d800 = _mm_set1_epi16((int16_t)0xd800);
 
-  while (end - buf >= 8) {
-    __m128i in = _mm_loadu_si128((__m128i *)buf);
+    while (end - buf >= 8) {
+        __m128i in = _mm_loadu_si128((__m128i*)buf);
 
-    if (big_endian) {
-      const __m128i swap =
-          _mm_setr_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
-      in = _mm_shuffle_epi8(in, swap);
-    }
-
-    // 1. Check if there are any surrogate word in the input chunk.
-    //    We have also deal with situation when there is a surrogate word
-    //    at the end of a chunk.
-    const __m128i surrogates_bytemask =
-        _mm_cmpeq_epi16(_mm_and_si128(in, v_f800), v_d800);
-
-    // bitmask = 0x0000 if there are no surrogates
-    //         = 0xc000 if the last word is a surrogate
-    const uint16_t surrogates_bitmask =
-        static_cast<uint16_t>(_mm_movemask_epi8(surrogates_bytemask));
-    // It might seem like checking for surrogates_bitmask == 0xc000 could help.
-    // However, it is likely an uncommon occurrence.
-    if (surrogates_bitmask == 0x0000) {
-      // case: no surrogate pair, extend 16-bit code units to 32-bit code units
-      _mm_storeu_si128(reinterpret_cast<__m128i *>(utf32_output),
-                       _mm_cvtepu16_epi32(in));
-      _mm_storeu_si128(reinterpret_cast<__m128i *>(utf32_output + 4),
-                       _mm_cvtepu16_epi32(_mm_srli_si128(in, 8)));
-      utf32_output += 8;
-      buf += 8;
-      // surrogate pair(s) in a register
-    } else {
-      // Let us do a scalar fallback.
-      // It may seem wasteful to use scalar code, but being efficient with SIMD
-      // in the presence of surrogate pairs may require non-trivial tables.
-      size_t forward = 15;
-      size_t k = 0;
-      if (size_t(end - buf) < forward + 1) {
-        forward = size_t(end - buf - 1);
-      }
-      for (; k < forward; k++) {
-        uint16_t word = scalar::utf16::swap_if_needed<big_endian>(buf[k]);
-        if ((word & 0xF800) != 0xD800) {
-          *utf32_output++ = char32_t(word);
-        } else {
-          // must be a surrogate pair
-          uint16_t diff = uint16_t(word - 0xD800);
-          uint16_t next_word =
-              scalar::utf16::swap_if_needed<big_endian>(buf[k + 1]);
-          k++;
-          uint16_t diff2 = uint16_t(next_word - 0xDC00);
-          if ((diff | diff2) > 0x3FF) {
-            return std::make_pair(nullptr, utf32_output);
-          }
-          uint32_t value = (diff << 10) + diff2 + 0x10000;
-          *utf32_output++ = char32_t(value);
+        if (big_endian) {
+            const __m128i swap = _mm_setr_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
+            in = _mm_shuffle_epi8(in, swap);
         }
-      }
-      buf += k;
-    }
-  } // while
-  return std::make_pair(buf, utf32_output);
+
+        // 1. Check if there are any surrogate word in the input chunk.
+        //    We have also deal with situation when there is a surrogate word
+        //    at the end of a chunk.
+        const __m128i surrogates_bytemask = _mm_cmpeq_epi16(_mm_and_si128(in, v_f800), v_d800);
+
+        // bitmask = 0x0000 if there are no surrogates
+        //         = 0xc000 if the last word is a surrogate
+        const uint16_t surrogates_bitmask = static_cast<uint16_t>(_mm_movemask_epi8(surrogates_bytemask));
+        // It might seem like checking for surrogates_bitmask == 0xc000 could help.
+        // However, it is likely an uncommon occurrence.
+        if (surrogates_bitmask == 0x0000) {
+            // case: no surrogate pair, extend 16-bit code units to 32-bit code units
+            _mm_storeu_si128(reinterpret_cast<__m128i*>(utf32_output),
+                _mm_cvtepu16_epi32(in));
+            _mm_storeu_si128(reinterpret_cast<__m128i*>(utf32_output + 4),
+                _mm_cvtepu16_epi32(_mm_srli_si128(in, 8)));
+            utf32_output += 8;
+            buf += 8;
+            // surrogate pair(s) in a register
+        } else {
+            // Let us do a scalar fallback.
+            // It may seem wasteful to use scalar code, but being efficient with SIMD
+            // in the presence of surrogate pairs may require non-trivial tables.
+            size_t forward = 15;
+            size_t k = 0;
+            if (size_t(end - buf) < forward + 1) {
+                forward = size_t(end - buf - 1);
+            }
+            for (; k < forward; k++) {
+                uint16_t word = scalar::utf16::swap_if_needed<big_endian>(buf[k]);
+                if ((word & 0xF800) != 0xD800) {
+                    *utf32_output++ = char32_t(word);
+                } else {
+                    // must be a surrogate pair
+                    uint16_t diff = uint16_t(word - 0xD800);
+                    uint16_t next_word = scalar::utf16::swap_if_needed<big_endian>(buf[k + 1]);
+                    k++;
+                    uint16_t diff2 = uint16_t(next_word - 0xDC00);
+                    if ((diff | diff2) > 0x3FF) {
+                        return std::make_pair(nullptr, utf32_output);
+                    }
+                    uint32_t value = (diff << 10) + diff2 + 0x10000;
+                    *utf32_output++ = char32_t(value);
+                }
+            }
+            buf += k;
+        }
+    } // while
+    return std::make_pair(buf, utf32_output);
 }
 
 /*
@@ -131,76 +127,72 @@ sse_convert_utf16_to_utf32(const char16_t *buf, size_t len,
   tail if needed.
 */
 template <endianness big_endian>
-std::pair<result, char32_t *>
-sse_convert_utf16_to_utf32_with_errors(const char16_t *buf, size_t len,
-                                       char32_t *utf32_output) {
-  const char16_t *start = buf;
-  const char16_t *end = buf + len;
+std::pair<result, char32_t*>
+sse_convert_utf16_to_utf32_with_errors(const char16_t* buf, size_t len,
+    char32_t* utf32_output) {
+    const char16_t* start = buf;
+    const char16_t* end = buf + len;
 
-  const __m128i v_f800 = _mm_set1_epi16((int16_t)0xf800);
-  const __m128i v_d800 = _mm_set1_epi16((int16_t)0xd800);
+    const __m128i v_f800 = _mm_set1_epi16((int16_t)0xf800);
+    const __m128i v_d800 = _mm_set1_epi16((int16_t)0xd800);
 
-  while (end - buf >= 8) {
-    __m128i in = _mm_loadu_si128((__m128i *)buf);
+    while (end - buf >= 8) {
+        __m128i in = _mm_loadu_si128((__m128i*)buf);
 
-    if (big_endian) {
-      const __m128i swap =
-          _mm_setr_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
-      in = _mm_shuffle_epi8(in, swap);
-    }
-
-    // 1. Check if there are any surrogate word in the input chunk.
-    //    We have also deal with situation when there is a surrogate word
-    //    at the end of a chunk.
-    const __m128i surrogates_bytemask =
-        _mm_cmpeq_epi16(_mm_and_si128(in, v_f800), v_d800);
-
-    // bitmask = 0x0000 if there are no surrogates
-    //         = 0xc000 if the last word is a surrogate
-    const uint16_t surrogates_bitmask =
-        static_cast<uint16_t>(_mm_movemask_epi8(surrogates_bytemask));
-    // It might seem like checking for surrogates_bitmask == 0xc000 could help.
-    // However, it is likely an uncommon occurrence.
-    if (surrogates_bitmask == 0x0000) {
-      // case: no surrogate pair, extend 16-bit code units to 32-bit code units
-      _mm_storeu_si128(reinterpret_cast<__m128i *>(utf32_output),
-                       _mm_cvtepu16_epi32(in));
-      _mm_storeu_si128(reinterpret_cast<__m128i *>(utf32_output + 4),
-                       _mm_cvtepu16_epi32(_mm_srli_si128(in, 8)));
-      utf32_output += 8;
-      buf += 8;
-      // surrogate pair(s) in a register
-    } else {
-      // Let us do a scalar fallback.
-      // It may seem wasteful to use scalar code, but being efficient with SIMD
-      // in the presence of surrogate pairs may require non-trivial tables.
-      size_t forward = 15;
-      size_t k = 0;
-      if (size_t(end - buf) < forward + 1) {
-        forward = size_t(end - buf - 1);
-      }
-      for (; k < forward; k++) {
-        uint16_t word = scalar::utf16::swap_if_needed<big_endian>(buf[k]);
-        if ((word & 0xF800) != 0xD800) {
-          *utf32_output++ = char32_t(word);
-        } else {
-          // must be a surrogate pair
-          uint16_t diff = uint16_t(word - 0xD800);
-          uint16_t next_word =
-              scalar::utf16::swap_if_needed<big_endian>(buf[k + 1]);
-          k++;
-          uint16_t diff2 = uint16_t(next_word - 0xDC00);
-          if ((diff | diff2) > 0x3FF) {
-            return std::make_pair(
-                result(error_code::SURROGATE, buf - start + k - 1),
-                utf32_output);
-          }
-          uint32_t value = (diff << 10) + diff2 + 0x10000;
-          *utf32_output++ = char32_t(value);
+        if (big_endian) {
+            const __m128i swap = _mm_setr_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
+            in = _mm_shuffle_epi8(in, swap);
         }
-      }
-      buf += k;
-    }
-  } // while
-  return std::make_pair(result(error_code::SUCCESS, buf - start), utf32_output);
+
+        // 1. Check if there are any surrogate word in the input chunk.
+        //    We have also deal with situation when there is a surrogate word
+        //    at the end of a chunk.
+        const __m128i surrogates_bytemask = _mm_cmpeq_epi16(_mm_and_si128(in, v_f800), v_d800);
+
+        // bitmask = 0x0000 if there are no surrogates
+        //         = 0xc000 if the last word is a surrogate
+        const uint16_t surrogates_bitmask = static_cast<uint16_t>(_mm_movemask_epi8(surrogates_bytemask));
+        // It might seem like checking for surrogates_bitmask == 0xc000 could help.
+        // However, it is likely an uncommon occurrence.
+        if (surrogates_bitmask == 0x0000) {
+            // case: no surrogate pair, extend 16-bit code units to 32-bit code units
+            _mm_storeu_si128(reinterpret_cast<__m128i*>(utf32_output),
+                _mm_cvtepu16_epi32(in));
+            _mm_storeu_si128(reinterpret_cast<__m128i*>(utf32_output + 4),
+                _mm_cvtepu16_epi32(_mm_srli_si128(in, 8)));
+            utf32_output += 8;
+            buf += 8;
+            // surrogate pair(s) in a register
+        } else {
+            // Let us do a scalar fallback.
+            // It may seem wasteful to use scalar code, but being efficient with SIMD
+            // in the presence of surrogate pairs may require non-trivial tables.
+            size_t forward = 15;
+            size_t k = 0;
+            if (size_t(end - buf) < forward + 1) {
+                forward = size_t(end - buf - 1);
+            }
+            for (; k < forward; k++) {
+                uint16_t word = scalar::utf16::swap_if_needed<big_endian>(buf[k]);
+                if ((word & 0xF800) != 0xD800) {
+                    *utf32_output++ = char32_t(word);
+                } else {
+                    // must be a surrogate pair
+                    uint16_t diff = uint16_t(word - 0xD800);
+                    uint16_t next_word = scalar::utf16::swap_if_needed<big_endian>(buf[k + 1]);
+                    k++;
+                    uint16_t diff2 = uint16_t(next_word - 0xDC00);
+                    if ((diff | diff2) > 0x3FF) {
+                        return std::make_pair(
+                            result(error_code::SURROGATE, buf - start + k - 1),
+                            utf32_output);
+                    }
+                    uint32_t value = (diff << 10) + diff2 + 0x10000;
+                    *utf32_output++ = char32_t(value);
+                }
+            }
+            buf += k;
+        }
+    } // while
+    return std::make_pair(result(error_code::SUCCESS, buf - start), utf32_output);
 }

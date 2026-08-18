@@ -2,47 +2,45 @@
 #define SIMDUTF_LASX_H
 
 #ifdef SIMDUTF_FALLBACK_H
-  #error "lasx.h must be included before fallback.h"
+#error "lasx.h must be included before fallback.h"
 #endif
 
 #include <turbo/unicode/engine/portability.h>
 
 #ifndef SIMDUTF_IMPLEMENTATION_LASX
-  #define SIMDUTF_IMPLEMENTATION_LASX (SIMDUTF_IS_LSX)
+#define SIMDUTF_IMPLEMENTATION_LASX (SIMDUTF_IS_LSX)
 #endif
 #if SIMDUTF_IMPLEMENTATION_LASX && SIMDUTF_IS_LASX
-  #define SIMDUTF_CAN_ALWAYS_RUN_LASX 1
+#define SIMDUTF_CAN_ALWAYS_RUN_LASX 1
 #else
-  #define SIMDUTF_CAN_ALWAYS_RUN_LASX 0
+#define SIMDUTF_CAN_ALWAYS_RUN_LASX 0
 #endif
 
 #define SIMDUTF_CAN_ALWAYS_RUN_FALLBACK (SIMDUTF_IMPLEMENTATION_FALLBACK)
 #include <turbo/unicode/internal/isadetection.h>
 
 #if SIMDUTF_IMPLEMENTATION_LASX
-  #define SIMDUTF_TARGET_LASX SIMDUTF_TARGET_REGION("lasx,lsx")
+#define SIMDUTF_TARGET_LASX SIMDUTF_TARGET_REGION("lasx,lsx")
 
-  // For runtime dispatching to work, we need the lsxintrin to appear
-  // before we call SIMDUTF_TARGET_LASX. It is unclear why.
-  #include <lsxintrin.h>
+// For runtime dispatching to work, we need the lsxintrin to appear
+// before we call SIMDUTF_TARGET_LASX. It is unclear why.
+#include <lsxintrin.h>
 
 namespace simdutf {
-/**
- * Implementation for LoongArch ASX.
- */
-namespace lasx {} // namespace lasx
+    /// Implementation for LoongArch ASX.
+    namespace lasx { } // namespace lasx
 } // namespace simdutf
 
-  #include <turbo/unicode/engine/lasx/implementation.h>
+#include <turbo/unicode/engine/lasx/implementation.h>
 
-  #include <turbo/unicode/engine/lasx/begin.h>
+#include <turbo/unicode/engine/lasx/begin.h>
 
-  // Declarations
-  #include <turbo/unicode/engine/lasx/intrinsics.h>
-  #include <turbo/unicode/engine/lasx/bitmanipulation.h>
-  #include <turbo/unicode/engine/lasx/simd.h>
+// Declarations
+#include <turbo/unicode/engine/lasx/intrinsics.h>
+#include <turbo/unicode/engine/lasx/bitmanipulation.h>
+#include <turbo/unicode/engine/lasx/simd.h>
 
-  #include <turbo/unicode/engine/lasx/end.h>
+#include <turbo/unicode/engine/lasx/end.h>
 
 #endif // SIMDUTF_IMPLEMENTATION_LASX
 

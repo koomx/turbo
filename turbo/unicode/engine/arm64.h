@@ -2,18 +2,18 @@
 #define SIMDUTF_ARM64_H
 
 #ifdef SIMDUTF_FALLBACK_H
-  #error "arm64.h must be included before fallback.h"
+#error "arm64.h must be included before fallback.h"
 #endif
 
 #include <turbo/unicode/engine/portability.h>
 
 #ifndef SIMDUTF_IMPLEMENTATION_ARM64
-  #define SIMDUTF_IMPLEMENTATION_ARM64 (SIMDUTF_IS_ARM64)
+#define SIMDUTF_IMPLEMENTATION_ARM64 (SIMDUTF_IS_ARM64)
 #endif
 #if SIMDUTF_IMPLEMENTATION_ARM64 && SIMDUTF_IS_ARM64
-  #define SIMDUTF_CAN_ALWAYS_RUN_ARM64 1
+#define SIMDUTF_CAN_ALWAYS_RUN_ARM64 1
 #else
-  #define SIMDUTF_CAN_ALWAYS_RUN_ARM64 0
+#define SIMDUTF_CAN_ALWAYS_RUN_ARM64 0
 #endif
 
 #include <turbo/unicode/internal/isadetection.h>
@@ -21,22 +21,20 @@
 #if SIMDUTF_IMPLEMENTATION_ARM64
 
 namespace simdutf {
-/**
- * Implementation for NEON (ARMv8).
- */
-namespace arm64 {} // namespace arm64
+    /// Implementation for NEON (ARMv8).
+    namespace arm64 { } // namespace arm64
 } // namespace simdutf
 
-  #include <turbo/unicode/engine/arm64/implementation.h>
+#include <turbo/unicode/engine/arm64/implementation.h>
 
-  #include <turbo/unicode/engine/arm64/begin.h>
+#include <turbo/unicode/engine/arm64/begin.h>
 
-  // Declarations
-  #include <turbo/unicode/engine/arm64/intrinsics.h>
-  #include <turbo/unicode/engine/arm64/bitmanipulation.h>
-  #include <turbo/unicode/engine/arm64/simd.h>
+// Declarations
+#include <turbo/unicode/engine/arm64/intrinsics.h>
+#include <turbo/unicode/engine/arm64/bitmanipulation.h>
+#include <turbo/unicode/engine/arm64/simd.h>
 
-  #include <turbo/unicode/engine/arm64/end.h>
+#include <turbo/unicode/engine/arm64/end.h>
 
 #endif // SIMDUTF_IMPLEMENTATION_ARM64
 

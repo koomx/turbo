@@ -5,9 +5,9 @@
 #include <limits>
 
 namespace simdutf {
-namespace SIMDUTF_IMPLEMENTATION {
-namespace {} // unnamed namespace
-} // namespace SIMDUTF_IMPLEMENTATION
+    namespace SIMDUTF_IMPLEMENTATION {
+        namespace { } // unnamed namespace
+    } // namespace SIMDUTF_IMPLEMENTATION
 } // namespace simdutf
 
 #endif // SIMDUTF_FALLBACK_BITMANIPULATION_H

@@ -1,7 +1,7 @@
 namespace internal {
-namespace westmere {
+    namespace westmere {
 
 #include <turbo/unicode/engine/westmere/internal/write_v_u16_11bits_to_utf8.cpp>
 
-} // namespace westmere
+    } // namespace westmere
 } // namespace internal

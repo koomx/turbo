@@ -33,86 +33,84 @@ SIMDUTF_POP_DISABLE_WARNINGS
 // The scalar routines should be included once.
 #include <turbo/unicode/engine/scalar/swap_bytes.h>
 #if SIMDUTF_FEATURE_ASCII
-  #include <turbo/unicode/engine/scalar/ascii.h>
+#include <turbo/unicode/engine/scalar/ascii.h>
 #endif // SIMDUTF_FEATURE_ASCII
 #if SIMDUTF_FEATURE_UTF8 || SIMDUTF_FEATURE_DETECT_ENCODING
-  #include <turbo/unicode/engine/scalar/utf8.h>
+#include <turbo/unicode/engine/scalar/utf8.h>
 #endif // SIMDUTF_FEATURE_UTF8 || SIMDUTF_FEATURE_DETECT_ENCODING
-#if SIMDUTF_FEATURE_UTF16 || SIMDUTF_FEATURE_DETECT_ENCODING ||                \
-    (SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1)
-  #include <turbo/unicode/engine/scalar/utf16.h>
+#if SIMDUTF_FEATURE_UTF16 || SIMDUTF_FEATURE_DETECT_ENCODING || (SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1)
+#include <turbo/unicode/engine/scalar/utf16.h>
 #endif // SIMDUTF_FEATURE_UTF16 || SIMDUTF_FEATURE_DETECT_ENCODING ||
        // (SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1)
 #if SIMDUTF_FEATURE_UTF32 || SIMDUTF_FEATURE_DETECT_ENCODING
-  #include <turbo/unicode/engine/scalar/utf32.h>
+#include <turbo/unicode/engine/scalar/utf32.h>
 #endif // SIMDUTF_FEATURE_UTF32 || SIMDUTF_FEATURE_DETECT_ENCODING
 #if SIMDUTF_FEATURE_LATIN1
-  #include <turbo/unicode/engine/scalar/latin1.h>
+#include <turbo/unicode/engine/scalar/latin1.h>
 #endif // SIMDUTF_FEATURE_LATIN1
 #if SIMDUTF_FEATURE_BASE64
-  #include <turbo/unicode/engine/scalar/base64.h>
+#include <turbo/unicode/engine/scalar/base64.h>
 #endif // SIMDUTF_FEATURE_BASE64
 
 #if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
-  #include <turbo/unicode/engine/scalar/utf32_to_utf8/valid_utf32_to_utf8.h>
-  #include <turbo/unicode/engine/scalar/utf32_to_utf8/utf32_to_utf8.h>
+#include <turbo/unicode/engine/scalar/utf32_to_utf8/valid_utf32_to_utf8.h>
+#include <turbo/unicode/engine/scalar/utf32_to_utf8/utf32_to_utf8.h>
 #endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
 
 #if SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32
-  #include <turbo/unicode/engine/scalar/utf32_to_utf16/valid_utf32_to_utf16.h>
-  #include <turbo/unicode/engine/scalar/utf32_to_utf16/utf32_to_utf16.h>
+#include <turbo/unicode/engine/scalar/utf32_to_utf16/valid_utf32_to_utf16.h>
+#include <turbo/unicode/engine/scalar/utf32_to_utf16/utf32_to_utf16.h>
 #endif // SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32
 
 #if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
-  #include <turbo/unicode/engine/scalar/utf16_to_utf8/valid_utf16_to_utf8.h>
-  #include <turbo/unicode/engine/scalar/utf16_to_utf8/utf16_to_utf8.h>
+#include <turbo/unicode/engine/scalar/utf16_to_utf8/valid_utf16_to_utf8.h>
+#include <turbo/unicode/engine/scalar/utf16_to_utf8/utf16_to_utf8.h>
 #endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
 
 #if SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32
-  #include <turbo/unicode/engine/scalar/utf16_to_utf32/valid_utf16_to_utf32.h>
-  #include <turbo/unicode/engine/scalar/utf16_to_utf32/utf16_to_utf32.h>
+#include <turbo/unicode/engine/scalar/utf16_to_utf32/valid_utf16_to_utf32.h>
+#include <turbo/unicode/engine/scalar/utf16_to_utf32/utf16_to_utf32.h>
 #endif // SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_UTF8 &&                                                    \
-    (SIMDUTF_FEATURE_UTF16 || SIMDUTF_FEATURE_UTF32 || SIMDUTF_FEATURE_LATIN1)
-  #include <turbo/unicode/engine/scalar/utf8_to_utf16/valid_utf8_to_utf16.h>
-  #include <turbo/unicode/engine/scalar/utf8_to_utf16/utf8_to_utf16.h>
+#if SIMDUTF_FEATURE_UTF8 && (SIMDUTF_FEATURE_UTF16 || SIMDUTF_FEATURE_UTF32 || SIMDUTF_FEATURE_LATIN1)
+#include <turbo/unicode/engine/scalar/utf8_to_utf16/valid_utf8_to_utf16.h>
+#include <turbo/unicode/engine/scalar/utf8_to_utf16/utf8_to_utf16.h>
 #endif // SIMDUTF_FEATURE_UTF8 && (SIMDUTF_FEATURE_UTF16 ||
        // SIMDUTF_FEATURE_UTF32 || SIMDUTF_FEATURE_LATIN1)
 
 #if SIMDUTF_FEATURE_UTF8 || SIMDUTF_FEATURE_UTF32
-  #include <turbo/unicode/engine/scalar/utf8_to_utf32/valid_utf8_to_utf32.h>
-  #include <turbo/unicode/engine/scalar/utf8_to_utf32/utf8_to_utf32.h>
+#include <turbo/unicode/engine/scalar/utf8_to_utf32/valid_utf8_to_utf32.h>
+#include <turbo/unicode/engine/scalar/utf8_to_utf32/utf8_to_utf32.h>
 #endif // SIMDUTF_FEATURE_UTF8 || SIMDUTF_FEATURE_UTF32
 
 #if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
-  #include <turbo/unicode/engine/scalar/latin1_to_utf8/latin1_to_utf8.h>
+#include <turbo/unicode/engine/scalar/latin1_to_utf8/latin1_to_utf8.h>
 #endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
 #if SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_LATIN1
-  #include <turbo/unicode/engine/scalar/latin1_to_utf16/latin1_to_utf16.h>
+#include <turbo/unicode/engine/scalar/latin1_to_utf16/latin1_to_utf16.h>
 #endif // SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_LATIN1
 #if SIMDUTF_FEATURE_UTF32 && SIMDUTF_FEATURE_LATIN1
-  #include <turbo/unicode/engine/scalar/latin1_to_utf32/latin1_to_utf32.h>
+#include <turbo/unicode/engine/scalar/latin1_to_utf32/latin1_to_utf32.h>
 #endif // SIMDUTF_FEATURE_UTF32 && SIMDUTF_FEATURE_LATIN1
 
 #if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
-  #include <turbo/unicode/engine/scalar/utf8_to_latin1/utf8_to_latin1.h>
+#include <turbo/unicode/engine/scalar/utf8_to_latin1/utf8_to_latin1.h>
 #endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
 #if SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_LATIN1
-  #include <turbo/unicode/engine/scalar/utf16_to_latin1/utf16_to_latin1.h>
+#include <turbo/unicode/engine/scalar/utf16_to_latin1/utf16_to_latin1.h>
 #endif // SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_LATIN1
 #if SIMDUTF_FEATURE_UTF32 && SIMDUTF_FEATURE_LATIN1
-  #include <turbo/unicode/engine/scalar/utf32_to_latin1/utf32_to_latin1.h>
+#include <turbo/unicode/engine/scalar/utf32_to_latin1/utf32_to_latin1.h>
 #endif // SIMDUTF_FEATURE_UTF32 && SIMDUTF_FEATURE_LATIN1
 
 #if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
-  #include <turbo/unicode/engine/scalar/utf8_to_latin1/valid_utf8_to_latin1.h>
+#include <turbo/unicode/engine/scalar/utf8_to_latin1/valid_utf8_to_latin1.h>
 #endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
 #if SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_LATIN1
-  #include <turbo/unicode/engine/scalar/utf16_to_latin1/valid_utf16_to_latin1.h>
+#include <turbo/unicode/engine/scalar/utf16_to_latin1/valid_utf16_to_latin1.h>
 #endif // SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_LATIN1
 #if SIMDUTF_FEATURE_UTF32 && SIMDUTF_FEATURE_LATIN1
-  #include <turbo/unicode/engine/scalar/utf32_to_latin1/valid_utf32_to_latin1.h>
+#include <turbo/unicode/engine/scalar/utf32_to_latin1/valid_utf32_to_latin1.h>
 #endif // SIMDUTF_FEATURE_UTF32 && SIMDUTF_FEATURE_LATIN1
 
 #include <turbo/unicode/engine/implementation.cpp>
@@ -121,31 +119,31 @@ SIMDUTF_PUSH_DISABLE_WARNINGS
 SIMDUTF_DISABLE_UNDESIRED_WARNINGS
 
 #if SIMDUTF_IMPLEMENTATION_ARM64
-  #include <turbo/unicode/engine/arm64/implementation.cpp>
+#include <turbo/unicode/engine/arm64/implementation.cpp>
 #endif
 #if SIMDUTF_IMPLEMENTATION_FALLBACK
-  #include <turbo/unicode/engine/fallback/implementation.cpp>
+#include <turbo/unicode/engine/fallback/implementation.cpp>
 #endif
 #if SIMDUTF_IMPLEMENTATION_ICELAKE
-  #include <turbo/unicode/engine/icelake/implementation.cpp>
+#include <turbo/unicode/engine/icelake/implementation.cpp>
 #endif
 #if SIMDUTF_IMPLEMENTATION_HASWELL
-  #include <turbo/unicode/engine/haswell/implementation.cpp>
+#include <turbo/unicode/engine/haswell/implementation.cpp>
 #endif
 #if SIMDUTF_IMPLEMENTATION_PPC64
-  #include <turbo/unicode/engine/ppc64/implementation.cpp>
+#include <turbo/unicode/engine/ppc64/implementation.cpp>
 #endif
 #if SIMDUTF_IMPLEMENTATION_RVV
-  #include <turbo/unicode/engine/rvv/implementation.cpp>
+#include <turbo/unicode/engine/rvv/implementation.cpp>
 #endif
 #if SIMDUTF_IMPLEMENTATION_WESTMERE
-  #include <turbo/unicode/engine/westmere/implementation.cpp>
+#include <turbo/unicode/engine/westmere/implementation.cpp>
 #endif
 #if SIMDUTF_IMPLEMENTATION_LASX
-  #include <turbo/unicode/engine/lasx/implementation.cpp>
+#include <turbo/unicode/engine/lasx/implementation.cpp>
 #endif
 #if SIMDUTF_IMPLEMENTATION_LSX
-  #include <turbo/unicode/engine/lsx/implementation.cpp>
+#include <turbo/unicode/engine/lsx/implementation.cpp>
 #endif
 
 #include <turbo/unicode/utf_c.cc>
