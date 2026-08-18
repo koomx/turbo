@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <string>
 #include <functional>
-#include "benchmark_base.h"
+#include "src/benchmark_base.h"
 #include <turbo/unicode/utf.h>
 
 // Generates a random UTF-16 string with specified surrogate pairs and

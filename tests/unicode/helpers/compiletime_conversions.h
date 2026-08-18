@@ -7,7 +7,7 @@
 
   #include <turbo/unicode/utf.h>
 
-  #include <tests/helpers/fixed_string.h>
+  #include <tests/unicode/helpers/fixed_string.h>
 
 namespace simdutf {
 namespace tests {

@@ -1,5 +1,5 @@
 #include "benchmark_base.h"
-#include "tests/helpers/random_utf8.h"
+#include <tests/unicode/helpers/random_utf8.h>
 #include <turbo/unicode/utf.h>
 #include <fstream>
 #include <iostream>

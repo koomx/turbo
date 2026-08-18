@@ -1,8 +1,8 @@
 #include <turbo/unicode/utf.h>
 
-#include <tests/helpers/fixed_string.h>
-#include <tests/helpers/random_utf32.h>
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/fixed_string.h>
+#include <tests/unicode/helpers/random_utf32.h>
+#include <tests/unicode/helpers/test.h>
 
 TEST(issue_531) {
   const char32_t data[] = {0xdbdb,     0xff380000, 0xffffffff, 0xffffffff,

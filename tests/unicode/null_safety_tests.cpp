@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/test.h>
 TEST(test_empty) {
   // zero storage size gives a nullptr as input which is of interest to test
   for (std::size_t inputstoragesize : {0, 1}) {

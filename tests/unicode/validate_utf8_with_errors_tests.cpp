@@ -1,8 +1,8 @@
 #include <turbo/unicode/utf.h>
 
-#include <tests/helpers/fixed_string.h>
-#include <tests/helpers/random_utf8.h>
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/fixed_string.h>
+#include <tests/unicode/helpers/random_utf8.h>
+#include <tests/unicode/helpers/test.h>
 
 TEST(too_short_at_end_of_chunk) {
   // This test checks the special case that the error is discovered only when

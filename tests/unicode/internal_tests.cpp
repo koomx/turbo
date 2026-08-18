@@ -1,6 +1,6 @@
 #include <turbo/unicode/utf.h>
 
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/test.h>
 
 int main(int argc, char *argv[]) {
 #ifdef SIMDUTF_INTERNAL_TESTS

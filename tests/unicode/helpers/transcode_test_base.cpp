@@ -12,18 +12,18 @@
 #include <string>
 #include <vector>
 
-#include <tests/reference/encode_utf8.h>
-#include <tests/reference/encode_utf16.h>
-#include <tests/reference/encode_utf32.h>
-#include <tests/reference/encode_latin1.h>
-#include <tests/reference/decode_utf16.h>
-#include <tests/reference/decode_utf32.h>
-#include <tests/reference/validate_utf8.h>
-#include <tests/reference/validate_utf16.h>
-#include <tests/reference/validate_utf32.h>
-#include <tests/reference/validate_utf8_to_latin1.h>
-#include <tests/reference/validate_utf16_to_latin1.h>
-#include <tests/reference/validate_utf32_to_latin1.h>
+#include <tests/unicode/reference/encode_utf8.h>
+#include <tests/unicode/reference/encode_utf16.h>
+#include <tests/unicode/reference/encode_utf32.h>
+#include <tests/unicode/reference/encode_latin1.h>
+#include <tests/unicode/reference/decode_utf16.h>
+#include <tests/unicode/reference/decode_utf32.h>
+#include <tests/unicode/reference/validate_utf8.h>
+#include <tests/unicode/reference/validate_utf16.h>
+#include <tests/unicode/reference/validate_utf32.h>
+#include <tests/unicode/reference/validate_utf8_to_latin1.h>
+#include <tests/unicode/reference/validate_utf16_to_latin1.h>
+#include <tests/unicode/reference/validate_utf32_to_latin1.h>
 
 namespace simdutf {
 namespace tests {

@@ -1,6 +1,6 @@
 #include <turbo/unicode/utf.h>
 
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/test.h>
 
 // This is an attempt at reproducing an issue with the utf8 fuzzer
 TEST(puzzler) {

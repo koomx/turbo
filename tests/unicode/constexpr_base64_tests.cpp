@@ -5,8 +5,8 @@
 #include <cstddef>
 #include <tuple>
 
-#include <tests/helpers/fixed_string.h>
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/fixed_string.h>
+#include <tests/unicode/helpers/test.h>
 
 #if SIMDUTF_CPLUSPLUS23
 

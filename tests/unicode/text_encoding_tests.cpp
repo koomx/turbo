@@ -1,6 +1,6 @@
 #include <turbo/unicode/utf.h>
 
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/test.h>
 
 #ifdef SIMDUTF_HAS_STD_TEXT_ENCODING
 

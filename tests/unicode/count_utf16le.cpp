@@ -2,10 +2,10 @@
 
 #include <array>
 
-#include <tests/helpers/fixed_string.h>
-#include <tests/helpers/random_int.h>
-#include <tests/helpers/random_utf16.h>
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/fixed_string.h>
+#include <tests/unicode/helpers/random_int.h>
+#include <tests/unicode/helpers/random_utf16.h>
+#include <tests/unicode/helpers/test.h>
 
 namespace {
 constexpr std::array<size_t, 9> input_size{7,   12,  16,  64,  67,

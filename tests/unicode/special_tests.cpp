@@ -6,7 +6,7 @@
 #include <memory>
 #include <vector>
 
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/test.h>
 
 // Visual Studio 2019 fails this test (with high probability) on the
 // icelake kernel. Visual Studio 2022 works fine.

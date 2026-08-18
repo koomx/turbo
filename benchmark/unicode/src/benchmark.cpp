@@ -35,12 +35,12 @@ SIMDUTF_UNTARGET_REGION
  * Bjoern Hoehrmann
  * http://bjoern.hoehrmann.de/utf-8/decoder/dfa/
  */
-#include "benchmarks/competition/hoehrmann/hoehrmann.h"
+#include <benchmark/unicode/competition/hoehrmann/hoehrmann.h>
 /**
  * LLVM relies on code from the Unicode Consortium
  * https://en.wikipedia.org/wiki/Unicode_Consortium
  */
-#include "benchmarks/competition/llvm/ConvertUTF.cpp"
+#include <benchmark/unicode/competition/llvm/ConvertUTF.cpp>
 #ifdef __x86_64__
   /**
    * Olivier Goffart, UTF-8 processing using SIMD (SSE4), 2012.
@@ -69,7 +69,7 @@ SIMDUTF_UNTARGET_REGION
  * Nemanja Trifunovic, UTF8-CPP: UTF-8 with C++ in a Portable Way
  * https://github.com/nemtrif/utfcpp/releases/tag/v3.2.2
  */
-#include "benchmarks/competition/utfcpp/source/utf8.h"
+#include <benchmark/unicode/competition/utfcpp/source/utf8.h>
 
 namespace simdutf::benchmarks {
 

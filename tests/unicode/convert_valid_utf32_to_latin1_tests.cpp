@@ -1,12 +1,12 @@
 #include <turbo/unicode/utf.h>
-#include "tests/helpers/fixed_string.h"
+#include <tests/unicode/helpers/fixed_string.h>
 
 #include <array>
 
-#include <tests/helpers/transcode_test_base.h>
-#include <tests/helpers/random_int.h>
-#include <tests/helpers/test.h>
-#include <tests/helpers/compiletime_conversions.h>
+#include <tests/unicode/helpers/transcode_test_base.h>
+#include <tests/unicode/helpers/random_int.h>
+#include <tests/unicode/helpers/test.h>
+#include <tests/unicode/helpers/compiletime_conversions.h>
 
 namespace {
 std::array<size_t, 7> input_size{7, 16, 12, 64, 67, 128, 256};

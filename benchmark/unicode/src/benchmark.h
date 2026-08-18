@@ -37,13 +37,13 @@
  * Information Processing Society of Japan Transactions on Programming 1 (2),
  * 2008.
  */
-#include "benchmarks/competition/inoue2008/inoue_utf8_to_utf16.h"
+#include <benchmark/unicode/competition/inoue2008/inoue_utf8_to_utf16.h>
 
 /**
  * Nemanja Trifunovic, UTF8-CPP: UTF-8 with C++ in a Portable Way
  * https://github.com/nemtrif/utfcpp/releases/tag/v3.2.2
  */
-#include "benchmarks/competition/utfcpp/source/utf8.h"
+#include <benchmark/unicode/competition/utfcpp/source/utf8.h>
 
 namespace simdutf::benchmarks {
 

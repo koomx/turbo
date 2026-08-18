@@ -9,7 +9,7 @@
 #include <thread>
 #include <vector>
 
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/test.h>
 using random_generator = std::mt19937;
 static random_generator::result_type seed = 42;
 // check if we are running with thread sanitizer

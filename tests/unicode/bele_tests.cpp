@@ -2,7 +2,7 @@
  * Big-Endian/Little-endian tests.
  */
 #include <turbo/unicode/utf.h>
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/test.h>
 
 // We use explicit arrays so that no funny business is possible.
 const unsigned char utf8_string[] = {0x40, 0xc2, 0xa7, 0xe2, 0x88,

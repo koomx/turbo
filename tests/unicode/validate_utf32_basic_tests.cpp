@@ -1,8 +1,8 @@
 #include <turbo/unicode/utf.h>
 
-#include <tests/helpers/fixed_string.h>
-#include <tests/helpers/random_utf32.h>
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/fixed_string.h>
+#include <tests/unicode/helpers/random_utf32.h>
+#include <tests/unicode/helpers/test.h>
 
 TEST_LOOP(validate_utf32_returns_true_for_valid_input) {
   simdutf::tests::helpers::random_utf32 generator{seed};

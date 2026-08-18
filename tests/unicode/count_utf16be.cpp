@@ -3,10 +3,10 @@
 #include <array>
 #include <vector>
 
-#include <tests/helpers/fixed_string.h>
-#include <tests/helpers/random_int.h>
-#include <tests/helpers/random_utf16.h>
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/fixed_string.h>
+#include <tests/unicode/helpers/random_int.h>
+#include <tests/unicode/helpers/random_utf16.h>
+#include <tests/unicode/helpers/test.h>
 
 namespace {
 std::array<size_t, 7> input_size{7, 16, 12, 64, 67, 128, 256};

@@ -1,8 +1,8 @@
 #include <turbo/unicode/utf.h>
 
-#include <tests/helpers/fixed_string.h>
-#include <tests/helpers/random_utf8.h>
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/fixed_string.h>
+#include <tests/unicode/helpers/random_utf8.h>
+#include <tests/unicode/helpers/test.h>
 
 TEST_LOOP(no_error_ASCII) {
   simdutf::tests::helpers::random_utf8 generator{seed, 1, 0, 0, 0};

@@ -2,8 +2,8 @@
 
 #include <string_view>
 
-#include <tests/helpers/fixed_string.h>
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/fixed_string.h>
+#include <tests/unicode/helpers/test.h>
 
 // https://github.com/nodejs/node/issues/48995
 TEST(node48995) {

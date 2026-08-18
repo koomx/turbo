@@ -5,8 +5,8 @@
 #include <memory>
 #include <vector>
 
-#include <tests/reference/encode_utf8.h>
-#include <tests/helpers/test.h>
+#include <tests/unicode/reference/encode_utf8.h>
+#include <tests/unicode/helpers/test.h>
 
 static uint32_t seed = 123;
 const size_t MAX_SIZE = 1025;

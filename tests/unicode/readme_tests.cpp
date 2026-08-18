@@ -6,8 +6,8 @@
 #include <iostream>
 #include <vector>
 
-#include <tests/helpers/fixed_string.h>
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/fixed_string.h>
+#include <tests/unicode/helpers/test.h>
 
 TEST(base64_fun) {
   std::cout << "==== base64_fun ====\n" << std::endl;

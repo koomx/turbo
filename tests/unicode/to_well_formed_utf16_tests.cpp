@@ -3,10 +3,10 @@
 #include <random>
 #include <vector>
 
-#include <tests/helpers/compiletime_conversions.h>
-#include <tests/helpers/fixed_string.h>
-#include <tests/helpers/random_utf16.h>
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/compiletime_conversions.h>
+#include <tests/unicode/helpers/fixed_string.h>
+#include <tests/unicode/helpers/random_utf16.h>
+#include <tests/unicode/helpers/test.h>
 
 #if SIMDUTF_IS_BIG_ENDIAN
 constexpr char16_t replacement_le = 0xFDFF;

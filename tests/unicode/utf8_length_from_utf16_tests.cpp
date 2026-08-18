@@ -4,9 +4,9 @@
 
 #include <turbo/unicode/utf.h>
 
-#include <tests/helpers/compiletime_conversions.h>
-#include <tests/helpers/fixed_string.h>
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/compiletime_conversions.h>
+#include <tests/unicode/helpers/fixed_string.h>
+#include <tests/unicode/helpers/test.h>
 
 TEST(utf16le_surrogate_pair) {
   for (size_t size = 0; size < 512; size++) {

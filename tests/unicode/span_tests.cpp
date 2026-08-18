@@ -4,7 +4,7 @@
 #include <utility>
 #include <vector>
 
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/test.h>
 
 /// a span-like class which returns int as size (not std::size_t)
 struct CustomSpan1 {

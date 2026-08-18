@@ -17,7 +17,7 @@
 
 #include <turbo/unicode/utf.h>
 
-#include "event_counter.h"
+#include "src/event_counter.h"
 
 struct BenchmarkFunc {
   std::string name;

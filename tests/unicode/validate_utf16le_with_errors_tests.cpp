@@ -3,10 +3,10 @@
 #include <array>
 #include <fstream>
 
-#include <tests/helpers/fixed_string.h>
-#include <tests/helpers/random_utf16.h>
-#include <tests/helpers/test.h>
-#include <tests/helpers/utf16.h>
+#include <tests/unicode/helpers/fixed_string.h>
+#include <tests/unicode/helpers/random_utf16.h>
+#include <tests/unicode/helpers/test.h>
+#include <tests/unicode/helpers/utf16.h>
 
 TEST_LOOP(
     validate_utf16le_with_errors_returns_success_for_valid_input_single_words) {

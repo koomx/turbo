@@ -2,10 +2,10 @@
 
 #include <vector>
 
-#include <tests/helpers/compiletime_conversions.h>
-#include <tests/helpers/fixed_string.h>
-#include <tests/helpers/test.h>
-#include <tests/helpers/transcode_test_base.h>
+#include <tests/unicode/helpers/compiletime_conversions.h>
+#include <tests/unicode/helpers/fixed_string.h>
+#include <tests/unicode/helpers/test.h>
+#include <tests/unicode/helpers/transcode_test_base.h>
 
 namespace {
 using simdutf::tests::helpers::transcode_utf8_to_utf16_test_base;

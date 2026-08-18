@@ -2,11 +2,11 @@
 
 #include <array>
 
-#include <tests/helpers/fixed_string.h>
-#include <tests/helpers/random_int.h>
-#include <tests/helpers/random_utf8.h>
-#include <tests/helpers/test.h>
-#include <tests/helpers/transcode_test_base.h>
+#include <tests/unicode/helpers/fixed_string.h>
+#include <tests/unicode/helpers/random_int.h>
+#include <tests/unicode/helpers/random_utf8.h>
+#include <tests/unicode/helpers/test.h>
+#include <tests/unicode/helpers/transcode_test_base.h>
 
 namespace {
 std::array<size_t, 10> input_size{7,

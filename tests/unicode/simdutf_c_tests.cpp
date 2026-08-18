@@ -1,5 +1,5 @@
-#include <tests/helpers/test.h>
-#include <tests/helpers/utf16.h>
+#include <tests/unicode/helpers/test.h>
+#include <tests/unicode/helpers/utf16.h>
 #include <cstring>
 #include <turbo/unicode/utf_c.h>
 

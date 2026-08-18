@@ -3,12 +3,12 @@
 #include <array>
 #include <vector>
 
-#include <tests/reference/encode_utf16.h>
-#include <tests/helpers/random_int.h>
-#include <tests/helpers/random_utf8.h>
-#include <tests/helpers/random_utf16.h>
-#include <tests/helpers/test.h>
-#include <tests/helpers/utf16.h>
+#include <tests/unicode/reference/encode_utf16.h>
+#include <tests/unicode/helpers/random_int.h>
+#include <tests/unicode/helpers/random_utf8.h>
+#include <tests/unicode/helpers/random_utf16.h>
+#include <tests/unicode/helpers/test.h>
+#include <tests/unicode/helpers/utf16.h>
 
 namespace {
 std::array<size_t, 7> input_size{8, 16, 12, 64, 68, 128, 256};

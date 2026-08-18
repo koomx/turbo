@@ -1,7 +1,7 @@
 #include <turbo/unicode/utf.h>
 
-#include <tests/helpers/test.h>
-#include <tests/helpers/fixed_string.h>
+#include <tests/unicode/helpers/test.h>
+#include <tests/unicode/helpers/fixed_string.h>
 
 namespace {
 // additional tests are from autobahn websocket testsuite

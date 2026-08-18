@@ -1,25 +1,34 @@
-add_library(simdutf_tests_helpers STATIC
-  compiletime_conversions.h
-  fixed_string.h
-  test.h
-  test.cpp
-  random_int.h
-  random_int.cpp
-  transcode_test_base.h
-  transcode_test_base.cpp
-  random_utf8.h
-  random_utf8.cpp
-  random_utf16.h
-  random_utf16.cpp
-  random_utf32.h
-  random_utf32.cpp)
+# Copyright (C) Kumo inc. and its affiliates.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
-if(SIMDUTF_FAST_TESTS)
-  target_compile_definitions(simdutf_tests_helpers PUBLIC SIMDUTF_TEST_LOOP_TRIALS=10)
-else()
-  target_compile_definitions(simdutf_tests_helpers PUBLIC SIMDUTF_TEST_LOOP_TRIALS=1000)
-endif()
-target_include_directories(simdutf_tests_helpers PUBLIC ${SIMDUTF_TEST_INCLUDE_DIR})
-target_link_libraries(simdutf_tests_helpers PUBLIC simdutf simdutf::tests::reference)
-
-add_library(simdutf::tests::helpers ALIAS simdutf_tests_helpers)
+kmcmake_cc_library(
+        NAME unicode_test_helpers
+        NAMESPACE ${PROJECT_NAME}
+        SOURCES
+        test.cpp
+        random_int.cpp
+        transcode_test_base.cpp
+        random_utf8.cpp
+        random_utf16.cpp
+        random_utf32.cpp
+        CXXOPTS
+        ${KMCMAKE_CXX_OPTIONS}
+        DEFINES
+        SIMDUTF_TEST_LOOP_TRIALS=1000
+        PLINKS
+        turbo::turbo_static
+        turbo::unicode_test_reference_static
+        ${KMCMAKE_DEPS_LINK}
+)

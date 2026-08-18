@@ -1,8 +1,8 @@
 #include <turbo/unicode/utf.h>
 
-#include <tests/helpers/random_utf8.h>
-#include <tests/reference/validate_utf8.h>
-#include <tests/helpers/test.h>
+#include <tests/unicode/helpers/random_utf8.h>
+#include <tests/unicode/reference/validate_utf8.h>
+#include <tests/unicode/helpers/test.h>
 
 template <typename T>
 static void test_corrupt(T &implementation, uint32_t seed,

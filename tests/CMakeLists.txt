@@ -46,4 +46,5 @@ add_subdirectory(strings)
 add_subdirectory(test_utils)
 add_subdirectory(time)
 add_subdirectory(types)
+add_subdirectory(unicode)
 

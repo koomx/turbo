@@ -4,11 +4,11 @@
 #include <fstream>
 #include <memory>
 
-#include <tests/helpers/fixed_string.h>
-#include <tests/helpers/compiletime_conversions.h>
-#include <tests/helpers/random_utf16.h>
-#include <tests/helpers/test.h>
-#include <tests/helpers/utf16.h>
+#include <tests/unicode/helpers/fixed_string.h>
+#include <tests/unicode/helpers/compiletime_conversions.h>
+#include <tests/unicode/helpers/random_utf16.h>
+#include <tests/unicode/helpers/test.h>
+#include <tests/unicode/helpers/utf16.h>
 
 TEST(issue92) {
   char16_t input[] = u"\u5d00\u0041\u0041\u0041\u0041\u0041\u0041\u0041\u0041"
