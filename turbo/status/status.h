@@ -562,7 +562,7 @@ namespace turbo {
         // Support `turbo::str_cat`, `turbo::str_sprintf`, etc.
         template <typename Sink>
         friend void turbo_stringify(Sink& sink, const Status& status) {
-            sink.Append(status.ToString(StatusToStringMode::kWithEverything));
+            sink.append(status.ToString(StatusToStringMode::kWithEverything));
         }
 
         // Status::ignore_error()

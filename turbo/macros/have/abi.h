@@ -18,7 +18,7 @@
 #include <turbo/macros/compiler/compiler.h>
 #include <turbo/macros/have/base.h>
 
-// `KUMO_HAVE_RTTI` determines whether abseil is being compiled with
+// `KUMO_HAVE_RTTI` determines whether library is being compiled with
 // RTTI support.
 #ifdef KUMO_HAVE_RTTI
 #error KUMO_HAVE_RTTI cannot be directly set

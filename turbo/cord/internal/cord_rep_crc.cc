@@ -18,39 +18,39 @@
 #include <cstdint>
 #include <utility>
 
-#include <turbo/macros/config.h>
 #include <turbo/cord/internal/cord_internal.h>
+#include <turbo/macros/config.h>
 
 namespace turbo {
 
-namespace cord_internal {
+    namespace cord_internal {
 
-CordRepCrc* CordRepCrc::New(CordRep* child, crc_internal::CrcCordState state) {
-  if (child != nullptr && child->IsCrc()) {
-    if (child->refcount.IsOne()) {
-      child->crc()->crc_cord_state = std::move(state);
-      return child->crc();
-    }
-    CordRep* old = child;
-    child = old->crc()->child;
-    CordRep::Ref(child);
-    CordRep::Unref(old);
-  }
-  auto* new_cordrep = new CordRepCrc;
-  new_cordrep->length = child != nullptr ? child->length : 0;
-  new_cordrep->tag = cord_internal::CRC;
-  new_cordrep->child = child;
-  new_cordrep->crc_cord_state = std::move(state);
-  return new_cordrep;
-}
+        CordRepCrc* CordRepCrc::New(CordRep* child, crc_internal::CrcCordState state) {
+            if (child != nullptr && child->IsCrc()) {
+                if (child->refcount.IsOne()) {
+                    child->crc()->crc_cord_state = std::move(state);
+                    return child->crc();
+                }
+                CordRep* old = child;
+                child = old->crc()->child;
+                CordRep::Ref(child);
+                CordRep::Unref(old);
+            }
+            auto* new_cordrep = new CordRepCrc;
+            new_cordrep->length = child != nullptr ? child->length : 0;
+            new_cordrep->tag = cord_internal::CRC;
+            new_cordrep->child = child;
+            new_cordrep->crc_cord_state = std::move(state);
+            return new_cordrep;
+        }
 
-void CordRepCrc::Destroy(CordRepCrc* node) {
-  if (node->child != nullptr) {
-    CordRep::Unref(node->child);
-  }
-  delete node;
-}
+        void CordRepCrc::Destroy(CordRepCrc* node) {
+            if (node->child != nullptr) {
+                CordRep::Unref(node->child);
+            }
+            delete node;
+        }
 
-}  // namespace cord_internal
+    } // namespace cord_internal
 
-}  // namespace turbo
+} // namespace turbo

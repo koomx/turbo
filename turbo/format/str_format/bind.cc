@@ -24,31 +24,32 @@
 #include <ostream>
 #include <sstream>
 #include <string>
-#include <turbo/macros/config.h>
+#include <string_view>
 #include <turbo/format/str_format/arg.h>
 #include <turbo/format/str_format/constexpr_parser.h>
 #include <turbo/format/str_format/extension.h>
 #include <turbo/format/str_format/output.h>
-#include <string_view>
+#include <turbo/macros/config.h>
 #include <turbo/types/span.h>
 
 namespace turbo {
     namespace str_format_internal {
         namespace {
-            inline bool BindFromPosition(int position, int *value,
-                                         turbo::Span<const FormatArgImpl> pack) {
+            inline bool BindFromPosition(int position, int* value,
+                turbo::Span<const FormatArgImpl> pack) {
                 assert(position > 0);
                 if (static_cast<size_t>(position) > pack.size()) {
                     return false;
                 }
                 // -1 because positions are 1-based
                 return FormatArgImplFriend::ToInt(pack[static_cast<size_t>(position) - 1],
-                                                  value);
+                    value);
             }
 
             class ArgContext {
             public:
-                explicit ArgContext(turbo::Span<const FormatArgImpl> pack) : pack_(pack) {
+                explicit ArgContext(turbo::Span<const FormatArgImpl> pack)
+                    : pack_(pack) {
                 }
 
                 // Fill 'bound' with the results of applying the context's argument pack
@@ -57,17 +58,18 @@ namespace turbo {
                 // resolve any '*' specifiers for width and precision, so after
                 // this call, 'bound' has all the information it needs to be formatted.
                 // Returns false on failure.
-                bool Bind(const UnboundConversion *unbound, BoundConversion *bound);
+                bool Bind(const UnboundConversion* unbound, BoundConversion* bound);
 
             private:
                 turbo::Span<const FormatArgImpl> pack_;
             };
 
-            inline bool ArgContext::Bind(const UnboundConversion *unbound,
-                                         BoundConversion *bound) {
-                const FormatArgImpl *arg = nullptr;
+            inline bool ArgContext::Bind(const UnboundConversion* unbound,
+                BoundConversion* bound) {
+                const FormatArgImpl* arg = nullptr;
                 int arg_position = unbound->arg_position;
-                if (static_cast<size_t>(arg_position - 1) >= pack_.size()) return false;
+                if (static_cast<size_t>(arg_position - 1) >= pack_.size())
+                    return false;
                 arg = &pack_[static_cast<size_t>(arg_position - 1)]; // 1-based
 
                 if (unbound->flags != Flags::kBasic) {
@@ -88,7 +90,7 @@ namespace turbo {
                     int precision = unbound->precision.value();
                     if (unbound->precision.is_from_arg()) {
                         if (!BindFromPosition(unbound->precision.get_from_arg(), &precision,
-                                              pack_))
+                                pack_))
                             return false;
                     }
 
@@ -97,7 +99,7 @@ namespace turbo {
 
                     if (force_left) {
                         FormatConversionSpecImplFriend::SetFlags(unbound->flags | Flags::kLeft,
-                                                                 bound);
+                            bound);
                     } else {
                         FormatConversionSpecImplFriend::SetFlags(unbound->flags, bound);
                     }
@@ -113,21 +115,23 @@ namespace turbo {
                 return true;
             }
 
-            template<typename Converter>
+            template <typename Converter>
             class ConverterConsumer {
             public:
                 ConverterConsumer(Converter converter, turbo::Span<const FormatArgImpl> pack)
-                    : converter_(converter), arg_context_(pack) {
+                    : converter_(converter)
+                    , arg_context_(pack) {
                 }
 
-                bool Append(std::string_view s) {
-                    converter_.Append(s);
+                bool append(std::string_view s) {
+                    converter_.append(s);
                     return true;
                 }
 
-                bool ConvertOne(const UnboundConversion &conv, std::string_view conv_string) {
+                bool ConvertOne(const UnboundConversion& conv, std::string_view conv_string) {
                     BoundConversion bound;
-                    if (!arg_context_.Bind(&conv, &bound)) return false;
+                    if (!arg_context_.Bind(&conv, &bound))
+                        return false;
                     return converter_.ConvertOne(bound, conv_string);
                 }
 
@@ -136,66 +140,70 @@ namespace turbo {
                 ArgContext arg_context_;
             };
 
-            template<typename Converter>
+            template <typename Converter>
             bool ConvertAll(const UntypedFormatSpecImpl format,
-                            turbo::Span<const FormatArgImpl> args, Converter converter) {
+                turbo::Span<const FormatArgImpl> args, Converter converter) {
                 if (format.has_parsed_conversion()) {
                     return format.parsed_conversion()->ProcessFormat(
                         ConverterConsumer<Converter>(converter, args));
                 } else {
-                    return ParseFormatString(format.str(),
-                                             ConverterConsumer<Converter>(converter, args));
+                    return parse_format_string(format.str(),
+                        ConverterConsumer<Converter>(converter, args));
                 }
             }
 
             class DefaultConverter {
             public:
-                explicit DefaultConverter(FormatSinkImpl *sink) : sink_(sink) {
+                explicit DefaultConverter(FormatSinkImpl* sink)
+                    : sink_(sink) {
                 }
 
-                void Append(std::string_view s) const { sink_->Append(s); }
+                void append(std::string_view s) const { sink_->append(s); }
 
-                bool ConvertOne(const BoundConversion &bound, std::string_view /*conv*/) const {
+                bool ConvertOne(const BoundConversion& bound, std::string_view /*conv*/) const {
                     return FormatArgImplFriend::Convert(*bound.arg(), bound, sink_);
                 }
 
             private:
-                FormatSinkImpl *sink_;
+                FormatSinkImpl* sink_;
             };
 
             class SummarizingConverter {
             public:
-                explicit SummarizingConverter(FormatSinkImpl *sink) : sink_(sink) {
+                explicit SummarizingConverter(FormatSinkImpl* sink)
+                    : sink_(sink) {
                 }
 
-                void Append(std::string_view s) const { sink_->Append(s); }
+                void append(std::string_view s) const { sink_->append(s); }
 
-                bool ConvertOne(const BoundConversion &bound, std::string_view /*conv*/) const {
+                bool ConvertOne(const BoundConversion& bound, std::string_view /*conv*/) const {
                     UntypedFormatSpecImpl spec("%d");
 
                     std::ostringstream ss;
-                    ss << "{" << Streamable(spec, {*bound.arg()}) << ":"
-                            << FormatConversionSpecImplFriend::FlagsToString(bound);
-                    if (bound.width() >= 0) ss << bound.width();
-                    if (bound.precision() >= 0) ss << "." << bound.precision();
+                    ss << "{" << Streamable(spec, { *bound.arg() }) << ":"
+                       << FormatConversionSpecImplFriend::flags_to_string(bound);
+                    if (bound.width() >= 0)
+                        ss << bound.width();
+                    if (bound.precision() >= 0)
+                        ss << "." << bound.precision();
                     ss << bound.conversion_char() << "}";
-                    Append(ss.str());
+                    append(ss.str());
                     return true;
                 }
 
             private:
-                FormatSinkImpl *sink_;
+                FormatSinkImpl* sink_;
             };
         } // namespace
 
-        bool BindWithPack(const UnboundConversion *props,
-                          turbo::Span<const FormatArgImpl> pack,
-                          BoundConversion *bound) {
+        bool BindWithPack(const UnboundConversion* props,
+            turbo::Span<const FormatArgImpl> pack,
+            BoundConversion* bound) {
             return ArgContext(pack).Bind(props, bound);
         }
 
         std::string Summarize(const UntypedFormatSpecImpl format,
-                              turbo::Span<const FormatArgImpl> args) {
+            turbo::Span<const FormatArgImpl> args) {
             typedef SummarizingConverter Converter;
             std::string out;
             {
@@ -210,20 +218,21 @@ namespace turbo {
         }
 
         bool str_printf_untyped_to(FormatRawSinkImpl raw_sink,
-                           const UntypedFormatSpecImpl format,
-                           turbo::Span<const FormatArgImpl> args) {
+            const UntypedFormatSpecImpl format,
+            turbo::Span<const FormatArgImpl> args) {
             FormatSinkImpl sink(raw_sink);
             using Converter = DefaultConverter;
             return ConvertAll(format, args, Converter(&sink));
         }
 
-        std::ostream &Streamable::Print(std::ostream &os) const {
-            if (!str_printf_untyped_to(&os, format_, args_)) os.setstate(std::ios::failbit);
+        std::ostream& Streamable::Print(std::ostream& os) const {
+            if (!str_printf_untyped_to(&os, format_, args_))
+                os.setstate(std::ios::failbit);
             return os;
         }
 
-        std::string &AppendPack(std::string *out, const UntypedFormatSpecImpl format,
-                                turbo::Span<const FormatArgImpl> args) {
+        std::string& AppendPack(std::string* out, const UntypedFormatSpecImpl format,
+            turbo::Span<const FormatArgImpl> args) {
             size_t orig = out->size();
             if (KUMO_UNLIKELY(!str_printf_untyped_to(out, format, args))) {
                 out->erase(orig);
@@ -232,7 +241,7 @@ namespace turbo {
         }
 
         std::string FormatPack(UntypedFormatSpecImpl format,
-                               turbo::Span<const FormatArgImpl> args) {
+            turbo::Span<const FormatArgImpl> args) {
             std::string out;
             if (KUMO_UNLIKELY(!str_printf_untyped_to(&out, format, args))) {
                 out.clear();
@@ -240,8 +249,8 @@ namespace turbo {
             return out;
         }
 
-        int FprintF(std::FILE *output, const UntypedFormatSpecImpl format,
-                    turbo::Span<const FormatArgImpl> args) {
+        int FprintF(std::FILE* output, const UntypedFormatSpecImpl format,
+            turbo::Span<const FormatArgImpl> args) {
             FILERawSink sink(output);
             if (!str_printf_untyped_to(&sink, format, args)) {
                 errno = EINVAL;
@@ -258,15 +267,16 @@ namespace turbo {
             return static_cast<int>(sink.count());
         }
 
-        int SnprintF(char *output, size_t size, const UntypedFormatSpecImpl format,
-                     turbo::Span<const FormatArgImpl> args) {
+        int SnprintF(char* output, size_t size, const UntypedFormatSpecImpl format,
+            turbo::Span<const FormatArgImpl> args) {
             BufferRawSink sink(output, size ? size - 1 : 0);
             if (!str_printf_untyped_to(&sink, format, args)) {
                 errno = EINVAL;
                 return -1;
             }
             size_t total = sink.total_written();
-            if (size) output[std::min(total, size - 1)] = 0;
+            if (size)
+                output[std::min(total, size - 1)] = 0;
             return static_cast<int>(total);
         }
     } // namespace str_format_internal

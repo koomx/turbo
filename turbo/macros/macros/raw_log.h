@@ -43,7 +43,7 @@
 #include <unistd.h>
 #endif
 
-#include <turbo/macros/macros/attributes.h>
+#include <turbo/macros/attributes/attributes.h>
 #include <turbo/macros/optimization/optimization.h>
 
 // ===========================================================================

@@ -1131,7 +1131,7 @@ TEST_F(FormatExtensionTest, TurboFormatConvertExample) {
 struct PointStringify {
   template <typename FormatSink>
   friend void turbo_stringify(FormatSink& sink, const PointStringify& p) {
-    sink.Append(turbo::str_cat("(", p.x, ", ", p.y, ")"));
+    sink.append(turbo::str_cat("(", p.x, ", ", p.y, ")"));
   }
 
   double x = 10.0;

@@ -28,6 +28,26 @@
 #define KUMO_RESTORE_DEPRECATED_WARNINGS    \
     KUMO_PRAGMA_DIAG_POP
 
+#define KUMO_DISABLE_UNUSED_WARNING         \
+    KUMO_PRAGMA_DIAG_PUSH                   \
+    KUMO_PRAGMA_DIAG_IGNORED("-Wunused-function") \
+    KUMO_PRAGMA_DIAG_IGNORED("-Wunused-const-variable")
+
+#define KUMO_RESTORE_UNUSED_WARNING         \
+    KUMO_PRAGMA_DIAG_POP
+
+#if defined(_MSC_VER)
+#define KUMO_DISABLE_UNDESIRED_WARNINGS     \
+    KUMO_PRAGMA_DIAG_PUSH                   \
+    KUMO_PRAGMA_DIAG_IGNORED("-Wmicrosoft-include")
+#else
+#define KUMO_DISABLE_UNDESIRED_WARNINGS     \
+    KUMO_PRAGMA_DIAG_PUSH
+#endif
+
+#define KUMO_RESTORE_UNDESIRED_WARNINGS     \
+    KUMO_PRAGMA_DIAG_POP
+
 // ---------------------------------------------------------------------------
 // Clang-specific diagnostic control
 // ---------------------------------------------------------------------------

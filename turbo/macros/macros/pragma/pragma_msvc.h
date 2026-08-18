@@ -27,6 +27,34 @@
 #define KUMO_RESTORE_DEPRECATED_WARNINGS    \
     KUMO_PRAGMA_DIAG_POP
 
+#define KUMO_DISABLE_UNUSED_WARNING         \
+    KUMO_PRAGMA_DIAG_PUSH                   \
+    KUMO_PRAGMA_DIAG_IGNORED(4505)          \
+    KUMO_PRAGMA_DIAG_IGNORED(4514)          \
+    KUMO_PRAGMA_DIAG_IGNORED(4189)          \
+    KUMO_PRAGMA_DIAG_IGNORED(4101)
+
+#define KUMO_RESTORE_UNUSED_WARNING         \
+    KUMO_PRAGMA_DIAG_POP
+
+#ifdef __has_include
+#if __has_include(<CppCoreCheck\Warnings.h>)
+#include <CppCoreCheck\Warnings.h>
+#endif
+#endif
+
+#ifdef ALL_CPPCORECHECK_WARNINGS
+#define KUMO_DISABLE_UNDESIRED_WARNINGS     \
+    KUMO_PRAGMA_DIAG_PUSH                   \
+    __pragma(warning(disable : ALL_CPPCORECHECK_WARNINGS))
+#else
+#define KUMO_DISABLE_UNDESIRED_WARNINGS     \
+    KUMO_PRAGMA_DIAG_PUSH
+#endif
+
+#define KUMO_RESTORE_UNDESIRED_WARNINGS     \
+    KUMO_PRAGMA_DIAG_POP
+
 // ---------------------------------------------------------------------------
 // Code region collapsing (Visual Studio editor)
 // ---------------------------------------------------------------------------

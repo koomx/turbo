@@ -141,17 +141,17 @@ void PrefetchToLocalCacheForWrite(const void* addr);
 // See __builtin_prefetch:
 // https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html.
 //
-KUMO_ATTRIBUTE_ALWAYS_INLINE inline void PrefetchToLocalCache(
+KUMO_FORCE_INLINE void PrefetchToLocalCache(
     const void* addr) {
   __builtin_prefetch(addr, 0, 3);
 }
 
-KUMO_ATTRIBUTE_ALWAYS_INLINE inline void PrefetchToLocalCacheNta(
+KUMO_FORCE_INLINE void PrefetchToLocalCacheNta(
     const void* addr) {
   __builtin_prefetch(addr, 0, 0);
 }
 
-KUMO_ATTRIBUTE_ALWAYS_INLINE inline void PrefetchToLocalCacheForWrite(
+KUMO_FORCE_INLINE void PrefetchToLocalCacheForWrite(
     const void* addr) {
   // [x86] gcc/clang don't generate PREFETCHW for __builtin_prefetch(.., 1)
   // unless -march=broadwell or newer; this is not generally the default, so we
@@ -168,17 +168,17 @@ KUMO_ATTRIBUTE_ALWAYS_INLINE inline void PrefetchToLocalCacheForWrite(
 
 #define TURBO_HAVE_PREFETCH 1
 
-KUMO_ATTRIBUTE_ALWAYS_INLINE inline void PrefetchToLocalCache(
+KUMO_FORCE_INLINE void PrefetchToLocalCache(
     const void* addr) {
   _mm_prefetch(reinterpret_cast<const char*>(addr), _MM_HINT_T0);
 }
 
-KUMO_ATTRIBUTE_ALWAYS_INLINE inline void PrefetchToLocalCacheNta(
+KUMO_FORCE_INLINE void PrefetchToLocalCacheNta(
     const void* addr) {
   _mm_prefetch(reinterpret_cast<const char*>(addr), _MM_HINT_NTA);
 }
 
-KUMO_ATTRIBUTE_ALWAYS_INLINE inline void PrefetchToLocalCacheForWrite(
+KUMO_FORCE_INLINE void PrefetchToLocalCacheForWrite(
     const void* addr) {
 #if defined(_MM_HINT_ET0)
   _mm_prefetch(reinterpret_cast<const char*>(addr), _MM_HINT_ET0);
@@ -193,11 +193,11 @@ KUMO_ATTRIBUTE_ALWAYS_INLINE inline void PrefetchToLocalCacheForWrite(
 
 #else
 
-KUMO_ATTRIBUTE_ALWAYS_INLINE inline void PrefetchToLocalCache(
+KUMO_FORCE_INLINE void PrefetchToLocalCache(
     const void* addr) {}
-KUMO_ATTRIBUTE_ALWAYS_INLINE inline void PrefetchToLocalCacheNta(
+KUMO_FORCE_INLINE void PrefetchToLocalCacheNta(
     const void* addr) {}
-KUMO_ATTRIBUTE_ALWAYS_INLINE inline void PrefetchToLocalCacheForWrite(
+KUMO_FORCE_INLINE void PrefetchToLocalCacheForWrite(
     const void* addr) {}
 
 #endif

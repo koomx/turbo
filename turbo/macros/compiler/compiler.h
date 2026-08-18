@@ -54,6 +54,7 @@
 #include <turbo/macros/compiler/msvc.h>
 
 #include <turbo/macros/compiler/cuda.h>
+#include <turbo/macros/compiler/lang.h>
 
 // ---------------------------------------------------------------------------
 // Completeness check

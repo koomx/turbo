@@ -225,6 +225,10 @@ set(TYPES_SRC
         types/source_location.cc
 )
 
+set(UNICODE_SRC
+        unicode/utf.cc
+)
+
 set(TURBO_SRC
         ${BASE_SRC}
         ${BITS_SRC}
@@ -242,6 +246,7 @@ set(TURBO_SRC
         ${TIME_SRC}
         ${CCTZ_SRC}
         ${TYPES_SRC}
+        ${UNICODE_SRC}
 )
 
 kmcmake_cc_library(

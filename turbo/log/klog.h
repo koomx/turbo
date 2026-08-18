@@ -166,7 +166,7 @@
 //   void turbo_stringify(Sink& sink, const UserDefinedType& value);
 //
 // `Sink` has the same interface as `turbo::FormatSink`, but without
-// `PutPaddedString()`.
+// `put_padded_string()`.
 //
 // Example:
 //

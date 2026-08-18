@@ -233,7 +233,7 @@ class CRC32AcceleratedX86ARMCombinedMultipleStreamsBase
   // Computation for Generic Polynomials Using PCLMULQDQ Instruction"
   // https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/fast-crc-computation-generic-polynomials-pclmulqdq-paper.pdf
   // We are applying it to CRC32C polynomial.
-  KUMO_ATTRIBUTE_ALWAYS_INLINE void Process64BytesPclmul(
+  KUMO_FORCE_INLINE void Process64BytesPclmul(
       const uint8_t* p, V128* partialCRC) const {
     V128 loopMultiplicands =
         V128_Load(reinterpret_cast<const V128*>(kFoldAcross512Bits));
@@ -271,7 +271,7 @@ class CRC32AcceleratedX86ARMCombinedMultipleStreamsBase
 
   // Reduce partialCRC produced by Process64BytesPclmul into a single value,
   // that represents crc checksum of all the processed bytes.
-  KUMO_ATTRIBUTE_ALWAYS_INLINE uint64_t
+  KUMO_FORCE_INLINE uint64_t
   FinalizePclmulStream(V128* partialCRC) const {
     V128 partialCRC1 = partialCRC[0];
     V128 partialCRC2 = partialCRC[1];
@@ -310,7 +310,7 @@ class CRC32AcceleratedX86ARMCombinedMultipleStreamsBase
   }
 
   // Update crc with 64 bytes of data from p.
-  KUMO_ATTRIBUTE_ALWAYS_INLINE uint64_t Process64BytesCRC(const uint8_t* p,
+  KUMO_FORCE_INLINE uint64_t Process64BytesCRC(const uint8_t* p,
                                                           uint64_t crc) const {
     for (int i = 0; i < 8; i++) {
       crc =
@@ -321,7 +321,7 @@ class CRC32AcceleratedX86ARMCombinedMultipleStreamsBase
   }
 
   // Same as Process64BytesCRC, but just interleaved for 2 streams.
-  KUMO_ATTRIBUTE_ALWAYS_INLINE void Process64BytesCRC2Streams(
+  KUMO_FORCE_INLINE void Process64BytesCRC2Streams(
       const uint8_t* p0, const uint8_t* p1, uint64_t* crc) const {
     uint64_t crc0 = crc[0];
     uint64_t crc1 = crc[1];
@@ -338,7 +338,7 @@ class CRC32AcceleratedX86ARMCombinedMultipleStreamsBase
   }
 
   // Same as Process64BytesCRC, but just interleaved for 3 streams.
-  KUMO_ATTRIBUTE_ALWAYS_INLINE void Process64BytesCRC3Streams(
+  KUMO_FORCE_INLINE void Process64BytesCRC3Streams(
       const uint8_t* p0, const uint8_t* p1, const uint8_t* p2,
       uint64_t* crc) const {
     uint64_t crc0 = crc[0];
@@ -369,7 +369,7 @@ class CRC32AcceleratedX86ARMCombinedMultipleStreamsBase
   // with new and default flags or use inline asm.
   // The code below is the same as FinalizePclmulStream, but with
   // PCLMUL and XOR operating on 2 values in a vector at the same time.
-  KUMO_ATTRIBUTE_ALWAYS_INLINE uint64_t
+  KUMO_FORCE_INLINE uint64_t
   FinalizeVpclmulStream(V256* partialCRC) const {
     uint64_t crc = 0;
     uint64_t low64, high64;
@@ -400,7 +400,7 @@ class CRC32AcceleratedX86ARMCombinedMultipleStreamsBase
     return crc;
   }
 
-  KUMO_ATTRIBUTE_ALWAYS_INLINE void Process64BytesVpclmul(
+  KUMO_FORCE_INLINE void Process64BytesVpclmul(
       const uint8_t* p, V256* vpartialCRC, V256 loopMultiplicands) const {
     __asm__ volatile(
         "vpclmulqdq $0x11, %3, %0, %%ymm0 \n"
@@ -417,11 +417,11 @@ class CRC32AcceleratedX86ARMCombinedMultipleStreamsBase
   }
 #else
   template <typename T = V256>
-  KUMO_ATTRIBUTE_ALWAYS_INLINE void Process64BytesVpclmul(const uint8_t*, T*,
+  KUMO_FORCE_INLINE void Process64BytesVpclmul(const uint8_t*, T*,
                                                           T) const {
     static_assert(sizeof(T) == 0, "Vector PCLMUL not supported");
   }
-  KUMO_ATTRIBUTE_ALWAYS_INLINE uint64_t FinalizeVpclmulStream(V256*) const {
+  KUMO_FORCE_INLINE uint64_t FinalizeVpclmulStream(V256*) const {
     return 0;
   }
 #endif  // defined(TURBO_CRC_INTERNAL_HAVE_X86_SIMD) && defined(__AVX__) &&

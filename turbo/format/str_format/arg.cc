@@ -233,9 +233,9 @@ namespace turbo {
                 if (conv.width() >= 0)
                     fill = static_cast<size_t>(conv.width());
                 ReducePadding(1, &fill);
-                if (!conv.has_left_flag()) sink->Append(fill, ' ');
-                sink->Append(1, v);
-                if (conv.has_left_flag()) sink->Append(fill, ' ');
+                if (!conv.has_left_flag()) sink->append(fill, ' ');
+                sink->append(1, v);
+                if (conv.has_left_flag()) sink->append(fill, ' ');
                 return true;
             }
 
@@ -286,12 +286,12 @@ namespace turbo {
                     num_left_spaces = 0;
                 }
 
-                sink->Append(num_left_spaces, ' ');
-                sink->Append(sign);
-                sink->Append(base_indicator);
-                sink->Append(num_zeroes, '0');
-                sink->Append(formatted);
-                sink->Append(num_right_spaces, ' ');
+                sink->append(num_left_spaces, ' ');
+                sink->append(sign);
+                sink->append(base_indicator);
+                sink->append(num_zeroes, '0');
+                sink->append(formatted);
+                sink->append(num_right_spaces, ' ');
                 return true;
             }
 
@@ -308,10 +308,10 @@ namespace turbo {
             inline bool ConvertStringArg(std::string_view v, const FormatConversionSpecImpl conv,
                                          FormatSinkImpl *sink) {
                 if (conv.is_basic()) {
-                    sink->Append(v);
+                    sink->append(v);
                     return true;
                 }
-                return sink->PutPaddedString(v, conv.width(), conv.precision(),
+                return sink->put_padded_string(v, conv.width(), conv.precision(),
                                              conv.has_left_flag());
             }
 
@@ -362,9 +362,9 @@ namespace turbo {
 
         bool ConvertBoolArg(bool v, FormatSinkImpl *sink) {
             if (v) {
-                sink->Append("true");
+                sink->append("true");
             } else {
-                sink->Append("false");
+                sink->append("false");
             }
             return true;
         }
@@ -420,7 +420,7 @@ namespace turbo {
             }
 
             if (conv.is_basic()) {
-                sink->Append(as_digits.with_neg_and_zero());
+                sink->append(as_digits.with_neg_and_zero());
                 return true;
             }
             return ConvertIntImplInnerSlow(as_digits, conv, sink);
@@ -541,7 +541,7 @@ namespace turbo {
         ArgConvertResult<FormatConversionCharSetInternal::p> FormatConvertImpl(
             VoidPtr v, const FormatConversionSpecImpl conv, FormatSinkImpl *sink) {
             if (!v.value) {
-                sink->Append("(nil)");
+                sink->append("(nil)");
                 return {true};
             }
             IntDigits as_digits;

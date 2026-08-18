@@ -52,6 +52,7 @@
 #include <turbo/bits/internal/bits.h>
 
 namespace turbo {
+
     // https://github.com/llvm/llvm-project/issues/64544
     // libc++ had the wrong signature for std::rotl and std::rotr
     // prior to libc++ 18.0.
@@ -188,17 +189,17 @@ namespace turbo {
 
     // https://en.cppreference.com/w/cpp/types/endian
     //
-    // Indicates the endianness of all scalar types:
-    //   * If all scalar types are little-endian, `turbo::endian::native` equals
-    //     turbo::endian::little.
-    //   * If all scalar types are big-endian, `turbo::endian::native` equals
-    //     `turbo::endian::big`.
+    // Indicates the Endianness of all scalar types:
+    //   * If all scalar types are little-endian, `turbo::Endian::native` equals
+    //     turbo::Endian::little.
+    //   * If all scalar types are big-endian, `turbo::Endian::native` equals
+    //     `turbo::Endian::big`.
     //   * Platforms that use anything else are unsupported.
-    using std::endian;
+    using Endian = std::endian;
 
 #else
 
-    enum class endian {
+    enum class Endian {
         little,
         big,
 #if KUMO_ENDIAN_LITTLE
@@ -211,6 +212,10 @@ namespace turbo {
     };
 
 #endif  // defined(__cpp_lib_endian) && __cpp_lib_endian >= 201907L
+
+    KUMO_MUST_USE_RESULT KUMO_FORCE_INLINE constexpr bool match_system(Endian e) {
+        return e == Endian::native;
+    }
 
 #if defined(__cpp_lib_byteswap) && __cpp_lib_byteswap >= 202110L
 

@@ -312,6 +312,10 @@
 /// @brief KUMO_PRAGMA_DIAG_IGNORED(str)   — suppress warning by string
 /// @brief KUMO_DISABLE_DEPRECATED_WARNINGS — push + ignore deprecation warnings
 /// @brief KUMO_RESTORE_DEPRECATED_WARNINGS — pop diagnostics
+/// @brief KUMO_DISABLE_UNUSED_WARNING      — push + ignore unused-function/const
+/// @brief KUMO_RESTORE_UNUSED_WARNING      — pop unused-warning diagnostics
+/// @brief KUMO_DISABLE_UNDESIRED_WARNINGS  — push + ignore IntelliSense/clang-cl noise
+/// @brief KUMO_RESTORE_UNDESIRED_WARNINGS  — pop undesired-warning diagnostics
 /// @brief KUMO_PRAGMA_GCC诊断_PUSH  — GCC-specific push
 /// @brief KUMO_PRAGMA_GCC诊断_POP   — GCC-specific pop
 /// @brief KUMO_PRAGMA_GCC诊断_IGNORED(x) — GCC-specific ignore

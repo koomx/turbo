@@ -1,16 +1,18 @@
-// Copyright 2026 The Abseil Authors.
+// Copyright (C) 2026 Kumo inc. and its affiliates. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      https://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+
 
 #include <turbo/types/any_span.h>
 
@@ -146,7 +148,7 @@ namespace turbo {
 
         TYPED_TEST(AnySpanTest, DerefOptional) {
             const std::vector<std::optional<int>> v = { 17, 19 };
-            const AnySpan<const int> span = turbo::MakeDerefAnySpan(v);
+            const AnySpan<const int> span = turbo::make_deref_any_span(v);
             EXPECT_THAT(span, ElementsAre(17, 19));
         }
 
@@ -183,7 +185,7 @@ namespace turbo {
         TYPED_TEST(AnySpanTest, Range) {
             using T = typename TestFixture::template MaybeConst<std::string>;
             std::vector<std::string> a = { "a", "b", "c", "d" };
-            auto range = any_span_adaptor::MakeAdaptorFromRange(a.begin(), a.end());
+            auto range = any_span_adaptor::make_adaptor_from_range(a.begin(), a.end());
             AnySpan<T> span(range);
             EXPECT_NO_FATAL_FAILURE(ExpectSpanEqualsContainer(span, a));
         }
@@ -191,7 +193,7 @@ namespace turbo {
         TYPED_TEST(AnySpanTest, View) {
             using T = typename TestFixture::template MaybeConst<std::string>;
             std::vector<std::string> a = { "a", "b", "c", "d" };
-            auto range = any_span_adaptor::MakeAdaptorFromView(a);
+            auto range = any_span_adaptor::make_adaptor_from_wiew(a);
             AnySpan<T> span(range);
             EXPECT_NO_FATAL_FAILURE(ExpectSpanEqualsContainer(span, a));
         }
@@ -439,7 +441,7 @@ namespace turbo {
             using V = typename TestFixture::template MaybeConst<std::vector<int>>;
             using T = typename TestFixture::template MaybeConst<int>;
             V v = { 1, 2, 3, 4 };
-            auto span = MakeAnySpan(v);
+            auto span = make_any_span(v);
             EXPECT_TRUE((std::is_same<decltype(span), AnySpan<T>>()));
             EXPECT_EQ(span.size(), 4);
             for (size_t i = 0; i < 4; ++i) {
@@ -451,7 +453,7 @@ namespace turbo {
             using V = typename TestFixture::template MaybeConst<std::vector<int>>;
             using T = typename TestFixture::template MaybeConst<int>;
             V v = { 1, 2, 3, 4 };
-            auto span = MakeAnySpan(v.data(), v.size());
+            auto span = make_any_span(v.data(), v.size());
             EXPECT_TRUE((std::is_same<decltype(span), AnySpan<T>>()));
             EXPECT_EQ(span.size(), 4);
             for (int i = 0; i < 4; ++i) {
@@ -462,7 +464,7 @@ namespace turbo {
         TYPED_TEST(AnySpanTest, MakeAnySpanFromArray) {
             using T = typename TestFixture::template MaybeConst<int>;
             T a[] = { 1, 2, 3, 4 };
-            auto span = MakeAnySpan(a);
+            auto span = make_any_span(a);
             EXPECT_TRUE((std::is_same<decltype(span), AnySpan<T>>()));
             EXPECT_EQ(span.size(), 4);
             for (int i = 0; i < 4; ++i) {
@@ -474,7 +476,7 @@ namespace turbo {
             using T = typename TestFixture::template MaybeConst<int>;
             T v = 0;
             T* a[] = { &v, &v, &v };
-            auto span = MakeDerefAnySpan(a);
+            auto span = make_deref_any_span(a);
             EXPECT_TRUE((std::is_same<decltype(span), AnySpan<T>>()));
             EXPECT_EQ(span.size(), 3);
             for (int i = 0; i < 3; ++i) {
@@ -891,7 +893,7 @@ namespace turbo {
 
         TEST(ConstAnySpanTest, MakeAnySpanFromVector) {
             std::vector<int> v = { 1, 2, 3, 4 };
-            auto span = MakeConstAnySpan(v);
+            auto span = make_const_any_span(v);
             EXPECT_TRUE((std::is_same<decltype(span), AnySpan<const int>>()));
             EXPECT_EQ(span.size(), 4);
             for (size_t i = 0; i < 4; ++i) {
@@ -901,7 +903,7 @@ namespace turbo {
 
         TEST(ConstAnySpanTest, MakeAnySpanFromPtrAndSize) {
             std::vector<int> v = { 1, 2, 3, 4 };
-            auto span = MakeConstAnySpan(v.data(), v.size());
+            auto span = make_const_any_span(v.data(), v.size());
             EXPECT_TRUE((std::is_same<decltype(span), AnySpan<const int>>()));
             EXPECT_EQ(span.size(), 4);
             for (size_t i = 0; i < 4; ++i) {
@@ -911,7 +913,7 @@ namespace turbo {
 
         TEST(ConstAnySpanTest, MakeAnySpanFromArray) {
             int a[] = { 1, 2, 3, 4 };
-            auto span = MakeConstAnySpan(a);
+            auto span = make_const_any_span(a);
             EXPECT_TRUE((std::is_same<decltype(span), AnySpan<const int>>()));
             EXPECT_EQ(span.size(), 4);
             for (size_t i = 0; i < 4; ++i) {
@@ -922,7 +924,7 @@ namespace turbo {
         TEST(ConstAnySpanTest, MakeDerefAnySpanFromArray) {
             int v = 0;
             int* a[] = { &v, &v, &v };
-            auto span = MakeConstDerefAnySpan(a);
+            auto span = make_const_deref_any_span(a);
             EXPECT_TRUE((std::is_same<decltype(span), AnySpan<const int>>()));
             EXPECT_EQ(span.size(), 3);
             for (size_t i = 0; i < 3; ++i) {

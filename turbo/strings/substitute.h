@@ -170,7 +170,7 @@ namespace turbo {
             template <typename T, typename = std::enable_if_t<HasTurboStringify<T>::value>>
             Arg( // NOLINT(google-explicit-constructor)
                 const T& v, strings_internal::StringifySink&& sink = { })
-                : piece_(strings_internal::ExtractStringification(sink, v)) { }
+                : piece_(strings_internal::extract_stringification(sink, v)) { }
 
             Arg(Hex hex); // NOLINT(google-explicit-constructor)
             Arg(Dec dec); // NOLINT(google-explicit-constructor)

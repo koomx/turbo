@@ -40,7 +40,7 @@ namespace turbo {
         // bytes be written, regardless of the value of utf8_char.
         enum { kMaxEncodedUTF8Size = 4 };
 
-        size_t EncodeUTF8Char(char *buffer, char32_t utf8_char);
+        size_t EncodeUTF8Char(char* buffer, char32_t utf8_char);
 
         struct ShiftState {
             bool saw_high_surrogate = false;
@@ -54,8 +54,8 @@ namespace turbo {
         //
         // This is basically std::wcrtomb(), but always outputting UTF-8 instead of
         // respecting the current locale.
-        size_t WideToUtf8(wchar_t wc, char *buf, ShiftState &s);
+        size_t WideToUtf8(wchar_t wc, char* buf, ShiftState& s);
     } // namespace strings_internal
 } // namespace turbo
 
-#endif  // TURBO_STRINGS_INTERNAL_UTF8_H_
+#endif // TURBO_STRINGS_INTERNAL_UTF8_H_

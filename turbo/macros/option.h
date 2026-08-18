@@ -21,22 +21,21 @@
 // This option controls whether turbo::SourceLocation is implemented as an alias
 // to the turbo::SourceLocation type, or as an independent implementation.
 //
-// A value of 0 means to use Abseil's implementation.  This requires only C++17
+// A value of 0 means to use library's implementation.  This requires only C++17
 // support, and is expected to run on every toolchain we support, and to
 // properly capture source location information on every toolchain that supports
 // the necessary built-ins (such as `__builtin_LINE`).
 //
-// A value of 1 means to use aliases.  This requires that all code using Abseil
+// A value of 1 means to use aliases.  This requires that all code using library
 // is built in C++20 mode or later.
 //
-// A value of 2 means to detect the C++ version being used to compile Abseil,
+// A value of 2 means to detect the C++ version being used to compile library,
 // and use an alias only if working turbo::SourceLocation types are available.
 // This option is useful when you are building your program from source.  It
-// should not be used otherwise -- for example, if you are distributing Abseil
+// should not be used otherwise -- for example, if you are distributing library
 // in a binary package manager -- since in mode 2, they will name different
 // types, with different mangled names and binary layout, depending on the
-// compiler flags passed by the end user.  For more info, see
-// https://abseil.io/about/design/dropin-types.
+// compiler flags passed by the end user.
 //
 // User code should not inspect this macro.  To check in the preprocessor if
 // the source location type is an alias of turbo::SourceLocation type, use the
@@ -90,20 +89,19 @@
 // implemented as aliases to the std:: ordering types, or as an independent
 // implementation.
 //
-// A value of 0 means to use Abseil's implementation.  This is expected to
+// A value of 0 means to use library's implementation.  This is expected to
 // work on every toolchain we support.
 //
-// A value of 1 means to use aliases.  This requires that all code using Abseil
+// A value of 1 means to use aliases.  This requires that all code using library
 // is built in C++20 mode or later.
 //
-// A value of 2 means to detect the C++ version being used to compile Abseil,
+// A value of 2 means to detect the C++ version being used to compile library,
 // and use an alias only if working std:: ordering types are available.  This
 // option is useful when you are building your program from source.  It should
-// not be used otherwise -- for example, if you are distributing Abseil in a
+// not be used otherwise -- for example, if you are distributing library in a
 // binary package manager -- since in mode 2, they will name different types,
 // with different mangled names and binary layout, depending on the compiler
-// flags passed by the end user.  For more info, see
-// https://abseil.io/about/design/dropin-types.
+// flags passed by the end user.
 //
 // User code should not inspect this macro.  To check in the preprocessor if
 // the ordering types are aliases of std:: ordering types, use the feature macro
@@ -139,30 +137,9 @@
 #error KUMO_CONSUME_TEST_DLL must be 0 or 1
 #endif
 
-// KUMO_CPLUSPLUS_LANG
-//
-// MSVC does not set the value of __cplusplus correctly, but instead uses
-// _MSVC_LANG as a stand-in.
-// https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
-//
-// However, there are reports that MSVC even sets _MSVC_LANG incorrectly at
-// times, for example:
-// https://github.com/microsoft/vscode-cpptools/issues/1770
-// https://reviews.llvm.org/D70996
-//
-// For this reason, this symbol is considered INTERNAL and code outside of
-// Abseil must not use it.
-#if defined(_MSVC_LANG)
-#define KUMO_CPLUSPLUS_LANG _MSVC_LANG
-#elif defined(__cplusplus)
-#define KUMO_CPLUSPLUS_LANG __cplusplus
-#else
-#define KUMO_CPLUSPLUS_LANG 0
-#endif
-
 // KUMO_OPTION_INLINE_HW_ACCEL_STRATEGY
 //
-// This option controls whether Abseil is allowed to use non-portable
+// This option controls whether library is allowed to use non-portable
 // hardware-accelerated implementations in headers (where they are typically
 // inlined into the caller's translation unit).
 //

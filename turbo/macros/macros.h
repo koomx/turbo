@@ -27,3 +27,5 @@
 #include <turbo/macros/platform/platform.h>
 #include <turbo/macros/gpu/gpu.h>
 #include <turbo/macros/macros/macros.h>
+#include <turbo/macros/attributes/attributes.h>
+

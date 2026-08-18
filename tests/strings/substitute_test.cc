@@ -29,9 +29,9 @@ namespace {
 struct MyStruct {
   template <typename Sink>
   friend void turbo_stringify(Sink& sink, const MyStruct& s) {
-    sink.Append("MyStruct{.value = ");
-    sink.Append(turbo::str_cat(s.value));
-    sink.Append("}");
+    sink.append("MyStruct{.value = ");
+    sink.append(turbo::str_cat(s.value));
+    sink.append("}");
   }
   int value;
 };
@@ -261,7 +261,7 @@ enum class EnumWithStringify { Many = 0, Choices = 1 };
 
 template <typename Sink>
 void turbo_stringify(Sink& sink, EnumWithStringify e) {
-  sink.Append(e == EnumWithStringify::Many ? "Many" : "Choices");
+  sink.append(e == EnumWithStringify::Many ? "Many" : "Choices");
 }
 
 TEST(SubstituteTest, TurboStringifyWithEnum) {

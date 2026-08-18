@@ -29,14 +29,14 @@ namespace turbo {
 namespace strings_internal {
 namespace {
 
-// Exercises the Append(size_t, char) overload
+// Exercises the append(size_t, char) overload
 struct AppendNCharsTest {
   size_t count;
   char ch;
 
   template <typename Sink>
   friend void turbo_stringify(Sink& sink, const AppendNCharsTest& t) {
-    sink.Append(t.count, t.ch);
+    sink.append(t.count, t.ch);
   }
 };
 TEST(StringifyStreamTest, AppendNChars) {
@@ -45,13 +45,13 @@ TEST(StringifyStreamTest, AppendNChars) {
   EXPECT_EQ(os.str(), "aaaaa");
 }
 
-// Exercises the Append(std::string_view) overload
+// Exercises the append(std::string_view) overload
 struct AppendStringViewTest {
   std::string_view v;
 
   template <typename Sink>
   friend void turbo_stringify(Sink& sink, const AppendStringViewTest& t) {
-    sink.Append(t.v);
+    sink.append(t.v);
   }
 };
 TEST(StringifyStreamTest, AppendStringView) {
@@ -60,7 +60,7 @@ TEST(StringifyStreamTest, AppendStringView) {
   EXPECT_EQ(os.str(), "abc");
 }
 
-// Exercises TurboFormatFlush(OStringStreamSink*, std::string_view v)
+// Exercises turbo_format_flush(OStringStreamSink*, std::string_view v)
 struct TurboFormatFlushTest {
   std::string_view a, b, c;
 
@@ -69,7 +69,7 @@ struct TurboFormatFlushTest {
     turbo::str_printf_to(&sink, "%s, %s, %s", t.a, t.b, t.c);
   }
 };
-TEST(StringifyStreamTest, TurboFormatFlush) {
+TEST(StringifyStreamTest, turbo_format_flush) {
   std::ostringstream os;
   StringifyStream(os) << TurboFormatFlushTest{"a", "b", "c"};
   EXPECT_EQ(os.str(), "a, b, c");
@@ -86,7 +86,7 @@ struct PreferStreamInsertionOverTurboStringifyTest {
   template <typename Sink>
   friend void turbo_stringify  // NOLINT(clang-diagnostic-unused-function)
       (Sink& sink, const PreferStreamInsertionOverTurboStringifyTest&) {
-    sink.Append("bad");
+    sink.append("bad");
   }
 };
 TEST(StringifyStreamTest, PreferStreamInsertionOverTurboStringify) {

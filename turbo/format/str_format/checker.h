@@ -17,10 +17,10 @@
 
 #include <algorithm>
 
-#include <turbo/macros/config.h>
 #include <turbo/format/str_format/arg.h>
 #include <turbo/format/str_format/constexpr_parser.h>
 #include <turbo/format/str_format/extension.h>
+#include <turbo/macros/config.h>
 
 // Compile time check support for entry points.
 
@@ -30,28 +30,30 @@
 // more details.
 #if KUMO_HAVE_ATTRIBUTE(enable_if) && !defined(__INTELLISENSE__)
 #define TURBO_INTERNAL_ENABLE_FORMAT_CHECKER 1
-#endif  // KUMO_HAVE_ATTRIBUTE(enable_if) && !defined(__INTELLISENSE__)
-#endif  // TURBO_INTERNAL_ENABLE_FORMAT_CHECKER
+#endif // KUMO_HAVE_ATTRIBUTE(enable_if) && !defined(__INTELLISENSE__)
+#endif // TURBO_INTERNAL_ENABLE_FORMAT_CHECKER
 
 namespace turbo {
     namespace str_format_internal {
 #ifdef TURBO_INTERNAL_ENABLE_FORMAT_CHECKER
 
-        template<FormatConversionCharSet... C>
+        template <FormatConversionCharSet... C>
         constexpr bool ValidFormatImpl(std::string_view format) {
             int next_arg = 0;
-            const char *p = format.data();
-            const char *const end = p + format.size();
+            const char* p = format.data();
+            const char* const end = p + format.size();
             constexpr FormatConversionCharSet
-                    kAllowedConvs[(std::max)(sizeof...(C), size_t{1})] = {C...};
-            bool used[(std::max)(sizeof...(C), size_t{1})]{};
+                kAllowedConvs[(std::max)(sizeof...(C), size_t { 1 })] = { C... };
+            bool used[(std::max)(sizeof...(C), size_t { 1 })] { };
             constexpr int kNumArgs = sizeof...(C);
             while (p != end) {
-                while (p != end && *p != '%') ++p;
+                while (p != end && *p != '%')
+                    ++p;
                 if (p == end) {
                     break;
                 }
-                if (p + 1 >= end) return false;
+                if (p + 1 >= end)
+                    return false;
                 if (p[1] == '%') {
                     // %%
                     p += 2;
@@ -60,7 +62,8 @@ namespace turbo {
 
                 UnboundConversion conv(turbo::kConstInit);
                 p = ConsumeUnboundConversion(p + 1, end, &conv, &next_arg);
-                if (p == nullptr) return false;
+                if (p == nullptr)
+                    return false;
                 if (conv.arg_position <= 0 || conv.arg_position > kNumArgs) {
                     return false;
                 }
@@ -68,10 +71,11 @@ namespace turbo {
                     return false;
                 }
                 used[conv.arg_position - 1] = true;
-                for (auto extra: {conv.width, conv.precision}) {
+                for (auto extra : { conv.width, conv.precision }) {
                     if (extra.is_from_arg()) {
                         int pos = extra.get_from_arg();
-                        if (pos <= 0 || pos > kNumArgs) return false;
+                        if (pos <= 0 || pos > kNumArgs)
+                            return false;
                         used[pos - 1] = true;
                         if (!Contains(kAllowedConvs[pos - 1], '*')) {
                             return false;
@@ -80,15 +84,16 @@ namespace turbo {
                 }
             }
             if (sizeof...(C) != 0) {
-                for (bool b: used) {
-                    if (!b) return false;
+                for (bool b : used) {
+                    if (!b)
+                        return false;
                 }
             }
             return true;
         }
 
-#endif  // TURBO_INTERNAL_ENABLE_FORMAT_CHECKER
+#endif // TURBO_INTERNAL_ENABLE_FORMAT_CHECKER
     } // namespace str_format_internal
 } // namespace turbo
 
-#endif  // TURBO_STRINGS_INTERNAL_STR_FORMAT_CHECKER_H_
+#endif // TURBO_STRINGS_INTERNAL_STR_FORMAT_CHECKER_H_

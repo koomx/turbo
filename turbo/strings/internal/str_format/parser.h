@@ -53,7 +53,7 @@ namespace turbo {
         // the leading %. On success, it returns true. On failure, it stops and returns
         // false.
         template <typename Consumer>
-        bool ParseFormatString(std::string_view src, Consumer consumer) {
+        bool parse_format_string(std::string_view src, Consumer consumer) {
             int next_arg = 0;
             const char* p = src.data();
             const char* const end = p + src.size();

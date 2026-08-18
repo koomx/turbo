@@ -1,10 +1,10 @@
-// Copyright 2026 The Abseil Authors.
+// Copyright (C) 2026 Kumo inc. and its affiliates. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      https://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
 // -----------------------------------------------------------------------------
 // File: any_span.h
 // -----------------------------------------------------------------------------
@@ -88,7 +89,7 @@
 // Or use one of the "Make" functions:
 //
 //   std::vector<MyMessage*> message_ptrs = ...;
-//   MyMutatingFunction(MakeDerefAnySpan(message_ptrs));
+//   MyMutatingFunction(make_deref_any_span(message_ptrs));
 //
 // Or, if you are already dealing with a mutable view-like object, construction
 // can usually be implicit:
@@ -142,12 +143,12 @@
 // elements. Factories with "Deref" in the name will dereference elements of the
 // container or array:
 //
-//  AnySpan<T> MakeAnySpan(Container& c);
-//  AnySpan<T> MakeDerefAnySpan(Container& c);
-//  AnySpan<T> MakeAnySpan(T* ptr, std::size_t size);
-//  AnySpan<const T> MakeConstAnySpan(const Container& c);
-//  AnySpan<const T> MakeConstDerefAnySpan(const Container& c);
-//  AnySpan<const T> MakeConstAnySpan(const T* ptr, std::size_t size);
+//  AnySpan<T> make_any_span(Container& c);
+//  AnySpan<T> make_deref_any_span(Container& c);
+//  AnySpan<T> make_any_span(T* ptr, std::size_t size);
+//  AnySpan<const T> make_const_any_span(const Container& c);
+//  AnySpan<const T> make_const_deref_any_span(const Container& c);
+//  AnySpan<const T> make_const_any_span(const T* ptr, std::size_t size);
 //
 // Lifetime Gotchas:
 //
@@ -170,10 +171,10 @@
 // AnySpan is also capable of capturing another AnySpan, so watch out for
 // implicit conversions between types of AnySpans:
 //
-//   // MakeDerefAnySpan() returns an AnySpan<Derived>, leaving 's' pointing to
+//   // make_deref_any_span() returns an AnySpan<Derived>, leaving 's' pointing to
 //   // a temporary!
 //   vector<Derived*> v;
-//   AnySpan<Base> s = MakeDerefAnySpan(v);
+//   AnySpan<Base> s = make_deref_any_span(v);
 //
 // Adapting Spans:
 //
@@ -200,8 +201,8 @@
 //      proto_message.repeated_field().size(),
 //      any_span_transform::Deref()));
 //
-#ifndef TURBO_TYPES_ANY_SPAN_H_
-#define TURBO_TYPES_ANY_SPAN_H_
+
+#pragma once
 
 #include <algorithm>
 #include <cstddef>
@@ -310,7 +311,7 @@ namespace turbo {
         // value of this function must outlive any spans that use it. Iter must be a
         // valid random access iterator.
         template <typename Iter>
-        Range<Iter> MakeAdaptorFromRange(Iter begin, Iter end) {
+        Range<Iter> make_adaptor_from_range(Iter begin, Iter end) {
             return Range<Iter>(begin, end);
         }
 
@@ -318,7 +319,7 @@ namespace turbo {
         // functions of the given view must return valid random access iterators. The
         // return value of this function must outlive any spans that use it.
         template <typename View>
-        auto MakeAdaptorFromView(View& view) // NOLINT(runtime/references)
+        auto make_adaptor_from_wiew(View& view) // NOLINT(runtime/references)
             -> Range<decltype(view.begin())> {
             return Range<decltype(view.begin())>(view.begin(), view.end());
         }
@@ -340,10 +341,10 @@ namespace turbo {
         template <typename U>
         using EnableIfConst = std::enable_if_t<std::is_const_v<T>, U>;
 
-        static std::true_type CreatesATemporaryImpl(std::decay_t<T>&&);
-        static std::false_type CreatesATemporaryImpl(const T&);
+        static std::true_type creates_a_temporary_impl(std::decay_t<T>&&);
+        static std::false_type creates_a_temporary_impl(const T&);
         template <typename U,
-            typename B = decltype(CreatesATemporaryImpl(std::declval<U>()))>
+            typename B = decltype(creates_a_temporary_impl(std::declval<U>()))>
         struct CreatesATemporary : B { };
 
         // Enable if invoke(transform, element) is valid and if a reference to T can
@@ -361,7 +362,7 @@ namespace turbo {
         // Enable if Container appears to be a valid container. Just checks for size()
         // and makes sure the class is not an AnySpan for now.
         template <typename Container>
-        using EnableIfContainer = std::enable_if_t<any_span_internal::HasSize<Container>::value && !any_span_internal::IsAnySpan<Container>::value>;
+        using EnableIfContainer = std::enable_if_t<HasSize<Container>::value && !any_span_internal::IsAnySpan<Container>::value>;
 
         template <typename Element>
         using EnableIfDifferentElementType = std::enable_if_t<!std::is_same_v<T, Element> && !std::is_same_v<T, const Element>>;
@@ -454,7 +455,7 @@ namespace turbo {
         constexpr AnySpan(const Element* turbo_nullable ptr
                               KUMO_ATTRIBUTE_LIFETIME_BOUND,
             size_type size, const Transform& transform)
-            : AnySpan(any_span_internal::MakeArrayGetter<T>(ptr, transform), size) { }
+            : AnySpan(any_span_internal::make_array_getter<T>(ptr, transform), size) { }
         template <typename Element,
             typename Transform = any_span_transform::IdentityT,
             typename = EnableIfTransformIsValid<Transform, const Element&>,
@@ -463,7 +464,7 @@ namespace turbo {
                               KUMO_ATTRIBUTE_LIFETIME_BOUND,
             size_type size,
             const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND = any_span_transform::Identity())
-            : AnySpan(any_span_internal::MakeArrayGetter<T>(ptr, transform), size) { }
+            : AnySpan(any_span_internal::make_array_getter<T>(ptr, transform), size) { }
 
         // Creates a span that wraps an array of fixed size. Applies the optional
         // transform to elements before returning them.
@@ -511,7 +512,7 @@ namespace turbo {
                 Transform>> = true>
         constexpr AnySpan( // NOLINT(google-explicit-constructor)
             const Container& container, const Transform& transform)
-            : AnySpan(any_span_internal::MakeContainerGetter<T>(container, transform),
+            : AnySpan(any_span_internal::make_container_getter<T>(container, transform),
                   container.size()) { }
         template <typename Container, typename Transform,
             typename = EnableIfContainer<Container>,
@@ -523,7 +524,7 @@ namespace turbo {
         constexpr AnySpan( // NOLINT(google-explicit-constructor)
             const Container& container KUMO_ATTRIBUTE_LIFETIME_BOUND,
             const Transform& transform)
-            : AnySpan(any_span_internal::MakeContainerGetter<T>(container, transform),
+            : AnySpan(any_span_internal::make_container_getter<T>(container, transform),
                   container.size()) { }
         template <
             typename Container, typename Transform = any_span_transform::IdentityT,
@@ -536,7 +537,7 @@ namespace turbo {
         constexpr AnySpan( // NOLINT(google-explicit-constructor)
             const Container& container,
             const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND = any_span_transform::Identity())
-            : AnySpan(any_span_internal::MakeContainerGetter<T>(container, transform),
+            : AnySpan(any_span_internal::make_container_getter<T>(container, transform),
                   container.size()) { }
         template <typename Container,
             typename Transform = any_span_transform::IdentityT,
@@ -549,7 +550,7 @@ namespace turbo {
         constexpr AnySpan( // NOLINT(google-explicit-constructor)
             const Container& container KUMO_ATTRIBUTE_LIFETIME_BOUND,
             const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND = any_span_transform::Identity())
-            : AnySpan(any_span_internal::MakeContainerGetter<T>(container, transform),
+            : AnySpan(any_span_internal::make_container_getter<T>(container, transform),
                   container.size()) { }
 
         // Creates a span that wraps a mutable array. Applies the optional transform
@@ -565,7 +566,7 @@ namespace turbo {
             EnableIfTransformIsByCopy<Transform> = true>
         constexpr AnySpan(Element* turbo_nullable ptr KUMO_ATTRIBUTE_LIFETIME_BOUND,
             size_type size, const Transform& transform)
-            : AnySpan(any_span_internal::MakeArrayGetter<T>(ptr, transform), size) { }
+            : AnySpan(any_span_internal::make_array_getter<T>(ptr, transform), size) { }
         template <typename Element,
             typename Transform = any_span_transform::IdentityT,
             typename = EnableIfMutable<Element>,
@@ -574,7 +575,7 @@ namespace turbo {
         constexpr AnySpan(Element* turbo_nullable ptr KUMO_ATTRIBUTE_LIFETIME_BOUND,
             size_type size,
             const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND = any_span_transform::Identity())
-            : AnySpan(any_span_internal::MakeArrayGetter<T>(ptr, transform), size) { }
+            : AnySpan(any_span_internal::make_array_getter<T>(ptr, transform), size) { }
 
         // Creates a span that wraps a mutable array of fixed size. Applies the
         // optional transform to elements before returning them.
@@ -620,7 +621,7 @@ namespace turbo {
         constexpr explicit AnySpan( // NOLINT(google-explicit-constructor)
             Container& container KUMO_ATTRIBUTE_LIFETIME_BOUND,
             const Transform& transform)
-            : AnySpan(any_span_internal::MakeContainerGetter<T>(container, transform),
+            : AnySpan(any_span_internal::make_container_getter<T>(container, transform),
                   container.size()) { }
         template <typename Container,
             typename Transform = any_span_transform::IdentityT,
@@ -632,7 +633,7 @@ namespace turbo {
         constexpr explicit AnySpan( // NOLINT(google-explicit-constructor)
             Container& container KUMO_ATTRIBUTE_LIFETIME_BOUND,
             const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND = any_span_transform::Identity())
-            : AnySpan(any_span_internal::MakeContainerGetter<T>(container, transform),
+            : AnySpan(any_span_internal::make_container_getter<T>(container, transform),
                   container.size()) { }
 
         // Converts a mutable span to a const span by copying the internal state
@@ -653,7 +654,7 @@ namespace turbo {
                 Element&>>
         constexpr explicit AnySpan(
             const AnySpan<Element>& other KUMO_ATTRIBUTE_LIFETIME_BOUND)
-            : AnySpan(any_span_internal::MakeContainerGetter<T>(
+            : AnySpan(any_span_internal::make_container_getter<T>(
                           other, any_span_transform::Identity()),
                   other.size()) { }
 
@@ -668,7 +669,7 @@ namespace turbo {
         constexpr explicit AnySpan(const AnySpan<Element>& other
                                        KUMO_ATTRIBUTE_LIFETIME_BOUND,
             const Transform& transform)
-            : AnySpan(any_span_internal::MakeContainerGetter<T>(other, transform),
+            : AnySpan(any_span_internal::make_container_getter<T>(other, transform),
                   other.size()) { }
         template <typename Element, typename Transform,
             typename = EnableIfTransformIsValid<Transform, Element&>,
@@ -676,7 +677,7 @@ namespace turbo {
         constexpr explicit AnySpan(
             const AnySpan<Element>& other KUMO_ATTRIBUTE_LIFETIME_BOUND,
             const Transform& transform KUMO_ATTRIBUTE_LIFETIME_BOUND)
-            : AnySpan(any_span_internal::MakeContainerGetter<T>(other, transform),
+            : AnySpan(any_span_internal::make_container_getter<T>(other, transform),
                   other.size()) { }
 
         // Returns a subspan of this span. This span may become invalid before the
@@ -790,19 +791,19 @@ namespace turbo {
 
     // Constructs an AnySpan from a container or array.
     template <int&... ExplicitArgumentBarrier, typename Container,
-        typename T = any_span_internal::ElementType<Container>>
+        typename T = ElementType<Container>>
     std::enable_if_t<
         turbo::type_traits_internal::IsView<std::remove_cv_t<Container>>::value,
         AnySpan<T>>
-    MakeAnySpan(Container& c) {
+    make_any_span(Container& c) {
         return AnySpan<T>(c);
     }
     template <int&... ExplicitArgumentBarrier, typename Container,
-        typename T = any_span_internal::ElementType<Container>>
+        typename T = ElementType<Container>>
     std::enable_if_t<
         !turbo::type_traits_internal::IsView<std::remove_cv_t<Container>>::value,
         AnySpan<T>>
-    MakeAnySpan(Container& c KUMO_ATTRIBUTE_LIFETIME_BOUND) {
+    make_any_span(Container& c KUMO_ATTRIBUTE_LIFETIME_BOUND) {
         return AnySpan<T>(c);
     }
 
@@ -812,7 +813,7 @@ namespace turbo {
     std::enable_if_t<
         turbo::type_traits_internal::IsView<std::remove_cv_t<Container>>::value,
         AnySpan<T>>
-    MakeDerefAnySpan(Container& c) {
+    make_deref_any_span(Container& c) {
         return AnySpan<T>(c, any_span_transform::Deref());
     }
     template <int&... ExplicitArgumentBarrier, typename Container,
@@ -820,30 +821,30 @@ namespace turbo {
     std::enable_if_t<
         !turbo::type_traits_internal::IsView<std::remove_cv_t<Container>>::value,
         AnySpan<T>>
-    MakeDerefAnySpan(Container& c KUMO_ATTRIBUTE_LIFETIME_BOUND) {
+    make_deref_any_span(Container& c KUMO_ATTRIBUTE_LIFETIME_BOUND) {
         return AnySpan<T>(c, any_span_transform::Deref());
     }
 
     // Constructs an AnySpan from a pointer and size.
     template <int&... ExplicitArgumentBarrier, typename T>
-    AnySpan<T> MakeAnySpan(T* turbo_nullable ptr KUMO_ATTRIBUTE_LIFETIME_BOUND,
+    AnySpan<T> make_any_span(T* turbo_nullable ptr KUMO_ATTRIBUTE_LIFETIME_BOUND,
         std::size_t size) {
         return AnySpan<T>(ptr, size);
     }
 
     // Constructs a const AnySpan from a container or array.
     template <int&... ExplicitArgumentBarrier, typename Container,
-        typename T = any_span_internal::ElementType<const Container>>
+        typename T = ElementType<const Container>>
     std::enable_if_t<turbo::type_traits_internal::IsView<Container>::value,
         AnySpan<const T>>
-    MakeConstAnySpan(const Container& c) {
+    make_const_any_span(const Container& c) {
         return AnySpan<const T>(c);
     }
     template <int&... ExplicitArgumentBarrier, typename Container,
-        typename T = any_span_internal::ElementType<const Container>>
+        typename T = ElementType<const Container>>
     std::enable_if_t<!turbo::type_traits_internal::IsView<Container>::value,
         AnySpan<const T>>
-    MakeConstAnySpan(const Container& c KUMO_ATTRIBUTE_LIFETIME_BOUND) {
+    make_const_any_span(const Container& c KUMO_ATTRIBUTE_LIFETIME_BOUND) {
         return AnySpan<const T>(c);
     }
 
@@ -853,20 +854,20 @@ namespace turbo {
         typename T = any_span_internal::DerefElementType<const Container>>
     std::enable_if_t<turbo::type_traits_internal::IsView<Container>::value,
         AnySpan<const T>>
-    MakeConstDerefAnySpan(const Container& c) {
+    make_const_deref_any_span(const Container& c) {
         return AnySpan<const T>(c, any_span_transform::Deref());
     }
     template <int&... ExplicitArgumentBarrier, typename Container,
         typename T = any_span_internal::DerefElementType<const Container>>
     std::enable_if_t<!turbo::type_traits_internal::IsView<Container>::value,
         AnySpan<const T>>
-    MakeConstDerefAnySpan(const Container& c KUMO_ATTRIBUTE_LIFETIME_BOUND) {
+    make_const_deref_any_span(const Container& c KUMO_ATTRIBUTE_LIFETIME_BOUND) {
         return AnySpan<const T>(c, any_span_transform::Deref());
     }
 
     // Constructs an AnySpan from a pointer and size.
     template <int&... ExplicitArgumentBarrier, typename T>
-    AnySpan<const T> MakeConstAnySpan(const T* turbo_nullable ptr,
+    AnySpan<const T> make_const_any_span(const T* turbo_nullable ptr,
         std::size_t size) {
         return AnySpan<const T>(ptr, size);
     }
@@ -1038,5 +1039,3 @@ namespace turbo {
     };
 
 } // namespace turbo
-
-#endif // TURBO_TYPES_ANY_SPAN_H_

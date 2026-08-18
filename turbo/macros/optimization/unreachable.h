@@ -28,7 +28,7 @@
 // `KUMO_INTERNAL_IMMEDIATE_ABORT_IMPL()` aborts the program in the fastest
 // possible way, with no attempt at logging. One use is to implement hardening
 // aborts with KUMO_OPTION_HARDENED.  Since this is an internal symbol, it
-// should not be used directly outside of Abseil.
+// should not be used directly outside of library.
 #if KUMO_HAVE_BUILTIN(__builtin_trap) || \
     (defined(__GNUC__) && !defined(__clang__))
 #define KUMO_INTERNAL_IMMEDIATE_ABORT_IMPL() __builtin_trap()
