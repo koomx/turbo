@@ -4,14 +4,13 @@
 
 #include <turbo/unicode/engine/compiler_check.h>
 #include <turbo/unicode/engine/common_defs.h>
-#include <turbo/unicode/engine/encoding_types.h>
-#include <turbo/unicode/engine/error.h>
+#include <turbo/unicode/text_encoding.h>
+#include <turbo/unicode/error.h>
 
 SIMDUTF_PUSH_DISABLE_WARNINGS
 SIMDUTF_DISABLE_UNDESIRED_WARNINGS
 
 // Public API
-#include <turbo/unicode/engine/simdutf_version.h>
 #include <turbo/unicode/engine/implementation.h>
 
 // Implementation-internal files (must be included before the implementations

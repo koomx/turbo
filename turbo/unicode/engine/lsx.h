@@ -1,6 +1,7 @@
 #ifndef SIMDUTF_LSX_H
 #define SIMDUTF_LSX_H
 
+#include <turbo/unicode/engine/lasx.h>
 #ifdef SIMDUTF_FALLBACK_H
 #error "lsx.h must be included before fallback.h"
 #endif

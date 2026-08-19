@@ -7,16 +7,16 @@
 #if __cpp_pp_embed
 
 TEST(test_embed) {
-  // clang-format off
+    // clang-format off
   constexpr unsigned char binary[]{
   #embed <embed/valid_utf8.txt>
   };
-  // clang-format on
-  static_assert(turbo::validate_utf8(std::span(binary)));
+    // clang-format on
+    static_assert(turbo::validate_utf8(std::span(binary)));
 }
 
 #else
-TEST(embed_is_not_available_in_older_cpp_versions) {}
+TEST(embed_is_not_available_in_older_cpp_versions) { }
 #endif
 
 TEST_MAIN

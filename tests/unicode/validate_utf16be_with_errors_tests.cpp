@@ -9,74 +9,75 @@
 #include <tests/unicode/helpers/utf16.h>
 
 TEST_LOOP(validate_utf16be_returns_true_for_valid_input_single_words) {
-  turbo::tests::helpers::random_utf16 generator{seed, 1, 0};
-  const auto utf16{generator.generate_be(512, seed)};
+    turbo::tests::helpers::random_utf16 generator { seed, 1, 0 };
+    const auto utf16 { generator.generate_be(512, seed) };
 
-  turbo::result res = implementation.validate_utf16be_with_errors(
-      reinterpret_cast<const char16_t *>(utf16.data()), utf16.size());
-  ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
-  ASSERT_EQUAL(res.count, utf16.size());
+    turbo::result res = implementation.validate_utf16be_with_errors(
+        reinterpret_cast<const char16_t*>(utf16.data()), utf16.size());
+    ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(res.count, utf16.size());
 }
 
 TEST_LOOP(validate_utf16be_returns_true_for_valid_input_surrogate_pairs_short) {
-  turbo::tests::helpers::random_utf16 generator{seed, 0, 1};
-  const auto utf16{generator.generate_be(8)};
+    turbo::tests::helpers::random_utf16 generator { seed, 0, 1 };
+    const auto utf16 { generator.generate_be(8) };
 
-  const turbo::result res = implementation.validate_utf16be_with_errors(
-      reinterpret_cast<const char16_t *>(utf16.data()), utf16.size());
-  ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
-  ASSERT_EQUAL(res.count, utf16.size());
+    const turbo::result res = implementation.validate_utf16be_with_errors(
+        reinterpret_cast<const char16_t*>(utf16.data()), utf16.size());
+    ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(res.count, utf16.size());
 }
 
 TEST_LOOP(validate_utf16be_returns_true_for_valid_input_surrogate_pairs) {
-  turbo::tests::helpers::random_utf16 generator{seed, 0, 1};
-  const auto utf16{generator.generate_be(512)};
+    turbo::tests::helpers::random_utf16 generator { seed, 0, 1 };
+    const auto utf16 { generator.generate_be(512) };
 
-  const turbo::result res = implementation.validate_utf16be_with_errors(
-      reinterpret_cast<const char16_t *>(utf16.data()), utf16.size());
-  ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
-  ASSERT_EQUAL(res.count, utf16.size());
+    const turbo::result res = implementation.validate_utf16be_with_errors(
+        reinterpret_cast<const char16_t*>(utf16.data()), utf16.size());
+    ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(res.count, utf16.size());
 }
 
 // mixed = either 16-bit or 32-bit codewords
 TEST(validate_utf16be_returns_true_for_valid_input_mixed) {
-  uint32_t seed{1234};
-  turbo::tests::helpers::random_utf16 generator{seed, 1, 1};
-  const auto utf16{generator.generate_be(512)};
-  const turbo::result res = implementation.validate_utf16be_with_errors(
-      reinterpret_cast<const char16_t *>(utf16.data()), utf16.size());
-  ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
-  ASSERT_EQUAL(res.count, utf16.size());
+    uint32_t seed { 1234 };
+    turbo::tests::helpers::random_utf16 generator { seed, 1, 1 };
+    const auto utf16 { generator.generate_be(512) };
+    const turbo::result res = implementation.validate_utf16be_with_errors(
+        reinterpret_cast<const char16_t*>(utf16.data()), utf16.size());
+    ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(res.count, utf16.size());
 }
 
 TEST(validate_utf16be_returns_true_for_empty_string) {
-  const char16_t *buf = (char16_t *)"";
+    const char16_t* buf = (char16_t*)"";
 
-  turbo::result res = implementation.validate_utf16be_with_errors(
-      reinterpret_cast<const char16_t *>(buf), 0);
-  ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
-  ASSERT_EQUAL(res.count, 0);
+    turbo::result res = implementation.validate_utf16be_with_errors(
+        reinterpret_cast<const char16_t*>(buf), 0);
+    ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(res.count, 0);
 }
 
 TEST(provoke_integer_wraparound_in_icelake) {
-  // this is to prove signed integer wraparound in the icelake implementation
-  unsigned char cleaned_crash[] = {
-      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-      0xff, 0xff, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
-      0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20};
-  unsigned int cleaned_crash_len = 62;
+    // this is to prove signed integer wraparound in the icelake implementation
+    unsigned char cleaned_crash[] = {
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0xff, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+        0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20
+    };
+    unsigned int cleaned_crash_len = 62;
 
-  ASSERT_EQUAL(
-      reinterpret_cast<std::uintptr_t>(cleaned_crash) % alignof(char16_t), 0);
+    ASSERT_EQUAL(
+        reinterpret_cast<std::uintptr_t>(cleaned_crash) % alignof(char16_t), 0);
 
-  const auto size = cleaned_crash_len / sizeof(char16_t);
+    const auto size = cleaned_crash_len / sizeof(char16_t);
 
-  auto r = turbo::validate_utf16be_with_errors(
-      (const char16_t *)cleaned_crash, size);
-  ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    auto r = turbo::validate_utf16be_with_errors(
+        (const char16_t*)cleaned_crash, size);
+    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
 }
 
 // The first word must not be in range [0xDC00 .. 0xDFFF]
@@ -93,23 +94,23 @@ TEST(provoke_integer_wraparound_in_icelake) {
 */
 TEST_LOOP(
     validate_utf16be_returns_false_when_input_has_wrong_first_word_value) {
-  turbo::tests::helpers::random_utf16 generator{seed, 1, 0};
-  auto utf16{generator.generate_be(128)};
-  const size_t len = utf16.size();
+    turbo::tests::helpers::random_utf16 generator { seed, 1, 0 };
+    auto utf16 { generator.generate_be(128) };
+    const size_t len = utf16.size();
 
-  for (char16_t wrong_value = 0xdc00; wrong_value <= 0xdfff; wrong_value++) {
-    for (size_t i = 0; i < utf16.size(); i++) {
-      const char16_t old = utf16[i];
-      utf16[i] = to_utf16be(wrong_value);
+    for (char16_t wrong_value = 0xdc00; wrong_value <= 0xdfff; wrong_value++) {
+        for (size_t i = 0; i < utf16.size(); i++) {
+            const char16_t old = utf16[i];
+            utf16[i] = to_utf16be(wrong_value);
 
-      const turbo::result res = implementation.validate_utf16be_with_errors(
-          reinterpret_cast<const char16_t *>(utf16.data()), utf16.size());
-      ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
-      ASSERT_EQUAL(res.count, i);
+            const turbo::result res = implementation.validate_utf16be_with_errors(
+                reinterpret_cast<const char16_t*>(utf16.data()), utf16.size());
+            ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
+            ASSERT_EQUAL(res.count, i);
 
-      utf16[i] = old;
+            utf16[i] = old;
+        }
     }
-  }
 }
 
 /*
@@ -119,32 +120,32 @@ TEST_LOOP(
     Terminate.
 */
 TEST(validate_utf16be_returns_false_when_input_has_wrong_second_word_value) {
-  uint32_t seed{1234};
-  turbo::tests::helpers::random_utf16 generator{seed, 1, 0};
-  auto utf16{generator.generate_be(128)};
-  const size_t len = utf16.size();
+    uint32_t seed { 1234 };
+    turbo::tests::helpers::random_utf16 generator { seed, 1, 0 };
+    auto utf16 { generator.generate_be(128) };
+    const size_t len = utf16.size();
 
-  const std::array<char16_t, 5> sample_wrong_second_word{0x0000, 0x0010, 0xffdb,
-                                                         0x00e0, 0xffff};
+    const std::array<char16_t, 5> sample_wrong_second_word { 0x0000, 0x0010, 0xffdb,
+        0x00e0, 0xffff };
 
-  const char16_t valid_surrogate_W1 = to_utf16be(0xd800);
-  for (char16_t W2 : sample_wrong_second_word) {
-    for (size_t i = 0; i < utf16.size() - 1; i++) {
-      const char16_t old_W1 = utf16[i + 0];
-      const char16_t old_W2 = utf16[i + 1];
+    const char16_t valid_surrogate_W1 = to_utf16be(0xd800);
+    for (char16_t W2 : sample_wrong_second_word) {
+        for (size_t i = 0; i < utf16.size() - 1; i++) {
+            const char16_t old_W1 = utf16[i + 0];
+            const char16_t old_W2 = utf16[i + 1];
 
-      utf16[i + 0] = valid_surrogate_W1;
-      utf16[i + 1] = to_utf16be(W2);
+            utf16[i + 0] = valid_surrogate_W1;
+            utf16[i + 1] = to_utf16be(W2);
 
-      turbo::result res = implementation.validate_utf16be_with_errors(
-          reinterpret_cast<const char16_t *>(utf16.data()), utf16.size());
-      ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
-      ASSERT_EQUAL(res.count, i);
+            turbo::result res = implementation.validate_utf16be_with_errors(
+                reinterpret_cast<const char16_t*>(utf16.data()), utf16.size());
+            ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
+            ASSERT_EQUAL(res.count, i);
 
-      utf16[i + 0] = old_W1;
-      utf16[i + 1] = old_W2;
+            utf16[i + 0] = old_W1;
+            utf16[i + 1] = old_W2;
+        }
     }
-  }
 }
 
 /*
@@ -154,35 +155,20 @@ TEST(validate_utf16be_returns_false_when_input_has_wrong_second_word_value) {
     the sequence is in error. Terminate.
 */
 TEST(validate_utf16be_returns_false_when_input_is_truncated) {
-  const char16_t valid_surrogate_W1 = to_utf16be(0xd800);
-  uint32_t seed{1234};
-  turbo::tests::helpers::random_utf16 generator{seed, 1, 0};
-  for (size_t size = 1; size < 128; size++) {
-    auto utf16{generator.generate_be(128)};
-    const size_t len = utf16.size();
+    const char16_t valid_surrogate_W1 = to_utf16be(0xd800);
+    uint32_t seed { 1234 };
+    turbo::tests::helpers::random_utf16 generator { seed, 1, 0 };
+    for (size_t size = 1; size < 128; size++) {
+        auto utf16 { generator.generate_be(128) };
+        const size_t len = utf16.size();
 
-    utf16[size - 1] = valid_surrogate_W1;
+        utf16[size - 1] = valid_surrogate_W1;
 
-    turbo::result res = implementation.validate_utf16be_with_errors(
-        reinterpret_cast<const char16_t *>(utf16.data()), utf16.size());
-    ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
-    ASSERT_EQUAL(res.count, size - 1);
-  }
+        turbo::result res = implementation.validate_utf16be_with_errors(
+            reinterpret_cast<const char16_t*>(utf16.data()), utf16.size());
+        ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
+        ASSERT_EQUAL(res.count, size - 1);
+    }
 }
-
-#if SIMDUTF_CPLUSPLUS23
-
-TEST(compile_time_validation_with_errors_native) {
-  using namespace turbo::tests::helpers;
-  static_assert(turbo::validate_utf16_with_errors(u"hello!"_utf16).is_ok());
-}
-
-TEST(compile_time_validation_with_errors_big) {
-  using namespace turbo::tests::helpers;
-  static_assert(
-      turbo::validate_utf16be_with_errors(u"hello!"_utf16be).is_ok());
-}
-
-#endif
 
 TEST_MAIN

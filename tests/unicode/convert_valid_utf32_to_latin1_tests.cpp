@@ -35,15 +35,5 @@ TEST(convert_latin1_only) {
   }
 }
 
-#if SIMDUTF_CPLUSPLUS23
-TEST(compile_time_test) {
-  using namespace turbo::tests::helpers;
-  constexpr auto utf32input = U"hello!"_utf32;
-
-  constexpr auto latin1 = to_latin1(utf32input);
-  static_assert(latin1 == "hello!"_latin1);
-}
-
-#endif
 
 TEST_MAIN

@@ -15,6 +15,7 @@ import sys
 import tempfile
 import base64
 
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -66,9 +67,9 @@ def fail(msg, details=""):
 
 
 def section(title):
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"  {title}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
 
 # ---------------------------------------------------------------------------
@@ -96,19 +97,19 @@ def make_test_payloads(tmp_dir):
     # Short ASCII (produces output with no padding)
     p = os.path.join(tmp_dir, "three_bytes.bin")
     with open(p, "wb") as f:
-        f.write(b"ABC")           # encodes to QUJD  (no padding)
+        f.write(b"ABC")  # encodes to QUJD  (no padding)
     payloads["three_bytes_no_pad"] = p
 
     # Length % 3 == 1  → two '=' padding chars
     p = os.path.join(tmp_dir, "one_pad.bin")
     with open(p, "wb") as f:
-        f.write(b"A")             # encodes to QQ==
+        f.write(b"A")  # encodes to QQ==
     payloads["one_byte_two_pad"] = p
 
     # Length % 3 == 2  → one '=' padding char
     p = os.path.join(tmp_dir, "two_pad.bin")
     with open(p, "wb") as f:
-        f.write(b"AB")            # encodes to QUI=
+        f.write(b"AB")  # encodes to QUI=
     payloads["two_bytes_one_pad"] = p
 
     # Short human-readable text
@@ -358,10 +359,10 @@ def test_gnu_behavior(fast_gnu, payloads, tmp_dir):
         # Intersperse non-base64 garbage characters
         garbage = b"!@#$%^&*()"
         dirty = b""
-        for i, chunk in enumerate([enc[j:j+4] for j in range(0, len(enc), 4)]):
+        for i, chunk in enumerate([enc[j:j + 4] for j in range(0, len(enc), 4)]):
             dirty += chunk
             if i % 3 == 0:
-                dirty += garbage[i % len(garbage):i % len(garbage)+1]
+                dirty += garbage[i % len(garbage):i % len(garbage) + 1]
         dirty += b"\n"
         dec_clean = must_run([fast_gnu, "--ignore-garbage", "-d"], input_data=dirty)
         if dec_clean == src:
@@ -481,7 +482,7 @@ def test_bsd_behavior_detailed(fast_bsd, payloads, tmp_dir):
 
     # -o output_file flag
     section("BSD variant: -o / --output file writing")
-    for label, path in list(payloads.items())[:4]:   # keep test count manageable
+    for label, path in list(payloads.items())[:4]:  # keep test count manageable
         src = read_binary(path)
         out_path = os.path.join(tmp_dir, f"bsd_out_{label}.b64")
         try:
@@ -603,7 +604,8 @@ def test_adversarial_error_handling(fast_bsd, fast_gnu):
         if rc_bsd == rc_gnu:
             ok(f'both variants handle non-zero padding bits {eb_input!r} identically (rc={rc_bsd})')
         else:
-            fail(f'both variants handle non-zero padding bits {eb_input!r} identically (BSD rc={rc_bsd}, GNU rc={rc_gnu})')
+            fail(
+                f'both variants handle non-zero padding bits {eb_input!r} identically (BSD rc={rc_bsd}, GNU rc={rc_gnu})')
 
 
 # ---------------------------------------------------------------------------
@@ -612,7 +614,7 @@ def test_adversarial_error_handling(fast_bsd, fast_gnu):
 
 def identify_system():
     if not shutil.which("base64"):
-        return None   # not present
+        return None  # not present
     # First, check for GNU via --version
     probe = subprocess.run(["base64", "--version"], capture_output=True, text=False)
     if b"GNU" in (probe.stdout + probe.stderr):
@@ -776,9 +778,9 @@ def main():
         elif sys_type == "bsd":
             test_against_system_bsd(fast_bsd, payloads)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"  Results: {PASS_COUNT} passed, {FAIL_COUNT} failed")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     sys.exit(0 if FAIL_COUNT == 0 else 1)
 
 

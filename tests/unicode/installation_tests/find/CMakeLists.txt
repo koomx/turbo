@@ -4,11 +4,10 @@ project(test_simdutf_install VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-if(MSVC_VERSION GREATER 1910)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -permissive-")
-endif()
+if (MSVC_VERSION GREATER 1910)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -permissive-")
+endif ()
 find_package(simdutf REQUIRED)
-
 
 
 file(WRITE main.cpp "
@@ -36,7 +35,6 @@ int main(int argc, char *argv[]) {
    std::cout << \"wrote \" << utf8words << \" UTF-8 code units.\" << std::endl;
    return EXIT_SUCCESS;
 }")
-
 
 
 add_executable(repro main.cpp)

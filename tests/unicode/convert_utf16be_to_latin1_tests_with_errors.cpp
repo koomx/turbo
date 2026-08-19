@@ -11,126 +11,100 @@
 #include <tests/unicode/reference/validate_utf16.h>
 
 namespace {
-constexpr std::array<size_t, 7> input_size{7, 16, 12, 64, 67, 128, 256};
-constexpr turbo::endianness BE = turbo::endianness::BIG;
+    constexpr std::array<size_t, 7> input_size { 7, 16, 12, 64, 67, 128, 256 };
+    constexpr turbo::endianness BE = turbo::endianness::BIG;
 
-using turbo::tests::helpers::transcode_utf16_to_latin1_test_base;
+    using turbo::tests::helpers::transcode_utf16_to_latin1_test_base;
 
 } // namespace
 
 TEST(issue_convert_utf16be_to_latin1_with_errors_461) {
-  const unsigned char data[] = {0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                0x00, 0x20, 0x00, 0x20, 0x00, 0x20, 0x00, 0x20,
-                                0x00, 0x20, 0x00, 0x20, 0x00, 0x20, 0x00, 0x20,
-                                0x00, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20};
-  constexpr std::size_t data_len_bytes = sizeof(data);
-  constexpr std::size_t data_len = data_len_bytes / sizeof(char16_t);
-  std::vector<char> output(4 * data_len);
-  const auto r = implementation.convert_utf16be_to_latin1_with_errors(
-      (const char16_t *)data, data_len, output.data());
-  /*
-  got return [count=13, error=TOO_LARGE] from implementation icelake
-  got return [count=13, error=TOO_LARGE] from implementation haswell
-  got return [count=13, error=TOO_LARGE] from implementation westmere
-  got return [count=16, error=SUCCESS] from implementation fallback
-  */
-  ASSERT_EQUAL(r.count, 13);
-  ASSERT_EQUAL(r.error, turbo::error_code::TOO_LARGE);
+    const unsigned char data[] = { 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x20, 0x00, 0x20, 0x00, 0x20, 0x00, 0x20,
+        0x00, 0x20, 0x00, 0x20, 0x00, 0x20, 0x00, 0x20,
+        0x00, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20 };
+    constexpr std::size_t data_len_bytes = sizeof(data);
+    constexpr std::size_t data_len = data_len_bytes / sizeof(char16_t);
+    std::vector<char> output(4 * data_len);
+    const auto r = implementation.convert_utf16be_to_latin1_with_errors(
+        (const char16_t*)data, data_len, output.data());
+    /*
+    got return [count=13, error=TOO_LARGE] from implementation icelake
+    got return [count=13, error=TOO_LARGE] from implementation haswell
+    got return [count=13, error=TOO_LARGE] from implementation westmere
+    got return [count=16, error=SUCCESS] from implementation fallback
+    */
+    ASSERT_EQUAL(r.count, 13);
+    ASSERT_EQUAL(r.error, turbo::error_code::TOO_LARGE);
 }
 
 TEST(issue_convert_utf16be_to_latin1_with_errors_cbf29ce484222384) {
-  const unsigned char data[] = {0x20, 0x00, 0x20, 0x00, 0x20, 0x00, 0x20, 0x00,
-                                0x20, 0x00, 0x20, 0x00, 0x20, 0x00, 0x20, 0x00};
-  constexpr std::size_t data_len_bytes = sizeof(data);
-  constexpr std::size_t data_len = data_len_bytes / sizeof(char16_t);
-  std::vector<char> output(4 * data_len);
-  const auto r = implementation.convert_utf16be_to_latin1_with_errors(
-      (const char16_t *)data, data_len, output.data());
-  /*
-  got return [count=0, error=TOO_LARGE] from implementation icelake
-  got return [count=0, error=TOO_LARGE] from implementation haswell
-  got return [count=8, error=SUCCESS] from implementation westmere
-  got return [count=0, error=TOO_LARGE] from implementation fallback
-  */
+    const unsigned char data[] = { 0x20, 0x00, 0x20, 0x00, 0x20, 0x00, 0x20, 0x00,
+        0x20, 0x00, 0x20, 0x00, 0x20, 0x00, 0x20, 0x00 };
+    constexpr std::size_t data_len_bytes = sizeof(data);
+    constexpr std::size_t data_len = data_len_bytes / sizeof(char16_t);
+    std::vector<char> output(4 * data_len);
+    const auto r = implementation.convert_utf16be_to_latin1_with_errors(
+        (const char16_t*)data, data_len, output.data());
+    /*
+    got return [count=0, error=TOO_LARGE] from implementation icelake
+    got return [count=0, error=TOO_LARGE] from implementation haswell
+    got return [count=8, error=SUCCESS] from implementation westmere
+    got return [count=0, error=TOO_LARGE] from implementation fallback
+    */
 
-  ASSERT_EQUAL(r.count, 0);
-  ASSERT_EQUAL(r.error, turbo::error_code::TOO_LARGE);
+    ASSERT_EQUAL(r.count, 0);
+    ASSERT_EQUAL(r.error, turbo::error_code::TOO_LARGE);
 }
 
 TEST_LOOP(convert_2_UTF16_bytes) {
-  // range for 1, 2 or 3 UTF-8 bytes
-  turbo::tests::helpers::RandomIntRanges random({{0x0000, 0x00ff}}, seed);
+    // range for 1, 2 or 3 UTF-8 bytes
+    turbo::tests::helpers::RandomIntRanges random({ { 0x0000, 0x00ff } }, seed);
 
-  auto procedure = [&implementation](const char16_t *utf16, size_t size,
-                                     char *latin1) -> size_t {
-    const turbo::result res =
-        implementation.convert_utf16be_to_latin1_with_errors(utf16, size,
-                                                             latin1);
-    ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
-    return res.count;
-  };
-  auto size_procedure =
-      [&implementation]([[maybe_unused]] const char16_t *utf16,
-                        size_t size) -> size_t {
-    return implementation.latin1_length_from_utf16(size);
-  };
-  for (size_t size : input_size) {
-    transcode_utf16_to_latin1_test_base test(BE, random, size);
-    ASSERT_TRUE(test(procedure));
-    ASSERT_TRUE(test.check_size(size_procedure));
-  }
+    auto procedure = [&implementation](const char16_t* utf16, size_t size,
+                         char* latin1) -> size_t {
+        const turbo::result res = implementation.convert_utf16be_to_latin1_with_errors(utf16, size,
+            latin1);
+        ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+        return res.count;
+    };
+    auto size_procedure =
+        [&implementation]([[maybe_unused]] const char16_t* utf16,
+            size_t size) -> size_t {
+        return implementation.latin1_length_from_utf16(size);
+    };
+    for (size_t size : input_size) {
+        transcode_utf16_to_latin1_test_base test(BE, random, size);
+        ASSERT_TRUE(test(procedure));
+        ASSERT_TRUE(test.check_size(size_procedure));
+    }
 }
 
 TEST(convert_fails_if_input_too_large) {
-  uint32_t seed{1234};
-  turbo::tests::helpers::RandomInt generator(0xff, 0xffff, seed);
+    uint32_t seed { 1234 };
+    turbo::tests::helpers::RandomInt generator(0xff, 0xffff, seed);
 
-  const size_t size = 64;
-  transcode_utf16_to_latin1_test_base test(BE, []() { return '*'; }, size + 32);
+    const size_t size = 64;
+    transcode_utf16_to_latin1_test_base test(BE, []() { return '*'; }, size + 32);
 
-  for (size_t j = 0; j < 1000; j++) {
-    const auto wrong_value = to_utf16be(generator());
-    for (size_t i = 0; i < size; i++) {
-      auto procedure = [&implementation, &i](const char16_t *utf16, size_t size,
-                                             char *latin1) -> size_t {
-        const turbo::result res =
-            implementation.convert_utf16be_to_latin1_with_errors(utf16, size,
-                                                                 latin1);
-        ASSERT_EQUAL(res.error, turbo::error_code::TOO_LARGE);
-        ASSERT_EQUAL(res.count, i);
-        return 0;
-      };
+    for (size_t j = 0; j < 1000; j++) {
+        const auto wrong_value = to_utf16be(generator());
+        for (size_t i = 0; i < size; i++) {
+            auto procedure = [&implementation, &i](const char16_t* utf16, size_t size,
+                                 char* latin1) -> size_t {
+                const turbo::result res = implementation.convert_utf16be_to_latin1_with_errors(utf16, size,
+                    latin1);
+                ASSERT_EQUAL(res.error, turbo::error_code::TOO_LARGE);
+                ASSERT_EQUAL(res.count, i);
+                return 0;
+            };
 
-      const auto old = test.input_utf16[i];
-      test.input_utf16[i] = wrong_value;
-      ASSERT_TRUE(test(procedure));
-      test.input_utf16[i] = old;
+            const auto old = test.input_utf16[i];
+            test.input_utf16[i] = wrong_value;
+            ASSERT_TRUE(test(procedure));
+            test.input_utf16[i] = old;
+        }
     }
-  }
 }
-
-#if SIMDUTF_CPLUSPLUS23
-
-namespace {
-template <auto input> constexpr auto convert_be() {
-  using namespace turbo::tests::helpers;
-  CTString<char, input.size()> tmp;
-  const auto ret = turbo::convert_utf16be_to_latin1(input, tmp);
-  if (ret != input.size()) {
-    throw "unexpected write size";
-  }
-  return tmp;
-}
-} // namespace
-
-TEST(compile_time_convert_utf16be_to_latin1) {
-  using namespace turbo::tests::helpers;
-  constexpr auto input = u"köttbulle"_utf16be;
-  constexpr auto expected = "k\xF6ttbulle"_latin1;
-  constexpr auto output = convert_be<input>();
-  static_assert(output == expected);
-}
-
-#endif
 
 TEST_MAIN

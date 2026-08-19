@@ -1,3 +1,0 @@
-namespace turbo {
-    // deliberately empty
-}

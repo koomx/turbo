@@ -19,10 +19,12 @@ is_windows = platform.system() == 'Windows'
 PASS = 0
 FAIL = 0
 
+
 def ok(label):
     global PASS
     PASS += 1
     print(f" PASS {label}")
+
 
 def fail(label, detail=""):
     global FAIL
@@ -31,6 +33,7 @@ def fail(label, detail=""):
     if detail:
         msg += f"\n {detail}"
     print(msg)
+
 
 def run(cmd, input=None, expect_failure=False):
     """Run a command, return (returncode, stdout_bytes, stderr_bytes).
@@ -49,15 +52,18 @@ def run(cmd, input=None, expect_failure=False):
         sys.exit(1)
     return result.returncode, stdout, stderr
 
+
 def must_run(cmd, input=None):
     """Run a command and return stdout; exit on failure."""
     rc, stdout, stderr = run(cmd, input=input)
     return stdout
 
+
 def read_binary(path):
     """Read a file in binary mode without altering bytes."""
     with open(path, 'rb') as f:
         return f.read()
+
 
 def check_base64_alphabet(data_bytes, label):
     """Verify the output only contains valid base64 chars + newlines."""
@@ -70,11 +76,13 @@ def check_base64_alphabet(data_bytes, label):
     else:
         ok(label)
 
+
 def generate_deterministic_data(size: int) -> bytes:
     """Deterministic pseudo-random bytes (covers all byte values, reproducible)."""
     if size <= 0:
         return b''
     return bytes(((i * 31 + 17) & 0xFF) for i in range(size))
+
 
 def run_encode_binary(path, data, is_coreutils=False):
     """Encode binary data, using temp file on Windows if data contains \\n to avoid CRLF conversion."""
@@ -94,6 +102,7 @@ def run_encode_binary(path, data, is_coreutils=False):
             return must_run([path], input=data)
         else:
             return must_run([path, '-e'], input=data)
+
 
 # ---------------------------------------------------------------------------
 # fastbase64 (BSD-like)
@@ -305,6 +314,7 @@ def test_fastbase64(path, readme):
     else:
         fail('fastbase64: --ignore-garbage recovers')
 
+
 # ---------------------------------------------------------------------------
 # fastbase64.coreutils (GNU-like)
 # ---------------------------------------------------------------------------
@@ -483,6 +493,7 @@ def test_coreutils(path, readme):
     else:
         fail('wrapped encode round-trips correctly')
 
+
 # ---------------------------------------------------------------------------
 # Large round-trips (explicitly >64K, deterministic)
 # ---------------------------------------------------------------------------
@@ -543,6 +554,7 @@ def test_large_roundtrips(fast_path, core_path):
             os.unlink(tf_path)
         check_base64_alphabet(enc_f, f'large alphabet check {label}')
 
+
 # ---------------------------------------------------------------------------
 # Wrapping extremes + edge options
 # ---------------------------------------------------------------------------
@@ -578,6 +590,7 @@ def test_wrapping_extremes(fast_path, core_path):
             finally:
                 os.unlink(tf_path)
 
+
 # ---------------------------------------------------------------------------
 # Adversarial decoding (bad padding, garbage, whitespace, long lines)
 # ---------------------------------------------------------------------------
@@ -611,6 +624,7 @@ def test_adversarial_decoding(fast_path, core_path):
         else:
             fail(f'{tool} handles 100KB single-line base64')
 
+
 # ---------------------------------------------------------------------------
 # Chunk-boundary whitespace stress tests
 # ---------------------------------------------------------------------------
@@ -633,31 +647,31 @@ def test_chunk_boundary_whitespace(fast_path, core_path):
     # positions around the first and second chunk boundaries.
     cases = [
         # (label, position relative to CHUNK, bytes to insert)
-        ("space at chunk boundary",          CHUNK,     b' '),
-        ("space one before boundary",        CHUNK - 1, b' '),
-        ("space one after boundary",         CHUNK + 1, b' '),
-        ("newline at chunk boundary",        CHUNK,     b'\n'),
-        ("10 spaces at boundary",            CHUNK,     b' ' * 10),
-        ("CRLF at boundary",                 CHUNK,     b'\r\n'),
+        ("space at chunk boundary", CHUNK, b' '),
+        ("space one before boundary", CHUNK - 1, b' '),
+        ("space one after boundary", CHUNK + 1, b' '),
+        ("newline at chunk boundary", CHUNK, b'\n'),
+        ("10 spaces at boundary", CHUNK, b' ' * 10),
+        ("CRLF at boundary", CHUNK, b'\r\n'),
         ("spaces straddling boundary -3..+3", CHUNK - 3, b' ' * 6),
-        ("tab at boundary",                  CHUNK,     b'\t'),
-        ("mixed ws at boundary",             CHUNK - 2, b' \t\r\n '),
-        ("50 newlines at boundary",          CHUNK,     b'\n' * 50),
+        ("tab at boundary", CHUNK, b'\t'),
+        ("mixed ws at boundary", CHUNK - 2, b' \t\r\n '),
+        ("50 newlines at boundary", CHUNK, b'\n' * 50),
         # Second chunk boundary (2 × CHUNK in the *already-padded* stream,
         # approximate – we just pick offsets near it).
-        ("space at 2×chunk boundary",        CHUNK * 2, b' '),
-        ("newline at 2×chunk boundary",      CHUNK * 2, b'\n'),
-        ("10 spaces at 2×chunk boundary",    CHUNK * 2, b' ' * 10),
-        ("spaces near 2×chunk -5..+5",       CHUNK * 2 - 5, b' ' * 10),
+        ("space at 2×chunk boundary", CHUNK * 2, b' '),
+        ("newline at 2×chunk boundary", CHUNK * 2, b'\n'),
+        ("10 spaces at 2×chunk boundary", CHUNK * 2, b' ' * 10),
+        ("spaces near 2×chunk -5..+5", CHUNK * 2 - 5, b' ' * 10),
         # Multiple insertions: whitespace at BOTH chunk boundaries
-        ("spaces at both chunk boundaries",  -1, b''),  # handled specially below
+        ("spaces at both chunk boundaries", -1, b''),  # handled specially below
         # Whitespace right at the 4-char base64 group boundary nearest CHUNK
         ("space at group boundary before chunk", (CHUNK // 4) * 4, b' '),
-        ("space at group boundary after chunk",  (CHUNK // 4 + 1) * 4, b' '),
+        ("space at group boundary after chunk", (CHUNK // 4 + 1) * 4, b' '),
         # Large block of whitespace pushing the second chunk far out
-        ("1000 spaces at boundary",          CHUNK,     b' ' * 1000),
+        ("1000 spaces at boundary", CHUNK, b' ' * 1000),
         # Whitespace every 76 chars (simulating wrapped input decoded raw)
-        ("newline every 76 chars",           -2, b''),  # handled specially below
+        ("newline every 76 chars", -2, b''),  # handled specially below
         # Trailing whitespace right before end
         ("trailing spaces before final newline", -3, b''),  # handled specially
     ]
@@ -672,7 +686,7 @@ def test_chunk_boundary_whitespace(fast_path, core_path):
                 modified += b'\n'
             elif pos == -2:
                 # Special: insert newlines every 76 chars (like wrapped output)
-                parts = [clean[i:i+76] for i in range(0, len(clean), 76)]
+                parts = [clean[i:i + 76] for i in range(0, len(clean), 76)]
                 modified = b'\n'.join(parts) + b'\n'
             elif pos == -3:
                 # Special: trailing whitespace
@@ -686,6 +700,7 @@ def test_chunk_boundary_whitespace(fast_path, core_path):
             else:
                 fail(f'{tool_name}: {label}',
                      f'got {len(dec)} bytes, expected {len(src)}')
+
 
 # ---------------------------------------------------------------------------
 # Super sparse base64 decoding (large spans of ignorable chars)
@@ -727,8 +742,10 @@ def test_super_sparse_decoding(fast_path, core_path):
             if dec == expected:
                 ok(f'{tool_name}: {num_valid} valid payloads in {input_size} bytes (spanning {input_size // CHUNK + 1} chunks) decoded correctly')
             else:
-                fail(f'{tool_name}: {num_valid} valid payloads in {input_size} bytes (spanning {input_size // CHUNK + 1} chunks) decoded correctly',
-                     f'got {len(dec)} bytes, expected {len(expected)}')
+                fail(
+                    f'{tool_name}: {num_valid} valid payloads in {input_size} bytes (spanning {input_size // CHUNK + 1} chunks) decoded correctly',
+                    f'got {len(dec)} bytes, expected {len(expected)}')
+
 
 # ---------------------------------------------------------------------------
 def test_error_conditions(fast_path, core_path):
@@ -747,6 +764,7 @@ def test_error_conditions(fast_path, core_path):
                 ok(f'{name}: bad -w {bad} rejected')
             else:
                 fail(f'{name}: bad -w {bad} unexpectedly accepted')
+
 
 # ---------------------------------------------------------------------------
 # Entry point
@@ -768,9 +786,9 @@ if __name__ == '__main__':
             tf.write(random_data)
             random_file_path = tf.name
         try:
-            print(f"\n{'='*60}")
+            print(f"\n{'=' * 60}")
             print(f"  Testing with random file of {size:,} bytes")
-            print(f"{'='*60}")
+            print(f"{'=' * 60}")
             test_fastbase64(fast_path, random_file_path)
             test_coreutils(core_path, random_file_path)
         finally:
@@ -782,7 +800,7 @@ if __name__ == '__main__':
     test_chunk_boundary_whitespace(fast_path, core_path)
     test_super_sparse_decoding(fast_path, core_path)
     test_error_conditions(fast_path, core_path)
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"Results: {PASS} passed, {FAIL} failed")
     if FAIL > 0:
         sys.exit(1)

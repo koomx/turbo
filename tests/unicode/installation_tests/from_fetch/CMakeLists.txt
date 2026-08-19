@@ -9,11 +9,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(FetchContent)
 
 FetchContent_Declare(
-  simdutf
-  GIT_REPOSITORY git@github.com:simdutf/simdutf.git
-  GIT_SHALLOW TRUE
-  GIT_TAG tags/v3.2.7
-  )
+        simdutf
+        GIT_REPOSITORY git@github.com:simdutf/simdutf.git
+        GIT_SHALLOW TRUE
+        GIT_TAG tags/v3.2.7
+)
 FetchContent_MakeAvailable(simdutf)
 
 file(WRITE main.cpp "
@@ -40,7 +40,6 @@ int main(int argc, char *argv[]) {
    std::cout << \"wrote \" << utf8words << \" UTF-8 code units.\" << std::endl;
    return EXIT_SUCCESS;
 }")
-
 
 
 add_executable(repro main.cpp)

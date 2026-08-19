@@ -17,8 +17,8 @@
 
 #include <turbo/unicode/engine/common_defs.h>
 #include <turbo/unicode/engine/compiler_check.h>
-#include <turbo/unicode/engine/encoding_types.h>
-#include <turbo/unicode/engine/error.h>
+#include <turbo/unicode/text_encoding.h>
+#include <turbo/unicode/error.h>
 
 namespace turbo {
 

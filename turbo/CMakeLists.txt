@@ -226,14 +226,28 @@ set(TYPES_SRC
 )
 
 set(UNICODE_SRC
+        unicode/text_encoding.cc
         unicode/utf.cc
+        unicode/utf_c.cc
         unicode/api/ascii.cc
         unicode/api/base64.cc
         unicode/api/detect.cc
+        unicode/api/find.cc
         unicode/api/latin1.cc
         unicode/api/utf8.cc
         unicode/api/utf16.cc
         unicode/api/utf32.cc
+        unicode/engine/backend_select.cc
+        unicode/engine/interface.cc
+        unicode/engine/arm64/implementation.cc
+        unicode/engine/fallback/implementation.cc
+        unicode/engine/icelake/implementation.cc
+        unicode/engine/haswell/implementation.cc
+        unicode/engine/ppc64/implementation.cc
+        unicode/engine/rvv/implementation.cc
+        unicode/engine/westmere/implementation.cc
+        unicode/engine/lasx/implementation.cc
+        unicode/engine/lsx/implementation.cc
 )
 
 set(TURBO_SRC

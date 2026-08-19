@@ -14,7 +14,16 @@
 //
 
 #include <turbo/unicode/api/ascii.h>
+#include <turbo/unicode/engine/backend_select.h>
 
 namespace turbo {
+
+    simdutf_warn_unused bool validate_ascii(const char* buf, size_t len) noexcept {
+        return get_default_implementation()->validate_ascii(buf, len);
+    }
+    simdutf_warn_unused result validate_ascii_with_errors(const char* buf,
+        size_t len) noexcept {
+        return get_default_implementation()->validate_ascii_with_errors(buf, len);
+    }
 
 }  // namespace turbo

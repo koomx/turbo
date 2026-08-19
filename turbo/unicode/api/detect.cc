@@ -14,7 +14,18 @@
 //
 
 #include <turbo/unicode/api/detect.h>
+#include <turbo/unicode/engine/backend_select.h>
 
 namespace turbo {
+
+    simdutf_warn_unused turbo::encoding_type
+    autodetect_encoding(const char* buf, size_t length) noexcept {
+        return get_default_implementation()->autodetect_encoding(buf, length);
+    }
+
+    simdutf_warn_unused int detect_encodings(const char* buf,
+        size_t length) noexcept {
+        return get_default_implementation()->detect_encodings(buf, length);
+    }
 
 }  // namespace turbo

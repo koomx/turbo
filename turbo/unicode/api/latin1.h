@@ -17,8 +17,8 @@
 
 #include <turbo/unicode/engine/common_defs.h>
 #include <turbo/unicode/engine/compiler_check.h>
-#include <turbo/unicode/engine/encoding_types.h>
-#include <turbo/unicode/engine/error.h>
+#include <turbo/unicode/text_encoding.h>
+#include <turbo/unicode/error.h>
 
 namespace turbo {
 
@@ -83,7 +83,7 @@ namespace turbo {
     /// @param length        the length of the string in Latin1 code units (char)
     /// @return the length of the string in 2-byte code units (char16_t) required to
     /// encode the Latin1 string as UTF-16
-    simdutf_really_inline simdutf_warn_unused simdutf_constexpr23 size_t
+    simdutf_really_inline simdutf_warn_unused  size_t
     utf16_length_from_latin1(size_t length) noexcept {
         return length;
     }
@@ -124,7 +124,7 @@ namespace turbo {
     /// @param length        the length of the string in Latin1 code units (char)
     /// @return the length of the string in 4-byte code units (char32_t) required to
     /// encode the Latin1 string as UTF-32
-    simdutf_warn_unused simdutf_really_inline simdutf_constexpr23 size_t
+    simdutf_warn_unused simdutf_really_inline  size_t
     utf32_length_from_latin1(size_t length) noexcept {
         return length;
     }

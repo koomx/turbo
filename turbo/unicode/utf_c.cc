@@ -448,11 +448,11 @@ simdutf_convert_utf32_to_latin1_with_errors(const char32_t* input,
 
 /* --- find helpers --- */
 const char* simdutf_find(const char* start, const char* end, char character) {
-    return turbo::find(start, end, character);
+    return turbo::find_token(start, end, character);
 }
 const char16_t* simdutf_find_utf16(const char16_t* start, const char16_t* end,
     char16_t character) {
-    return turbo::find(start, end, character);
+    return turbo::find_token(start, end, character);
 }
 
 /* --- base64 helpers --- */

@@ -18,98 +18,10 @@
 
 #include <turbo/unicode/engine/common_defs.h>
 #include <turbo/unicode/engine/compiler_check.h>
-#include <turbo/unicode/engine/encoding_types.h>
-#include <turbo/unicode/engine/error.h>
-
-
-namespace turbo {
-
-    constexpr size_t default_line_length = 76; ///< default line length for base64 encoding with lines
-
-    // base64_options are used to specify the base64 encoding options.
-    // ASCII spaces are ' ', '\t', '\n', '\r', '\f'
-    // garbage characters are characters that are not part of the base64 alphabet
-    // nor ASCII spaces.
-    constexpr uint64_t base64_reverse_padding = 2; /* modifier for base64_default and base64_url */
-    enum base64_options : uint64_t {
-        base64_default = 0, /* standard base64 format (with padding) */
-        base64_url = 1, /* base64url format (no padding) */
-        base64_default_no_padding = base64_default | base64_reverse_padding, /* standard base64 format without padding */
-        base64_url_with_padding = base64_url | base64_reverse_padding, /* base64url with padding */
-        base64_default_accept_garbage = 4, /* standard base64 format accepting garbage characters, the input stops
-                                              with the first '=' if any */
-        base64_url_accept_garbage = 5, /* base64url format accepting garbage characters, the input stops with
-                                          the first '=' if any */
-        base64_default_or_url = 8, /* standard/base64url hybrid format (only meaningful for decoding!) */
-        base64_default_or_url_accept_garbage = 12, /* standard/base64url hybrid format accepting garbage characters
-                                                      (only meaningful for decoding!), the input stops with the first '='
-                                                      if any */
-    };
-
-    // last_chunk_handling_options are used to specify the handling of the last
-    // chunk in base64 decoding.
-    // https://tc39.es/proposal-arraybuffer-base64/spec/#sec-frombase64
-    enum last_chunk_handling_options : uint64_t {
-        loose = 0, /* standard base64 format, decode partial final chunk */
-        strict = 1, /* error when the last chunk is partial, 2 or 3 chars, and
-                       unpadded, or non-zero bit padding */
-        stop_before_partial = 2, /* if the last chunk is partial, ignore it (no error) */
-        only_full_chunks = 3 /* only decode full blocks (4 base64 characters, no padding) */
-    };
-
-    inline simdutf_constexpr23 bool
-    is_partial(last_chunk_handling_options options) {
-        return (options == stop_before_partial) || (options == only_full_chunks);
-    }
-
-    namespace detail {
-        simdutf_warn_unused const char* find(const char* start, const char* end,
-            char character) noexcept;
-        simdutf_warn_unused const char16_t*
-        find(const char16_t* start, const char16_t* end, char16_t character) noexcept;
-    } // namespace detail
-
-    /// Find the first occurrence of a character in a string. If the character is
-    /// not found, return a pointer to the end of the string.
-    /// @param start        the start of the string
-    /// @param end          the end of the string
-    /// @param character    the character to find
-    /// @return a pointer to the first occurrence of the character in the string,
-    /// or a pointer to the end of the string if the character is not found.
-    simdutf_warn_unused simdutf_really_inline simdutf_constexpr23 const char*
-    find(const char* start, const char* end, char character) noexcept {
-#if SIMDUTF_CPLUSPLUS23
-        if consteval {
-            for (; start != end; ++start)
-                if (*start == character)
-                    return start;
-            return end;
-        } else
-#endif
-        {
-            return detail::find(start, end, character);
-        }
-    }
-    simdutf_warn_unused simdutf_really_inline simdutf_constexpr23 const char16_t*
-    find(const char16_t* start, const char16_t* end, char16_t character) noexcept {
-        // implementation note: this is repeated instead of a template, to ensure
-        // the api is still a function and compiles without concepts
-#if SIMDUTF_CPLUSPLUS23
-        if consteval {
-            for (; start != end; ++start)
-                if (*start == character)
-                    return start;
-            return end;
-        } else
-#endif
-        {
-            return detail::find(start, end, character);
-        }
-    }
-} // namespace turbo
-
-#include <turbo/unicode/engine/base64_tables.h>
-#include <turbo/unicode/engine/scalar/base64.h>
+#include <turbo/unicode/text_encoding.h>
+#include <turbo/unicode/error.h>
+#include <turbo/unicode/api/base64_tables.h>
+#include <turbo/unicode/scalar/base64.h>
 
 namespace turbo {
 
@@ -273,7 +185,7 @@ namespace turbo {
     /// @param length        the length of the input in bytes
     /// @param options       the base64 options to use (default: base64_default)
     /// @return number of base64 bytes
-    inline simdutf_warn_unused simdutf_constexpr23 size_t base64_length_from_binary(
+    inline simdutf_warn_unused  size_t base64_length_from_binary(
         size_t length, base64_options options = base64_default) noexcept {
         return scalar::base64::base64_length_from_binary(length, options);
     }
@@ -286,7 +198,7 @@ namespace turbo {
     /// @param line_length   the length of lines, must be at least 4 (otherwise it is
     /// interpreted as 4),
     /// @return number of base64 bytes
-    inline simdutf_warn_unused simdutf_constexpr23 size_t
+    inline simdutf_warn_unused  size_t
     base64_length_from_binary_with_lines(
         size_t length, base64_options options = base64_default,
         size_t line_length = default_line_length) noexcept {
@@ -558,11 +470,11 @@ namespace turbo {
     /// @param options       the base64 options to use, is base64_default by default.
     /// @return true if the character is an ignorable base64 character, false
     /// otherwise.
-    simdutf_warn_unused simdutf_really_inline simdutf_constexpr23 bool
+    simdutf_warn_unused simdutf_really_inline  bool
     base64_ignorable(char input, base64_options options = base64_default) noexcept {
         return scalar::base64::is_ignorable(input, options);
     }
-    simdutf_warn_unused simdutf_really_inline simdutf_constexpr23 bool
+    simdutf_warn_unused simdutf_really_inline  bool
     base64_ignorable(char16_t input,
         base64_options options = base64_default) noexcept {
         return scalar::base64::is_ignorable(input, options);
@@ -577,11 +489,11 @@ namespace turbo {
     /// @param input         the character to check
     /// @param options       the base64 options to use, is base64_default by default.
     /// @return true if the character is a base64 character, false otherwise.
-    simdutf_warn_unused simdutf_really_inline simdutf_constexpr23 bool
+    simdutf_warn_unused simdutf_really_inline  bool
     base64_valid(char input, base64_options options = base64_default) noexcept {
         return scalar::base64::is_base64(input, options);
     }
-    simdutf_warn_unused simdutf_really_inline simdutf_constexpr23 bool
+    simdutf_warn_unused simdutf_really_inline  bool
     base64_valid(char16_t input, base64_options options = base64_default) noexcept {
         return scalar::base64::is_base64(input, options);
     }
@@ -593,12 +505,12 @@ namespace turbo {
     /// @param input         the character to check
     /// @param options       the base64 options to use, is base64_default by default.
     /// @return true if the character is a base64 character, false otherwise.
-    simdutf_warn_unused simdutf_really_inline simdutf_constexpr23 bool
+    simdutf_warn_unused simdutf_really_inline  bool
     base64_valid_or_padding(char input,
         base64_options options = base64_default) noexcept {
         return scalar::base64::is_base64_or_padding(input, options);
     }
-    simdutf_warn_unused simdutf_really_inline simdutf_constexpr23 bool
+    simdutf_warn_unused simdutf_really_inline  bool
     base64_valid_or_padding(char16_t input,
         base64_options options = base64_default) noexcept {
         return scalar::base64::is_base64_or_padding(input, options);
