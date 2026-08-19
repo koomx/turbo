@@ -17,10 +17,10 @@
 
 #if SIMDUTF_IMPLEMENTATION_PPC64
 
-namespace simdutf {
+namespace turbo {
     /// Implementation for ALTIVEC (PPC64).
     namespace ppc64 { } // namespace ppc64
-} // namespace simdutf
+} // namespace turbo
 
 #include <turbo/unicode/engine/ppc64/implementation.h>
 

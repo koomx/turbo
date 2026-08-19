@@ -6,7 +6,7 @@
 #include <string>
 #include <set>
 
-namespace simdutf::benchmarks {
+namespace turbo::benchmarks {
 
 enum class ListingMode {
   None,
@@ -32,4 +32,4 @@ public:
   static void print_help(FILE *);
   static void print_help();
 };
-} // namespace simdutf::benchmarks
+} // namespace turbo::benchmarks

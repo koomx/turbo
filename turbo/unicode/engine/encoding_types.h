@@ -9,7 +9,7 @@
 #include <text_encoding>
 #endif
 
-namespace simdutf {
+namespace turbo {
 
     enum encoding_type {
         UTF8 = 1, // BOM 0xef 0xbb 0xbf
@@ -170,5 +170,5 @@ namespace simdutf {
     }
 #endif // SIMDUTF_HAS_STD_TEXT_ENCODING
 
-} // namespace simdutf
+} // namespace turbo
 #endif

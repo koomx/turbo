@@ -12,9 +12,9 @@
 
 namespace {
 constexpr std::array<size_t, 7> input_size{7, 16, 12, 64, 67, 128, 256};
-constexpr simdutf::endianness BE = simdutf::endianness::BIG;
+constexpr turbo::endianness BE = turbo::endianness::BIG;
 
-using simdutf::tests::helpers::transcode_utf16_to_latin1_test_base;
+using turbo::tests::helpers::transcode_utf16_to_latin1_test_base;
 
 } // namespace
 
@@ -35,7 +35,7 @@ TEST(issue_convert_utf16be_to_latin1_with_errors_461) {
   got return [count=16, error=SUCCESS] from implementation fallback
   */
   ASSERT_EQUAL(r.count, 13);
-  ASSERT_EQUAL(r.error, simdutf::error_code::TOO_LARGE);
+  ASSERT_EQUAL(r.error, turbo::error_code::TOO_LARGE);
 }
 
 TEST(issue_convert_utf16be_to_latin1_with_errors_cbf29ce484222384) {
@@ -54,23 +54,23 @@ TEST(issue_convert_utf16be_to_latin1_with_errors_cbf29ce484222384) {
   */
 
   ASSERT_EQUAL(r.count, 0);
-  ASSERT_EQUAL(r.error, simdutf::error_code::TOO_LARGE);
+  ASSERT_EQUAL(r.error, turbo::error_code::TOO_LARGE);
 }
 
 TEST_LOOP(convert_2_UTF16_bytes) {
   // range for 1, 2 or 3 UTF-8 bytes
-  simdutf::tests::helpers::RandomIntRanges random({{0x0000, 0x00ff}}, seed);
+  turbo::tests::helpers::RandomIntRanges random({{0x0000, 0x00ff}}, seed);
 
   auto procedure = [&implementation](const char16_t *utf16, size_t size,
                                      char *latin1) -> size_t {
-    const simdutf::result res =
+    const turbo::result res =
         implementation.convert_utf16be_to_latin1_with_errors(utf16, size,
                                                              latin1);
-    ASSERT_EQUAL(res.error, simdutf::error_code::SUCCESS);
+    ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
     return res.count;
   };
   auto size_procedure =
-      [&implementation](simdutf_maybe_unused const char16_t *utf16,
+      [&implementation]([[maybe_unused]] const char16_t *utf16,
                         size_t size) -> size_t {
     return implementation.latin1_length_from_utf16(size);
   };
@@ -83,7 +83,7 @@ TEST_LOOP(convert_2_UTF16_bytes) {
 
 TEST(convert_fails_if_input_too_large) {
   uint32_t seed{1234};
-  simdutf::tests::helpers::RandomInt generator(0xff, 0xffff, seed);
+  turbo::tests::helpers::RandomInt generator(0xff, 0xffff, seed);
 
   const size_t size = 64;
   transcode_utf16_to_latin1_test_base test(BE, []() { return '*'; }, size + 32);
@@ -93,10 +93,10 @@ TEST(convert_fails_if_input_too_large) {
     for (size_t i = 0; i < size; i++) {
       auto procedure = [&implementation, &i](const char16_t *utf16, size_t size,
                                              char *latin1) -> size_t {
-        const simdutf::result res =
+        const turbo::result res =
             implementation.convert_utf16be_to_latin1_with_errors(utf16, size,
                                                                  latin1);
-        ASSERT_EQUAL(res.error, simdutf::error_code::TOO_LARGE);
+        ASSERT_EQUAL(res.error, turbo::error_code::TOO_LARGE);
         ASSERT_EQUAL(res.count, i);
         return 0;
       };
@@ -113,9 +113,9 @@ TEST(convert_fails_if_input_too_large) {
 
 namespace {
 template <auto input> constexpr auto convert_be() {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   CTString<char, input.size()> tmp;
-  const auto ret = simdutf::convert_utf16be_to_latin1(input, tmp);
+  const auto ret = turbo::convert_utf16be_to_latin1(input, tmp);
   if (ret != input.size()) {
     throw "unexpected write size";
   }
@@ -124,7 +124,7 @@ template <auto input> constexpr auto convert_be() {
 } // namespace
 
 TEST(compile_time_convert_utf16be_to_latin1) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   constexpr auto input = u"köttbulle"_utf16be;
   constexpr auto expected = "k\xF6ttbulle"_latin1;
   constexpr auto output = convert_be<input>();

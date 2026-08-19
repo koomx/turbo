@@ -30,7 +30,7 @@ TEST_LOOP(to_well_formed_utf16le_single_surrogate) {
   for (size_t j = 0; j < length; j++) {
     for (char16_t surrogate : surrogates) {
       utf16[j] = surrogate;
-      simdutf::result utf8_length =
+      turbo::result utf8_length =
           implementation.utf8_length_from_utf16le_with_replacement(
               (const char16_t *)utf16.data(), utf16.size());
       std::fill(output.begin(), output.end(), 0);
@@ -58,7 +58,7 @@ TEST_LOOP(to_well_formed_utf16be_single_surrogate) {
   for (size_t j = 0; j < length; j++) {
     for (char16_t surrogate : surrogates) {
       utf16[j] = surrogate;
-      simdutf::result utf8_length =
+      turbo::result utf8_length =
           implementation.utf8_length_from_utf16be_with_replacement(
               (const char16_t *)utf16.data(), utf16.size());
       std::fill(output.begin(), output.end(), 0);
@@ -68,7 +68,7 @@ TEST_LOOP(to_well_formed_utf16be_single_surrogate) {
           (const char16_t *)output.data(), utf16.size());
       ASSERT_EQUAL(output[j], replacement_be);
       ASSERT_EQUAL(utf8_length.count, utf8_length_check);
-      ASSERT_EQUAL(utf8_length.error, simdutf::SURROGATE);
+      ASSERT_EQUAL(utf8_length.error, turbo::SURROGATE);
       utf16[j] = 0x0000; // Reset to a valid character
     }
   }
@@ -76,11 +76,11 @@ TEST_LOOP(to_well_formed_utf16be_single_surrogate) {
 
 // Should be the identity on valid input
 TEST_LOOP(to_well_formed_utf16le_for_valid_input_surrogate_pairs_short) {
-  simdutf::tests::helpers::random_utf16 generator{seed, 0, 1};
+  turbo::tests::helpers::random_utf16 generator{seed, 0, 1};
   const auto utf16{generator.generate_le(8)};
   const auto len = utf16.size();
   std::vector<char16_t> output(len);
-  simdutf::result utf8_length =
+  turbo::result utf8_length =
       implementation.utf8_length_from_utf16le_with_replacement(utf16.data(),
                                                                len);
   implementation.to_well_formed_utf16le(utf16.data(), len, output.data());
@@ -91,11 +91,11 @@ TEST_LOOP(to_well_formed_utf16le_for_valid_input_surrogate_pairs_short) {
 }
 
 TEST_LOOP(to_well_formed_utf16be_for_valid_input_surrogate_pairs_short) {
-  simdutf::tests::helpers::random_utf16 generator{seed, 0, 1};
+  turbo::tests::helpers::random_utf16 generator{seed, 0, 1};
   const auto utf16{generator.generate_be(8)};
   const auto len = utf16.size();
   std::vector<char16_t> output(len);
-  simdutf::result utf8_length =
+  turbo::result utf8_length =
       implementation.utf8_length_from_utf16be_with_replacement(utf16.data(),
                                                                len);
   implementation.to_well_formed_utf16be(utf16.data(), len, output.data());
@@ -106,11 +106,11 @@ TEST_LOOP(to_well_formed_utf16be_for_valid_input_surrogate_pairs_short) {
 }
 
 TEST_LOOP(to_well_formed_utf16le_for_valid_input_surrogate_pairs_long) {
-  simdutf::tests::helpers::random_utf16 generator{seed, 0, 1};
+  turbo::tests::helpers::random_utf16 generator{seed, 0, 1};
   const auto utf16{generator.generate_le(512)};
   const auto len = utf16.size();
   std::vector<char16_t> output(len);
-  simdutf::result utf8_length =
+  turbo::result utf8_length =
       implementation.utf8_length_from_utf16le_with_replacement(utf16.data(),
                                                                len);
   implementation.to_well_formed_utf16le(utf16.data(), len, output.data());
@@ -121,11 +121,11 @@ TEST_LOOP(to_well_formed_utf16le_for_valid_input_surrogate_pairs_long) {
 }
 
 TEST_LOOP(to_well_formed_utf16be_for_valid_input_surrogate_pairs_long) {
-  simdutf::tests::helpers::random_utf16 generator{seed, 0, 1};
+  turbo::tests::helpers::random_utf16 generator{seed, 0, 1};
   const auto utf16{generator.generate_be(512)};
   const auto len = utf16.size();
   std::vector<char16_t> output(len);
-  simdutf::result utf8_length =
+  turbo::result utf8_length =
       implementation.utf8_length_from_utf16be_with_replacement(utf16.data(),
                                                                len);
   implementation.to_well_formed_utf16be(utf16.data(), len, output.data());
@@ -136,11 +136,11 @@ TEST_LOOP(to_well_formed_utf16be_for_valid_input_surrogate_pairs_long) {
 }
 
 TEST_LOOP(to_well_formed_utf16le_for_valid_input_mixed_long) {
-  simdutf::tests::helpers::random_utf16 generator{seed, 1, 1};
+  turbo::tests::helpers::random_utf16 generator{seed, 1, 1};
   const auto utf16{generator.generate_le(512)};
   const auto len = utf16.size();
   std::vector<char16_t> output(len);
-  simdutf::result utf8_length =
+  turbo::result utf8_length =
       implementation.utf8_length_from_utf16le_with_replacement(utf16.data(),
                                                                len);
   implementation.to_well_formed_utf16le(utf16.data(), len, output.data());
@@ -151,11 +151,11 @@ TEST_LOOP(to_well_formed_utf16le_for_valid_input_mixed_long) {
 }
 
 TEST_LOOP(to_well_formed_utf16be_for_valid_input_mixed_long) {
-  simdutf::tests::helpers::random_utf16 generator{seed, 1, 1};
+  turbo::tests::helpers::random_utf16 generator{seed, 1, 1};
   const auto utf16{generator.generate_be(512)};
   const auto len = utf16.size();
   std::vector<char16_t> output(len);
-  simdutf::result utf8_length =
+  turbo::result utf8_length =
       implementation.utf8_length_from_utf16be_with_replacement(utf16.data(),
                                                                len);
   implementation.to_well_formed_utf16be(utf16.data(), len, output.data());
@@ -166,11 +166,11 @@ TEST_LOOP(to_well_formed_utf16be_for_valid_input_mixed_long) {
 }
 
 TEST_LOOP(to_well_formed_utf16le_for_valid_input_mixed_long_self) {
-  simdutf::tests::helpers::random_utf16 generator{seed, 1, 1};
+  turbo::tests::helpers::random_utf16 generator{seed, 1, 1};
   const auto utf16{generator.generate_le(512)};
   const auto len = utf16.size();
   std::vector<char16_t> output = utf16;
-  simdutf::result utf8_length =
+  turbo::result utf8_length =
       implementation.utf8_length_from_utf16le_with_replacement(output.data(),
                                                                len);
   implementation.to_well_formed_utf16le(output.data(), len, output.data());
@@ -181,11 +181,11 @@ TEST_LOOP(to_well_formed_utf16le_for_valid_input_mixed_long_self) {
 }
 
 TEST_LOOP(to_well_formed_utf16be_for_valid_input_mixed_long_self) {
-  simdutf::tests::helpers::random_utf16 generator{seed, 1, 1};
+  turbo::tests::helpers::random_utf16 generator{seed, 1, 1};
   const auto utf16{generator.generate_be(512)};
   const auto len = utf16.size();
   std::vector<char16_t> output = utf16;
-  simdutf::result utf8_length =
+  turbo::result utf8_length =
       implementation.utf8_length_from_utf16be_with_replacement(output.data(),
                                                                len);
   implementation.to_well_formed_utf16be(output.data(), len, output.data());
@@ -221,14 +221,14 @@ TEST(to_well_formed_utf16le_bad_input) {
     auto utf16 = random_testcase(512, gen);
     auto len = utf16.size();
     std::vector<char16_t> output(len);
-    simdutf::result utf8_length =
+    turbo::result utf8_length =
         implementation.utf8_length_from_utf16le_with_replacement(utf16.data(),
                                                                  len);
     implementation.to_well_formed_utf16le(utf16.data(), len, output.data());
     for (size_t j = 0; j < len; j++) {
       if (utf16[j] != output[j]) {
         ASSERT_EQUAL(output[j], replacement_le);
-        ASSERT_EQUAL(utf8_length.error, simdutf::SURROGATE);
+        ASSERT_EQUAL(utf8_length.error, turbo::SURROGATE);
       }
     }
     size_t utf8_length_check =
@@ -244,14 +244,14 @@ TEST(to_well_formed_utf16be_bad_input) {
     auto utf16 = random_testcase(512, gen);
     auto len = utf16.size();
     std::vector<char16_t> output(len);
-    simdutf::result utf8_length =
+    turbo::result utf8_length =
         implementation.utf8_length_from_utf16be_with_replacement(utf16.data(),
                                                                  len);
     implementation.to_well_formed_utf16be(utf16.data(), len, output.data());
     for (size_t j = 0; j < len; j++) {
       if (utf16[j] != output[j]) {
         ASSERT_EQUAL(output[j], replacement_be);
-        ASSERT_EQUAL(utf8_length.error, simdutf::SURROGATE);
+        ASSERT_EQUAL(utf8_length.error, turbo::SURROGATE);
       }
     }
     size_t utf8_length_check =
@@ -267,14 +267,14 @@ TEST(to_well_formed_utf16le_bad_input_self) {
     auto utf16 = random_testcase(512, gen);
     auto len = utf16.size();
     std::vector<char16_t> output = utf16;
-    simdutf::result utf8_length =
+    turbo::result utf8_length =
         implementation.utf8_length_from_utf16le_with_replacement(output.data(),
                                                                  len);
     implementation.to_well_formed_utf16le(output.data(), len, output.data());
     for (size_t j = 0; j < len; j++) {
       if (utf16[j] != output[j]) {
         ASSERT_EQUAL(output[j], replacement_le);
-        ASSERT_EQUAL(utf8_length.error, simdutf::SURROGATE);
+        ASSERT_EQUAL(utf8_length.error, turbo::SURROGATE);
       }
     }
     size_t utf8_length_check =
@@ -290,14 +290,14 @@ TEST(to_well_formed_utf16be_bad_input_self) {
     auto utf16 = random_testcase(512, gen);
     auto len = utf16.size();
     std::vector<char16_t> output = utf16;
-    simdutf::result utf8_length =
+    turbo::result utf8_length =
         implementation.utf8_length_from_utf16be_with_replacement(output.data(),
                                                                  len);
     implementation.to_well_formed_utf16be(output.data(), len, output.data());
     for (size_t j = 0; j < len; j++) {
       if (utf16[j] != output[j]) {
         ASSERT_EQUAL(output[j], replacement_be);
-        ASSERT_EQUAL(utf8_length.error, simdutf::SURROGATE);
+        ASSERT_EQUAL(utf8_length.error, turbo::SURROGATE);
       }
     }
     size_t utf8_length_check =
@@ -312,29 +312,29 @@ TEST(to_well_formed_utf16be_bad_input_self) {
 namespace {
 
 // makes a malformed string in the requested endianness
-template <simdutf::endianness e> constexpr auto make_malformed() {
-  simdutf::tests::helpers::CTString<
+template <turbo::endianness e> constexpr auto make_malformed() {
+  turbo::tests::helpers::CTString<
       char16_t, 5,
-      e == simdutf::endianness::BIG ? std::endian::big : std::endian::little>
+      e == turbo::endianness::BIG ? std::endian::big : std::endian::little>
       data{};
-  data[2] = simdutf::scalar::utf16::swap_if_needed<e>(0xD800);
+  data[2] = turbo::scalar::utf16::swap_if_needed<e>(0xD800);
   return data;
 }
 
 // makes a wellformed string in the requested endianness
-template <simdutf::endianness e> constexpr auto make_wellformed() {
-  simdutf::tests::helpers::CTString<
+template <turbo::endianness e> constexpr auto make_wellformed() {
+  turbo::tests::helpers::CTString<
       char16_t, 5,
-      e == simdutf::endianness::BIG ? std::endian::big : std::endian::little>
+      e == turbo::endianness::BIG ? std::endian::big : std::endian::little>
       data{};
-  data[2] = simdutf::scalar::utf16::swap_if_needed<e>(0xfffd);
+  data[2] = turbo::scalar::utf16::swap_if_needed<e>(0xfffd);
   return data;
 }
 } // namespace
 
 TEST(compile_time_to_wellformed_big) {
-  using namespace simdutf::tests::helpers;
-  using enum simdutf::endianness;
+  using namespace turbo::tests::helpers;
+  using enum turbo::endianness;
 
   constexpr auto malformed = make_malformed<BIG>();
   constexpr auto replaced = to_wellformed(malformed);
@@ -343,8 +343,8 @@ TEST(compile_time_to_wellformed_big) {
 }
 
 TEST(compile_time_to_wellformed_little) {
-  using namespace simdutf::tests::helpers;
-  using enum simdutf::endianness;
+  using namespace turbo::tests::helpers;
+  using enum turbo::endianness;
 
   constexpr auto malformed = make_malformed<LITTLE>();
   constexpr auto replaced = to_wellformed(malformed);
@@ -355,15 +355,15 @@ TEST(compile_time_to_wellformed_little) {
 namespace {
 template <auto input> constexpr auto invoke_to_wellformed() {
   auto output = input;
-  simdutf::to_well_formed_utf16(input, output);
+  turbo::to_well_formed_utf16(input, output);
   return output;
 }
 } // namespace
 
 TEST(compile_time_to_wellformed_native) {
 
-  using namespace simdutf::tests::helpers;
-  using enum simdutf::endianness;
+  using namespace turbo::tests::helpers;
+  using enum turbo::endianness;
 
   constexpr auto malformed = make_malformed<NATIVE>();
   constexpr auto replaced = invoke_to_wellformed<malformed>();

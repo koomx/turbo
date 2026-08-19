@@ -176,10 +176,4 @@
 #endif // defined(SIMDUTF_VISUAL_STUDIO)
 #endif
 
-#if SIMDUTF_MAYBE_UNUSED_AVAILABLE
-#define simdutf_maybe_unused [[maybe_unused]]
-#else
-#define simdutf_maybe_unused
-#endif
-
 #endif // SIMDUTF_COMMON_DEFS_H

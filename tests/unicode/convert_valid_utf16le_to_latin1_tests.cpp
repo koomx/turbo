@@ -10,22 +10,22 @@
 
 namespace {
 constexpr std::array<size_t, 7> input_size{7, 16, 12, 64, 67, 128, 256};
-constexpr simdutf::endianness LE = simdutf::endianness::LITTLE;
+constexpr turbo::endianness LE = turbo::endianness::LITTLE;
 
-using simdutf::tests::helpers::transcode_utf16_to_latin1_test_base;
+using turbo::tests::helpers::transcode_utf16_to_latin1_test_base;
 
 } // namespace
 
 TEST_LOOP(convert_2_UTF16_bytes) {
   // range for 1, 2 or 3 UTF-8 bytes
-  simdutf::tests::helpers::RandomInt random(0x0000, 0x00ff, seed);
+  turbo::tests::helpers::RandomInt random(0x0000, 0x00ff, seed);
 
   auto procedure = [&implementation](const char16_t *utf16, size_t size,
                                      char *latin1) -> size_t {
     return implementation.convert_valid_utf16le_to_latin1(utf16, size, latin1);
   };
   auto size_procedure =
-      [&implementation](simdutf_maybe_unused const char16_t *utf16,
+      [&implementation]([[maybe_unused]] const char16_t *utf16,
                         size_t size) -> size_t {
     return implementation.latin1_length_from_utf16(size);
   };
@@ -40,12 +40,12 @@ TEST_LOOP(convert_2_UTF16_bytes) {
 
 namespace {
 template <auto input> constexpr auto size() {
-  return simdutf::latin1_length_from_utf16(input.size());
+  return turbo::latin1_length_from_utf16(input.size());
 }
 template <auto input> constexpr auto convert() {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   CTString<char, size<input>()> tmp;
-  const auto ret = simdutf::convert_valid_utf16_to_latin1(input, tmp);
+  const auto ret = turbo::convert_valid_utf16_to_latin1(input, tmp);
   if (ret != tmp.size()) {
     throw "unexpected write size";
   }
@@ -54,7 +54,7 @@ template <auto input> constexpr auto convert() {
 } // namespace
 
 TEST(compile_time_test) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
 
   constexpr auto expected = "hello!"_latin1;
 

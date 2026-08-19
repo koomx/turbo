@@ -15,34 +15,34 @@ TEST(issue_531) {
       (const char32_t *)data, data_len);
   // got return [count=1, error=TOO_LARGE] from implementation rvv
   // got return [count=0, error=SURROGATE] from implementation fallback
-  ASSERT_EQUAL(validation1.error, simdutf::error_code::SURROGATE);
+  ASSERT_EQUAL(validation1.error, turbo::error_code::SURROGATE);
   ASSERT_EQUAL(validation1.count, 0);
 }
 
 TEST_LOOP(validate_utf32_with_errors_returns_success_for_valid_input) {
-  simdutf::tests::helpers::random_utf32 generator{seed};
+  turbo::tests::helpers::random_utf32 generator{seed};
   const auto utf32{generator.generate(256, seed)};
 
-  simdutf::result res = implementation.validate_utf32_with_errors(
+  turbo::result res = implementation.validate_utf32_with_errors(
       reinterpret_cast<const char32_t *>(utf32.data()), utf32.size());
 
-  ASSERT_EQUAL(res.error, simdutf::error_code::SUCCESS);
+  ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
   ASSERT_EQUAL(res.count, utf32.size());
 }
 
 TEST(validate_utf32_with_errors_returns_success_for_empty_string) {
   const char32_t *buf = (char32_t *)"";
 
-  simdutf::result res = implementation.validate_utf32_with_errors(buf, 0);
+  turbo::result res = implementation.validate_utf32_with_errors(buf, 0);
 
-  ASSERT_EQUAL(res.error, simdutf::error_code::SUCCESS);
+  ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
   ASSERT_EQUAL(res.count, 0);
 }
 
 TEST_LOOP(
 
     validate_utf32_with_errors_returns_error_when_input_in_forbidden_range) {
-  simdutf::tests::helpers::random_utf32 generator{seed};
+  turbo::tests::helpers::random_utf32 generator{seed};
 
   auto utf32{generator.generate(128)};
   const char32_t *buf = reinterpret_cast<const char32_t *>(utf32.data());
@@ -53,9 +53,9 @@ TEST_LOOP(
       const char32_t old = utf32[i];
       utf32[i] = wrong_value;
 
-      simdutf::result res = implementation.validate_utf32_with_errors(buf, len);
+      turbo::result res = implementation.validate_utf32_with_errors(buf, len);
 
-      ASSERT_EQUAL(res.error, simdutf::error_code::SURROGATE);
+      ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
       ASSERT_EQUAL(res.count, i);
 
       utf32[i] = old;
@@ -64,7 +64,7 @@ TEST_LOOP(
 }
 
 TEST_LOOP(validate_utf32_with_errors_returns_error_when_input_too_large) {
-  simdutf::tests::helpers::random_utf32 generator{seed};
+  turbo::tests::helpers::random_utf32 generator{seed};
 
   std::uniform_int_distribution<uint32_t> bad_range{0x110000, 0xffffffff};
   std::mt19937 gen{seed};
@@ -79,9 +79,9 @@ TEST_LOOP(validate_utf32_with_errors_returns_error_when_input_too_large) {
       const char32_t old = utf32[i];
       utf32[i] = wrong_value;
 
-      simdutf::result res = implementation.validate_utf32_with_errors(buf, len);
+      turbo::result res = implementation.validate_utf32_with_errors(buf, len);
 
-      ASSERT_EQUAL(res.error, simdutf::error_code::TOO_LARGE);
+      ASSERT_EQUAL(res.error, turbo::error_code::TOO_LARGE);
       ASSERT_EQUAL(res.count, i);
 
       utf32[i] = old;
@@ -92,7 +92,7 @@ TEST_LOOP(validate_utf32_with_errors_returns_error_when_input_too_large) {
 
 namespace {
 constexpr auto make_bad() {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   auto bad = U"I am bad: ?"_utf32;
   bad[bad.size() - 1] = 0x10FFFF + 1;
   return bad;
@@ -101,13 +101,13 @@ constexpr auto make_bad() {
 } // namespace
 
 TEST(compile_time_validate) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
 
   constexpr auto good = U"I am a nice and wellbehaved string"_utf32;
-  static_assert(simdutf::validate_utf32_with_errors(good).is_ok());
+  static_assert(turbo::validate_utf32_with_errors(good).is_ok());
 
   constexpr auto bad = make_bad();
-  static_assert(simdutf::validate_utf32_with_errors(bad).is_err());
+  static_assert(turbo::validate_utf32_with_errors(bad).is_err());
 }
 #endif
 

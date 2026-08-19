@@ -1,6 +1,6 @@
 #include "validate_utf8_to_latin1.h"
 
-namespace simdutf {
+namespace turbo {
 namespace tests {
 namespace reference {
 
@@ -40,4 +40,4 @@ simdutf_warn_unused bool validate_utf8_to_latin1(const char *buf,
 
 } // namespace reference
 } // namespace tests
-} // namespace simdutf
+} // namespace turbo

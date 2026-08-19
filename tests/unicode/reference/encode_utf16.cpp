@@ -1,6 +1,6 @@
 #include "encode_utf16.h"
 
-namespace simdutf {
+namespace turbo {
 namespace tests {
 namespace reference {
 namespace utf16 {
@@ -46,4 +46,4 @@ int encode(uint32_t value, char16_t &W1, char16_t &W2) {
 } // namespace utf16
 } // namespace reference
 } // namespace tests
-} // namespace simdutf
+} // namespace turbo

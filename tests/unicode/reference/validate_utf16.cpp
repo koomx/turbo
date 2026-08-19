@@ -4,7 +4,7 @@
   #error "SIMDUTF_IS_BIG_ENDIAN should be defined."
 #endif
 
-namespace simdutf {
+namespace turbo {
 namespace tests {
 namespace reference {
 
@@ -57,4 +57,4 @@ simdutf_warn_unused bool validate_utf16(endianness utf16_endianness,
 
 } // namespace reference
 } // namespace tests
-} // namespace simdutf
+} // namespace turbo

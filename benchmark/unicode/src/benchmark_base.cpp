@@ -4,7 +4,7 @@
 #include <fstream>
 #include <iostream>
 
-namespace simdutf::benchmarks {
+namespace turbo::benchmarks {
 
 BenchmarkBase::BenchmarkBase(std::vector<input::Testcase> &&testcases)
     : testcases{std::move(testcases)} {}
@@ -21,10 +21,10 @@ bool BenchmarkBase::run() {
 void BenchmarkBase::run(const input::Testcase &testcase) {
   prepare_input(testcase);
   auto detected_encoding =
-      simdutf::autodetect_encoding(input_data.data(), input_data.size());
+      turbo::autodetect_encoding(input_data.data(), input_data.size());
   printf("input detected as %.*s\n",
-         int(simdutf::to_string(detected_encoding).size()),
-         simdutf::to_string(detected_encoding).data());
+         int(turbo::to_string(detected_encoding).size()),
+         turbo::to_string(detected_encoding).data());
   printf("===========================\n");
 
   const auto &known_procedures = all_procedures();
@@ -84,7 +84,7 @@ void BenchmarkBase::prepare_input(const input::Testcase &testcase) {
     const input::random_utf8 &random{
         std::get<input::random_utf8>(testcase.input)};
 
-    simdutf::tests::helpers::random_utf8 gen_1_2_3_4(
+    turbo::tests::helpers::random_utf8 gen_1_2_3_4(
         seed, random.utf_1byte_prob, random.utf_2bytes_prob,
         random.utf_3bytes_prob, random.utf_4bytes_prob);
 
@@ -142,4 +142,4 @@ void BenchmarkBase::print_summary(const event_aggregate &all, double data_size,
            "(-I).\n");
   }
 }
-} // namespace simdutf::benchmarks
+} // namespace turbo::benchmarks

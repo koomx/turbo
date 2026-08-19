@@ -1,7 +1,7 @@
 // Note: no include guard on purpose. This header is included once inside each
 // SIMD kernel's translation unit (and re-expanded per kernel in the
 // amalgamation), matching the other generic/ transcoder headers.
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
         namespace {
             namespace utf16_to_utf8 {
@@ -44,4 +44,4 @@ namespace simdutf {
             } // namespace utf16_to_utf8
         } // unnamed namespace
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo

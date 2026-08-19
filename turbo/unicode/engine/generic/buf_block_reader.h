@@ -1,4 +1,4 @@
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
         namespace {
 
@@ -73,4 +73,4 @@ namespace simdutf {
 
         } // unnamed namespace
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo

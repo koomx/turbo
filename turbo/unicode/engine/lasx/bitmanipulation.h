@@ -4,7 +4,7 @@
 #include <turbo/unicode/utf.h>
 #include <limits>
 
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
         namespace {
 
@@ -20,6 +20,6 @@ namespace simdutf {
 
         } // unnamed namespace
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDUTF_LASX_BITMANIPULATION_H

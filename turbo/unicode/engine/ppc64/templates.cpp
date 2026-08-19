@@ -19,8 +19,8 @@ size_t convert_impl(VectorizedConvert vectorized_convert,
     const auto vr = vectorized_convert(buf, len, output);
     const size_t consumed = vr.input - buf;
     const size_t written = vr.output - output;
-    if (vr.err != simdutf::error_code::SUCCESS) {
-        if (vr.err == simdutf::error_code::OTHER) {
+    if (vr.err != turbo::error_code::SUCCESS) {
+        if (vr.err == turbo::error_code::OTHER) {
             // Vectorized procedure detected an error, but does not know
             // exact position. The scalar procedure rescan the portion of
             // input and figure out where the error is located.
@@ -56,7 +56,7 @@ size_t convert_impl(VectorizedConvert vectorized_convert,
 */
 template <typename VectorizedConvert, typename ScalarConvert, typename Source,
     typename Destination>
-simdutf::result convert_with_errors_impl(VectorizedConvert vectorized_convert,
+turbo::result convert_with_errors_impl(VectorizedConvert vectorized_convert,
     ScalarConvert scalar_convert,
     const Source* buf, size_t len,
     Destination* output) {
@@ -64,8 +64,8 @@ simdutf::result convert_with_errors_impl(VectorizedConvert vectorized_convert,
     const auto vr = vectorized_convert(buf, len, output);
     const size_t consumed = vr.input - buf;
     const size_t written = vr.output - output;
-    if (vr.err != simdutf::error_code::SUCCESS) {
-        if (vr.err == simdutf::error_code::OTHER) {
+    if (vr.err != turbo::error_code::SUCCESS) {
+        if (vr.err == turbo::error_code::OTHER) {
             // Vectorized procedure detected an error, but does not know
             // exact position. The scalar procedure rescan the portion of
             // input and figure out where the error is located.
@@ -73,14 +73,14 @@ simdutf::result convert_with_errors_impl(VectorizedConvert vectorized_convert,
             sr.count += consumed;
             return sr;
         }
-        return simdutf::result(vr.err, consumed);
+        return turbo::result(vr.err, consumed);
     }
 
     if (consumed == len) {
-        return simdutf::result(simdutf::error_code::SUCCESS, written);
+        return turbo::result(turbo::error_code::SUCCESS, written);
     }
 
-    simdutf::result sr = scalar_convert(vr.input, len - consumed, vr.output);
+    turbo::result sr = scalar_convert(vr.input, len - consumed, vr.output);
     if (sr.is_ok()) {
         sr.count += written;
     } else {

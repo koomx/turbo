@@ -5,7 +5,7 @@
 #include <turbo/unicode/engine/ppc64/bitmanipulation.h>
 #include <type_traits>
 
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
         namespace {
             namespace simd {
@@ -173,6 +173,6 @@ template <typename T> struct vector_u32_type_for_element_aux {
             } // namespace simd
         } // unnamed namespace
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDUTF_PPC64_SIMD_INPUT_H

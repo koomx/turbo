@@ -23,7 +23,7 @@ TEST(valid_utf16le_roundtrip) {
                                  u'\u4e16',  // CJK character (3-byte UTF-8)
                                  u'\u754c'}; // CJK character (3-byte UTF-8)
   size_t expected_len =
-      simdutf::utf8_length_from_utf16le(input.data(), input.size());
+      turbo::utf8_length_from_utf16le(input.data(), input.size());
   std::vector<char> expected(expected_len);
   size_t written_expected = implementation.convert_utf16le_to_utf8(
       input.data(), input.size(), expected.data());
@@ -147,7 +147,7 @@ TEST(valid_utf16be_roundtrip) {
       to_utf16be(u'l'),      to_utf16be(u'o'),      to_utf16be(u' '),
       to_utf16be(u'\u00e9'), to_utf16be(u'\u4e16'), to_utf16be(u'\u754c')};
   size_t expected_len =
-      simdutf::utf8_length_from_utf16be(input.data(), input.size());
+      turbo::utf8_length_from_utf16be(input.data(), input.size());
   std::vector<char> expected(expected_len);
   size_t written_expected = implementation.convert_utf16be_to_utf8(
       input.data(), input.size(), expected.data());
@@ -219,8 +219,8 @@ TEST(length_consistency_be) {
                                  to_utf16be(char16_t(0xD800)),
                                  to_utf16be(u'\u4e16')};
 
-  simdutf::result len_result =
-      simdutf::utf8_length_from_utf16be_with_replacement(input.data(),
+  turbo::result len_result =
+      turbo::utf8_length_from_utf16be_with_replacement(input.data(),
                                                          input.size());
 
   std::vector<char> output(input.size() * 3 + 4);
@@ -241,12 +241,12 @@ TEST(matches_well_formed_approach_be) {
                                  to_utf16be(char16_t(0xDE00))};
 
   std::vector<char16_t> well_formed(input.size());
-  simdutf::to_well_formed_utf16be(input.data(), input.size(),
+  turbo::to_well_formed_utf16be(input.data(), input.size(),
                                   well_formed.data());
   size_t utf8_len =
-      simdutf::utf8_length_from_utf16be(well_formed.data(), well_formed.size());
+      turbo::utf8_length_from_utf16be(well_formed.data(), well_formed.size());
   std::vector<char> expected(utf8_len + 1);
-  size_t written_expected = simdutf::convert_utf16be_to_utf8(
+  size_t written_expected = turbo::convert_utf16be_to_utf8(
       well_formed.data(), well_formed.size(), expected.data());
 
   std::vector<char> actual(utf8_len + 1);
@@ -271,7 +271,7 @@ TEST(output_is_valid_utf8_be) {
   size_t written = implementation.convert_utf16be_to_utf8_with_replacement(
       input.data(), input.size(), output.data());
 
-  ASSERT_TRUE(simdutf::validate_utf8(output.data(), written));
+  ASSERT_TRUE(turbo::validate_utf8(output.data(), written));
 }
 
 // Test: consistency with utf8_length_from_utf16_with_replacement
@@ -285,8 +285,8 @@ TEST_LOOP(length_consistency_le) {
     input[i] = static_cast<char16_t>(dist(gen));
   }
 
-  simdutf::result len_result =
-      simdutf::utf8_length_from_utf16le_with_replacement(input.data(),
+  turbo::result len_result =
+      turbo::utf8_length_from_utf16le_with_replacement(input.data(),
                                                          input.size());
 
   std::vector<char> output(length * 3 + 1);
@@ -309,11 +309,11 @@ TEST_LOOP(matches_well_formed_approach_le) {
 
   // Approach 1: to_well_formed_utf16 + convert_utf16_to_utf8
   std::vector<char16_t> well_formed(length);
-  simdutf::to_well_formed_utf16le(input.data(), length, well_formed.data());
+  turbo::to_well_formed_utf16le(input.data(), length, well_formed.data());
   size_t utf8_len =
-      simdutf::utf8_length_from_utf16le(well_formed.data(), length);
+      turbo::utf8_length_from_utf16le(well_formed.data(), length);
   std::vector<char> expected(utf8_len + 1);
-  size_t written_expected = simdutf::convert_utf16le_to_utf8(
+  size_t written_expected = turbo::convert_utf16le_to_utf8(
       well_formed.data(), length, expected.data());
 
   // Approach 2: convert_utf16_to_utf8_with_replacement (new function)
@@ -341,7 +341,7 @@ TEST_LOOP(output_is_valid_utf8_le) {
   size_t written = implementation.convert_utf16le_to_utf8_with_replacement(
       input.data(), input.size(), output.data());
 
-  ASSERT_TRUE(simdutf::validate_utf8(output.data(), written));
+  ASSERT_TRUE(turbo::validate_utf8(output.data(), written));
 }
 
 // Stress the SIMD block boundaries: slide an unpaired high surrogate, an
@@ -370,11 +370,11 @@ TEST(surrogate_sweep_across_boundaries_le) {
 
       // Oracle: replace unpaired surrogates, then convert as valid UTF-16.
       std::vector<char16_t> well_formed(length);
-      simdutf::to_well_formed_utf16le(input.data(), length, well_formed.data());
+      turbo::to_well_formed_utf16le(input.data(), length, well_formed.data());
       const size_t utf8_len =
-          simdutf::utf8_length_from_utf16le(well_formed.data(), length);
+          turbo::utf8_length_from_utf16le(well_formed.data(), length);
       std::vector<char> expected(utf8_len + 1);
-      const size_t nexp = simdutf::convert_utf16le_to_utf8(
+      const size_t nexp = turbo::convert_utf16le_to_utf8(
           well_formed.data(), length, expected.data());
 
       std::vector<char> actual(utf8_len + 1);
@@ -393,20 +393,20 @@ TEST(surrogate_sweep_across_boundaries_le) {
 namespace {
 
 // makes a UTF-16 string with an unpaired high surrogate: 'A', 0xD800, 'B'
-template <simdutf::endianness e> constexpr auto make_input_with_unpaired() {
-  simdutf::tests::helpers::CTString<
+template <turbo::endianness e> constexpr auto make_input_with_unpaired() {
+  turbo::tests::helpers::CTString<
       char16_t, 3,
-      e == simdutf::endianness::BIG ? std::endian::big : std::endian::little>
+      e == turbo::endianness::BIG ? std::endian::big : std::endian::little>
       data{};
-  data[0] = simdutf::scalar::utf16::swap_if_needed<e>(u'A');
-  data[1] = simdutf::scalar::utf16::swap_if_needed<e>(char16_t(0xD800));
-  data[2] = simdutf::scalar::utf16::swap_if_needed<e>(u'B');
+  data[0] = turbo::scalar::utf16::swap_if_needed<e>(u'A');
+  data[1] = turbo::scalar::utf16::swap_if_needed<e>(char16_t(0xD800));
+  data[2] = turbo::scalar::utf16::swap_if_needed<e>(u'B');
   return data;
 }
 
 // expected output: 'A' (1 byte) + U+FFFD (3 bytes: EF BF BD) + 'B' (1 byte)
 constexpr auto make_expected_output() {
-  simdutf::tests::helpers::CTString<char, 5> data{};
+  turbo::tests::helpers::CTString<char, 5> data{};
   data[0] = 'A';
   data[1] = char(0xEF);
   data[2] = char(0xBF);
@@ -417,12 +417,12 @@ constexpr auto make_expected_output() {
 
 template <auto input> constexpr auto invoke_convert_with_replacement() {
   // 'A' = 1 byte, unpaired surrogate = 3 bytes (U+FFFD), 'B' = 1 byte
-  simdutf::tests::helpers::CTString<char, 5> output{};
+  turbo::tests::helpers::CTString<char, 5> output{};
   std::size_t written;
   if constexpr (decltype(input)::endianness == std::endian::little) {
-    written = simdutf::convert_utf16le_to_utf8_with_replacement(input, output);
+    written = turbo::convert_utf16le_to_utf8_with_replacement(input, output);
   } else {
-    written = simdutf::convert_utf16be_to_utf8_with_replacement(input, output);
+    written = turbo::convert_utf16be_to_utf8_with_replacement(input, output);
   }
   if (written != output.size()) {
     throw "unexpected length";
@@ -433,7 +433,7 @@ template <auto input> constexpr auto invoke_convert_with_replacement() {
 } // namespace
 
 TEST(compile_time_convert_utf16le_to_utf8_with_replacement) {
-  using enum simdutf::endianness;
+  using enum turbo::endianness;
   constexpr auto input = make_input_with_unpaired<LITTLE>();
   constexpr auto result = invoke_convert_with_replacement<input>();
   constexpr auto expected = make_expected_output();
@@ -441,7 +441,7 @@ TEST(compile_time_convert_utf16le_to_utf8_with_replacement) {
 }
 
 TEST(compile_time_convert_utf16be_to_utf8_with_replacement) {
-  using enum simdutf::endianness;
+  using enum turbo::endianness;
   constexpr auto input = make_input_with_unpaired<BIG>();
   constexpr auto result = invoke_convert_with_replacement<input>();
   constexpr auto expected = make_expected_output();

@@ -5,15 +5,15 @@
 
 // The constructor may be executed on any host, so we take care not to use
 // SIMDUTF_TARGET_REGION
-namespace simdutf {
+namespace turbo {
     namespace haswell {
 
-        using namespace simdutf;
+        using namespace turbo;
 
-        class implementation final : public simdutf::implementation {
+        class implementation final : public turbo::implementation {
         public:
             simdutf_really_inline implementation()
-                : simdutf::implementation("haswell", "Intel/AMD AVX2",
+                : turbo::implementation("haswell", "Intel/AMD AVX2",
                       internal::instruction_set::AVX2 | internal::instruction_set::BMI1 | internal::instruction_set::BMI2) { }
 
 #if SIMDUTF_FEATURE_DETECT_ENCODING
@@ -327,6 +327,6 @@ namespace simdutf {
         };
 
     } // namespace haswell
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDUTF_HASWELL_IMPLEMENTATION_H

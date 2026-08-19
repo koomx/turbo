@@ -1,7 +1,7 @@
 #include <turbo/unicode/engine/common_defs.h>
 #include <turbo/unicode/engine/encoding_types.h>
 
-namespace simdutf {
+namespace turbo {
 namespace tests {
 namespace reference {
 // validate UTF-16
@@ -11,4 +11,4 @@ simdutf_warn_unused bool validate_utf16(endianness utf16_endianness,
 
 } // namespace reference
 } // namespace tests
-} // namespace simdutf
+} // namespace turbo

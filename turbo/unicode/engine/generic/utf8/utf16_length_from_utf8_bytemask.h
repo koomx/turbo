@@ -1,4 +1,4 @@
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
         namespace {
             namespace utf8 {
@@ -49,4 +49,4 @@ namespace simdutf {
             } // namespace utf8
         } // unnamed namespace
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo

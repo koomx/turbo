@@ -11,15 +11,15 @@
 
 namespace {
 constexpr std::array<size_t, 7> input_size{7, 16, 12, 64, 67, 128, 256};
-constexpr simdutf::endianness BE = simdutf::endianness::BIG;
+constexpr turbo::endianness BE = turbo::endianness::BIG;
 
-using simdutf::tests::helpers::transcode_utf16_to_utf32_test_base;
+using turbo::tests::helpers::transcode_utf16_to_utf32_test_base;
 
 } // namespace
 
 TEST_LOOP(convert_2_UTF16_bytes) {
   // range for 2-byte UTF-16 (no surrogate pairs)
-  simdutf::tests::helpers::RandomIntRanges random(
+  turbo::tests::helpers::RandomIntRanges random(
       {{0x0000, 0x007f}, {0x0080, 0x07ff}, {0x0800, 0xd7ff}, {0xe000, 0xffff}},
       seed);
 
@@ -36,7 +36,7 @@ TEST_LOOP(convert_2_UTF16_bytes) {
 
 TEST_LOOP(convert_with_surrogate_pairs) {
   // some surrogate pairs
-  simdutf::tests::helpers::RandomIntRanges random(
+  turbo::tests::helpers::RandomIntRanges random(
       {{0x0800, 0xd800 - 1}, {0xe000, 0x10ffff}}, seed);
 
   auto procedure = [&implementation](const char16_t *utf16, size_t size,
@@ -59,7 +59,7 @@ TEST(all_possible_8_codepoint_combinations) {
   std::vector<char> output_utf32(256, ' ');
   const auto &combinations = all_utf16_combinations(BE);
   for (const auto &input_utf16 : combinations) {
-    if (simdutf::tests::reference::validate_utf16(BE, input_utf16.data(),
+    if (turbo::tests::reference::validate_utf16(BE, input_utf16.data(),
                                                   input_utf16.size())) {
       transcode_utf16_to_utf32_test_base test(BE, input_utf16);
       ASSERT_TRUE(test(procedure));
@@ -71,13 +71,13 @@ TEST(all_possible_8_codepoint_combinations) {
 
 namespace {
 template <auto input> constexpr auto size_be() {
-  return simdutf::utf32_length_from_utf16le(input);
+  return turbo::utf32_length_from_utf16le(input);
 }
 
 template <auto input> constexpr auto convert_be() {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   CTString<char32_t, size_be<input>()> tmp;
-  const auto ret = simdutf::convert_valid_utf16be_to_utf32(input, tmp);
+  const auto ret = turbo::convert_valid_utf16be_to_utf32(input, tmp);
   if (ret != tmp.size()) {
     throw "unexpected write size";
   }
@@ -86,7 +86,7 @@ template <auto input> constexpr auto convert_be() {
 } // namespace
 
 TEST(compile_time_convert_valid_utf16be_to_utf32) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   constexpr auto input = u"köttbulle"_utf16be;
   constexpr auto expected = U"köttbulle"_utf32;
   constexpr auto output = convert_be<input>();

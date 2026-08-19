@@ -3,14 +3,14 @@
 
 #include <cstring>
 
-namespace simdutf {
+namespace turbo {
     namespace scalar {
         namespace {
             namespace ascii {
 
                 template <class InputPtr>
 #if SIMDUTF_CPLUSPLUS20
-                    requires simdutf::detail::indexes_into_byte_like<InputPtr>
+                    requires turbo::detail::indexes_into_byte_like<InputPtr>
 #endif
                 simdutf_warn_unused simdutf_constexpr23 bool validate(InputPtr data,
                     size_t len) noexcept {
@@ -44,7 +44,7 @@ namespace simdutf {
                 }
                 template <class InputPtr>
 #if SIMDUTF_CPLUSPLUS20
-                    requires simdutf::detail::indexes_into_byte_like<InputPtr>
+                    requires turbo::detail::indexes_into_byte_like<InputPtr>
 #endif
                 simdutf_warn_unused simdutf_constexpr23 result
                 validate_with_errors(InputPtr data, size_t len) noexcept {
@@ -83,6 +83,6 @@ namespace simdutf {
             } // namespace ascii
         } // unnamed namespace
     } // namespace scalar
-} // namespace simdutf
+} // namespace turbo
 
 #endif

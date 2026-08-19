@@ -8,9 +8,9 @@
 #include <turbo/unicode/engine/encoding_types.h>
 
 std::vector<std::vector<char16_t>>
-all_utf16_combinations(simdutf::endianness byte_order);
+all_utf16_combinations(turbo::endianness byte_order);
 
-namespace simdutf {
+namespace turbo {
 namespace tests {
 namespace helpers {
 
@@ -680,4 +680,4 @@ private:
 
 } // namespace helpers
 } // namespace tests
-} // namespace simdutf
+} // namespace turbo

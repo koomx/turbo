@@ -1,7 +1,7 @@
 #ifndef SIMDUTF_VALID_UTF16_TO_LATIN1_H
 #define SIMDUTF_VALID_UTF16_TO_LATIN1_H
 
-namespace simdutf {
+namespace turbo {
     namespace scalar {
         namespace {
             namespace utf16_to_latin1 {
@@ -35,6 +35,6 @@ namespace simdutf {
             } // namespace utf16_to_latin1
         } // unnamed namespace
     } // namespace scalar
-} // namespace simdutf
+} // namespace turbo
 
 #endif

@@ -1,7 +1,7 @@
 #ifndef SIMDUTF_SWAP_BYTES_H
 #define SIMDUTF_SWAP_BYTES_H
 
-namespace simdutf {
+namespace turbo {
     namespace scalar {
 
         constexpr inline simdutf_warn_unused uint16_t
@@ -32,6 +32,6 @@ namespace simdutf {
         } // namespace utf16
 
     } // namespace scalar
-} // namespace simdutf
+} // namespace turbo
 
 #endif

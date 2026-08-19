@@ -19,10 +19,10 @@
 
 #if SIMDUTF_IMPLEMENTATION_FALLBACK
 
-namespace simdutf {
+namespace turbo {
     /// Fallback implementation (runs on any machine).
     namespace fallback { } // namespace fallback
-} // namespace simdutf
+} // namespace turbo
 
 #include <turbo/unicode/engine/fallback/implementation.h>
 

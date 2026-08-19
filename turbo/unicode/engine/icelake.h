@@ -54,9 +54,9 @@
         "avx512vl,avx2,bmi,bmi2,pclmul,lzcnt,popcnt,avx512vpopcntdq")
 #endif
 
-namespace simdutf {
+namespace turbo {
     namespace icelake { } // namespace icelake
-} // namespace simdutf
+} // namespace turbo
 
 //
 // These two need to be included outside SIMDUTF_TARGET_REGION

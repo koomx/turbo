@@ -8,7 +8,7 @@
 #include <random>
 #include "event_counter.h"
 #include <turbo/unicode/utf.h>
-namespace simdutf::benchmarks {
+namespace turbo::benchmarks {
 
 namespace input {
 struct File {
@@ -43,7 +43,7 @@ public:
   BenchmarkBase(std::vector<input::Testcase> &&testcases);
   bool run();
   virtual const std::set<std::string> all_procedures() const = 0;
-  virtual std::set<simdutf::encoding_type>
+  virtual std::set<turbo::encoding_type>
   expected_encodings(const std::string &procedure) = 0;
 
 protected:
@@ -95,4 +95,4 @@ event_aggregate BenchmarkBase::count_events(PROCEDURE procedure,
   all.has_events = collector.has_events();
   return all;
 }
-} // namespace simdutf::benchmarks
+} // namespace turbo::benchmarks

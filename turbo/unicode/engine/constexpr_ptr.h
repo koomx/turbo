@@ -3,7 +3,7 @@
 
 #include <cstddef>
 
-namespace simdutf {
+namespace turbo {
     namespace detail {
         /// The constexpr_ptr class is a workaround for reinterpret_cast not being
         /// allowed during constant evaluation.
@@ -132,5 +132,5 @@ namespace simdutf {
         }
 
     } // namespace detail
-} // namespace simdutf
+} // namespace turbo
 #endif

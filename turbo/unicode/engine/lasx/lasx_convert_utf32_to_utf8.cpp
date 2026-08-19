@@ -88,13 +88,13 @@ lasx_convert_utf32_to_utf8(const char32_t* buf, size_t len, char* utf8_out) {
                 uint32_t m1 = __lasx_xvpickve2gr_wu(mask, 0);
                 uint32_t m2 = __lasx_xvpickve2gr_wu(mask, 4);
                 // 4. pack the bytes
-                const uint8_t* row1 = &simdutf::tables::utf16_to_utf8::pack_1_2_utf8_bytes
+                const uint8_t* row1 = &turbo::tables::utf16_to_utf8::pack_1_2_utf8_bytes
                                           [lasx_1_2_utf8_bytes_mask[m1]][0];
                 __m128i shuffle1 = __lsx_vld(row1, 1);
                 __m128i utf8_packed1 = __lsx_vshuf_b(
                     zero_128, lasx_extracti128_lo(utf8_unpacked), shuffle1);
 
-                const uint8_t* row2 = &simdutf::tables::utf16_to_utf8::pack_1_2_utf8_bytes
+                const uint8_t* row2 = &turbo::tables::utf16_to_utf8::pack_1_2_utf8_bytes
                                           [lasx_1_2_utf8_bytes_mask[m2]][0];
                 __m128i shuffle2 = __lsx_vld(row2, 1);
                 __m128i utf8_packed2 = __lsx_vshuf_b(
@@ -186,7 +186,7 @@ lasx_convert_utf32_to_utf8(const char32_t* buf, size_t len, char* utf8_out) {
                         one_byte_bytemask_u16_to_u32_high));
 
                 uint32_t mask = __lasx_xvpickve2gr_wu(mask0, 0);
-                const uint8_t* row0 = &simdutf::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask & 0xFF]
+                const uint8_t* row0 = &turbo::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask & 0xFF]
                                                                                             [0];
                 __m128i shuffle0 = __lsx_vld(row0, 1);
                 __m128i utf8_0 = __lsx_vshuf_b(zero_128, lasx_extracti128_lo(out0), shuffle0);
@@ -194,7 +194,7 @@ lasx_convert_utf32_to_utf8(const char32_t* buf, size_t len, char* utf8_out) {
                 utf8_output += row0[0];
 
                 mask = __lasx_xvpickve2gr_wu(mask1, 0);
-                const uint8_t* row1 = &simdutf::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask & 0xFF]
+                const uint8_t* row1 = &turbo::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask & 0xFF]
                                                                                             [0];
                 __m128i shuffle1 = __lsx_vld(row1, 1);
                 __m128i utf8_1 = __lsx_vshuf_b(zero_128, lasx_extracti128_lo(out1), shuffle1);
@@ -202,7 +202,7 @@ lasx_convert_utf32_to_utf8(const char32_t* buf, size_t len, char* utf8_out) {
                 utf8_output += row1[0];
 
                 mask = __lasx_xvpickve2gr_wu(mask0, 4);
-                const uint8_t* row2 = &simdutf::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask & 0xFF]
+                const uint8_t* row2 = &turbo::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask & 0xFF]
                                                                                             [0];
                 __m128i shuffle2 = __lsx_vld(row2, 1);
                 __m128i utf8_2 = __lsx_vshuf_b(zero_128, lasx_extracti128_hi(out0), shuffle2);
@@ -210,7 +210,7 @@ lasx_convert_utf32_to_utf8(const char32_t* buf, size_t len, char* utf8_out) {
                 utf8_output += row2[0];
 
                 mask = __lasx_xvpickve2gr_wu(mask1, 4);
-                const uint8_t* row3 = &simdutf::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask & 0xFF]
+                const uint8_t* row3 = &turbo::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask & 0xFF]
                                                                                             [0];
                 __m128i shuffle3 = __lsx_vld(row3, 1);
                 __m128i utf8_3 = __lsx_vshuf_b(zero_128, lasx_extracti128_hi(out1), shuffle3);
@@ -360,13 +360,13 @@ lasx_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
                 uint32_t m1 = __lasx_xvpickve2gr_wu(mask, 0);
                 uint32_t m2 = __lasx_xvpickve2gr_wu(mask, 4);
                 // 4. pack the bytes
-                const uint8_t* row1 = &simdutf::tables::utf16_to_utf8::pack_1_2_utf8_bytes
+                const uint8_t* row1 = &turbo::tables::utf16_to_utf8::pack_1_2_utf8_bytes
                                           [lasx_1_2_utf8_bytes_mask[m1]][0];
                 __m128i shuffle1 = __lsx_vld(row1, 1);
                 __m128i utf8_packed1 = __lsx_vshuf_b(
                     zero_128, lasx_extracti128_lo(utf8_unpacked), shuffle1);
 
-                const uint8_t* row2 = &simdutf::tables::utf16_to_utf8::pack_1_2_utf8_bytes
+                const uint8_t* row2 = &turbo::tables::utf16_to_utf8::pack_1_2_utf8_bytes
                                           [lasx_1_2_utf8_bytes_mask[m2]][0];
                 __m128i shuffle2 = __lsx_vld(row2, 1);
                 __m128i utf8_packed2 = __lsx_vshuf_b(
@@ -462,7 +462,7 @@ lasx_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
                         one_byte_bytemask_u16_to_u32_high));
 
                 uint32_t mask = __lasx_xvpickve2gr_wu(mask0, 0);
-                const uint8_t* row0 = &simdutf::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask & 0xFF]
+                const uint8_t* row0 = &turbo::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask & 0xFF]
                                                                                             [0];
                 __m128i shuffle0 = __lsx_vld(row0, 1);
                 __m128i utf8_0 = __lsx_vshuf_b(zero_128, lasx_extracti128_lo(out0), shuffle0);
@@ -470,7 +470,7 @@ lasx_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
                 utf8_output += row0[0];
 
                 mask = __lasx_xvpickve2gr_wu(mask1, 0);
-                const uint8_t* row1 = &simdutf::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask & 0xFF]
+                const uint8_t* row1 = &turbo::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask & 0xFF]
                                                                                             [0];
                 __m128i shuffle1 = __lsx_vld(row1, 1);
                 __m128i utf8_1 = __lsx_vshuf_b(zero_128, lasx_extracti128_lo(out1), shuffle1);
@@ -478,7 +478,7 @@ lasx_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
                 utf8_output += row1[0];
 
                 mask = __lasx_xvpickve2gr_wu(mask0, 4);
-                const uint8_t* row2 = &simdutf::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask & 0xFF]
+                const uint8_t* row2 = &turbo::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask & 0xFF]
                                                                                             [0];
                 __m128i shuffle2 = __lsx_vld(row2, 1);
                 __m128i utf8_2 = __lsx_vshuf_b(zero_128, lasx_extracti128_hi(out0), shuffle2);
@@ -486,7 +486,7 @@ lasx_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
                 utf8_output += row2[0];
 
                 mask = __lasx_xvpickve2gr_wu(mask1, 4);
-                const uint8_t* row3 = &simdutf::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask & 0xFF]
+                const uint8_t* row3 = &turbo::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask & 0xFF]
                                                                                             [0];
                 __m128i shuffle3 = __lsx_vld(row3, 1);
                 __m128i utf8_3 = __lsx_vshuf_b(zero_128, lasx_extracti128_hi(out1), shuffle3);

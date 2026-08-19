@@ -8,7 +8,7 @@
 #include <set>
 #include <vector>
 
-namespace simdutf {
+namespace turbo {
 namespace test {
 
 struct CommandLine {
@@ -25,12 +25,12 @@ struct CommandLine {
 int main(int argc, char *argv[]);
 void run(const CommandLine &cmdline);
 
-using test_procedure = void (*)(const simdutf::implementation &impl);
+using test_procedure = void (*)(const turbo::implementation &impl);
 struct test_entry {
   std::string name;
   test_procedure procedure;
 
-  void operator()(const simdutf::implementation &impl);
+  void operator()(const turbo::implementation &impl);
 };
 
 std::list<test_entry> &test_procedures();
@@ -44,7 +44,7 @@ struct register_test {
 constexpr std::size_t trials = SIMDUTF_TEST_LOOP_TRIALS;
 
 } // namespace test
-} // namespace simdutf
+} // namespace turbo
 
 template <typename T> void dump_ascii(const T &values) {
   for (size_t i = 0; i < values.size(); i++) {
@@ -105,19 +105,19 @@ std::ostream &operator<<(std::ostream &os, const std::vector<T> &vec) {
 }
 
 #define TEST(name)                                                             \
-  void test_impl_##name(const simdutf::implementation &impl);                  \
-  void name(const simdutf::implementation &impl) {                             \
-    simdutf::get_active_implementation() = &impl;                              \
+  void test_impl_##name(const turbo::implementation &impl);                  \
+  void name(const turbo::implementation &impl) {                             \
+    turbo::get_active_implementation() = &impl;                              \
     test_impl_##name(impl);                                                    \
   }                                                                            \
-  static simdutf::test::register_test test_register_##name(#name, name);       \
+  static turbo::test::register_test test_register_##name(#name, name);       \
   void test_impl_##name(                                                       \
-      simdutf_maybe_unused const simdutf::implementation &implementation)
+      [[maybe_unused]] const turbo::implementation &implementation)
 
 #define TEST_LOOP(name)                                                        \
-  void test_impl_##name(const simdutf::implementation &impl, uint32_t seed);   \
-  void name(const simdutf::implementation &impl) {                             \
-    for (size_t trial = 0; trial < simdutf::test::trials; trial++) {           \
+  void test_impl_##name(const turbo::implementation &impl, uint32_t seed);   \
+  void name(const turbo::implementation &impl) {                             \
+    for (size_t trial = 0; trial < turbo::test::trials; trial++) {           \
       const uint32_t seed{1234 + uint32_t(trial)};                             \
       if ((trial % 100) == 0) {                                                \
         putchar('.');                                                          \
@@ -126,9 +126,9 @@ std::ostream &operator<<(std::ostream &os, const std::vector<T> &vec) {
       test_impl_##name(impl, seed);                                            \
     }                                                                          \
   }                                                                            \
-  static simdutf::test::register_test test_register_##name(#name, name);       \
-  void test_impl_##name(const simdutf::implementation &implementation,         \
-                        simdutf_maybe_unused uint32_t seed)
+  static turbo::test::register_test test_register_##name(#name, name);       \
+  void test_impl_##name(const turbo::implementation &implementation,         \
+                        [[maybe_unused]] uint32_t seed)
 
 #define ASSERT_EQUAL(a, b)                                                     \
   {                                                                            \
@@ -190,4 +190,4 @@ std::ostream &operator<<(std::ostream &os, const std::vector<T> &vec) {
   }
 
 #define TEST_MAIN                                                              \
-  int main(int argc, char *argv[]) { return simdutf::test::main(argc, argv); }
+  int main(int argc, char *argv[]) { return turbo::test::main(argc, argv); }

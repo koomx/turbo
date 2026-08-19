@@ -2,7 +2,7 @@
 #define SIMDUTF_BASE64_TABLES_H
 #include <cstdint>
 
-namespace simdutf {
+namespace turbo {
     namespace {
         namespace tables {
             namespace base64 {
@@ -1206,6 +1206,6 @@ namespace simdutf {
             } // namespace base64
         } // namespace tables
     } // unnamed namespace
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDUTF_BASE64_TABLES_H

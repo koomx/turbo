@@ -310,7 +310,7 @@ int main(int argc, char *argv[]) {
   std::vector<utf16_fixe_implementation> fixers;
   fixers.emplace_back(v8::ReplaceUnpairedSurrogates, "v8");
 
-  for (auto &e : simdutf::get_available_implementations()) {
+  for (auto &e : turbo::get_available_implementations()) {
     if (!e->supported_by_runtime_system()) {
       continue;
     }

@@ -175,12 +175,12 @@ public:
     size_t count{0};
     switch (current_state) {
     case ONE_VALID: {
-      simdutf::tests::reference::utf8::encode(generate(0x0, 0x7f), consume);
+      turbo::tests::reference::utf8::encode(generate(0x0, 0x7f), consume);
       count = 1;
       break;
     }
     case ONE_TOO_LONG: {
-      simdutf::tests::reference::utf8::encode(generate(0x0, 0x7f), consume);
+      turbo::tests::reference::utf8::encode(generate(0x0, 0x7f), consume);
       output.push_back(generate(0x80, 0xbf)); // Add random continuation byte
       count = 2;
       break;
@@ -191,7 +191,7 @@ public:
       break;
     }
     case TWO_VALID: {
-      simdutf::tests::reference::utf8::encode(generate(0x80, 0x7ff), consume);
+      turbo::tests::reference::utf8::encode(generate(0x80, 0x7ff), consume);
       count = 2;
       break;
     }
@@ -209,7 +209,7 @@ public:
       break;
     }
     case TWO_TOO_LONG: {
-      simdutf::tests::reference::utf8::encode(generate(0x80, 0x7ff), consume);
+      turbo::tests::reference::utf8::encode(generate(0x80, 0x7ff), consume);
       output.push_back(generate(0x80, 0xbf)); // Add random continuation byte
       count = 3;
       break;
@@ -227,7 +227,7 @@ public:
       while (codepoint >= 0xd800 && codepoint <= 0xdfff) {
         codepoint = generate(0x800, 0xffff);
       }
-      simdutf::tests::reference::utf8::encode(generate(0x80, 0x7ff), consume);
+      turbo::tests::reference::utf8::encode(generate(0x80, 0x7ff), consume);
       count = 3;
       break;
     }
@@ -257,7 +257,7 @@ public:
       while (codepoint >= 0xd800 && codepoint <= 0xdfff) {
         codepoint = generate(0x800, 0xffff);
       }
-      simdutf::tests::reference::utf8::encode(generate(0x80, 0x7ff), consume);
+      turbo::tests::reference::utf8::encode(generate(0x80, 0x7ff), consume);
       output.push_back(generate(0x80, 0xbf)); // Add random continuation byte
       count = 4;
       break;
@@ -271,13 +271,13 @@ public:
       break;
     }
     case THREE_SURROGATE: {
-      simdutf::tests::reference::utf8::encode(generate(0xd800, 0xdfff),
+      turbo::tests::reference::utf8::encode(generate(0xd800, 0xdfff),
                                               consume);
       count = 3;
       break;
     }
     case FOUR_VALID: {
-      simdutf::tests::reference::utf8::encode(generate(0x10000, 0x10ffff),
+      turbo::tests::reference::utf8::encode(generate(0x10000, 0x10ffff),
                                               consume);
       count = 4;
       break;
@@ -300,7 +300,7 @@ public:
       break;
     }
     case FOUR_TOO_LONG: {
-      simdutf::tests::reference::utf8::encode(generate(0x10000, 0x10ffff),
+      turbo::tests::reference::utf8::encode(generate(0x10000, 0x10ffff),
                                               consume);
       output.push_back(generate(0x80, 0xbf)); // Add random continuation byte
       count = 5;
@@ -317,7 +317,7 @@ public:
       break;
     }
     case FOUR_TOO_LARGE: {
-      simdutf::tests::reference::utf8::encode(generate(0x110000, 0x1fffff),
+      turbo::tests::reference::utf8::encode(generate(0x110000, 0x1fffff),
                                               consume);
       count = 4;
       break;
@@ -379,14 +379,14 @@ TEST(garbage_utf8_fuzz_with_errors) {
     // r.count: In case of error, indicates the position of the error in the
     // input. In case of success, indicates the number of code units
     // validated/written.
-    if (r.error == simdutf::SUCCESS) {
+    if (r.error == turbo::SUCCESS) {
       ASSERT_EQUAL(r.count, expected_utf16_length);
     } else {
       ASSERT_TRUE(r.count < length);
     }
     r = implementation.convert_utf8_to_utf16be_with_errors(
         utf8_buffer.get(), length, utf16_buffer.get());
-    if (r.error == simdutf::SUCCESS) {
+    if (r.error == turbo::SUCCESS) {
       ASSERT_EQUAL(r.count, expected_utf16_length);
     } else {
       ASSERT_TRUE(r.count < length);
@@ -397,7 +397,7 @@ TEST(garbage_utf8_fuzz_with_errors) {
         new char32_t[expected_utf32_length]);
     r = implementation.convert_utf8_to_utf32_with_errors(
         utf8_buffer.get(), length, utf32_buffer.get());
-    if (r.error == simdutf::SUCCESS) {
+    if (r.error == turbo::SUCCESS) {
       ASSERT_EQUAL(r.count, expected_utf32_length);
     } else {
       ASSERT_TRUE(r.count < length);
@@ -600,7 +600,7 @@ TEST(overflow_with_errors_fuzz) {
               input.data(), input.size(),
               reinterpret_cast<char16_t *>(output.data()));
           utf8_to_utf16.second = r.count;
-          utf8_to_utf16.first = (r.error == simdutf::SUCCESS);
+          utf8_to_utf16.first = (r.error == turbo::SUCCESS);
           ASSERT_TRUE(expected_length > 0 &&
                       (expected_length * sizeof(char16_t) == output.size()) &&
                       expected_length == utf8_to_utf16.second);
@@ -613,7 +613,7 @@ TEST(overflow_with_errors_fuzz) {
               input.data(), input.size(),
               reinterpret_cast<char32_t *>(output.data()));
           utf8_to_utf32.second = r.count;
-          utf8_to_utf32.first = (r.error == simdutf::SUCCESS);
+          utf8_to_utf32.first = (r.error == turbo::SUCCESS);
           ASSERT_TRUE(expected_length > 0 &&
                       (expected_length * sizeof(char32_t) == output.size()) &&
                       expected_length == utf8_to_utf32.second);
@@ -628,7 +628,7 @@ TEST(overflow_with_errors_fuzz) {
               reinterpret_cast<char16_t *>(input.data()),
               input.size() / sizeof(char16_t), output.data());
           utf16_to_utf8.second = r.count;
-          utf16_to_utf8.first = (r.error == simdutf::SUCCESS);
+          utf16_to_utf8.first = (r.error == turbo::SUCCESS);
           ASSERT_TRUE(expected_length > 0 && expected_length == output.size() &&
                       expected_length == utf16_to_utf8.second);
 
@@ -657,7 +657,7 @@ TEST(overflow_with_errors_fuzz) {
           auto r = implementation.convert_utf32_to_utf8_with_errors(
               reinterpret_cast<char32_t *>(input.data()),
               input.size() / sizeof(char32_t), output.data());
-          utf32_to_utf8.first = (r.error == simdutf::SUCCESS);
+          utf32_to_utf8.first = (r.error == turbo::SUCCESS);
           utf32_to_utf8.second = r.count;
           ASSERT_TRUE(expected_length > 0 && expected_length == output.size() &&
                       expected_length == utf32_to_utf8.second);
@@ -671,7 +671,7 @@ TEST(overflow_with_errors_fuzz) {
               reinterpret_cast<char32_t *>(input.data()),
               input.size() / sizeof(char32_t),
               reinterpret_cast<char16_t *>(output.data()));
-          utf32_to_utf16.first = (r.error == simdutf::SUCCESS);
+          utf32_to_utf16.first = (r.error == turbo::SUCCESS);
           utf32_to_utf16.second = r.count;
           ASSERT_TRUE(expected_length > 0 &&
                       (expected_length * sizeof(char16_t) == output.size()) &&
@@ -801,5 +801,5 @@ int main(int argc, char *argv[]) {
     input_size.push_back(std::uniform_int_distribution<uint32_t>{50, 800}(
         gen)); // Range must be less than max_size
   }
-  return simdutf::test::main((argc == 2) ? 1 : argc, argv);
+  return turbo::test::main((argc == 2) ? 1 : argc, argv);
 }

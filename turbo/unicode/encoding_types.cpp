@@ -1,5 +1,5 @@
 
-namespace simdutf {
+namespace turbo {
     std::string_view to_string(encoding_type bom) {
         switch (bom) {
         case UTF16_LE:
@@ -62,4 +62,4 @@ namespace simdutf {
         }
 
     } // namespace BOM
-} // namespace simdutf
+} // namespace turbo

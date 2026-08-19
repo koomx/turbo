@@ -1,7 +1,7 @@
 #ifndef SIMDUTF_WESTMERE_BITMANIPULATION_H
 #define SIMDUTF_WESTMERE_BITMANIPULATION_H
 
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
         namespace {
 
@@ -35,6 +35,6 @@ namespace simdutf {
 
         } // unnamed namespace
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDUTF_WESTMERE_BITMANIPULATION_H

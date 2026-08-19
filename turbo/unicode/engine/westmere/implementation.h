@@ -5,17 +5,17 @@
 
 // The constructor may be executed on any host, so we take care not to use
 // SIMDUTF_TARGET_REGION
-namespace simdutf {
+namespace turbo {
     namespace westmere {
 
         namespace {
-            using namespace simdutf;
+            using namespace turbo;
         }
 
-        class implementation final : public simdutf::implementation {
+        class implementation final : public turbo::implementation {
         public:
             simdutf_really_inline implementation()
-                : simdutf::implementation("westmere", "Intel/AMD SSE4.2",
+                : turbo::implementation("westmere", "Intel/AMD SSE4.2",
                       internal::instruction_set::SSE42) { }
 
 #if SIMDUTF_FEATURE_DETECT_ENCODING
@@ -329,6 +329,6 @@ namespace simdutf {
         };
 
     } // namespace westmere
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDUTF_WESTMERE_IMPLEMENTATION_H

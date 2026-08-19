@@ -5,7 +5,7 @@
 #include <turbo/unicode/engine/arm64/bitmanipulation.h>
 #include <type_traits>
 
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
         namespace {
             namespace simd {
@@ -577,6 +577,6 @@ namespace simdutf {
             } // namespace simd
         } // unnamed namespace
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDUTF_ARM64_SIMD_H

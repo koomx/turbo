@@ -25,9 +25,9 @@
 #define SIMDUTF_TARGET_ZVBB SIMDUTF_TARGET_REGION("arch=+v,+zvbb")
 #endif
 
-namespace simdutf {
+namespace turbo {
     namespace rvv { } // namespace rvv
-} // namespace simdutf
+} // namespace turbo
 
 #include <turbo/unicode/engine/rvv/implementation.h>
 #include <turbo/unicode/engine/rvv/begin.h>

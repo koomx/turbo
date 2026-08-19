@@ -1,7 +1,9 @@
 #ifndef SIMDUTF_UTF16_H
 #define SIMDUTF_UTF16_H
 
-namespace simdutf {
+#include <turbo/unicode/engine/scalar/swap_bytes.h>
+
+namespace turbo {
     namespace scalar {
         namespace utf16 {
 
@@ -215,6 +217,6 @@ namespace simdutf {
 
         } // namespace utf16
     } // namespace scalar
-} // namespace simdutf
+} // namespace turbo
 
 #endif

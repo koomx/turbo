@@ -9,15 +9,15 @@
 
 namespace {
 constexpr std::array<size_t, 7> input_size{7, 16, 12, 64, 67, 128, 256};
-constexpr simdutf::endianness LE = simdutf::endianness::LITTLE;
+constexpr turbo::endianness LE = turbo::endianness::LITTLE;
 
-using simdutf::tests::helpers::transcode_utf32_to_utf16_test_base;
+using turbo::tests::helpers::transcode_utf32_to_utf16_test_base;
 
 } // namespace
 
 TEST_LOOP(convert_into_2_UTF16_bytes) {
   // range for 2 UTF-16 bytes
-  simdutf::tests::helpers::RandomIntRanges random(
+  turbo::tests::helpers::RandomIntRanges random(
       {{0x0000, 0xd7ff}, {0xe000, 0xffff}}, seed);
 
   auto procedure = [&implementation](const char32_t *utf32, size_t size,
@@ -37,7 +37,7 @@ TEST_LOOP(convert_into_2_UTF16_bytes) {
 
 TEST_LOOP(convert_into_4_UTF16_bytes) {
   // range for 4 UTF-16 bytes
-  simdutf::tests::helpers::RandomIntRanges random({{0x10000, 0x10ffff}}, seed);
+  turbo::tests::helpers::RandomIntRanges random({{0x10000, 0x10ffff}}, seed);
 
   auto procedure = [&implementation](const char32_t *utf32, size_t size,
                                      char16_t *utf16) -> size_t {
@@ -56,7 +56,7 @@ TEST_LOOP(convert_into_4_UTF16_bytes) {
 
 TEST_LOOP(convert_into_2_or_4_UTF16_bytes) {
   // range for 2 or 4 UTF-16 bytes (all codepoints)
-  simdutf::tests::helpers::RandomIntRanges random(
+  turbo::tests::helpers::RandomIntRanges random(
       {{0x0000, 0xd7ff}, {0xe000, 0xffff}, {0x10000, 0x10ffff}}, seed);
 
   auto procedure = [&implementation](const char32_t *utf32, size_t size,
@@ -94,7 +94,7 @@ TEST(convert_fails_if_there_is_surrogate) {
 
 TEST(convert_fails_if_input_too_large) {
   uint32_t seed{1234};
-  simdutf::tests::helpers::RandomInt generator(0x110000, 0xffffffff, seed);
+  turbo::tests::helpers::RandomInt generator(0x110000, 0xffffffff, seed);
 
   auto procedure = [&implementation](const char32_t *utf32, size_t size,
                                      char16_t *utf16) -> size_t {
@@ -118,13 +118,13 @@ TEST(convert_fails_if_input_too_large) {
 
 namespace {
 template <auto input> constexpr auto size() {
-  return simdutf::utf16_length_from_utf32(input);
+  return turbo::utf16_length_from_utf32(input);
 }
 
 template <auto input> constexpr auto convert() {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   CTString<char16_t, size<input>()> tmp;
-  const auto ret = simdutf::convert_utf32_to_utf16(input, tmp);
+  const auto ret = turbo::convert_utf32_to_utf16(input, tmp);
   if (ret != tmp.size()) {
     throw "unexpected write size";
   }
@@ -133,7 +133,7 @@ template <auto input> constexpr auto convert() {
 } // namespace
 
 TEST(compile_time_convert_utf32_to_utf16) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   constexpr auto input = U"köttbulle"_utf32;
   constexpr auto expected = u"köttbulle"_utf16;
   constexpr auto output = convert<input>();
@@ -143,9 +143,9 @@ TEST(compile_time_convert_utf32_to_utf16) {
 namespace {
 
 template <auto input> constexpr auto convert_le() {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   CTString<char16_t, size<input>(), std::endian::little> tmp;
-  const auto ret = simdutf::convert_utf32_to_utf16le(input, tmp);
+  const auto ret = turbo::convert_utf32_to_utf16le(input, tmp);
   if (ret != tmp.size()) {
     throw "unexpected write size";
   }
@@ -154,7 +154,7 @@ template <auto input> constexpr auto convert_le() {
 } // namespace
 
 TEST(compile_time_convert_utf32_to_utf16le) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   constexpr auto input = U"köttbulle"_utf32;
   constexpr auto expected = u"köttbulle"_utf16le;
   constexpr auto output = convert_le<input>();

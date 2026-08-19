@@ -2,7 +2,7 @@
 #ifndef SIMDUTF_UTF32_TO_UTF16_TABLES_H
 #define SIMDUTF_UTF32_TO_UTF16_TABLES_H
 
-namespace simdutf {
+namespace turbo {
     namespace {
         namespace tables {
             namespace utf32_to_utf16 {
@@ -48,6 +48,6 @@ namespace simdutf {
             } // namespace utf32_to_utf16
         } // namespace tables
     } // unnamed namespace
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDUTF_UTF16_TO_UTF8_TABLES_H

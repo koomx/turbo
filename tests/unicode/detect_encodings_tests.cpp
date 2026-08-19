@@ -14,8 +14,8 @@ namespace {
 std::array<size_t, 7> input_size{8, 16, 12, 64, 68, 128, 256};
 
 template <typename Pointer> bool has_bom(Pointer *data, size_t size) {
-  return (simdutf::BOM::check_bom(data, size) !=
-          simdutf::encoding_type::unspecified);
+  return (turbo::BOM::check_bom(data, size) !=
+          turbo::encoding_type::unspecified);
 }
 
 template <typename RandomGenerator>
@@ -120,8 +120,8 @@ TEST(issue_516) {
 
 TEST(issue818) {
   std::string data = "\xEF\xBB\xBF";
-  const auto r = simdutf::BOM::check_bom(data.data(), data.size());
-  ASSERT_EQUAL(r, simdutf::encoding_type::UTF8);
+  const auto r = turbo::BOM::check_bom(data.data(), data.size());
+  ASSERT_EQUAL(r, turbo::encoding_type::UTF8);
 }
 
 TEST(boommmmm) {
@@ -129,11 +129,11 @@ TEST(boommmmm) {
   const char *utf16be_bom = "\xfe\xff";
   const char *utf16le_bom = "\xff\xfe";
   ASSERT_EQUAL(implementation.detect_encodings(utf8_bom, 3),
-               simdutf::encoding_type::UTF8);
+               turbo::encoding_type::UTF8);
   ASSERT_EQUAL(implementation.detect_encodings(utf16be_bom, 2),
-               simdutf::encoding_type::UTF16_BE);
+               turbo::encoding_type::UTF16_BE);
   ASSERT_EQUAL(implementation.detect_encodings(utf16le_bom, 2),
-               simdutf::encoding_type::UTF16_LE);
+               turbo::encoding_type::UTF16_LE);
 }
 
 #if !SIMDUTF_IS_BIG_ENDIAN
@@ -161,12 +161,12 @@ TEST(issue_627) {
 #endif
 
 TEST_LOOP(pure_utf8_ASCII) {
-  simdutf::tests::helpers::random_utf8 random(seed, 1, 0, 0, 0);
+  turbo::tests::helpers::random_utf8 random(seed, 1, 0, 0, 0);
 
   for (size_t size : input_size) {
     const auto generated = generate_utf8(random, size);
     auto expected =
-        simdutf::encoding_type::UTF8 | simdutf::encoding_type::UTF16_LE;
+        turbo::encoding_type::UTF8 | turbo::encoding_type::UTF16_LE;
     auto actual = implementation.detect_encodings(
         reinterpret_cast<const char *>(generated.data()), size);
     ASSERT_EQUAL(actual, expected);
@@ -174,12 +174,12 @@ TEST_LOOP(pure_utf8_ASCII) {
 }
 
 TEST_LOOP(pure_utf16_ASCII) {
-  simdutf::tests::helpers::RandomInt random(0, 127, seed);
+  turbo::tests::helpers::RandomInt random(0, 127, seed);
 
   for (size_t size : input_size) {
     const auto generated = generate_u16(random, size / 2);
     auto expected =
-        simdutf::encoding_type::UTF8 | simdutf::encoding_type::UTF16_LE;
+        turbo::encoding_type::UTF8 | turbo::encoding_type::UTF16_LE;
     auto actual = implementation.detect_encodings(
         reinterpret_cast<const char *>(generated.data()), size);
     ASSERT_TRUE((actual & expected) ==
@@ -188,13 +188,13 @@ TEST_LOOP(pure_utf16_ASCII) {
 }
 
 TEST_LOOP(pure_utf32_ASCII) {
-  simdutf::tests::helpers::RandomInt random(0, 0x7f, seed);
+  turbo::tests::helpers::RandomInt random(0, 0x7f, seed);
 
   for (size_t size : input_size) {
     const auto generated = generate_u32(random, size / 4);
-    auto expected = simdutf::encoding_type::UTF8 |
-                    simdutf::encoding_type::UTF16_LE |
-                    simdutf::encoding_type::UTF32_LE;
+    auto expected = turbo::encoding_type::UTF8 |
+                    turbo::encoding_type::UTF16_LE |
+                    turbo::encoding_type::UTF32_LE;
     auto actual = implementation.detect_encodings(
         reinterpret_cast<const char *>(generated.data()), size);
     ASSERT_TRUE((actual & expected) ==
@@ -204,19 +204,19 @@ TEST_LOOP(pure_utf32_ASCII) {
 
 #if 0 // XXX
 TEST_LOOP(no_utf8_bytes_no_surrogates) {
-  simdutf::tests::helpers::RandomIntRanges random(
+  turbo::tests::helpers::RandomIntRanges random(
       {{0x007f, 0xd800 - 1}, {0xe000, 0xffff}}, seed);
 
   for (size_t size : input_size) {
     auto generated = generate_u32(random, size / 4);
-    if (!simdutf::match_system(simdutf::endianness::LITTLE)) {
+    if (!turbo::match_system(turbo::endianness::LITTLE)) {
         for (auto& val: generated) {
             val = ((val & 0xff) << 8) | (val >> 8);
         }
     }
 
     auto expected =
-        simdutf::encoding_type::UTF16_LE | simdutf::encoding_type::UTF32_LE;
+        turbo::encoding_type::UTF16_LE | turbo::encoding_type::UTF32_LE;
     auto actual = implementation.detect_encodings(
         reinterpret_cast<const char *>(generated.data()), size);
     ASSERT_EQUAL((actual & expected),
@@ -226,19 +226,19 @@ TEST_LOOP(no_utf8_bytes_no_surrogates) {
 #endif
 
 TEST_LOOP(two_utf8_bytes) {
-  simdutf::tests::helpers::random_utf8 random(seed, 0, 1, 0, 0);
+  turbo::tests::helpers::random_utf8 random(seed, 0, 1, 0, 0);
 
   for (size_t size : input_size) {
     const auto generated = generate_utf8(random, size);
     auto expected =
-        simdutf::encoding_type::UTF8 | simdutf::encoding_type::UTF16_LE;
+        turbo::encoding_type::UTF8 | turbo::encoding_type::UTF16_LE;
     auto actual = implementation.detect_encodings(
         reinterpret_cast<const char *>(generated.data()), size);
     if (actual != expected) {
-      if ((actual & simdutf::encoding_type::UTF8) == 0) {
+      if ((actual & turbo::encoding_type::UTF8) == 0) {
         puts("failed to detect valid UTF-8.");
       }
-      if ((actual & simdutf::encoding_type::UTF16_LE) == 0) {
+      if ((actual & turbo::encoding_type::UTF16_LE) == 0) {
         puts("failed to detect valid UTF-16LE.");
       }
     }
@@ -248,11 +248,11 @@ TEST_LOOP(two_utf8_bytes) {
 }
 
 TEST_LOOP(utf_16_surrogates) {
-  simdutf::tests::helpers::random_utf16 random(seed, 0, 1);
+  turbo::tests::helpers::random_utf16 random(seed, 0, 1);
 
   for (size_t size : input_size) {
     const auto generated = generate_utf16_le(random, size / 2);
-    auto expected = simdutf::encoding_type::UTF16_LE;
+    auto expected = turbo::encoding_type::UTF16_LE;
     auto actual = implementation.detect_encodings(
         reinterpret_cast<const char *>(generated.data()), size);
     ASSERT_TRUE((actual & expected) == expected); // Must be at least UTF16_LE.
@@ -260,15 +260,15 @@ TEST_LOOP(utf_16_surrogates) {
 }
 
 TEST_LOOP(utf32_surrogates) {
-  simdutf::tests::helpers::RandomInt random_prefix(0x10000, 0x10ffff, seed);
-  simdutf::tests::helpers::RandomInt random_suffix(0xd800, 0xdfff, seed);
+  turbo::tests::helpers::RandomInt random_prefix(0x10000, 0x10ffff, seed);
+  turbo::tests::helpers::RandomInt random_suffix(0xd800, 0xdfff, seed);
 
   for (size_t size : input_size) {
     std::vector<uint32_t> generated;
     for (unsigned int i = 0; i < size / 4; i++) {
       generated.push_back((random_prefix() & 0xffff0000) + random_suffix());
     }
-    auto expected = simdutf::encoding_type::UTF32_LE;
+    auto expected = turbo::encoding_type::UTF32_LE;
     auto actual = implementation.detect_encodings(
         reinterpret_cast<const char *>(generated.data()), size);
     ASSERT_TRUE((actual & expected) == expected); // Must be at least UTF32_LE.
@@ -276,7 +276,7 @@ TEST_LOOP(utf32_surrogates) {
 }
 
 TEST_LOOP(edge_surrogate) {
-  simdutf::tests::helpers::RandomInt random(0x10000, 0x10ffff, seed);
+  turbo::tests::helpers::RandomInt random(0x10000, 0x10ffff, seed);
 
   const size_t size = 512;
   std::vector<uint16_t> generated(size / 2, 0);
@@ -284,24 +284,24 @@ TEST_LOOP(edge_surrogate) {
   while (i + 32 < (size / 2) - 1) {
     char16_t W1;
     char16_t W2;
-    ASSERT_EQUAL(simdutf::tests::reference::utf16::encode(random(), W1, W2), 2);
+    ASSERT_EQUAL(turbo::tests::reference::utf16::encode(random(), W1, W2), 2);
     generated[i + 0] = to_utf16le(W1);
     generated[i + 1] = to_utf16le(W2);
     i += 32;
   }
-  auto expected = simdutf::encoding_type::UTF16_LE;
+  auto expected = turbo::encoding_type::UTF16_LE;
   auto actual = implementation.detect_encodings(
       reinterpret_cast<const char *>(generated.data()), size);
   ASSERT_TRUE((actual & expected) == expected); // Must be at least UTF16_LE.
 }
 
 TEST_LOOP(tail_utf8) {
-  simdutf::tests::helpers::random_utf8 random(seed, 0, 0, 1, 0);
+  turbo::tests::helpers::random_utf8 random(seed, 0, 0, 1, 0);
   std::array<size_t, 5> multiples_three{12, 54, 66, 126, 252};
   for (size_t size : multiples_three) {
     const auto generated = generate_utf8(random, size);
     auto expected =
-        simdutf::encoding_type::UTF8 | simdutf::encoding_type::UTF16_LE;
+        turbo::encoding_type::UTF8 | turbo::encoding_type::UTF16_LE;
     auto actual = implementation.detect_encodings(
         reinterpret_cast<const char *>(generated.data()), size);
     ASSERT_TRUE((actual & expected) ==

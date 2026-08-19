@@ -62,7 +62,7 @@ arm_convert_utf32_to_utf8(const char32_t* buf, size_t len, char* utf8_out) {
 #endif
                 uint16_t m2 = vaddvq_u16(vandq_u16(one_byte_bytemask, mask));
                 // 4. pack the bytes
-                const uint8_t* row = &simdutf::tables::utf16_to_utf8::pack_1_2_utf8_bytes[m2][0];
+                const uint8_t* row = &turbo::tables::utf16_to_utf8::pack_1_2_utf8_bytes[m2][0];
                 const uint8x16_t shuffle = vld1q_u8(row + 1);
                 const uint8x16_t utf8_packed = vqtbl1q_u8(utf8_unpacked, shuffle);
 
@@ -174,12 +174,12 @@ arm_convert_utf32_to_utf8(const char32_t* buf, size_t len, char* utf8_out) {
                   continue;
                 }*/
                 const uint8_t mask0 = uint8_t(mask);
-                const uint8_t* row0 = &simdutf::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask0][0];
+                const uint8_t* row0 = &turbo::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask0][0];
                 const uint8x16_t shuffle0 = vld1q_u8(row0 + 1);
                 const uint8x16_t utf8_0 = vqtbl1q_u8(out0, shuffle0);
 
                 const uint8_t mask1 = static_cast<uint8_t>(mask >> 8);
-                const uint8_t* row1 = &simdutf::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask1][0];
+                const uint8_t* row1 = &turbo::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask1][0];
                 const uint8x16_t shuffle1 = vld1q_u8(row1 + 1);
                 const uint8x16_t utf8_1 = vqtbl1q_u8(out1, shuffle1);
 
@@ -302,7 +302,7 @@ arm_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
 #endif
                 uint16_t m2 = vaddvq_u16(vandq_u16(one_byte_bytemask, mask));
                 // 4. pack the bytes
-                const uint8_t* row = &simdutf::tables::utf16_to_utf8::pack_1_2_utf8_bytes[m2][0];
+                const uint8_t* row = &turbo::tables::utf16_to_utf8::pack_1_2_utf8_bytes[m2][0];
                 const uint8x16_t shuffle = vld1q_u8(row + 1);
                 const uint8x16_t utf8_packed = vqtbl1q_u8(utf8_unpacked, shuffle);
 
@@ -420,12 +420,12 @@ arm_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
                 }*/
                 const uint8_t mask0 = uint8_t(mask);
 
-                const uint8_t* row0 = &simdutf::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask0][0];
+                const uint8_t* row0 = &turbo::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask0][0];
                 const uint8x16_t shuffle0 = vld1q_u8(row0 + 1);
                 const uint8x16_t utf8_0 = vqtbl1q_u8(out0, shuffle0);
 
                 const uint8_t mask1 = static_cast<uint8_t>(mask >> 8);
-                const uint8_t* row1 = &simdutf::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask1][0];
+                const uint8_t* row1 = &turbo::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask1][0];
                 const uint8x16_t shuffle1 = vld1q_u8(row1 + 1);
                 const uint8x16_t utf8_1 = vqtbl1q_u8(out1, shuffle1);
 

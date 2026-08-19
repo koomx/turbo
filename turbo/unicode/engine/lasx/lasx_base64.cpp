@@ -485,7 +485,7 @@ compress_decode_base64(char* dst, const chartype* src, size_t srclen,
     const uint8_t* to_base64 = default_or_url ? tables::base64::to_base64_default_or_url_value
                                               : (base64_url ? tables::base64::to_base64_url_value
                                                             : tables::base64::to_base64_value);
-    auto ri = simdutf::scalar::base64::find_end(src, srclen, options);
+    auto ri = turbo::scalar::base64::find_end(src, srclen, options);
     size_t equallocation = ri.equallocation;
     size_t equalsigns = ri.equalsigns;
     srclen = ri.srclen;

@@ -2,7 +2,7 @@
 #define SIMDUTF_ERROR_H
 #include <string_view>
 
-namespace simdutf {
+namespace turbo {
 
     enum error_code {
         SUCCESS = 0,
@@ -131,5 +131,5 @@ namespace simdutf {
         }
     };
 
-} // namespace simdutf
+} // namespace turbo
 #endif

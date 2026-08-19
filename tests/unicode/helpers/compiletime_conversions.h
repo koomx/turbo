@@ -9,7 +9,7 @@
 
   #include <tests/unicode/helpers/fixed_string.h>
 
-namespace simdutf {
+namespace turbo {
 namespace tests {
 namespace helpers {
 
@@ -21,9 +21,9 @@ template <typename CharType, std::size_t N, std::endian endianness>
 constexpr auto to_wellformed(const CTString<CharType, N, endianness> &input) {
   CTString<CharType, N, endianness> output;
   if constexpr (endianness == std::endian::little) {
-    simdutf::to_well_formed_utf16le(input, output);
+    turbo::to_well_formed_utf16le(input, output);
   } else {
-    simdutf::to_well_formed_utf16be(input, output);
+    turbo::to_well_formed_utf16be(input, output);
   }
   return output;
 }
@@ -34,13 +34,13 @@ constexpr auto to_latin1(const CTString<CharType, N, endianness> &input) {
   CTString<char, N> tmp;
   std::size_t ret;
   if constexpr (std::is_same_v<CharType, char32_t>) {
-    ret = simdutf::convert_valid_utf32_to_latin1(input, tmp);
+    ret = turbo::convert_valid_utf32_to_latin1(input, tmp);
   } else if constexpr (std::is_same_v<CharType, char16_t> &&
                        endianness == std::endian::little) {
-    ret = simdutf::convert_valid_utf16le_to_latin1(input, tmp);
+    ret = turbo::convert_valid_utf16le_to_latin1(input, tmp);
   } else if constexpr (std::is_same_v<CharType, char16_t> &&
                        endianness == std::endian::big) {
-    ret = simdutf::convert_valid_utf16be_to_latin1(input, tmp);
+    ret = turbo::convert_valid_utf16be_to_latin1(input, tmp);
   } else {
     throw "unknown type";
   }
@@ -56,7 +56,7 @@ template <auto input>
 constexpr auto to_utf8() {
   constexpr auto N = utf8_length_from_latin1(input);
   CTString<char8_t, N> tmp;
-  auto ret = simdutf::convert_latin1_to_utf8(input, tmp);
+  auto ret = turbo::convert_latin1_to_utf8(input, tmp);
   if (!input.empty() && ret == 0) {
     throw "failed conversion";
   }
@@ -76,7 +76,7 @@ to_utf16_impl(const CTString<CharType, N, input_endianness> &input) {
     } else {
       // byteswap
       CTString<CharType, N, output_endianness> output;
-      simdutf::change_endianness_utf16(input, output);
+      turbo::change_endianness_utf16(input, output);
       return output;
     }
   }
@@ -120,29 +120,29 @@ constexpr auto latin1_to_utf16(latin1_ctstring auto &&input) {
 
 template <std::endian target_endianness, bool with_errors, auto input>
 constexpr auto utf8_to_utf16() {
-  using namespace simdutf::tests::helpers;
-  constexpr auto Nout = simdutf::utf16_length_from_utf8(input);
+  using namespace turbo::tests::helpers;
+  constexpr auto Nout = turbo::utf16_length_from_utf8(input);
   CTString<char16_t, Nout, target_endianness> tmp{};
   std::size_t N;
   if constexpr (target_endianness == std::endian::little) {
     if constexpr (with_errors) {
-      auto res = simdutf::convert_utf8_to_utf16le_with_errors(input, tmp);
+      auto res = turbo::convert_utf8_to_utf16le_with_errors(input, tmp);
       if (res.is_err()) {
         throw "fail";
       }
       N = res.count;
     } else {
-      N = simdutf::convert_utf8_to_utf16le(input, tmp);
+      N = turbo::convert_utf8_to_utf16le(input, tmp);
     }
   } else {
     if constexpr (with_errors) {
-      auto res = simdutf::convert_utf8_to_utf16be_with_errors(input, tmp);
+      auto res = turbo::convert_utf8_to_utf16be_with_errors(input, tmp);
       if (res.is_err()) {
         throw "fail";
       }
       N = res.count;
     } else {
-      N = simdutf::convert_utf8_to_utf16be(input, tmp);
+      N = turbo::convert_utf8_to_utf16be(input, tmp);
     }
   }
   if (N != input.size()) {
@@ -153,14 +153,14 @@ constexpr auto utf8_to_utf16() {
 
 template <std::endian target_endianness, auto input>
 constexpr auto valid_utf8_to_utf16() {
-  using namespace simdutf::tests::helpers;
-  constexpr auto Nout = simdutf::utf16_length_from_utf8(input);
+  using namespace turbo::tests::helpers;
+  constexpr auto Nout = turbo::utf16_length_from_utf8(input);
   CTString<char16_t, Nout, target_endianness> tmp{};
   std::size_t N;
   if constexpr (target_endianness == std::endian::little) {
-    N = simdutf::convert_valid_utf8_to_utf16le(input, tmp);
+    N = turbo::convert_valid_utf8_to_utf16le(input, tmp);
   } else {
-    N = simdutf::convert_valid_utf8_to_utf16be(input, tmp);
+    N = turbo::convert_valid_utf8_to_utf16be(input, tmp);
   }
   if (N != input.size()) {
     throw "oops";
@@ -171,22 +171,22 @@ constexpr auto valid_utf8_to_utf16() {
 namespace detail {
 template <auto input> constexpr auto utf8_length_from_utf16_helper() {
   if constexpr (decltype(input)::endianness == std::endian::little) {
-    return simdutf::utf8_length_from_utf16le(input);
+    return turbo::utf8_length_from_utf16le(input);
   } else {
-    return simdutf::utf8_length_from_utf16be(input);
+    return turbo::utf8_length_from_utf16be(input);
   }
 }
 } // namespace detail
 
 template <auto input, bool with_errors> constexpr auto valid_utf16_to_utf8() {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   constexpr auto Nout = detail::utf8_length_from_utf16_helper<input>();
   CTString<char8_t, Nout> tmp{};
   std::size_t N;
   if constexpr (decltype(input)::endianness == std::endian::little) {
-    N = simdutf::convert_valid_utf16le_to_utf8(input, tmp);
+    N = turbo::convert_valid_utf16le_to_utf8(input, tmp);
   } else {
-    N = simdutf::convert_valid_utf16be_to_utf8(input, tmp);
+    N = turbo::convert_valid_utf16be_to_utf8(input, tmp);
   }
   if (N != input.size()) {
     throw "oops";
@@ -195,14 +195,14 @@ template <auto input, bool with_errors> constexpr auto valid_utf16_to_utf8() {
 }
 
 template <auto input, bool with_errors> constexpr auto utf16_to_utf8() {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   constexpr auto Nout = detail::utf8_length_from_utf16_helper<input>();
   CTString<char8_t, Nout> tmp{};
   std::size_t N;
   if constexpr (decltype(input)::endianness == std::endian::little) {
-    N = simdutf::convert_utf16le_to_utf8(input, tmp);
+    N = turbo::convert_utf16le_to_utf8(input, tmp);
   } else {
-    N = simdutf::convert_utf16be_to_utf8(input, tmp);
+    N = turbo::convert_utf16be_to_utf8(input, tmp);
   }
   if (N == 0) {
     throw "failed";
@@ -215,7 +215,7 @@ template <auto input, bool with_errors> constexpr auto utf16_to_utf8() {
 
 } // namespace helpers
 } // namespace tests
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDUTF_CPLUSPLUS23
 

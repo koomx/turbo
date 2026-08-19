@@ -1,5 +1,5 @@
 #include <turbo/unicode/engine/lsx/begin.h>
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
         namespace {
 #ifndef SIMDUTF_LSX_H
@@ -9,7 +9,7 @@ namespace simdutf {
 
 #if SIMDUTF_FEATURE_UTF8
             // convert vmskltz/vmskgez/vmsknz to
-            // simdutf::tables::utf16_to_utf8::pack_1_2_utf8_bytes index
+            // turbo::tables::utf16_to_utf8::pack_1_2_utf8_bytes index
             const uint8_t lsx_1_2_utf8_bytes_mask[] = {
                 0, 1, 4, 5, 16, 17, 20, 21, 64, 65, 68, 69, 80, 81, 84,
                 85, 2, 3, 6, 7, 18, 19, 22, 23, 66, 67, 70, 71, 82, 83,
@@ -93,7 +93,7 @@ namespace simdutf {
                 // we process SIX (6) input code-code units. The max length in bytes of six
                 // code code units spanning between 1 and 2 bytes each is 12 bytes.
                 __m128i sh = __lsx_vld(reinterpret_cast<const uint8_t*>(
-                                           simdutf::tables::utf8_to_utf16::shufutf8[shufutf8_idx]),
+                                           turbo::tables::utf8_to_utf16::shufutf8[shufutf8_idx]),
                     0);
                 // Shuffle
                 // 1 byte: 00000000 0bbbbbbb
@@ -168,7 +168,7 @@ namespace simdutf {
 
         } // namespace
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo
 
 #include <turbo/unicode/engine/generic/buf_block_reader.h>
 #if SIMDUTF_FEATURE_UTF8 || SIMDUTF_FEATURE_DETECT_ENCODING
@@ -226,7 +226,7 @@ namespace simdutf {
 //
 // Implementation-specific overrides
 //
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
 
 #if SIMDUTF_FEATURE_DETECT_ENCODING
@@ -234,7 +234,7 @@ namespace simdutf {
         implementation::detect_encodings(const char* input,
             size_t length) const noexcept {
             // If there is a BOM, then we trust it.
-            auto bom_encoding = simdutf::BOM::check_bom(input, length);
+            auto bom_encoding = turbo::BOM::check_bom(input, length);
             // todo: reimplement as a one-pass algorithm.
             if (bom_encoding != encoding_type::unspecified) {
                 return bom_encoding;
@@ -1354,6 +1354,6 @@ namespace simdutf {
 #endif // SIMDUTF_FEATURE_BASE64
 
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo
 
 #include <turbo/unicode/engine/lsx/end.h>

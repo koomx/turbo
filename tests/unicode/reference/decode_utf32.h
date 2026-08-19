@@ -2,7 +2,7 @@
 
 #include <cstdio>
 
-namespace simdutf {
+namespace turbo {
 namespace tests {
 namespace reference {
 namespace utf32 {
@@ -44,4 +44,4 @@ bool decode(const char32_t *codepoints, size_t size, CONSUMER consumer,
 } // namespace utf32
 } // namespace reference
 } // namespace tests
-} // namespace simdutf
+} // namespace turbo

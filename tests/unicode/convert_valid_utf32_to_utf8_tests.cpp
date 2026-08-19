@@ -10,7 +10,7 @@
 namespace {
 std::array<size_t, 7> input_size{7, 16, 12, 64, 67, 128, 256};
 
-using simdutf::tests::helpers::transcode_utf32_to_utf8_test_base;
+using turbo::tests::helpers::transcode_utf32_to_utf8_test_base;
 
 } // namespace
 
@@ -31,7 +31,7 @@ TEST(convert_pure_ASCII) {
 }
 
 TEST_LOOP(convert_into_1_or_2_UTF8_bytes) {
-  simdutf::tests::helpers::RandomInt random(
+  turbo::tests::helpers::RandomInt random(
       0x0000, 0x07ff, seed); // range for 1 or 2 UTF-8 bytes
 
   auto procedure = [&implementation](const char32_t *utf32, size_t size,
@@ -47,7 +47,7 @@ TEST_LOOP(convert_into_1_or_2_UTF8_bytes) {
 
 TEST_LOOP(convert_into_1_or_2_or_3_UTF8_bytes) {
   // range for 1, 2 or 3 UTF-8 bytes
-  simdutf::tests::helpers::RandomIntRanges random(
+  turbo::tests::helpers::RandomIntRanges random(
       {{0x0000, 0x007f}, {0x0080, 0x07ff}, {0x0800, 0xd7ff}, {0xe000, 0xffff}},
       seed);
 
@@ -64,7 +64,7 @@ TEST_LOOP(convert_into_1_or_2_or_3_UTF8_bytes) {
 
 TEST_LOOP(convert_into_3_or_4_UTF8_bytes) {
   // range for 3 or 4 UTF-8 bytes
-  simdutf::tests::helpers::RandomIntRanges random(
+  turbo::tests::helpers::RandomIntRanges random(
       {{0x0800, 0xd800 - 1}, {0xe000, 0x10ffff}}, seed);
 
   auto procedure = [&implementation](const char32_t *utf32, size_t size,
@@ -82,13 +82,13 @@ TEST_LOOP(convert_into_3_or_4_UTF8_bytes) {
 
 namespace {
 template <auto input> constexpr auto size() {
-  return simdutf::utf8_length_from_utf32(input);
+  return turbo::utf8_length_from_utf32(input);
 }
 
 template <auto input> constexpr auto convert() {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   CTString<char8_t, size<input>()> tmp;
-  const auto ret = simdutf::convert_valid_utf32_to_utf8(input, tmp);
+  const auto ret = turbo::convert_valid_utf32_to_utf8(input, tmp);
   if (ret != tmp.size()) {
     throw "unexpected write size";
   }
@@ -97,7 +97,7 @@ template <auto input> constexpr auto convert() {
 } // namespace
 
 TEST(compile_time_convert_valid_utf32_to_utf8) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   constexpr auto input = U"köttbulle"_utf32;
   constexpr auto expected = u8"köttbulle"_utf8;
   constexpr auto output = convert<input>();

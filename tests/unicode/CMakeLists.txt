@@ -91,7 +91,6 @@ set(UNICODE_TESTS
         basic_fuzzer
         base64_tests
         constexpr_base64_tests
-        span_tests
         simdutf_c_tests
         internal_tests
         utf8_length_from_utf16_tests

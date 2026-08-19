@@ -5,7 +5,7 @@
 
 #include <type_traits> // for is_same
 
-namespace simdutf {
+namespace turbo {
 
     template <typename chartype>
     simdutf_warn_unused simdutf_constexpr23 result slow_base64_to_binary_safe_impl(
@@ -13,7 +13,7 @@ namespace simdutf {
         base64_options options,
         last_chunk_handling_options last_chunk_options) noexcept {
         const bool ignore_garbage = (options & base64_default_accept_garbage) != 0;
-        auto ri = simdutf::scalar::base64::find_end(input, length, options);
+        auto ri = turbo::scalar::base64::find_end(input, length, options);
         size_t equallocation = ri.equallocation;
         size_t equalsigns = ri.equalsigns;
         length = ri.srclen;
@@ -72,7 +72,7 @@ namespace simdutf {
             remaining_input_length,
             base64_length_from_binary(remaining_output_length / 3 * 3, options));
         bool done_with_partial = (safe_input == remaining_input_length);
-        simdutf::full_result r;
+        turbo::full_result r;
 
 #if SIMDUTF_CPLUSPLUS23
         if consteval {
@@ -80,7 +80,7 @@ namespace simdutf {
                 input + input_position, safe_input, output + output_position, options,
                 done_with_partial
                     ? last_chunk_handling_options
-                    : simdutf::last_chunk_handling_options::only_full_chunks);
+                    : turbo::last_chunk_handling_options::only_full_chunks);
         } else
 #endif
         {
@@ -88,7 +88,7 @@ namespace simdutf {
                 input + input_position, safe_input, output + output_position, options,
                 done_with_partial
                     ? last_chunk_handling_options
-                    : simdutf::last_chunk_handling_options::only_full_chunks);
+                    : turbo::last_chunk_handling_options::only_full_chunks);
         }
         simdutf_log_assert(r.input_count <= safe_input,
             "You should not read more than safe_input");
@@ -99,7 +99,7 @@ namespace simdutf {
         output_position += r.output_count;
         remaining_input_length -= r.input_count;
         remaining_output_length -= r.output_count;
-        if (r.error != simdutf::error_code::SUCCESS) {
+        if (r.error != turbo::error_code::SUCCESS) {
             // There is an error. We return.
             if (decode_up_to_bad_char && r.error == error_code::INVALID_BASE64_CHARACTER) {
                 return slow_base64_to_binary_safe_impl(
@@ -112,11 +112,11 @@ namespace simdutf {
         if (done_with_partial) {
             // We are done. We have decoded everything.
             outlen = output_position;
-            return { simdutf::error_code::SUCCESS, input_position };
+            return { turbo::error_code::SUCCESS, input_position };
         }
         // We have decoded some data, but we still have some data to decode.
         // We need to decode the rest of the input buffer.
-        r = simdutf::scalar::base64::base64_to_binary_details_safe_impl(
+        r = turbo::scalar::base64::base64_to_binary_details_safe_impl(
             input + input_position, remaining_input_length, output + output_position,
             remaining_output_length, options, last_chunk_handling_options);
         input_position += r.input_count;
@@ -124,7 +124,7 @@ namespace simdutf {
         remaining_input_length -= r.input_count;
         remaining_output_length -= r.output_count;
 
-        if (r.error != simdutf::error_code::SUCCESS) {
+        if (r.error != turbo::error_code::SUCCESS) {
             // There is an error. We return.
             if (decode_up_to_bad_char && r.error == error_code::INVALID_BASE64_CHARACTER) {
                 return slow_base64_to_binary_safe_impl(
@@ -148,8 +148,8 @@ namespace simdutf {
             }
         }
         outlen = output_position;
-        return { simdutf::error_code::SUCCESS, input_position };
+        return { turbo::error_code::SUCCESS, input_position };
     }
 
-} // namespace simdutf
+} // namespace turbo
 #endif // SIMDUTF_BASE64_IMPLEMENTATION_H

@@ -6,10 +6,10 @@ namespace base64tests {
     const char* accepted_whitespaces = "\x20\x09\x0a\x0c\x0d";
 } // namespace base64tests
 
-simdutf_maybe_unused static void
-base64_encoding_translate_6bit_values(const simdutf::implementation&) {
-    using simdutf::ppc64::encoding_translate_6bit_values;
-    using simdutf::ppc64::vector_u8;
+[[maybe_unused]] static void
+base64_encoding_translate_6bit_values(const turbo::implementation&) {
+    using turbo::ppc64::encoding_translate_6bit_values;
+    using turbo::ppc64::vector_u8;
 
     for (uint8_t value = 0; value < 64; value++) {
         const auto in = vector_u8::splat(value);
@@ -44,10 +44,10 @@ base64_encoding_translate_6bit_values(const simdutf::implementation&) {
     }
 }
 
-simdutf_maybe_unused static void
-base64_encoding_expand_6bit_fields(const simdutf::implementation&) {
-    using simdutf::ppc64::encoding_expand_6bit_fields;
-    using simdutf::ppc64::vector_u8;
+[[maybe_unused]] static void
+base64_encoding_expand_6bit_fields(const turbo::implementation&) {
+    using turbo::ppc64::encoding_expand_6bit_fields;
+    using turbo::ppc64::vector_u8;
 
     for (size_t position = 0; position < 5; position++) {
         for (uint32_t value = 0; value < 0xffffff; value++) {
@@ -96,13 +96,13 @@ base64_encoding_expand_6bit_fields(const simdutf::implementation&) {
     }
 }
 
-simdutf_maybe_unused static void
-base64_decoding_valid(const simdutf::implementation&) {
-    using simdutf::ppc64::block64;
-    using simdutf::ppc64::vector_u8;
-    using simdutf::ppc64::with_base64_std;
-    using simdutf::ppc64::with_base64_url;
-    using simdutf::ppc64::with_ignore_errors;
+[[maybe_unused]] static void
+base64_decoding_valid(const turbo::implementation&) {
+    using turbo::ppc64::block64;
+    using turbo::ppc64::vector_u8;
+    using turbo::ppc64::with_base64_std;
+    using turbo::ppc64::with_base64_url;
+    using turbo::ppc64::with_ignore_errors;
 
     for (uint8_t i = 0; i < 64; i++) {
         auto ascii = vector_u8::splat(base64tests::base64_std[i]);
@@ -143,9 +143,9 @@ base64_decoding_valid(const simdutf::implementation&) {
 
 template <bool base64_url>
 static void unittest_decoding_invalid_ignore_errors(const char* base64) {
-    using simdutf::ppc64::block64;
-    using simdutf::ppc64::vector_u8;
-    using simdutf::ppc64::with_ignore_errors;
+    using turbo::ppc64::block64;
+    using turbo::ppc64::vector_u8;
+    using turbo::ppc64::with_ignore_errors;
 
     const char* accepted_whitespaces = " \t\n\r\v";
 
@@ -196,9 +196,9 @@ static void unittest_decoding_invalid_ignore_errors(const char* base64) {
 
 template <bool base64_url>
 static void unittest_decoding_invalid_strict_errors(const char* base64) {
-    using simdutf::ppc64::block64;
-    using simdutf::ppc64::vector_u8;
-    using simdutf::ppc64::with_strict_checking;
+    using turbo::ppc64::block64;
+    using turbo::ppc64::vector_u8;
+    using turbo::ppc64::with_strict_checking;
 
     constexpr uint8_t invalid = 0xff;
     constexpr uint8_t whitespace = 0x80;
@@ -254,42 +254,42 @@ static void unittest_decoding_invalid_strict_errors(const char* base64) {
     }
 }
 
-simdutf_maybe_unused static void
-base64_decoding_invalid_ignore_errors(const simdutf::implementation&) {
-    using simdutf::ppc64::with_base64_std;
+[[maybe_unused]] static void
+base64_decoding_invalid_ignore_errors(const turbo::implementation&) {
+    using turbo::ppc64::with_base64_std;
 
     unittest_decoding_invalid_ignore_errors<with_base64_std>(
         base64tests::base64_std);
 }
 
-simdutf_maybe_unused static void
-base64url_decoding_invalid_ignore_errors(const simdutf::implementation&) {
-    using simdutf::ppc64::with_base64_url;
+[[maybe_unused]] static void
+base64url_decoding_invalid_ignore_errors(const turbo::implementation&) {
+    using turbo::ppc64::with_base64_url;
 
     unittest_decoding_invalid_ignore_errors<with_base64_url>(
         base64tests::base64_url);
 }
 
-simdutf_maybe_unused static void
-base64_decoding_invalid_strict_errors(const simdutf::implementation&) {
-    using simdutf::ppc64::with_base64_std;
+[[maybe_unused]] static void
+base64_decoding_invalid_strict_errors(const turbo::implementation&) {
+    using turbo::ppc64::with_base64_std;
 
     unittest_decoding_invalid_strict_errors<with_base64_std>(
         base64tests::base64_std);
 }
 
-simdutf_maybe_unused static void
-base64url_decoding_invalid_strict_errors(const simdutf::implementation&) {
-    using simdutf::ppc64::with_base64_url;
+[[maybe_unused]] static void
+base64url_decoding_invalid_strict_errors(const turbo::implementation&) {
+    using turbo::ppc64::with_base64_url;
 
     unittest_decoding_invalid_strict_errors<with_base64_url>(
         base64tests::base64_url);
 }
 
-simdutf_maybe_unused static void
-base64_decoding_pack(const simdutf::implementation&) {
-    using simdutf::ppc64::decoding_pack;
-    using simdutf::ppc64::vector_u8;
+[[maybe_unused]] static void
+base64_decoding_pack(const turbo::implementation&) {
+    using turbo::ppc64::decoding_pack;
+    using turbo::ppc64::vector_u8;
 
     for (size_t position = 0; position < 4; position++) {
         for (uint32_t value = 0; value < 0xffffff; value++) {
@@ -340,8 +340,8 @@ base64_decoding_pack(const simdutf::implementation&) {
     }
 }
 
-simdutf_maybe_unused static int
-scalar_compress(const simdutf::ppc64::vector_u8 data, uint16_t nmask,
+[[maybe_unused]] static int
+scalar_compress(const turbo::ppc64::vector_u8 data, uint16_t nmask,
     char* output) {
     char tmp[16];
     data.store(tmp);
@@ -358,10 +358,10 @@ scalar_compress(const simdutf::ppc64::vector_u8 data, uint16_t nmask,
     return j;
 }
 
-simdutf_maybe_unused static void
-base64_compress(const simdutf::implementation&) {
-    using simdutf::ppc64::compress;
-    using simdutf::ppc64::vector_u8;
+[[maybe_unused]] static void
+base64_compress(const turbo::implementation&) {
+    using turbo::ppc64::compress;
+    using turbo::ppc64::vector_u8;
 
     char want[16];
     char got[16];

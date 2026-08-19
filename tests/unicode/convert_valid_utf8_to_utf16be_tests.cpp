@@ -11,9 +11,9 @@
 
 namespace {
 constexpr std::array<size_t, 7> input_size{7, 16, 12, 64, 67, 128, 256};
-constexpr simdutf::endianness BE = simdutf::endianness::BIG;
+constexpr turbo::endianness BE = turbo::endianness::BIG;
 
-using simdutf::tests::helpers::transcode_utf8_to_utf16_test_base;
+using turbo::tests::helpers::transcode_utf8_to_utf16_test_base;
 
 } // namespace
 
@@ -33,7 +33,7 @@ TEST_LOOP(convert_pure_ASCII) {
 }
 
 TEST_LOOP(convert_1_or_2_UTF8_bytes) {
-  simdutf::tests::helpers::RandomInt random(
+  turbo::tests::helpers::RandomInt random(
       0x0000, 0x07ff, seed); // range for 1 or 2 UTF-8 bytes
 
   auto procedure = [&implementation](const char *utf8, size_t size,
@@ -49,7 +49,7 @@ TEST_LOOP(convert_1_or_2_UTF8_bytes) {
 
 TEST_LOOP(convert_1_or_2_or_3_UTF8_bytes) {
   // range for 1, 2 or 3 UTF-8 bytes
-  simdutf::tests::helpers::RandomIntRanges random(
+  turbo::tests::helpers::RandomIntRanges random(
       {{0x0000, 0xd7ff}, {0xe000, 0xffff}}, seed);
 
   auto procedure = [&implementation](const char *utf8, size_t size,
@@ -64,7 +64,7 @@ TEST_LOOP(convert_1_or_2_or_3_UTF8_bytes) {
 }
 
 TEST_LOOP(convert_3_or_4_UTF8_bytes) {
-  simdutf::tests::helpers::RandomIntRanges random(
+  turbo::tests::helpers::RandomIntRanges random(
       {{0x0800, 0xd800 - 1}, {0xe000, 0x10ffff}},
       seed); // range for 3 or 4 UTF-8 bytes
 
@@ -96,13 +96,13 @@ TEST(special_cases) {
 namespace {
 template <auto input> constexpr auto test_compile() {
   std::array<char16_t, 100> tmp;
-  auto ret = simdutf::convert_valid_utf8_to_utf16(input, tmp);
+  auto ret = turbo::convert_valid_utf8_to_utf16(input, tmp);
   return ret;
 }
 } // namespace
 
 TEST(compile_time_convert_utf8_to_utf16) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
 
   constexpr auto input = u8"hello I am over 16 byte long"_utf8;
   constexpr auto ret = test_compile<input>();
@@ -110,7 +110,7 @@ TEST(compile_time_convert_utf8_to_utf16) {
 }
 
 TEST(compile_time_convert_utf8_to_utf16be) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
 
   constexpr auto input = u8"hello I am over 16 byte long"_utf8;
   constexpr auto expected = u"hello I am over 16 byte long"_utf16be;

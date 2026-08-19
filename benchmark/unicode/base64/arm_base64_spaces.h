@@ -10,7 +10,7 @@
 // encoding and decoding at almost the speed of a memory copy", SPE 50(2), 2020.
 //
 // This file is for benchmarking/reference only; production code should use
-// simdutf::base64_to_binary, which strips whitespace and decodes in one pass.
+// turbo::base64_to_binary, which strips whitespace and decodes in one pass.
 #ifndef ARM_BASE64_SPACES_H
 #define ARM_BASE64_SPACES_H
 

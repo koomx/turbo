@@ -1,7 +1,7 @@
 #ifndef SIMDUTF_UTF32_TO_UTF16_H
 #define SIMDUTF_UTF32_TO_UTF16_H
 
-namespace simdutf {
+namespace turbo {
     namespace scalar {
         namespace {
             namespace utf32_to_utf16 {
@@ -79,6 +79,6 @@ namespace simdutf {
             } // namespace utf32_to_utf16
         } // unnamed namespace
     } // namespace scalar
-} // namespace simdutf
+} // namespace turbo
 
 #endif

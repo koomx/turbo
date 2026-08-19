@@ -227,6 +227,13 @@ set(TYPES_SRC
 
 set(UNICODE_SRC
         unicode/utf.cc
+        unicode/api/ascii.cc
+        unicode/api/base64.cc
+        unicode/api/detect.cc
+        unicode/api/latin1.cc
+        unicode/api/utf8.cc
+        unicode/api/utf16.cc
+        unicode/api/utf32.cc
 )
 
 set(TURBO_SRC

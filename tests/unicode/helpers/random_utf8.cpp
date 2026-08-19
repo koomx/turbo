@@ -2,7 +2,7 @@
 
 #include <vector>
 
-namespace simdutf {
+namespace turbo {
 namespace tests {
 namespace helpers {
 
@@ -90,4 +90,4 @@ std::vector<uint8_t> random_utf8::generate(size_t output_bytes, long seed) {
 
 } // namespace helpers
 } // namespace tests
-} // namespace simdutf
+} // namespace turbo

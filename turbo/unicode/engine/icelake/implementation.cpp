@@ -6,10 +6,10 @@
 #if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
 // transcoding from UTF-16 to UTF-8 (self-wrapping generic header; must be
 // included at namespace scope zero, unlike icelake's own .inl.cpp files which
-// are included inside the simdutf::icelake namespace below)
+// are included inside the turbo::icelake namespace below)
 #include <turbo/unicode/engine/generic/utf16_to_utf8/utf16_to_utf8_with_replacement.h>
 #endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
         namespace {
 #ifndef SIMDUTF_ICELAKE_H
@@ -91,13 +91,13 @@ namespace simdutf {
 
         } // namespace
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo
 
 #if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
 #include <turbo/unicode/engine/generic/utf32.h>
 #endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
 
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
 
 #if SIMDUTF_FEATURE_DETECT_ENCODING
@@ -105,7 +105,7 @@ namespace simdutf {
         implementation::detect_encodings(const char* input,
             size_t length) const noexcept {
             // If there is a BOM, then we trust it.
-            auto bom_encoding = simdutf::BOM::check_bom(input, length);
+            auto bom_encoding = turbo::BOM::check_bom(input, length);
             if (bom_encoding != encoding_type::unspecified) {
                 return bom_encoding;
             }
@@ -685,7 +685,7 @@ namespace simdutf {
 
             // If we have completely converted the string
             if (obuf == buf + len) {
-                return { simdutf::SUCCESS, written };
+                return { turbo::SUCCESS, written };
             }
             size_t pos = obuf - buf;
             result res = scalar::utf8_to_latin1::rewind_and_convert_with_errors(
@@ -852,7 +852,7 @@ namespace simdutf {
                     bool c2 = (buf[pos - 2] & 0xc0) == 0x80;
                     bool c3 = (buf[pos - 3] & 0xc0) == 0x80;
                     if (c1 && c2 && c3) {
-                        return { simdutf::TOO_LONG, pos };
+                        return { turbo::TOO_LONG, pos };
                     }
                 }
                 // todo: we reset the output to utf32 instead of using std::get<2.(ret) as
@@ -867,7 +867,7 @@ namespace simdutf {
             size_t saved_bytes = std::get<1>(ret) - utf32_output;
             const char* end = buf + len;
             if (std::get<0>(ret) == end) {
-                return { simdutf::SUCCESS, saved_bytes };
+                return { turbo::SUCCESS, saved_bytes };
             }
 
             // Note: the AVX512 procedure looks up 4 bytes forward, and
@@ -883,7 +883,7 @@ namespace simdutf {
                 auto scalar_result = scalar::utf8_to_utf32::convert_with_errors(
                     std::get<0>(ret), len - (std::get<0>(ret) - buf),
                     reinterpret_cast<char32_t*>(utf32_output) + saved_bytes);
-                if (scalar_result.error != simdutf::SUCCESS) {
+                if (scalar_result.error != turbo::SUCCESS) {
                     scalar_result.count += (std::get<0>(ret) - buf);
                 } else {
                     scalar_result.count += saved_bytes;
@@ -891,7 +891,7 @@ namespace simdutf {
                 return scalar_result;
             }
 
-            return { simdutf::SUCCESS, size_t(std::get<1>(ret) - utf32_output) };
+            return { turbo::SUCCESS, size_t(std::get<1>(ret) - utf32_output) };
         }
 
         simdutf_warn_unused size_t implementation::convert_valid_utf8_to_utf32(
@@ -1003,7 +1003,7 @@ namespace simdutf {
                 res.count += inlen;
                 return res;
             }
-            return { simdutf::SUCCESS, outlen };
+            return { turbo::SUCCESS, outlen };
         }
 
         simdutf_warn_unused result implementation::convert_utf16be_to_utf8_with_errors(
@@ -1017,7 +1017,7 @@ namespace simdutf {
                 res.count += inlen;
                 return res;
             }
-            return { simdutf::SUCCESS, outlen };
+            return { turbo::SUCCESS, outlen };
         }
 
         simdutf_warn_unused size_t implementation::convert_valid_utf16le_to_utf8(
@@ -1209,7 +1209,7 @@ namespace simdutf {
                     return scalar_res;
                 }
             }
-            return simdutf::result(simdutf::SUCCESS, saved_bytes);
+            return turbo::result(turbo::SUCCESS, saved_bytes);
         }
 
         simdutf_warn_unused result implementation::convert_utf16be_to_utf32_with_errors(
@@ -1233,7 +1233,7 @@ namespace simdutf {
                     return scalar_res;
                 }
             }
-            return simdutf::result(simdutf::SUCCESS, saved_bytes);
+            return turbo::result(turbo::SUCCESS, saved_bytes);
         }
 
         simdutf_warn_unused size_t implementation::convert_valid_utf16le_to_utf32(
@@ -1813,6 +1813,6 @@ namespace simdutf {
 #endif // SIMDUTF_FEATURE_BASE64
 
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo
 
 #include <turbo/unicode/engine/icelake/end.h>

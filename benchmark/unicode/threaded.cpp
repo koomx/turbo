@@ -37,17 +37,17 @@ void run_from_utf8(const std::vector<char> &input_data) {
   std::cout << "# input size = " << input_data.size() << " bytes" << std::endl;
 
   std::vector<char16_t> buffer(
-      simdutf::utf16_length_from_utf8(input_data.data(), input_data.size()));
+      turbo::utf16_length_from_utf8(input_data.data(), input_data.size()));
   // Let us warm up:
   bench(
       [&input_data, &buffer]() -> size_t {
-        return simdutf::convert_utf8_to_utf16le(
+        return turbo::convert_utf8_to_utf16le(
             input_data.data(), input_data.size(), buffer.data());
       },
       2'000'000'000);
   // warmed up
   auto singled_procedure = [&input_data, &buffer]() -> size_t {
-    return simdutf::convert_utf8_to_utf16le(input_data.data(),
+    return turbo::convert_utf8_to_utf16le(input_data.data(),
                                             input_data.size(), buffer.data());
   };
   size_t counter = 0;
@@ -71,17 +71,17 @@ void run_from_utf8(const std::vector<char> &input_data) {
   while ((input_data[midpoint] & 0b11100000) == 0b10000000) {
     midpoint--;
   }
-  size_t offset = simdutf::utf16_length_from_utf8(input_data.data(), midpoint);
+  size_t offset = turbo::utf16_length_from_utf8(input_data.data(), midpoint);
   auto double_procedure = [&input_data, &midpoint, &offset,
                            &buffer]() -> size_t {
     size_t output2 = 0;
     auto mythread =
         std::thread([&output2, &input_data, &buffer, midpoint, offset] {
-          output2 = simdutf::convert_utf8_to_utf16le(
+          output2 = turbo::convert_utf8_to_utf16le(
               input_data.data() + midpoint, input_data.size() - midpoint,
               buffer.data() + offset);
         });
-    size_t output1 = simdutf::convert_utf8_to_utf16le(input_data.data(),
+    size_t output1 = turbo::convert_utf8_to_utf16le(input_data.data(),
                                                       midpoint, buffer.data());
     mythread.join();
     return output2 + output1;
@@ -95,8 +95,8 @@ void run_from_utf8(const std::vector<char> &input_data) {
 
 int main(int argc, char **argv) {
   printf("# current system detected as %.*s.\n",
-         int(simdutf::get_active_implementation()->name().size()),
-         simdutf::get_active_implementation()->name().data());
+         int(turbo::get_active_implementation()->name().size()),
+         turbo::get_active_implementation()->name().data());
   if (argc < 2) {
     std::cerr << "Please provide a file argument." << std::endl;
     return EXIT_FAILURE;
@@ -111,11 +111,11 @@ int main(int argc, char **argv) {
   input_data.assign(std::istreambuf_iterator<char>(file),
                     std::istreambuf_iterator<char>());
   auto detected_encoding =
-      simdutf::autodetect_encoding(input_data.data(), input_data.size());
+      turbo::autodetect_encoding(input_data.data(), input_data.size());
   printf("# input detected as %.*s.\n",
-         int(simdutf::to_string(detected_encoding).size()),
-         simdutf::to_string(detected_encoding).data());
-  if (detected_encoding == simdutf::encoding_type::UTF8) {
+         int(turbo::to_string(detected_encoding).size()),
+         turbo::to_string(detected_encoding).data());
+  if (detected_encoding == turbo::encoding_type::UTF8) {
 
     run_from_utf8(input_data);
   } else {

@@ -1,13 +1,13 @@
 #ifndef SIMDUTF_UTF32_H
 #define SIMDUTF_UTF32_H
 
-namespace simdutf {
+namespace turbo {
     namespace scalar {
         namespace utf32 {
 
             template <typename InputPtr>
 #if SIMDUTF_CPLUSPLUS20
-                requires simdutf::detail::indexes_into_uint32<InputPtr>
+                requires turbo::detail::indexes_into_uint32<InputPtr>
 #endif
             simdutf_warn_unused simdutf_constexpr23 bool validate(InputPtr data,
                 size_t len) noexcept {
@@ -28,7 +28,7 @@ namespace simdutf {
 
             template <typename InputPtr>
 #if SIMDUTF_CPLUSPLUS20
-                requires simdutf::detail::indexes_into_uint32<InputPtr>
+                requires turbo::detail::indexes_into_uint32<InputPtr>
 #endif
             simdutf_warn_unused simdutf_constexpr23 result
             validate_with_errors(InputPtr data, size_t len) noexcept {
@@ -77,6 +77,6 @@ namespace simdutf {
 
         } // namespace utf32
     } // namespace scalar
-} // namespace simdutf
+} // namespace turbo
 
 #endif

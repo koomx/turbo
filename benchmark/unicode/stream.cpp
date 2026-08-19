@@ -94,7 +94,7 @@ size_t trim_partial_utf16(const uint16_t *buf, size_t len) {
 void run_from_utf8(const std::vector<char> &input_data,
                    size_t approx_output_datapoints = 128) {
   std::vector<char16_t> buffer(
-      simdutf::utf16_length_from_utf8(input_data.data(), input_data.size()));
+      turbo::utf16_length_from_utf8(input_data.data(), input_data.size()));
   size_t min_len = 64;
   if (input_data.size() < min_len) {
     return;
@@ -117,10 +117,10 @@ void run_from_utf8(const std::vector<char> &input_data,
        len += (len < offset ? offset / 50 + 1 : offset)) {
     size_t effective_length = trim_partial_utf8(
         reinterpret_cast<const uint8_t *>(input_data.data()), len);
-    size_t utf8count = simdutf::count_utf8(input_data.data(), effective_length);
+    size_t utf8count = turbo::count_utf8(input_data.data(), effective_length);
     std::cout << utf8count << ",\t";
     auto size_procedure = [effective_length, &input_data, &buffer]() -> size_t {
-      return simdutf::convert_utf8_to_utf16le(input_data.data(),
+      return turbo::convert_utf8_to_utf16le(input_data.data(),
                                               effective_length, buffer.data());
     };
 
@@ -150,7 +150,7 @@ void run_from_utf8(const std::vector<char> &input_data,
 
 void run_from_utf16(const std::vector<char> &input_data,
                     size_t approx_output_datapoints = 128) {
-  std::vector<char> buffer(simdutf::utf8_length_from_utf16le(
+  std::vector<char> buffer(turbo::utf8_length_from_utf16le(
       reinterpret_cast<const char16_t *>(input_data.data()),
       input_data.size() / 2));
   size_t min_len = 64;
@@ -164,12 +164,12 @@ void run_from_utf16(const std::vector<char> &input_data,
        len += (len < offset ? offset / 50 + 1 : offset)) {
     size_t effective_length = trim_partial_utf16(
         reinterpret_cast<const uint16_t *>(input_data.data()), len / 2);
-    size_t utf16count = simdutf::count_utf16le(
+    size_t utf16count = turbo::count_utf16le(
         reinterpret_cast<const char16_t *>(input_data.data()),
         effective_length);
     std::cout << utf16count << ",\t";
     auto size_procedure = [effective_length, &input_data, &buffer]() -> size_t {
-      return simdutf::convert_utf16le_to_utf8(
+      return turbo::convert_utf16le_to_utf8(
           reinterpret_cast<const char16_t *>(input_data.data()),
           effective_length, buffer.data());
     };
@@ -179,8 +179,8 @@ void run_from_utf16(const std::vector<char> &input_data,
 
 int main(int argc, char **argv) {
   printf("# current system detected as %.*s.\n",
-         int(simdutf::get_active_implementation()->name().size()),
-         simdutf::get_active_implementation()->name().data());
+         int(turbo::get_active_implementation()->name().size()),
+         turbo::get_active_implementation()->name().data());
   if (argc < 2) {
     std::cerr << "Please provide a file argument." << std::endl;
     std::cerr << "The file should contain either UTF-8 or UTF-16 text."
@@ -198,13 +198,13 @@ int main(int argc, char **argv) {
   input_data.assign(std::istreambuf_iterator<char>(file),
                     std::istreambuf_iterator<char>());
   auto detected_encoding =
-      simdutf::autodetect_encoding(input_data.data(), input_data.size());
+      turbo::autodetect_encoding(input_data.data(), input_data.size());
   printf("# input detected as %.*s.\n",
-         int(simdutf::to_string(detected_encoding).size()),
-         simdutf::to_string(detected_encoding).data());
-  if (detected_encoding == simdutf::encoding_type::UTF16_LE) {
+         int(turbo::to_string(detected_encoding).size()),
+         turbo::to_string(detected_encoding).data());
+  if (detected_encoding == turbo::encoding_type::UTF16_LE) {
     run_from_utf16(input_data);
-  } else if (detected_encoding == simdutf::encoding_type::UTF8) {
+  } else if (detected_encoding == turbo::encoding_type::UTF8) {
     run_from_utf8(input_data);
   }
   return EXIT_SUCCESS;

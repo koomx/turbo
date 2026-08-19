@@ -6,7 +6,7 @@
 
 template <typename T>
 static void test_corrupt(T &implementation, uint32_t seed,
-                         simdutf::tests::helpers::random_utf8 gen_utf8) {
+                         turbo::tests::helpers::random_utf8 gen_utf8) {
   std::mt19937 gen(seed);
   for (size_t i = 0; i < 10; i++) {
     auto UTF8 = gen_utf8.generate(1000);
@@ -21,7 +21,7 @@ static void test_corrupt(T &implementation, uint32_t seed,
       UTF8[corrupt] = uint8_t(gen());
       bool is_ok =
           implementation.validate_utf8((const char *)UTF8.data(), UTF8.size());
-      bool is_ok_basic = simdutf::tests::reference::validate_utf8(
+      bool is_ok_basic = turbo::tests::reference::validate_utf8(
           (const char *)UTF8.data(), UTF8.size());
       if (is_ok != is_ok_basic) {
         puts("bug");
@@ -35,32 +35,32 @@ static void test_corrupt(T &implementation, uint32_t seed,
 TEST(corrupt_1byte) {
   uint32_t seed{1234};
   test_corrupt(implementation, seed,
-               simdutf::tests::helpers::random_utf8(seed, 1, 0, 0, 0));
+               turbo::tests::helpers::random_utf8(seed, 1, 0, 0, 0));
 }
 
 TEST(corrupt_2byte) {
   uint32_t seed{1234};
   test_corrupt(implementation, seed,
-               simdutf::tests::helpers::random_utf8(seed, 0, 1, 0, 0));
+               turbo::tests::helpers::random_utf8(seed, 0, 1, 0, 0));
   test_corrupt(implementation, seed,
-               simdutf::tests::helpers::random_utf8(seed, 1, 1, 0, 0));
+               turbo::tests::helpers::random_utf8(seed, 1, 1, 0, 0));
 }
 
 TEST(corrupt_3byte) {
   uint32_t seed{1234};
   test_corrupt(implementation, seed,
-               simdutf::tests::helpers::random_utf8(seed, 0, 0, 1, 0));
+               turbo::tests::helpers::random_utf8(seed, 0, 0, 1, 0));
   test_corrupt(implementation, seed,
-               simdutf::tests::helpers::random_utf8(seed, 0, 1, 1, 0));
+               turbo::tests::helpers::random_utf8(seed, 0, 1, 1, 0));
   test_corrupt(implementation, seed,
-               simdutf::tests::helpers::random_utf8(seed, 1, 0, 1, 0));
+               turbo::tests::helpers::random_utf8(seed, 1, 0, 1, 0));
   test_corrupt(implementation, seed,
-               simdutf::tests::helpers::random_utf8(seed, 1, 1, 1, 0));
+               turbo::tests::helpers::random_utf8(seed, 1, 1, 1, 0));
 }
 
 TEST(brute_force) {
   uint32_t seed{1234};
-  simdutf::tests::helpers::random_utf8 gen_1_2_3_4(seed, 1, 1, 1, 1);
+  turbo::tests::helpers::random_utf8 gen_1_2_3_4(seed, 1, 1, 1, 1);
   size_t total = 1000;
   for (size_t i = 0; i < total; i++) {
 
@@ -75,7 +75,7 @@ TEST(brute_force) {
       UTF8[rand() % UTF8.size()] = uint8_t(bitflip); // we flip exactly one bit
       bool is_ok =
           implementation.validate_utf8((const char *)UTF8.data(), UTF8.size());
-      bool is_ok_basic = simdutf::tests::reference::validate_utf8(
+      bool is_ok_basic = turbo::tests::reference::validate_utf8(
           (const char *)UTF8.data(), UTF8.size());
       if (is_ok != is_ok_basic) {
         puts("bug");

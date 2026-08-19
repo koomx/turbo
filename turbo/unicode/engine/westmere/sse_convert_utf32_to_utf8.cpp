@@ -145,7 +145,7 @@ sse_convert_utf32_to_utf8(const char32_t* buf, size_t len, char* utf8_output) {
             const uint16_t m1 = static_cast<uint16_t>(m0 >> 7); // m1 = 00000000h0g0f0e0
             const uint8_t m2 = static_cast<uint8_t>((m0 | m1) & 0xff); // m2 =         hdgcfbea
             // 4. pack the bytes
-            const uint8_t* row = &simdutf::tables::utf16_to_utf8::pack_1_2_utf8_bytes[m2][0];
+            const uint8_t* row = &turbo::tables::utf16_to_utf8::pack_1_2_utf8_bytes[m2][0];
             const __m128i shuffle = _mm_loadu_si128((__m128i*)(row + 1));
             const __m128i utf8_packed = _mm_shuffle_epi8(utf8_unpacked, shuffle);
 
@@ -239,13 +239,13 @@ sse_convert_utf32_to_utf8(const char32_t* buf, size_t len, char* utf8_output) {
             }
             const uint8_t mask0 = uint8_t(mask);
 
-            const uint8_t* row0 = &simdutf::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask0][0];
+            const uint8_t* row0 = &turbo::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask0][0];
             const __m128i shuffle0 = _mm_loadu_si128((__m128i*)(row0 + 1));
             const __m128i utf8_0 = _mm_shuffle_epi8(out0, shuffle0);
 
             const uint8_t mask1 = static_cast<uint8_t>(mask >> 8);
 
-            const uint8_t* row1 = &simdutf::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask1][0];
+            const uint8_t* row1 = &turbo::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask1][0];
             const __m128i shuffle1 = _mm_loadu_si128((__m128i*)(row1 + 1));
             const __m128i utf8_1 = _mm_shuffle_epi8(out1, shuffle1);
 
@@ -396,7 +396,7 @@ sse_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
             const uint16_t m1 = static_cast<uint16_t>(m0 >> 7); // m1 = 00000000h0g0f0e0
             const uint8_t m2 = static_cast<uint8_t>((m0 | m1) & 0xff); // m2 =         hdgcfbea
             // 4. pack the bytes
-            const uint8_t* row = &simdutf::tables::utf16_to_utf8::pack_1_2_utf8_bytes[m2][0];
+            const uint8_t* row = &turbo::tables::utf16_to_utf8::pack_1_2_utf8_bytes[m2][0];
             const __m128i shuffle = _mm_loadu_si128((__m128i*)(row + 1));
             const __m128i utf8_packed = _mm_shuffle_epi8(utf8_unpacked, shuffle);
 
@@ -495,13 +495,13 @@ sse_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
             }
             const uint8_t mask0 = uint8_t(mask);
 
-            const uint8_t* row0 = &simdutf::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask0][0];
+            const uint8_t* row0 = &turbo::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask0][0];
             const __m128i shuffle0 = _mm_loadu_si128((__m128i*)(row0 + 1));
             const __m128i utf8_0 = _mm_shuffle_epi8(out0, shuffle0);
 
             const uint8_t mask1 = static_cast<uint8_t>(mask >> 8);
 
-            const uint8_t* row1 = &simdutf::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask1][0];
+            const uint8_t* row1 = &turbo::tables::utf16_to_utf8::pack_1_2_3_utf8_bytes[mask1][0];
             const __m128i shuffle1 = _mm_loadu_si128((__m128i*)(row1 + 1));
             const __m128i utf8_1 = _mm_shuffle_epi8(out1, shuffle1);
 

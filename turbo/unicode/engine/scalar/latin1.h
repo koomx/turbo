@@ -1,7 +1,7 @@
 #ifndef SIMDUTF_LATIN1_H
 #define SIMDUTF_LATIN1_H
 
-namespace simdutf {
+namespace turbo {
     namespace scalar {
         namespace {
             namespace latin1 {
@@ -21,6 +21,6 @@ namespace simdutf {
             } // namespace latin1
         } // unnamed namespace
     } // namespace scalar
-} // namespace simdutf
+} // namespace turbo
 
 #endif

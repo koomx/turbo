@@ -25,13 +25,13 @@
 #include <tests/unicode/reference/validate_utf16_to_latin1.h>
 #include <tests/unicode/reference/validate_utf32_to_latin1.h>
 
-namespace simdutf {
+namespace turbo {
 namespace tests {
 namespace helpers {
 
 void transcode_test_base::encode_utf8(uint32_t codepoint,
                                       std::vector<char> &target) {
-  ::simdutf::tests::reference::utf8::encode(
+  ::turbo::tests::reference::utf8::encode(
       codepoint, [&target](uint8_t byte) { target.push_back(byte); });
 }
 
@@ -39,7 +39,7 @@ void transcode_test_base::encode_utf16(uint32_t codepoint,
                                        std::vector<char16_t> &target) {
   char16_t W1;
   char16_t W2;
-  switch (::simdutf::tests::reference::utf16::encode(codepoint, W1, W2)) {
+  switch (::turbo::tests::reference::utf16::encode(codepoint, W1, W2)) {
   case 1:
     if (!match_system(utf16_endianness)) {
       W1 = char16_t((uint16_t(W1) << 8) | (uint16_t(W1) >> 8));
@@ -66,13 +66,13 @@ void transcode_test_base::encode_utf16(uint32_t codepoint,
 
 void transcode_test_base::encode_latin1(uint32_t codepoint,
                                         std::vector<char> &target) {
-  ::simdutf::tests::reference::latin1::encode(
+  ::turbo::tests::reference::latin1::encode(
       codepoint, [&target](uint8_t byte) { target.push_back(byte); });
 }
 
 void transcode_test_base::encode_utf32(uint32_t codepoint,
                                        std::vector<char32_t> &target) {
-  ::simdutf::tests::reference::utf32::encode(
+  ::turbo::tests::reference::utf32::encode(
       codepoint, [&target](uint32_t word) { target.push_back(word); });
 }
 
@@ -349,7 +349,7 @@ void transcode_utf8_to_latin1_test_base::prepare_input(uint32_t codepoint) {
 }
 
 bool transcode_utf8_to_latin1_test_base::is_input_valid() const {
-  return simdutf::tests::reference::validate_utf8_to_latin1(input_utf8.data(),
+  return turbo::tests::reference::validate_utf8_to_latin1(input_utf8.data(),
                                                             input_utf8.size());
 }
 
@@ -434,16 +434,16 @@ transcode_utf16_to_latin1_test_base::transcode_utf16_to_latin1_test_base(
     endianness utf16_endianness, const std::vector<char16_t> &input_utf16)
     : transcode_test_base{utf16_endianness}, input_utf16{input_utf16} {
   auto consume = [this](const uint32_t codepoint) {
-    ::simdutf::tests::reference::latin1::encode(
+    ::turbo::tests::reference::latin1::encode(
         codepoint,
         [this](uint32_t byte) { reference_output_latin1.push_back(byte); });
   };
 
   auto error_handler = [](const char16_t *, const char16_t *,
-                          simdutf::tests::reference::utf16::Error) -> bool {
+                          turbo::tests::reference::utf16::Error) -> bool {
     throw std::invalid_argument("Wrong UTF-16 input");
   };
-  simdutf::tests::reference::utf16::decode(utf16_endianness, input_utf16.data(),
+  turbo::tests::reference::utf16::decode(utf16_endianness, input_utf16.data(),
                                            input_utf16.size(), consume,
                                            error_handler);
   output_latin1.resize(reference_output_latin1.size() + output_size_margin);
@@ -455,7 +455,7 @@ void transcode_utf16_to_latin1_test_base::prepare_input(uint32_t codepoint) {
 }
 
 bool transcode_utf16_to_latin1_test_base::is_input_valid() const {
-  return simdutf::tests::reference::validate_utf16_to_latin1(
+  return turbo::tests::reference::validate_utf16_to_latin1(
       utf16_endianness, input_utf16.data(), input_utf16.size());
 }
 
@@ -542,7 +542,7 @@ void transcode_utf8_to_utf16_test_base::prepare_input(uint32_t codepoint) {
 }
 
 bool transcode_utf8_to_utf16_test_base::is_input_valid() const {
-  return simdutf::tests::reference::validate_utf8(input_utf8.data(),
+  return turbo::tests::reference::validate_utf8(input_utf8.data(),
                                                   input_utf8.size());
 }
 
@@ -616,7 +616,7 @@ void transcode_utf8_to_utf32_test_base::prepare_input(uint32_t codepoint) {
 }
 
 bool transcode_utf8_to_utf32_test_base::is_input_valid() const {
-  return simdutf::tests::reference::validate_utf8(input_utf8.data(),
+  return turbo::tests::reference::validate_utf8(input_utf8.data(),
                                                   input_utf8.size());
 }
 
@@ -691,16 +691,16 @@ transcode_utf16_to_utf8_test_base::transcode_utf16_to_utf8_test_base(
     : transcode_test_base{utf16_endianness}, input_utf16{input_utf16} {
 
   auto consume = [this](const uint32_t codepoint) {
-    ::simdutf::tests::reference::utf8::encode(codepoint, [this](uint8_t byte) {
+    ::turbo::tests::reference::utf8::encode(codepoint, [this](uint8_t byte) {
       reference_output_utf8.push_back(byte);
     });
   };
 
   auto error_handler = [](const char16_t *, const char16_t *,
-                          simdutf::tests::reference::utf16::Error) -> bool {
+                          turbo::tests::reference::utf16::Error) -> bool {
     throw std::invalid_argument("Wrong UTF-16 input");
   };
-  simdutf::tests::reference::utf16::decode(utf16_endianness, input_utf16.data(),
+  turbo::tests::reference::utf16::decode(utf16_endianness, input_utf16.data(),
                                            input_utf16.size(), consume,
                                            error_handler);
   output_utf8.resize(reference_output_utf8.size() + output_size_margin);
@@ -712,7 +712,7 @@ void transcode_utf16_to_utf8_test_base::prepare_input(uint32_t codepoint) {
 }
 
 bool transcode_utf16_to_utf8_test_base::is_input_valid() const {
-  return simdutf::tests::reference::validate_utf16(
+  return turbo::tests::reference::validate_utf16(
       utf16_endianness, input_utf16.data(), input_utf16.size());
 }
 
@@ -799,16 +799,16 @@ transcode_utf16_to_utf32_test_base::transcode_utf16_to_utf32_test_base(
     : transcode_test_base{utf16_endianness}, input_utf16{input_utf16} {
 
   auto consume = [this](const uint32_t codepoint) {
-    ::simdutf::tests::reference::utf32::encode(
+    ::turbo::tests::reference::utf32::encode(
         codepoint,
         [this](uint32_t byte) { reference_output_utf32.push_back(byte); });
   };
 
   auto error_handler = [](const char16_t *, const char16_t *,
-                          simdutf::tests::reference::utf16::Error) -> bool {
+                          turbo::tests::reference::utf16::Error) -> bool {
     throw std::invalid_argument("Wrong UTF-16 input");
   };
-  simdutf::tests::reference::utf16::decode(utf16_endianness, input_utf16.data(),
+  turbo::tests::reference::utf16::decode(utf16_endianness, input_utf16.data(),
                                            input_utf16.size(), consume,
                                            error_handler);
   output_utf32.resize(reference_output_utf32.size() + output_size_margin);
@@ -820,7 +820,7 @@ void transcode_utf16_to_utf32_test_base::prepare_input(uint32_t codepoint) {
 }
 
 bool transcode_utf16_to_utf32_test_base::is_input_valid() const {
-  return simdutf::tests::reference::validate_utf16(
+  return turbo::tests::reference::validate_utf16(
       utf16_endianness, input_utf16.data(), input_utf16.size());
 }
 
@@ -909,7 +909,7 @@ void transcode_utf32_to_latin1_test_base::prepare_input(uint32_t codepoint) {
 }
 
 bool transcode_utf32_to_latin1_test_base::is_input_valid() const {
-  return simdutf::tests::reference::validate_utf32_to_latin1(
+  return turbo::tests::reference::validate_utf32_to_latin1(
       input_utf32.data(), input_utf32.size());
 }
 
@@ -993,16 +993,16 @@ transcode_utf32_to_utf8_test_base::transcode_utf32_to_utf8_test_base(
     : input_utf32{input_utf32} {
 
   auto consume = [this](const uint32_t codepoint) {
-    ::simdutf::tests::reference::utf8::encode(codepoint, [this](uint8_t byte) {
+    ::turbo::tests::reference::utf8::encode(codepoint, [this](uint8_t byte) {
       reference_output_utf8.push_back(byte);
     });
   };
 
   auto error_handler = [](const char32_t *, const char32_t *,
-                          simdutf::tests::reference::utf32::Error) -> bool {
+                          turbo::tests::reference::utf32::Error) -> bool {
     throw std::invalid_argument("Wrong UTF-32 input");
   };
-  simdutf::tests::reference::utf32::decode(
+  turbo::tests::reference::utf32::decode(
       input_utf32.data(), input_utf32.size(), consume, error_handler);
   output_utf8.resize(reference_output_utf8.size() + output_size_margin);
 }
@@ -1013,7 +1013,7 @@ void transcode_utf32_to_utf8_test_base::prepare_input(uint32_t codepoint) {
 }
 
 bool transcode_utf32_to_utf8_test_base::is_input_valid() const {
-  return simdutf::tests::reference::validate_utf32(input_utf32.data(),
+  return turbo::tests::reference::validate_utf32(input_utf32.data(),
                                                    input_utf32.size());
 }
 
@@ -1101,7 +1101,7 @@ void transcode_utf32_to_utf16_test_base::prepare_input(uint32_t codepoint) {
 }
 
 bool transcode_utf32_to_utf16_test_base::is_input_valid() const {
-  return simdutf::tests::reference::validate_utf32(input_utf32.data(),
+  return turbo::tests::reference::validate_utf32(input_utf32.data(),
                                                    input_utf32.size());
 }
 
@@ -1171,12 +1171,12 @@ bool transcode_utf32_to_utf16_test_base::validate(size_t saved_chars) const {
 
 } // namespace helpers
 } // namespace tests
-} // namespace simdutf
+} // namespace turbo
 
 //------------------------------------------------------------
 
 std::vector<std::vector<char16_t>>
-all_utf16_combinations(simdutf::endianness byte_order) {
+all_utf16_combinations(turbo::endianness byte_order) {
   // non-surrogate word that yields 1 UTF-8 byte
   const char16_t V_1byte_start = 0x0042;
   // non-surrogate word that yields 2 UTF-8 bytes

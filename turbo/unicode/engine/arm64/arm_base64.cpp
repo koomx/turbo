@@ -110,7 +110,7 @@ size_t write_output_with_line_feeds(uint8_t* dst, uint8x16_t src,
 template <bool insert_line_feeds>
 size_t encode_base64_impl(char* dst, const char* src, size_t srclen,
     base64_options options,
-    size_t line_length = simdutf::default_line_length) {
+    size_t line_length = turbo::default_line_length) {
     size_t offset = 0;
     if (line_length < 4) {
         line_length = 4; // We do not support line_length less than 4
@@ -570,7 +570,7 @@ compress_decode_base64(char* dst, const char_type* src, size_t srclen,
     const uint8_t* to_base64 = default_or_url ? tables::base64::to_base64_default_or_url_value
                                               : (base64_url ? tables::base64::to_base64_url_value
                                                             : tables::base64::to_base64_value);
-    auto ri = simdutf::scalar::base64::find_end(src, srclen, options);
+    auto ri = turbo::scalar::base64::find_end(src, srclen, options);
     size_t equallocation = ri.equallocation;
     size_t equalsigns = ri.equalsigns;
     srclen = ri.srclen;

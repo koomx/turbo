@@ -6,7 +6,7 @@
 /// The version of simdutf being used (major.minor.revision)
 #define SIMDUTF_VERSION "9.0.0"
 
-namespace simdutf {
+namespace turbo {
     enum {
         /// The major version (MAJOR.minor.revision) of simdutf being used.
         SIMDUTF_VERSION_MAJOR = 9,
@@ -15,6 +15,6 @@ namespace simdutf {
         /// The revision (major.minor.REVISION) of simdutf being used.
         SIMDUTF_VERSION_REVISION = 0
     };
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDUTF_SIMDUTF_VERSION_H

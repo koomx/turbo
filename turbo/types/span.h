@@ -51,8 +51,8 @@
 //      `len` parameter is defaulted.
 //
 // For more information, see the class comments below.
-#ifndef TURBO_TYPES_SPAN_H_
-#define TURBO_TYPES_SPAN_H_
+
+#pragma once
 
 #include <algorithm>
 #include <cassert>
@@ -841,4 +841,3 @@ namespace turbo {
         return Span<const T>(array, N);
     }
 } // namespace turbo
-#endif // TURBO_TYPES_SPAN_H_

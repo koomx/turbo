@@ -13,7 +13,7 @@ std::string input;
 
 // useful for debugging
 static void print_input(const std::string &s,
-                        const simdutf::implementation *const e) {
+                        const turbo::implementation *const e) {
   printf("We are about to abort on the following input: ");
   for (auto c : s) {
     printf("%02x ", (unsigned char)c);
@@ -68,15 +68,15 @@ int validate_tests(const char *databytes, size_t size_in_bytes) {
   const T *data = reinterpret_cast<const T *>(databytes);
   const auto size = size_in_bytes / sizeof(T);
 
-  simdutf::result reference_result{};
-  const simdutf::implementation *reference_impl{};
+  turbo::result reference_result{};
+  const turbo::implementation *reference_impl{};
 
-  for (auto &e : simdutf::get_available_implementations()) {
+  for (auto &e : turbo::get_available_implementations()) {
     if (!e->supported_by_runtime_system()) {
       continue;
     }
     const char *message = "unknown";
-    simdutf::result result{};
+    turbo::result result{};
     if (std::is_same<T, char>::value == true) {
       message = "utf8";
       result = e->validate_utf8_with_errors(
@@ -134,7 +134,7 @@ size_t valid_base64 = 0;
 bool fuzz_this(const char *data, size_t size) {
   std::string source(data, size);
   input = source;
-  for (auto &e : simdutf::get_available_implementations()) {
+  for (auto &e : turbo::get_available_implementations()) {
     if (!e->supported_by_runtime_system()) {
       continue;
     }
@@ -143,7 +143,7 @@ bool fuzz_this(const char *data, size_t size) {
      */
     bool validutf8 = e->validate_utf8(source.c_str(), source.size());
     auto rutf8 = e->validate_utf8_with_errors(source.c_str(), source.size());
-    if (validutf8 != (rutf8.error == simdutf::SUCCESS)) { // they should agree
+    if (validutf8 != (rutf8.error == turbo::SUCCESS)) { // they should agree
       print_input(source, e);
       return false;
     }
@@ -167,7 +167,7 @@ bool fuzz_this(const char *data, size_t size) {
       // We need a buffer where to write the UTF-8 code units.
       size_t expected_utf8words =
           e->utf8_length_from_utf16le(utf16_output.get(), utf16words);
-      simdutf::result expected_utf8words_with_replacement =
+      turbo::result expected_utf8words_with_replacement =
           e->utf8_length_from_utf16le_with_replacement(utf16_output.get(),
                                                        utf16words);
       if (expected_utf8words != expected_utf8words_with_replacement.count) {
@@ -340,7 +340,7 @@ bool fuzz_this(const char *data, size_t size) {
     auto rutf16le = e->validate_utf16le_with_errors((char16_t *)source.c_str(),
                                                     source.size() / 2);
     if (validutf16le !=
-        (rutf16le.error == simdutf::SUCCESS)) { // they should agree
+        (rutf16le.error == turbo::SUCCESS)) { // they should agree
       print_input(source, e);
       return false;
     }
@@ -396,7 +396,7 @@ bool fuzz_this(const char *data, size_t size) {
     auto rutf16be = e->validate_utf16be_with_errors((char16_t *)source.c_str(),
                                                     source.size() / 2);
     if (validutf16be !=
-        (rutf16be.error == simdutf::SUCCESS)) { // they should agree
+        (rutf16be.error == turbo::SUCCESS)) { // they should agree
       print_input(source, e);
       return false;
     }
@@ -569,22 +569,22 @@ bool fuzz_this(const char *data, size_t size) {
       size_t max_length_needed =
           e->maximal_binary_length_from_base64(source.data(), source.size());
       std::vector<char> back(max_length_needed);
-      simdutf::result r =
+      turbo::result r =
           e->base64_to_binary(source.data(), source.size(), back.data());
-      if (r.error == simdutf::error_code::SUCCESS) {
+      if (r.error == turbo::error_code::SUCCESS) {
         valid_base64++;
         // We expect failure but if we succeed, then we should have a roundtrip.
         back.resize(r.count);
         std::vector<char> back2(
-            simdutf::base64_length_from_binary(back.size()));
+            turbo::base64_length_from_binary(back.size()));
         size_t base64size =
             e->binary_to_base64(back.data(), back.size(), back2.data());
         back2.resize(base64size);
         std::vector<char> back3(
             e->maximal_binary_length_from_base64(back2.data(), back2.size()));
-        simdutf::result r2 =
+        turbo::result r2 =
             e->base64_to_binary(back2.data(), back2.size(), back3.data());
-        if (r2.error != simdutf::error_code::SUCCESS) {
+        if (r2.error != turbo::error_code::SUCCESS) {
           print_input(source, e);
           return false;
         }
@@ -603,22 +603,22 @@ bool fuzz_this(const char *data, size_t size) {
       size_t max_length_needed =
           e->maximal_binary_length_from_base64(source.data(), source.size());
       std::vector<char> back(max_length_needed);
-      simdutf::result r = simdutf::base64_to_binary_safe(
+      turbo::result r = turbo::base64_to_binary_safe(
           source.data(), source.size(), back.data(), max_length_needed);
-      if (r.error == simdutf::error_code::SUCCESS) {
+      if (r.error == turbo::error_code::SUCCESS) {
         // We expect failure but if we succeed, then we should have a roundtrip.
         back.resize(max_length_needed);
         std::vector<char> back2(
-            simdutf::base64_length_from_binary(back.size()));
+            turbo::base64_length_from_binary(back.size()));
         size_t base64size =
             e->binary_to_base64(back.data(), back.size(), back2.data());
         back2.resize(base64size);
         size_t max_length_needed2 =
             e->maximal_binary_length_from_base64(back2.data(), back2.size());
         std::vector<char> back3(max_length_needed2);
-        simdutf::result r2 = simdutf::base64_to_binary_safe(
+        turbo::result r2 = turbo::base64_to_binary_safe(
             back2.data(), back2.size(), back3.data(), max_length_needed2);
-        if (r2.error != simdutf::error_code::SUCCESS) {
+        if (r2.error != turbo::error_code::SUCCESS) {
           print_input(source, e);
           return false;
         }
@@ -636,7 +636,7 @@ bool fuzz_this(const char *data, size_t size) {
     /// it, it should always succeed.
     {
       std::vector<char> base64buffer(
-          simdutf::base64_length_from_binary(source.size()));
+          turbo::base64_length_from_binary(source.size()));
       size_t base64size = e->binary_to_base64(source.data(), source.size(),
                                               base64buffer.data());
       if (base64size != base64buffer.size()) {
@@ -647,9 +647,9 @@ bool fuzz_this(const char *data, size_t size) {
       }
       std::vector<char> back(e->maximal_binary_length_from_base64(
           base64buffer.data(), base64buffer.size()));
-      simdutf::result r = e->base64_to_binary(base64buffer.data(),
+      turbo::result r = e->base64_to_binary(base64buffer.data(),
                                               base64buffer.size(), back.data());
-      if (r.error != simdutf::error_code::SUCCESS) {
+      if (r.error != turbo::error_code::SUCCESS) {
         printf("base64 round trip failed, error code %d\n", r.error);
         print_input(source, e);
         return false;
@@ -668,9 +668,9 @@ bool fuzz_this(const char *data, size_t size) {
         }
       }
       size_t max_length = back.size();
-      r = simdutf::base64_to_binary_safe(
+      r = turbo::base64_to_binary_safe(
           base64buffer.data(), base64buffer.size(), back.data(), max_length);
-      if (r.error != simdutf::error_code::SUCCESS) {
+      if (r.error != turbo::error_code::SUCCESS) {
         printf("base64 round trip failed, error code %d\n", r.error);
         print_input(source, e);
         return false;
@@ -689,7 +689,7 @@ bool fuzz_this(const char *data, size_t size) {
         }
       }
     }
-  } // for (auto &e : simdutf::get_available_implementations()) {
+  } // for (auto &e : turbo::get_available_implementations()) {
 
   return true;
 } // extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
@@ -748,7 +748,7 @@ int main(int argc, char *argv[]) {
   return EXIT_FAILURE;
 #endif
   puts("testing the library on 'random garbage'");
-  for (auto &e : simdutf::get_available_implementations()) {
+  for (auto &e : turbo::get_available_implementations()) {
     if (!e->supported_by_runtime_system()) {
       continue;
     }

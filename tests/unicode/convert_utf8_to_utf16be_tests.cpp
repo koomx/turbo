@@ -12,9 +12,9 @@
 
 namespace {
 constexpr std::array<size_t, 7> input_size{7, 16, 12, 64, 67, 128, 256};
-constexpr simdutf::endianness BE = simdutf::endianness::BIG;
+constexpr turbo::endianness BE = turbo::endianness::BIG;
 
-using simdutf::tests::helpers::transcode_utf8_to_utf16_test_base;
+using turbo::tests::helpers::transcode_utf8_to_utf16_test_base;
 
 } // namespace
 
@@ -33,11 +33,11 @@ TEST(issue_631) {
   const auto validation1 =
       implementation.validate_utf8_with_errors((const char *)data, data_len);
   ASSERT_EQUAL(validation1.count, 1);
-  ASSERT_EQUAL(validation1.error, simdutf::error_code::TOO_LONG);
+  ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
 
   const bool validation2 =
       implementation.validate_utf8((const char *)data, data_len);
-  ASSERT_EQUAL(validation1.error == simdutf::error_code::SUCCESS, validation2);
+  ASSERT_EQUAL(validation1.error == turbo::error_code::SUCCESS, validation2);
 
   const auto outlen =
       implementation.utf16_length_from_utf8((const char *)data, data_len);
@@ -144,11 +144,11 @@ TEST(issue_ossfuzz_71218) {
   const auto validation1 =
       implementation.validate_utf8_with_errors((const char *)data, data_len);
   ASSERT_EQUAL(validation1.count, 0);
-  ASSERT_EQUAL(validation1.error, simdutf::error_code::TOO_LONG);
+  ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
 
   const bool validation2 =
       implementation.validate_utf8((const char *)data, data_len);
-  ASSERT_EQUAL(validation1.error == simdutf::error_code::SUCCESS, validation2);
+  ASSERT_EQUAL(validation1.error == turbo::error_code::SUCCESS, validation2);
 
   const auto outlen =
       implementation.utf16_length_from_utf8((const char *)data, data_len);
@@ -199,11 +199,11 @@ TEST(issue_514) {
   const auto validation1 =
       implementation.validate_utf8_with_errors((const char *)data, data_len);
   ASSERT_EQUAL(validation1.count, 4);
-  ASSERT_EQUAL(validation1.error, simdutf::error_code::TOO_LONG);
+  ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
 
   const bool validation2 =
       implementation.validate_utf8((const char *)data, data_len);
-  ASSERT_EQUAL(validation1.error == simdutf::error_code::SUCCESS, validation2);
+  ASSERT_EQUAL(validation1.error == turbo::error_code::SUCCESS, validation2);
 
   const auto outlen =
       implementation.utf16_length_from_utf8((const char *)data, data_len);
@@ -227,7 +227,7 @@ TEST(issue_convert_valid_utf8_to_utf16le_91498ee0f0fe77dd) {
   const auto validation1 =
       implementation.validate_utf8_with_errors((const char *)data, data_len);
   ASSERT_EQUAL(validation1.count, 46);
-  ASSERT_EQUAL(validation1.error, simdutf::error_code::TOO_SHORT);
+  ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_SHORT);
   // strictly speaking, utf16_length_from_utf8 is not defined for invalid UTF-8
   const auto outlen =
       implementation.utf16_length_from_utf8((const char *)data, data_len);
@@ -255,7 +255,7 @@ TEST_LOOP(convert_pure_ASCII) {
 }
 
 TEST_LOOP(convert_1_or_2_UTF8_bytes) {
-  simdutf::tests::helpers::RandomInt random(
+  turbo::tests::helpers::RandomInt random(
       0x0000, 0x07ff, seed); // range for 1 or 2 UTF-8 bytes
 
   auto procedure = [&implementation](const char *utf8, size_t size,
@@ -275,7 +275,7 @@ TEST_LOOP(convert_1_or_2_UTF8_bytes) {
 
 TEST_LOOP(convert_1_or_2_or_3_UTF8_bytes) {
   // range for 1, 2 or 3 UTF-8 bytes
-  simdutf::tests::helpers::RandomIntRanges random(
+  turbo::tests::helpers::RandomIntRanges random(
       {{0x0000, 0xd7ff}, {0xe000, 0xffff}}, seed);
 
   auto procedure = [&implementation](const char *utf8, size_t size,
@@ -294,7 +294,7 @@ TEST_LOOP(convert_1_or_2_or_3_UTF8_bytes) {
 }
 
 TEST_LOOP(convert_3_or_4_UTF8_bytes) {
-  simdutf::tests::helpers::RandomIntRanges random(
+  turbo::tests::helpers::RandomIntRanges random(
       {{0x0800, 0xd800 - 1}, {0xe000, 0x10ffff}},
       seed); // range for 3 or 4 UTF-8 bytes
 
@@ -315,7 +315,7 @@ TEST_LOOP(convert_3_or_4_UTF8_bytes) {
 }
 
 TEST_LOOP(convert_2_UTF8_bytes) {
-  simdutf::tests::helpers::RandomInt random(0x0080, 0x07ff,
+  turbo::tests::helpers::RandomInt random(0x0080, 0x07ff,
                                             seed); // range for 2 UTF-8 bytes
 
   auto procedure = [&implementation](const char *utf8, size_t size,
@@ -335,7 +335,7 @@ TEST_LOOP(convert_2_UTF8_bytes) {
 }
 
 TEST_LOOP(convert_3_UTF8_bytes) {
-  simdutf::tests::helpers::RandomInt random(0x0800, 0xd800 - 1,
+  turbo::tests::helpers::RandomInt random(0x0800, 0xd800 - 1,
                                             seed); // range for 3 UTF-8 bytes
 
   auto procedure = [&implementation](const char *utf8, size_t size,
@@ -371,12 +371,12 @@ TEST(special_cases) {
 namespace {
 
 template <std::endian target_endianness, auto input> constexpr auto convert() {
-  using namespace simdutf::tests::helpers;
-  constexpr auto Nout = simdutf::utf16_length_from_utf8(input);
+  using namespace turbo::tests::helpers;
+  constexpr auto Nout = turbo::utf16_length_from_utf8(input);
   CTString<char16_t, Nout, target_endianness> tmp{};
   std::size_t N;
   if constexpr (target_endianness == std::endian::native) {
-    N = simdutf::convert_utf8_to_utf16(input, tmp);
+    N = turbo::convert_utf8_to_utf16(input, tmp);
   }
   if (N != input.size()) {
     throw "oops";
@@ -387,7 +387,7 @@ template <std::endian target_endianness, auto input> constexpr auto convert() {
 } // namespace
 
 TEST(compile_time_convert_utf8_to_utf16) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
 
   constexpr auto input = u8"hello I am over 16 byte long"_utf8;
   constexpr auto expected = u"hello I am over 16 byte long"_utf16;
@@ -397,7 +397,7 @@ TEST(compile_time_convert_utf8_to_utf16) {
 }
 
 TEST(compile_time_convert_utf8_to_utf16be) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
 
   constexpr auto input = u8"hello I am over 16 byte long"_utf8;
   constexpr auto expected = u"hello I am over 16 byte long"_utf16be;

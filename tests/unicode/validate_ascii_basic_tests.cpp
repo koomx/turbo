@@ -130,22 +130,22 @@ namespace {
 // for negative compilation tests
 template <class InputPtr>
 concept passable_to_validate =
-    requires(InputPtr p) { simdutf::scalar::ascii::validate(p, 10u); };
+    requires(InputPtr p) { turbo::scalar::ascii::validate(p, 10u); };
 
 } // namespace
 
 TEST(compile_time_valid) {
   static_assert(std::ranges::all_of(goodsequences, [](std::string_view input) {
-    return simdutf::validate_ascii(input);
+    return turbo::validate_ascii(input);
   }));
 
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   constexpr auto ascii = "a normal ascii text"_latin1;
 
-  static_assert(simdutf::validate_ascii(ascii));
-  static_assert(simdutf::validate_ascii(ascii.as_array<unsigned char>()));
-  static_assert(simdutf::validate_ascii(ascii.as_array<signed char>()));
-  static_assert(simdutf::validate_ascii(ascii.as_array<std::byte>()));
+  static_assert(turbo::validate_ascii(ascii));
+  static_assert(turbo::validate_ascii(ascii.as_array<unsigned char>()));
+  static_assert(turbo::validate_ascii(ascii.as_array<signed char>()));
+  static_assert(turbo::validate_ascii(ascii.as_array<std::byte>()));
 
   static_assert(passable_to_validate<char *>);
   static_assert(passable_to_validate<unsigned char *>);
@@ -158,7 +158,7 @@ TEST(compile_time_valid) {
 TEST(compile_time_invalid) {
   static_assert(
       not std::ranges::any_of(badsequences, [](std::string_view input) {
-        return simdutf::validate_ascii(input);
+        return turbo::validate_ascii(input);
       }));
 }
 #endif

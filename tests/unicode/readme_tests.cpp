@@ -22,12 +22,12 @@ TEST(base64_fun) {
     const std::string &source = sources[i];
     std::cout << "source: '" << source << "'" << std::endl;
     // allocate enough memory for the maximal binary length
-    std::vector<uint8_t> buffer(simdutf::maximal_binary_length_from_base64(
+    std::vector<uint8_t> buffer(turbo::maximal_binary_length_from_base64(
         source.data(), source.size()));
     // convert to binary and check for errors
-    simdutf::result r = simdutf::base64_to_binary(source.data(), source.size(),
+    turbo::result r = turbo::base64_to_binary(source.data(), source.size(),
                                                   (char *)buffer.data());
-    if (r.error != simdutf::error_code::SUCCESS) {
+    if (r.error != turbo::error_code::SUCCESS) {
       ASSERT_TRUE(expected[i].empty());
       std::cout << "output: error" << std::endl;
     } else {
@@ -52,13 +52,13 @@ TEST(base64_fun_safe) {
     const std::string &source = sources[i];
     std::cout << "source: '" << source << "'" << std::endl;
     // allocate enough memory for the maximal binary length
-    std::vector<uint8_t> buffer(simdutf::maximal_binary_length_from_base64(
+    std::vector<uint8_t> buffer(turbo::maximal_binary_length_from_base64(
         source.data(), source.size()));
     // convert to binary and check for errors
     size_t output_length = buffer.size();
-    simdutf::result r = simdutf::base64_to_binary_safe(
+    turbo::result r = turbo::base64_to_binary_safe(
         source.data(), source.size(), (char *)buffer.data(), output_length);
-    if (r.error != simdutf::error_code::SUCCESS) {
+    if (r.error != turbo::error_code::SUCCESS) {
       ASSERT_TRUE(expected[i].empty());
       std::cout << "output: error" << std::endl;
     } else {
@@ -72,13 +72,13 @@ TEST(base64_fun_safe) {
 }
 
 // this is a compile test
-void check_simdutf_result() { simdutf::result r; }
+void check_simdutf_result() { turbo::result r; }
 
 // this is a compile test
 int main_demo() {
   const char *source = "1234";
   // 4 == strlen(source)
-  bool validutf8 = simdutf::validate_utf8(source, 4);
+  bool validutf8 = turbo::validate_utf8(source, 4);
   if (validutf8) {
     puts("valid UTF-8");
   } else {
@@ -86,14 +86,14 @@ int main_demo() {
     return EXIT_FAILURE;
   }
   // We need a buffer where to write the UTF-16LE code units.
-  size_t expected_utf16words = simdutf::utf16_length_from_utf8(source, 4);
+  size_t expected_utf16words = turbo::utf16_length_from_utf8(source, 4);
   std::unique_ptr<char16_t[]> utf16_output{new char16_t[expected_utf16words]};
   // convert to UTF-16LE
   size_t utf16words =
-      simdutf::convert_utf8_to_utf16le(source, 4, utf16_output.get());
+      turbo::convert_utf8_to_utf16le(source, 4, utf16_output.get());
   printf("wrote %zu UTF-16LE code units.", utf16words);
   // It wrote utf16words * sizeof(char16_t) bytes.
-  bool validutf16 = simdutf::validate_utf16le(utf16_output.get(), utf16words);
+  bool validutf16 = turbo::validate_utf16le(utf16_output.get(), utf16words);
   if (validutf16) {
     puts("valid UTF-16LE");
   } else {
@@ -103,10 +103,10 @@ int main_demo() {
   // convert it back:
   // We need a buffer where to write the UTF-8 code units.
   size_t expected_utf8words =
-      simdutf::utf8_length_from_utf16le(utf16_output.get(), utf16words);
+      turbo::utf8_length_from_utf16le(utf16_output.get(), utf16words);
   std::unique_ptr<char[]> utf8_output{new char[expected_utf8words]};
   // convert to UTF-8
-  size_t utf8words = simdutf::convert_utf16le_to_utf8(
+  size_t utf8words = turbo::convert_utf16le_to_utf8(
       utf16_output.get(), utf16words, utf8_output.get());
   printf("wrote %zu UTF-8 code units.", utf8words);
   std::string final_string(utf8_output.get(), utf8words);
@@ -126,19 +126,19 @@ TEST(utf8_streaming) {
   size_t length = 10;
   // Picking 10 bytes is problematic because we might end up in the middle of a
   // code point. But we can rewind to the previous code point.
-  length = simdutf::trim_partial_utf8(unicode, length);
+  length = turbo::trim_partial_utf8(unicode, length);
   // Now we can transcode safely
-  size_t budget_utf16 = simdutf::utf16_length_from_utf8(unicode, length);
+  size_t budget_utf16 = turbo::utf16_length_from_utf8(unicode, length);
   std::unique_ptr<char16_t[]> utf16{new char16_t[budget_utf16]};
   size_t utf16words =
-      simdutf::convert_utf8_to_utf16le(unicode, length, utf16.get());
+      turbo::convert_utf8_to_utf16le(unicode, length, utf16.get());
   // We can then transcode the next batch
   const char *next = unicode + length;
   size_t next_length = sizeof(unicode) - length;
-  size_t next_budget_utf16 = simdutf::utf16_length_from_utf8(next, next_length);
+  size_t next_budget_utf16 = turbo::utf16_length_from_utf8(next, next_length);
   std::unique_ptr<char16_t[]> next_utf16{new char16_t[next_budget_utf16]};
   size_t next_utf16words =
-      simdutf::convert_utf8_to_utf16le(next, next_length, next_utf16.get());
+      turbo::convert_utf8_to_utf16le(next, next_length, next_utf16.get());
   ASSERT_EQUAL(next_utf16words, next_budget_utf16);
   ASSERT_EQUAL(utf16words, budget_utf16);
 }
@@ -147,7 +147,7 @@ TEST(issue829) {
   alignas(char16_t) const char unicode_char[] = "\x3c\xd8";
   const char16_t *unicode = reinterpret_cast<const char16_t *>(unicode_char);
   size_t length = 1;
-  length = simdutf::trim_partial_utf16le(unicode, length);
+  length = turbo::trim_partial_utf16le(unicode, length);
   ASSERT_EQUAL(length, 0);
 }
 
@@ -160,20 +160,20 @@ TEST(utf16_streaming) {
   size_t length = 3;
   // Picking 3 units is problematic because we might end up in the middle of a
   // surrogate pair. But we can rewind to the previous code point.
-  length = simdutf::trim_partial_utf16le(unicode, length);
+  length = turbo::trim_partial_utf16le(unicode, length);
   // Now we can transcode safely
-  size_t budget_utf8 = simdutf::utf8_length_from_utf16le(unicode, length);
+  size_t budget_utf8 = turbo::utf8_length_from_utf16le(unicode, length);
   std::unique_ptr<char[]> utf8{new char[budget_utf8]};
   size_t utf8words =
-      simdutf::convert_utf16le_to_utf8(unicode, length, utf8.get());
+      turbo::convert_utf16le_to_utf8(unicode, length, utf8.get());
   // We can then transcode the next batch
   const char16_t *next = unicode + length;
   size_t next_length = 6 - length;
   size_t next_budget_utf8 =
-      simdutf::utf8_length_from_utf16le(next, next_length);
+      turbo::utf8_length_from_utf16le(next, next_length);
   std::unique_ptr<char[]> next_utf8{new char[next_budget_utf8]};
   size_t next_utf8words =
-      simdutf::convert_utf16le_to_utf8(next, next_length, next_utf8.get());
+      turbo::convert_utf16le_to_utf8(next, next_length, next_utf8.get());
   ASSERT_EQUAL(next_utf8words, next_budget_utf8);
   ASSERT_EQUAL(utf8words, budget_utf8);
 }
@@ -181,30 +181,30 @@ TEST(utf16_streaming) {
 TEST(error_location_badascii) {
   // this ASCII string has a bad byte at index 5
   std::string bad_ascii = "\x20\x20\x20\x20\x20\xff\x20\x20\x20";
-  simdutf::result res = implementation.validate_ascii_with_errors(
+  turbo::result res = implementation.validate_ascii_with_errors(
       bad_ascii.data(), bad_ascii.size());
-  if (res.error != simdutf::error_code::SUCCESS) {
+  if (res.error != turbo::error_code::SUCCESS) {
     printf("error at index %zu\n", res.count);
   }
-  ASSERT_EQUAL(res.error, simdutf::error_code::TOO_LARGE);
+  ASSERT_EQUAL(res.error, turbo::error_code::TOO_LARGE);
   ASSERT_EQUAL(res.count, 5);
 }
 
 TEST(error_location_badutf8) {
   // this UTF-8 string has a bad byte at index 5
   std::string bad_utf8 = "\xc3\xa9\xc3\xa9\x20\xff\xc3\xa9";
-  simdutf::result res = implementation.validate_utf8_with_errors(
+  turbo::result res = implementation.validate_utf8_with_errors(
       bad_utf8.data(), bad_utf8.size());
-  if (res.error != simdutf::error_code::SUCCESS) {
+  if (res.error != turbo::error_code::SUCCESS) {
     printf("error at index %zu\n", res.count);
   }
-  ASSERT_EQUAL(res.error, simdutf::error_code::HEADER_BITS);
+  ASSERT_EQUAL(res.error, turbo::error_code::HEADER_BITS);
   ASSERT_EQUAL(res.count, 5);
   res = implementation.validate_utf8_with_errors(bad_utf8.data(), res.count);
-  if (res.error == simdutf::error_code::SUCCESS) {
+  if (res.error == turbo::error_code::SUCCESS) {
     printf("we have transcoded %zu valid bytes", res.count);
   }
-  ASSERT_EQUAL(res.error, simdutf::error_code::SUCCESS);
+  ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
   ASSERT_EQUAL(res.count, 5);
 }
 
@@ -212,61 +212,61 @@ TEST(error_location_badutf8_transcoding) {
   // this UTF-8 string has a bad byte at index 5
   std::string bad_utf8 = "\xc3\xa9\xc3\xa9\x20\xff\xc3\xa9";
   size_t budget_utf16 =
-      simdutf::utf16_length_from_utf8(bad_utf8.data(), bad_utf8.size());
+      turbo::utf16_length_from_utf8(bad_utf8.data(), bad_utf8.size());
   std::unique_ptr<char16_t[]> utf16{new char16_t[budget_utf16]};
 
-  simdutf::result res = simdutf::convert_utf8_to_utf16_with_errors(
+  turbo::result res = turbo::convert_utf8_to_utf16_with_errors(
       bad_utf8.data(), bad_utf8.size(), utf16.get());
 
-  if (res.error != simdutf::error_code::SUCCESS) {
+  if (res.error != turbo::error_code::SUCCESS) {
     printf("error at index %zu\n", res.count);
   }
-  ASSERT_EQUAL(res.error, simdutf::error_code::HEADER_BITS);
+  ASSERT_EQUAL(res.error, turbo::error_code::HEADER_BITS);
   ASSERT_EQUAL(res.count, 5);
-  res = simdutf::convert_utf8_to_utf16_with_errors(bad_utf8.data(), res.count,
+  res = turbo::convert_utf8_to_utf16_with_errors(bad_utf8.data(), res.count,
                                                    utf16.get());
-  if (res.error == simdutf::error_code::SUCCESS) {
+  if (res.error == turbo::error_code::SUCCESS) {
     printf("we have transcoded %zu characters", res.count);
   }
-  ASSERT_EQUAL(res.error, simdutf::error_code::SUCCESS);
+  ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
   ASSERT_EQUAL(res.count, 3);
 }
 
 #if SIMDUTF_CPLUSPLUS23
 
 TEST(compile_time_trim_partial_utf8) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
 
   constexpr auto str = u8"\xc3\xa9\xc3\xa9\x20\xff\xc3\xa9"_utf8;
-  constexpr auto compile_time = simdutf::trim_partial_utf8(str);
-  const auto runtime = simdutf::trim_partial_utf8(str);
+  constexpr auto compile_time = turbo::trim_partial_utf8(str);
+  const auto runtime = turbo::trim_partial_utf8(str);
   ASSERT_EQUAL(compile_time, runtime);
 }
 
 TEST(compile_time_trim_partial_utf16) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
 
   constexpr auto str = u"\xd800"_utf16;
-  constexpr auto compile_time = simdutf::trim_partial_utf16(str);
-  const auto runtime = simdutf::trim_partial_utf16(str);
+  constexpr auto compile_time = turbo::trim_partial_utf16(str);
+  const auto runtime = turbo::trim_partial_utf16(str);
   ASSERT_EQUAL(compile_time, runtime);
 }
 
 TEST(compile_time_trim_partial_utf16le) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
 
   constexpr auto str = u"\xd800"_utf16le;
-  constexpr auto compile_time = simdutf::trim_partial_utf16le(str);
-  const auto runtime = simdutf::trim_partial_utf16le(str);
+  constexpr auto compile_time = turbo::trim_partial_utf16le(str);
+  const auto runtime = turbo::trim_partial_utf16le(str);
   ASSERT_EQUAL(compile_time, runtime);
 }
 
 TEST(compile_time_trim_partial_utf16be) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
 
   constexpr auto str = u"\xd800"_utf16be;
-  constexpr auto compile_time = simdutf::trim_partial_utf16be(str);
-  const auto runtime = simdutf::trim_partial_utf16be(str);
+  constexpr auto compile_time = turbo::trim_partial_utf16be(str);
+  const auto runtime = turbo::trim_partial_utf16be(str);
   ASSERT_EQUAL(compile_time, runtime);
 }
 #endif

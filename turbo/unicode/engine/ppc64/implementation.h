@@ -4,11 +4,11 @@
 #include <turbo/unicode/utf.h>
 #include <turbo/unicode/internal/isadetection.h>
 
-namespace simdutf {
+namespace turbo {
     namespace ppc64 {
 
         namespace {
-            using namespace simdutf;
+            using namespace turbo;
 
             template <size_t N>
             simdutf_really_inline size_t align_down(size_t size) {
@@ -16,10 +16,10 @@ namespace simdutf {
             }
         } // namespace
 
-        class implementation final : public simdutf::implementation {
+        class implementation final : public turbo::implementation {
         public:
             simdutf_really_inline implementation()
-                : simdutf::implementation("ppc64", "PPC64 ALTIVEC",
+                : turbo::implementation("ppc64", "PPC64 ALTIVEC",
                       internal::instruction_set::ALTIVEC) { }
 
 #if SIMDUTF_FEATURE_DETECT_ENCODING
@@ -341,6 +341,6 @@ namespace simdutf {
         };
 
     } // namespace ppc64
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDUTF_PPC64_IMPLEMENTATION_H

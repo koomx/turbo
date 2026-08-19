@@ -46,7 +46,7 @@ write_v_u16_11bits_to_utf8(const vector_u16 v_u16, char*& utf8_output,
     const uint16_t m1 = static_cast<uint16_t>(m0 >> 7); // m1 = 00000000h0g0f0e0
     const uint8_t m2 = static_cast<uint8_t>((m0 | m1) & 0xff); // m2 = hdgcfbea
     // 4. pack the bytes
-    const uint8_t* row = &simdutf::tables::utf16_to_utf8::pack_1_2_utf8_bytes[m2][0];
+    const uint8_t* row = &turbo::tables::utf16_to_utf8::pack_1_2_utf8_bytes[m2][0];
     const auto shuffle = vector_u8::load(row + 1);
     const auto utf8_packed = shuffle.lookup_16(utf8_unpacked);
 

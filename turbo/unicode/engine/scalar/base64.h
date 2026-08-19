@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <cstring>
 
-namespace simdutf {
+namespace turbo {
     namespace scalar {
         namespace {
             namespace base64 {
@@ -27,7 +27,7 @@ namespace simdutf {
 
                 template <class char_type>
                 simdutf_constexpr23 bool is_ignorable(char_type c,
-                    simdutf::base64_options options) {
+                    turbo::base64_options options) {
                     const uint8_t* to_base64 = (options & base64_default_or_url)
                         ? tables::base64::to_base64_default_or_url_value
                         : ((options & base64_url) ? tables::base64::to_base64_url_value
@@ -44,7 +44,7 @@ namespace simdutf {
                 }
                 template <class char_type>
                 simdutf_constexpr23 bool is_base64(char_type c,
-                    simdutf::base64_options options) {
+                    turbo::base64_options options) {
                     const uint8_t* to_base64 = (options & base64_default_or_url)
                         ? tables::base64::to_base64_default_or_url_value
                         : ((options & base64_url) ? tables::base64::to_base64_url_value
@@ -58,7 +58,7 @@ namespace simdutf {
 
                 template <class char_type>
                 simdutf_constexpr23 bool is_base64_or_padding(char_type c,
-                    simdutf::base64_options options) {
+                    turbo::base64_options options) {
                     const uint8_t* to_base64 = (options & base64_default_or_url)
                         ? tables::base64::to_base64_default_or_url_value
                         : ((options & base64_url) ? tables::base64::to_base64_url_value
@@ -74,7 +74,7 @@ namespace simdutf {
                 }
 
                 template <class char_type>
-                bool is_ignorable_or_padding(char_type c, simdutf::base64_options options) {
+                bool is_ignorable_or_padding(char_type c, turbo::base64_options options) {
                     return is_ignorable(c, options) || c == '=';
                 }
 
@@ -93,7 +93,7 @@ namespace simdutf {
                 // modified. The function assumes that there are at most two padding characters.
                 template <class char_type>
                 simdutf_constexpr23 reduced_input find_end(const char_type* src, size_t srclen,
-                    simdutf::base64_options options) {
+                    turbo::base64_options options) {
                     const uint8_t* to_base64 = (options & base64_default_or_url)
                         ? tables::base64::to_base64_default_or_url_value
                         : ((options & base64_url) ? tables::base64::to_base64_url_value
@@ -112,7 +112,7 @@ namespace simdutf {
                     if (ignore_garbage) {
                         // Technically, we don't need to find the first padding character, we can
                         // just change our algorithms, but it adds substantial complexity.
-                        auto it = simdutf::find(src, src + srclen, '=');
+                        auto it = turbo::find(src, src + srclen, '=');
                         if (it != src + srclen) {
                             equallocation = it - src;
                             equalsigns = 1;
@@ -367,7 +367,7 @@ namespace simdutf {
                 template <bool use_lines = false>
                 simdutf_constexpr23 size_t tail_encode_base64_impl(
                     char* dst, const char* src, size_t srclen, base64_options options,
-                    size_t line_length = simdutf::default_line_length, size_t line_offset = 0) {
+                    size_t line_length = turbo::default_line_length, size_t line_offset = 0) {
                     if constexpr (use_lines) {
                         // sanitize line_length and starting_line_offset.
                         // line_length must be greater than 3.
@@ -676,7 +676,7 @@ namespace simdutf {
                     const char_type* input, size_t length, char* output, base64_options options,
                     last_chunk_handling_options last_chunk_options) noexcept {
                     const bool ignore_garbage = (options == base64_options::base64_url_accept_garbage) || (options == base64_options::base64_default_accept_garbage) || (options == base64_options::base64_default_or_url_accept_garbage);
-                    auto ri = simdutf::scalar::base64::find_end(input, length, options);
+                    auto ri = turbo::scalar::base64::find_end(input, length, options);
                     size_t equallocation = ri.equallocation;
                     size_t equalsigns = ri.equalsigns;
                     length = ri.srclen;
@@ -724,7 +724,7 @@ namespace simdutf {
                     base64_options options,
                     last_chunk_handling_options last_chunk_options) noexcept {
                     const bool ignore_garbage = (options == base64_options::base64_url_accept_garbage) || (options == base64_options::base64_default_accept_garbage) || (options == base64_options::base64_default_or_url_accept_garbage);
-                    auto ri = simdutf::scalar::base64::find_end(input, length, options);
+                    auto ri = turbo::scalar::base64::find_end(input, length, options);
                     size_t equallocation = ri.equallocation;
                     size_t equalsigns = ri.equalsigns;
                     length = ri.srclen;
@@ -804,7 +804,7 @@ namespace simdutf {
                 // the input.
                 template <typename char_type>
                 simdutf_warn_unused size_t prefix_length(size_t count,
-                    simdutf::base64_options options,
+                    turbo::base64_options options,
                     const char_type* input,
                     size_t length) noexcept {
                     size_t i = 0;
@@ -832,6 +832,6 @@ namespace simdutf {
             } // namespace base64
         } // unnamed namespace
     } // namespace scalar
-} // namespace simdutf
+} // namespace turbo
 
 #endif

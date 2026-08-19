@@ -10,9 +10,9 @@
 
 namespace {
 constexpr std::array<size_t, 7> input_size{7, 16, 12, 64, 67, 128, 256};
-constexpr simdutf::endianness LE = simdutf::endianness::LITTLE;
+constexpr turbo::endianness LE = turbo::endianness::LITTLE;
 
-using simdutf::tests::helpers::transcode_utf16_to_utf32_test_base;
+using turbo::tests::helpers::transcode_utf16_to_utf32_test_base;
 
 } // namespace
 
@@ -98,17 +98,17 @@ TEST(issue_532) {
   const auto validation1 =
       implementation.validate_utf16le_with_errors(utf16, utf16_len);
   ASSERT_EQUAL(validation1.count, 137);
-  ASSERT_EQUAL(validation1.error, simdutf::error_code::SURROGATE);
+  ASSERT_EQUAL(validation1.error, turbo::error_code::SURROGATE);
 
   const bool validation2 = implementation.validate_utf16le(utf16, utf16_len);
-  ASSERT_EQUAL(validation1.error == simdutf::error_code::SUCCESS, validation2);
+  ASSERT_EQUAL(validation1.error == turbo::error_code::SUCCESS, validation2);
 
   const auto outlen =
       implementation.utf32_length_from_utf16le(utf16, utf16_len);
   std::vector<char32_t> output(outlen);
   const auto r = implementation.convert_utf16le_to_utf32_with_errors(
       (const char16_t *)utf16, utf16_len, output.data());
-  ASSERT_EQUAL(r.error, simdutf::error_code::SURROGATE);
+  ASSERT_EQUAL(r.error, turbo::error_code::SURROGATE);
   ASSERT_EQUAL(r.count, 137);
 }
 
@@ -118,20 +118,20 @@ TEST(allow_empty_input) {
 
   auto ret = implementation.convert_utf16le_to_utf32_with_errors(
       emptydata.data(), emptydata.size(), output.data());
-  ASSERT_EQUAL(ret.error, simdutf::error_code::SUCCESS);
+  ASSERT_EQUAL(ret.error, turbo::error_code::SUCCESS);
 }
 
 TEST_LOOP(convert_2_UTF16_bytes) {
   // range for 1, 2 or 3 UTF-8 bytes
-  simdutf::tests::helpers::RandomIntRanges random(
+  turbo::tests::helpers::RandomIntRanges random(
       {{0x0000, 0x007f}, {0x0080, 0x07ff}, {0x0800, 0xd7ff}, {0xe000, 0xffff}},
       seed);
 
   auto procedure = [&implementation](const char16_t *utf16, size_t size,
                                      char32_t *utf32) -> size_t {
-    const simdutf::result res =
+    const turbo::result res =
         implementation.convert_utf16le_to_utf32_with_errors(utf16, size, utf32);
-    ASSERT_EQUAL(res.error, simdutf::error_code::SUCCESS);
+    ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
     return res.count;
   };
   auto size_procedure = [&implementation](const char16_t *utf16,
@@ -146,14 +146,14 @@ TEST_LOOP(convert_2_UTF16_bytes) {
 }
 
 TEST_LOOP(convert_with_surrogates) {
-  simdutf::tests::helpers::RandomIntRanges random(
+  turbo::tests::helpers::RandomIntRanges random(
       {{0x0800, 0xd800 - 1}, {0xe000, 0x10ffff}}, seed);
 
   auto procedure = [&implementation](const char16_t *utf16, size_t size,
                                      char32_t *utf32) -> size_t {
-    const simdutf::result res =
+    const turbo::result res =
         implementation.convert_utf16le_to_utf32_with_errors(utf16, size, utf32);
-    ASSERT_EQUAL(res.error, simdutf::error_code::SUCCESS);
+    ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
     return res.count;
   };
   auto size_procedure = [&implementation](const char16_t *utf16,
@@ -176,10 +176,10 @@ TEST(convert_fails_if_there_is_sole_low_surrogate) {
     for (size_t i = 0; i < size; i++) {
       auto procedure = [&implementation, &i](const char16_t *utf16, size_t size,
                                              char32_t *utf32) -> size_t {
-        simdutf::result res =
+        turbo::result res =
             implementation.convert_utf16le_to_utf32_with_errors(utf16, size,
                                                                 utf32);
-        ASSERT_EQUAL(res.error, simdutf::error_code::SURROGATE);
+        ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
         ASSERT_EQUAL(res.count, i);
         return 0;
       };
@@ -200,10 +200,10 @@ TEST(convert_fails_if_there_is_sole_high_surrogate) {
     for (size_t i = 0; i < size; i++) {
       auto procedure = [&implementation, &i](const char16_t *utf16, size_t size,
                                              char32_t *utf32) -> size_t {
-        simdutf::result res =
+        turbo::result res =
             implementation.convert_utf16le_to_utf32_with_errors(utf16, size,
                                                                 utf32);
-        ASSERT_EQUAL(res.error, simdutf::error_code::SURROGATE);
+        ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
         ASSERT_EQUAL(res.count, i);
         return 0;
       };
@@ -225,10 +225,10 @@ TEST(
     for (size_t i = 0; i < size - 1; i++) {
       auto procedure = [&implementation, &i](const char16_t *utf16, size_t size,
                                              char32_t *utf32) -> size_t {
-        simdutf::result res =
+        turbo::result res =
             implementation.convert_utf16le_to_utf32_with_errors(utf16, size,
                                                                 utf32);
-        ASSERT_EQUAL(res.error, simdutf::error_code::SURROGATE);
+        ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
         ASSERT_EQUAL(res.count, i);
         return 0;
       };
@@ -252,9 +252,9 @@ TEST(convert_fails_if_there_is_surrogate_pair_is_followed_by_high_surrogate) {
   for (size_t i = 0; i < size - 2; i++) {
     auto procedure = [&implementation, &i](const char16_t *utf16, size_t size,
                                            char32_t *utf32) -> size_t {
-      simdutf::result res = implementation.convert_utf16le_to_utf32_with_errors(
+      turbo::result res = implementation.convert_utf16le_to_utf32_with_errors(
           utf16, size, utf32);
-      ASSERT_EQUAL(res.error, simdutf::error_code::SURROGATE);
+      ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
       ASSERT_EQUAL(res.count, i + 2);
       return 0;
     };
@@ -275,12 +275,12 @@ TEST(convert_fails_if_there_is_surrogate_pair_is_followed_by_high_surrogate) {
 
 namespace {
 template <auto input> constexpr auto size() {
-  return simdutf::utf32_length_from_utf16le(input);
+  return turbo::utf32_length_from_utf16le(input);
 }
 template <auto input> constexpr auto convert() {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   CTString<char32_t, size<input>()> tmp;
-  const auto ret = simdutf::convert_utf16_to_utf32_with_errors(input, tmp);
+  const auto ret = turbo::convert_utf16_to_utf32_with_errors(input, tmp);
   if (ret.count != tmp.size()) {
     throw "unexpected write size";
   }
@@ -289,18 +289,18 @@ template <auto input> constexpr auto convert() {
 } // namespace
 
 TEST(compile_time_convert_utf16_to_utf32_with_errors) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   static_assert(convert<u"köttbulle"_utf16>() == U"köttbulle"_utf32);
 }
 
 namespace {
 template <auto input> constexpr auto size_le() {
-  return simdutf::utf32_length_from_utf16le(input);
+  return turbo::utf32_length_from_utf16le(input);
 }
 template <auto input> constexpr auto convert_le() {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   CTString<char32_t, size_le<input>()> tmp;
-  const auto ret = simdutf::convert_utf16le_to_utf32_with_errors(input, tmp);
+  const auto ret = turbo::convert_utf16le_to_utf32_with_errors(input, tmp);
   if (ret.count != tmp.size()) {
     throw "unexpected write size";
   }
@@ -309,7 +309,7 @@ template <auto input> constexpr auto convert_le() {
 } // namespace
 
 TEST(compile_time_convert_utf16le_to_utf32_with_errors) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   static_assert(convert_le<u"köttbulle"_utf16le>() == U"köttbulle"_utf32);
 }
 

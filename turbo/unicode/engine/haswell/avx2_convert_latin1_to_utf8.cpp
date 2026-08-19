@@ -53,8 +53,8 @@ avx2_convert_latin1_to_utf8(const char* latin1_input, size_t len,
         const uint32_t M2 = (M1 | M0) & 0x00ff00ff;
         // 4. pack the bytes
 
-        const uint8_t* row = &simdutf::tables::utf16_to_utf8::pack_1_2_utf8_bytes[uint8_t(M2)][0];
-        const uint8_t* row_2 = &simdutf::tables::utf16_to_utf8::pack_1_2_utf8_bytes[uint8_t(M2 >> 16)]
+        const uint8_t* row = &turbo::tables::utf16_to_utf8::pack_1_2_utf8_bytes[uint8_t(M2)][0];
+        const uint8_t* row_2 = &turbo::tables::utf16_to_utf8::pack_1_2_utf8_bytes[uint8_t(M2 >> 16)]
                                                                                    [0];
 
         const __m128i shuffle = _mm_loadu_si128((__m128i*)(row + 1));

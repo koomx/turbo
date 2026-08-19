@@ -20,10 +20,10 @@
 
 #if SIMDUTF_IMPLEMENTATION_ARM64
 
-namespace simdutf {
+namespace turbo {
     /// Implementation for NEON (ARMv8).
     namespace arm64 { } // namespace arm64
-} // namespace simdutf
+} // namespace turbo
 
 #include <turbo/unicode/engine/arm64/implementation.h>
 

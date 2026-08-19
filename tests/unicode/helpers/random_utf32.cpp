@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <vector>
 
-namespace simdutf {
+namespace turbo {
 namespace tests {
 namespace helpers {
 
@@ -39,4 +39,4 @@ uint32_t random_utf32::generate() {
 
 } // namespace helpers
 } // namespace tests
-} // namespace simdutf
+} // namespace turbo

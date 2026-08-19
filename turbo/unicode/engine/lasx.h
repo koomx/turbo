@@ -26,10 +26,10 @@
 // before we call SIMDUTF_TARGET_LASX. It is unclear why.
 #include <lsxintrin.h>
 
-namespace simdutf {
+namespace turbo {
     /// Implementation for LoongArch ASX.
     namespace lasx { } // namespace lasx
-} // namespace simdutf
+} // namespace turbo
 
 #include <turbo/unicode/engine/lasx/implementation.h>
 

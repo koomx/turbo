@@ -110,7 +110,7 @@ static inline size_t write_multi_lf_m256i(__m256i chunk, uint8_t* out,
 template <bool base64_url, bool use_lines>
 size_t encode_base64_impl(char* dst, const char* src, size_t srclen,
     base64_options options,
-    size_t line_length = simdutf::default_line_length) {
+    size_t line_length = turbo::default_line_length) {
     size_t offset = 0;
     if (line_length < 4) {
         line_length = 4; // We do not support line_length less than 4
@@ -378,7 +378,7 @@ compress_decode_base64(char* dst, const chartype* src, size_t srclen,
     const uint8_t* to_base64 = default_or_url ? tables::base64::to_base64_default_or_url_value
                                               : (base64_url ? tables::base64::to_base64_url_value
                                                             : tables::base64::to_base64_value);
-    auto ri = simdutf::scalar::base64::find_end(src, srclen, options);
+    auto ri = turbo::scalar::base64::find_end(src, srclen, options);
     size_t equallocation = ri.equallocation;
     size_t padding_characters = ri.equalsigns;
     srclen = ri.srclen;
@@ -516,7 +516,7 @@ compress_decode_base64(char* dst, const chartype* src, size_t srclen,
                         src--;
                         auto c = *src;
                         uint8_t code = to_base64[uint8_t(c)];
-                        if (simdutf::scalar::base64::is_eight_byte(c) && code <= 63) {
+                        if (turbo::scalar::base64::is_eight_byte(c) && code <= 63) {
                             characters_to_skip--;
                         }
                     }
@@ -525,7 +525,7 @@ compress_decode_base64(char* dst, const chartype* src, size_t srclen,
                     while (src > srcinit) {
                         auto c = *(src - 1);
                         uint8_t code = to_base64[uint8_t(c)];
-                        if (simdutf::scalar::base64::is_eight_byte(c) && code <= 63) {
+                        if (turbo::scalar::base64::is_eight_byte(c) && code <= 63) {
                             break;
                         }
                         src--;

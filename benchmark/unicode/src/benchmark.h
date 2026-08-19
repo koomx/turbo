@@ -45,7 +45,7 @@
  */
 #include <benchmark/unicode/competition/utfcpp/source/utf8.h>
 
-namespace simdutf::benchmarks {
+namespace turbo::benchmarks {
 
 class Benchmark : public BenchmarkBase {
 public:
@@ -55,7 +55,7 @@ public:
 
   static Benchmark create(const CommandLine &cmdline);
   virtual const std::set<std::string> all_procedures() const override;
-  virtual std::set<simdutf::encoding_type>
+  virtual std::set<turbo::encoding_type>
   expected_encodings(const std::string &procedure) override;
 
   void list_procedures(ListingMode) const;
@@ -65,164 +65,164 @@ protected:
                    size_t iterations) override;
 
 private:
-  using simdutf_fn = void (Benchmark::*)(const simdutf::implementation &,
+  using simdutf_fn = void (Benchmark::*)(const turbo::implementation &,
                                          size_t);
   using thirdparty_fn = void (Benchmark::*)(size_t);
 
   std::map<std::string, std::pair<std::variant<simdutf_fn, thirdparty_fn>,
-                                  std::set<simdutf::encoding_type>>>
+                                  std::set<turbo::encoding_type>>>
       benchmarks;
 
   template <typename Fn>
   void register_function(std::string name, Fn function,
-                         std::set<simdutf::encoding_type> set);
+                         std::set<turbo::encoding_type> set);
 
   template <typename Fn>
   void register_function(std::string name, Fn function,
-                         simdutf::encoding_type enc1);
+                         turbo::encoding_type enc1);
   template <typename Fn>
   void register_function(std::string name, Fn function,
-                         simdutf::encoding_type enc1,
-                         simdutf::encoding_type enc2);
+                         turbo::encoding_type enc1,
+                         turbo::encoding_type enc2);
   template <typename Fn>
   void
-  register_function(std::string name, Fn function, simdutf::encoding_type enc1,
-                    simdutf::encoding_type enc2, simdutf::encoding_type enc3);
+  register_function(std::string name, Fn function, turbo::encoding_type enc1,
+                    turbo::encoding_type enc2, turbo::encoding_type enc3);
 
 private:
-  void run_naive_validate_ascii(const simdutf::implementation &implementation,
+  void run_naive_validate_ascii(const turbo::implementation &implementation,
                                 size_t iterations);
-  void run_validate_ascii(const simdutf::implementation &implementation,
+  void run_validate_ascii(const turbo::implementation &implementation,
                           size_t iterations);
   void
-  run_validate_ascii_with_errors(const simdutf::implementation &implementation,
+  run_validate_ascii_with_errors(const turbo::implementation &implementation,
                                  size_t iterations);
-  void run_validate_utf8(const simdutf::implementation &implementation,
+  void run_validate_utf8(const turbo::implementation &implementation,
                          size_t iterations);
   void
-  run_validate_utf8_with_errors(const simdutf::implementation &implementation,
+  run_validate_utf8_with_errors(const turbo::implementation &implementation,
                                 size_t iterations);
-  void run_validate_utf16le(const simdutf::implementation &implementation,
+  void run_validate_utf16le(const turbo::implementation &implementation,
                             size_t iterations);
   void run_validate_utf16le_with_errors(
-      const simdutf::implementation &implementation, size_t iterations);
-  void run_validate_utf32(const simdutf::implementation &implementation,
+      const turbo::implementation &implementation, size_t iterations);
+  void run_validate_utf32(const turbo::implementation &implementation,
                           size_t iterations);
-  void run_to_well_formed_utf16le(const simdutf::implementation &implementation,
+  void run_to_well_formed_utf16le(const turbo::implementation &implementation,
                                   size_t iterations);
   void
-  run_validate_utf32_with_errors(const simdutf::implementation &implementation,
+  run_validate_utf32_with_errors(const turbo::implementation &implementation,
                                  size_t iterations);
-  void run_count_utf8(const simdutf::implementation &implementation,
+  void run_count_utf8(const turbo::implementation &implementation,
                       size_t iterations);
-  void run_count_utf16le(const simdutf::implementation &implementation,
+  void run_count_utf16le(const turbo::implementation &implementation,
                          size_t iterations);
   void
-  run_utf8_length_from_latin1(const simdutf::implementation &implementation,
+  run_utf8_length_from_latin1(const turbo::implementation &implementation,
                               size_t iterations);
   void
-  run_utf8_length_from_utf16le(const simdutf::implementation &implementation,
+  run_utf8_length_from_utf16le(const turbo::implementation &implementation,
                                size_t iterations);
   void
-  run_utf8_length_from_utf16be(const simdutf::implementation &implementation,
+  run_utf8_length_from_utf16be(const turbo::implementation &implementation,
                                size_t iterations);
   void run_utf8_length_from_utf16le_with_replacement(
-      const simdutf::implementation &implementation, size_t iterations);
+      const turbo::implementation &implementation, size_t iterations);
   void run_utf8_length_from_utf16be_with_replacement(
-      const simdutf::implementation &implementation, size_t iterations);
-  void run_utf8_length_from_utf32(const simdutf::implementation &implementation,
+      const turbo::implementation &implementation, size_t iterations);
+  void run_utf8_length_from_utf32(const turbo::implementation &implementation,
                                   size_t iterations);
-  void run_utf16_length_from_utf8(const simdutf::implementation &implementation,
+  void run_utf16_length_from_utf8(const turbo::implementation &implementation,
                                   size_t iterations);
-  void run_convert_latin1_to_utf8(const simdutf::implementation &implementation,
+  void run_convert_latin1_to_utf8(const turbo::implementation &implementation,
                                   size_t iterations);
   void
-  run_convert_latin1_to_utf16le(const simdutf::implementation &implementation,
+  run_convert_latin1_to_utf16le(const turbo::implementation &implementation,
                                 size_t iterations);
   void
-  run_convert_latin1_to_utf32(const simdutf::implementation &implementation,
+  run_convert_latin1_to_utf32(const turbo::implementation &implementation,
                               size_t iterations);
-  void run_convert_utf8_to_latin1(const simdutf::implementation &implementation,
+  void run_convert_utf8_to_latin1(const turbo::implementation &implementation,
                                   size_t iterations);
   void run_convert_utf8_to_latin1_with_errors(
-      const simdutf::implementation &implementation, size_t iterations);
+      const turbo::implementation &implementation, size_t iterations);
   void
-  run_convert_utf8_to_utf16le(const simdutf::implementation &implementation,
+  run_convert_utf8_to_utf16le(const turbo::implementation &implementation,
                               size_t iterations);
   void run_convert_utf8_to_utf16le_with_errors(
-      const simdutf::implementation &implementation, size_t iterations);
-  void run_convert_utf8_to_utf32(const simdutf::implementation &implementation,
+      const turbo::implementation &implementation, size_t iterations);
+  void run_convert_utf8_to_utf32(const turbo::implementation &implementation,
                                  size_t iterations);
   void run_convert_utf8_to_utf32_with_errors(
-      const simdutf::implementation &implementation, size_t iterations);
+      const turbo::implementation &implementation, size_t iterations);
   void run_convert_utf8_to_utf16le_with_dynamic_allocation(
-      const simdutf::implementation &implementation, size_t iterations);
+      const turbo::implementation &implementation, size_t iterations);
   void run_convert_utf8_to_utf32_with_dynamic_allocation(
-      const simdutf::implementation &implementation, size_t iterations);
+      const turbo::implementation &implementation, size_t iterations);
   void run_convert_valid_utf8_to_latin1(
-      const simdutf::implementation &implementation, size_t iterations);
+      const turbo::implementation &implementation, size_t iterations);
   void run_convert_valid_utf8_to_utf16le(
-      const simdutf::implementation &implementation, size_t iterations);
+      const turbo::implementation &implementation, size_t iterations);
   void
-  run_convert_valid_utf8_to_utf32(const simdutf::implementation &implementation,
+  run_convert_valid_utf8_to_utf32(const turbo::implementation &implementation,
                                   size_t iterations);
   void
-  run_convert_utf16le_to_latin1(const simdutf::implementation &implementation,
+  run_convert_utf16le_to_latin1(const turbo::implementation &implementation,
                                 size_t iterations);
   void run_convert_utf16le_to_latin1_with_errors(
-      const simdutf::implementation &implementation, size_t iterations);
+      const turbo::implementation &implementation, size_t iterations);
   void
-  run_convert_utf16le_to_utf8(const simdutf::implementation &implementation,
+  run_convert_utf16le_to_utf8(const turbo::implementation &implementation,
                               size_t iterations);
   void
-  run_convert_utf16_to_utf8_safe(const simdutf::implementation &implementation,
+  run_convert_utf16_to_utf8_safe(const turbo::implementation &implementation,
                                  size_t iterations);
   void run_convert_utf16le_to_utf8_with_errors(
-      const simdutf::implementation &implementation, size_t iterations);
+      const turbo::implementation &implementation, size_t iterations);
   void run_convert_utf16le_to_utf8_with_replacement(
-      const simdutf::implementation &implementation, size_t iterations);
+      const turbo::implementation &implementation, size_t iterations);
   void
-  run_convert_utf16le_to_utf32(const simdutf::implementation &implementation,
+  run_convert_utf16le_to_utf32(const turbo::implementation &implementation,
                                size_t iterations);
   void run_convert_utf16le_to_utf32_with_errors(
-      const simdutf::implementation &implementation, size_t iterations);
+      const turbo::implementation &implementation, size_t iterations);
   void run_convert_utf16le_to_utf8_with_dynamic_allocation(
-      const simdutf::implementation &implementation, size_t iterations);
+      const turbo::implementation &implementation, size_t iterations);
   void run_convert_utf16le_to_utf32_with_dynamic_allocation(
-      const simdutf::implementation &implementation, size_t iterations);
+      const turbo::implementation &implementation, size_t iterations);
   void run_convert_valid_utf16le_to_latin1(
-      const simdutf::implementation &implementation, size_t iterations);
+      const turbo::implementation &implementation, size_t iterations);
   void run_convert_valid_utf16le_to_utf8(
-      const simdutf::implementation &implementation, size_t iterations);
+      const turbo::implementation &implementation, size_t iterations);
   void
-  run_convert_utf32_to_latin1(const simdutf::implementation &implementation,
+  run_convert_utf32_to_latin1(const turbo::implementation &implementation,
                               size_t iterations);
   void run_convert_utf32_to_latin1_with_errors(
-      const simdutf::implementation &implementation, size_t iterations);
-  void run_convert_utf32_to_utf8(const simdutf::implementation &implementation,
+      const turbo::implementation &implementation, size_t iterations);
+  void run_convert_utf32_to_utf8(const turbo::implementation &implementation,
                                  size_t iterations);
   void run_convert_utf32_to_utf8_with_errors(
-      const simdutf::implementation &implementation, size_t iterations);
+      const turbo::implementation &implementation, size_t iterations);
   void run_convert_valid_utf32_to_latin1(
-      const simdutf::implementation &implementation, size_t iterations);
+      const turbo::implementation &implementation, size_t iterations);
   void
-  run_convert_valid_utf32_to_utf8(const simdutf::implementation &implementation,
+  run_convert_valid_utf32_to_utf8(const turbo::implementation &implementation,
                                   size_t iterations);
 
   template <endianness byte_order>
-  void run_convert_utf32_to_utf16(const simdutf::implementation &implementation,
+  void run_convert_utf32_to_utf16(const turbo::implementation &implementation,
                                   size_t iterations);
   template <endianness byte_order>
   void run_convert_utf32_to_utf16_with_errors(
-      const simdutf::implementation &implementation, size_t iterations);
+      const turbo::implementation &implementation, size_t iterations);
 
   template <endianness byte_order>
   void run_convert_valid_utf32_to_utf16(
-      const simdutf::implementation &implementation, size_t iterations);
+      const turbo::implementation &implementation, size_t iterations);
 
   void run_convert_valid_utf16le_to_utf32(
-      const simdutf::implementation &implementation, size_t iterations);
-  void run_detect_encodings(const simdutf::implementation &implementation,
+      const turbo::implementation &implementation, size_t iterations);
+  void run_detect_encodings(const turbo::implementation &implementation,
                             size_t iterations);
   void run_utf8_length_from_latin1_node(size_t iterations);
 #if ICU_AVAILABLE
@@ -316,4 +316,4 @@ private:
   void run_convert_utf32_to_utf8_utfcpp(size_t iterations);
 };
 
-} // namespace simdutf::benchmarks
+} // namespace turbo::benchmarks

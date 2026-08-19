@@ -24,7 +24,7 @@ void info_message() {
   std::cout << "Compiler: MSVC " << _MSC_VER << "\n";
 #endif
   std::cout << "SIMDUTF version: " << SIMDUTF_VERSION << "\n";
-  std::cout << "System: " << simdutf::get_active_implementation()->name()
+  std::cout << "System: " << turbo::get_active_implementation()->name()
             << "\n";
   std::cout << "===========================\n";
 }
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 #ifdef INOUE2008
   inoue2008::inoue_test(); // minimal testing
 #endif
-  using simdutf::benchmarks::CommandLine;
+  using turbo::benchmarks::CommandLine;
   CommandLine cmdline;
   try {
     cmdline = CommandLine::parse_arguments(argc, argv);
@@ -51,8 +51,8 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-  using simdutf::benchmarks::Benchmark;
-  using simdutf::benchmarks::ListingMode;
+  using turbo::benchmarks::Benchmark;
+  using turbo::benchmarks::ListingMode;
 
   Benchmark benchmark{Benchmark::create(cmdline)};
   if (cmdline.show_procedures != ListingMode::None) {

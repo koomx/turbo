@@ -1,6 +1,6 @@
 #include <limits>
 
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
         namespace {
             namespace utf32 {
@@ -134,4 +134,4 @@ namespace simdutf {
             } // namespace utf32
         } // unnamed namespace
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo

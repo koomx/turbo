@@ -36,10 +36,10 @@
 
 #define SIMDUTF_TARGET_HASWELL SIMDUTF_TARGET_REGION("avx2,bmi,lzcnt,popcnt")
 
-namespace simdutf {
+namespace turbo {
     /// Implementation for Haswell (Intel AVX2).
     namespace haswell { } // namespace haswell
-} // namespace simdutf
+} // namespace turbo
 
 //
 // These two need to be included outside SIMDUTF_TARGET_REGION

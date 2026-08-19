@@ -54,8 +54,8 @@ int main(int, char **) {
                      counter = counter + size_t(ptr - input.data());
                    }
                  }));
-    pretty_print("simdutf::find", input.size(), bench([&input, &counter]() {
-                   auto it = simdutf::find(input.data(),
+    pretty_print("turbo::find", input.size(), bench([&input, &counter]() {
+                   auto it = turbo::find(input.data(),
                                            input.data() + input.size(), '=');
                    counter = counter + size_t(it - input.data());
                  }));

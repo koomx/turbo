@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace simdutf {
+namespace turbo {
 namespace tests {
 namespace reference {
 namespace utf32 {
@@ -33,4 +33,4 @@ template <typename CONSUMER> int encode(uint32_t value, CONSUMER consumer) {
 } // namespace utf32
 } // namespace reference
 } // namespace tests
-} // namespace simdutf
+} // namespace turbo

@@ -9,52 +9,52 @@
 #include <tests/unicode/helpers/utf16.h>
 
 TEST_LOOP(validate_utf16be_returns_true_for_valid_input_single_words) {
-  simdutf::tests::helpers::random_utf16 generator{seed, 1, 0};
+  turbo::tests::helpers::random_utf16 generator{seed, 1, 0};
   const auto utf16{generator.generate_be(512, seed)};
 
-  simdutf::result res = implementation.validate_utf16be_with_errors(
+  turbo::result res = implementation.validate_utf16be_with_errors(
       reinterpret_cast<const char16_t *>(utf16.data()), utf16.size());
-  ASSERT_EQUAL(res.error, simdutf::error_code::SUCCESS);
+  ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
   ASSERT_EQUAL(res.count, utf16.size());
 }
 
 TEST_LOOP(validate_utf16be_returns_true_for_valid_input_surrogate_pairs_short) {
-  simdutf::tests::helpers::random_utf16 generator{seed, 0, 1};
+  turbo::tests::helpers::random_utf16 generator{seed, 0, 1};
   const auto utf16{generator.generate_be(8)};
 
-  const simdutf::result res = implementation.validate_utf16be_with_errors(
+  const turbo::result res = implementation.validate_utf16be_with_errors(
       reinterpret_cast<const char16_t *>(utf16.data()), utf16.size());
-  ASSERT_EQUAL(res.error, simdutf::error_code::SUCCESS);
+  ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
   ASSERT_EQUAL(res.count, utf16.size());
 }
 
 TEST_LOOP(validate_utf16be_returns_true_for_valid_input_surrogate_pairs) {
-  simdutf::tests::helpers::random_utf16 generator{seed, 0, 1};
+  turbo::tests::helpers::random_utf16 generator{seed, 0, 1};
   const auto utf16{generator.generate_be(512)};
 
-  const simdutf::result res = implementation.validate_utf16be_with_errors(
+  const turbo::result res = implementation.validate_utf16be_with_errors(
       reinterpret_cast<const char16_t *>(utf16.data()), utf16.size());
-  ASSERT_EQUAL(res.error, simdutf::error_code::SUCCESS);
+  ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
   ASSERT_EQUAL(res.count, utf16.size());
 }
 
 // mixed = either 16-bit or 32-bit codewords
 TEST(validate_utf16be_returns_true_for_valid_input_mixed) {
   uint32_t seed{1234};
-  simdutf::tests::helpers::random_utf16 generator{seed, 1, 1};
+  turbo::tests::helpers::random_utf16 generator{seed, 1, 1};
   const auto utf16{generator.generate_be(512)};
-  const simdutf::result res = implementation.validate_utf16be_with_errors(
+  const turbo::result res = implementation.validate_utf16be_with_errors(
       reinterpret_cast<const char16_t *>(utf16.data()), utf16.size());
-  ASSERT_EQUAL(res.error, simdutf::error_code::SUCCESS);
+  ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
   ASSERT_EQUAL(res.count, utf16.size());
 }
 
 TEST(validate_utf16be_returns_true_for_empty_string) {
   const char16_t *buf = (char16_t *)"";
 
-  simdutf::result res = implementation.validate_utf16be_with_errors(
+  turbo::result res = implementation.validate_utf16be_with_errors(
       reinterpret_cast<const char16_t *>(buf), 0);
-  ASSERT_EQUAL(res.error, simdutf::error_code::SUCCESS);
+  ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
   ASSERT_EQUAL(res.count, 0);
 }
 
@@ -74,9 +74,9 @@ TEST(provoke_integer_wraparound_in_icelake) {
 
   const auto size = cleaned_crash_len / sizeof(char16_t);
 
-  auto r = simdutf::validate_utf16be_with_errors(
+  auto r = turbo::validate_utf16be_with_errors(
       (const char16_t *)cleaned_crash, size);
-  ASSERT_EQUAL(r.error, simdutf::error_code::SUCCESS);
+  ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
 }
 
 // The first word must not be in range [0xDC00 .. 0xDFFF]
@@ -93,7 +93,7 @@ TEST(provoke_integer_wraparound_in_icelake) {
 */
 TEST_LOOP(
     validate_utf16be_returns_false_when_input_has_wrong_first_word_value) {
-  simdutf::tests::helpers::random_utf16 generator{seed, 1, 0};
+  turbo::tests::helpers::random_utf16 generator{seed, 1, 0};
   auto utf16{generator.generate_be(128)};
   const size_t len = utf16.size();
 
@@ -102,9 +102,9 @@ TEST_LOOP(
       const char16_t old = utf16[i];
       utf16[i] = to_utf16be(wrong_value);
 
-      const simdutf::result res = implementation.validate_utf16be_with_errors(
+      const turbo::result res = implementation.validate_utf16be_with_errors(
           reinterpret_cast<const char16_t *>(utf16.data()), utf16.size());
-      ASSERT_EQUAL(res.error, simdutf::error_code::SURROGATE);
+      ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
       ASSERT_EQUAL(res.count, i);
 
       utf16[i] = old;
@@ -120,7 +120,7 @@ TEST_LOOP(
 */
 TEST(validate_utf16be_returns_false_when_input_has_wrong_second_word_value) {
   uint32_t seed{1234};
-  simdutf::tests::helpers::random_utf16 generator{seed, 1, 0};
+  turbo::tests::helpers::random_utf16 generator{seed, 1, 0};
   auto utf16{generator.generate_be(128)};
   const size_t len = utf16.size();
 
@@ -136,9 +136,9 @@ TEST(validate_utf16be_returns_false_when_input_has_wrong_second_word_value) {
       utf16[i + 0] = valid_surrogate_W1;
       utf16[i + 1] = to_utf16be(W2);
 
-      simdutf::result res = implementation.validate_utf16be_with_errors(
+      turbo::result res = implementation.validate_utf16be_with_errors(
           reinterpret_cast<const char16_t *>(utf16.data()), utf16.size());
-      ASSERT_EQUAL(res.error, simdutf::error_code::SURROGATE);
+      ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
       ASSERT_EQUAL(res.count, i);
 
       utf16[i + 0] = old_W1;
@@ -156,16 +156,16 @@ TEST(validate_utf16be_returns_false_when_input_has_wrong_second_word_value) {
 TEST(validate_utf16be_returns_false_when_input_is_truncated) {
   const char16_t valid_surrogate_W1 = to_utf16be(0xd800);
   uint32_t seed{1234};
-  simdutf::tests::helpers::random_utf16 generator{seed, 1, 0};
+  turbo::tests::helpers::random_utf16 generator{seed, 1, 0};
   for (size_t size = 1; size < 128; size++) {
     auto utf16{generator.generate_be(128)};
     const size_t len = utf16.size();
 
     utf16[size - 1] = valid_surrogate_W1;
 
-    simdutf::result res = implementation.validate_utf16be_with_errors(
+    turbo::result res = implementation.validate_utf16be_with_errors(
         reinterpret_cast<const char16_t *>(utf16.data()), utf16.size());
-    ASSERT_EQUAL(res.error, simdutf::error_code::SURROGATE);
+    ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
     ASSERT_EQUAL(res.count, size - 1);
   }
 }
@@ -173,14 +173,14 @@ TEST(validate_utf16be_returns_false_when_input_is_truncated) {
 #if SIMDUTF_CPLUSPLUS23
 
 TEST(compile_time_validation_with_errors_native) {
-  using namespace simdutf::tests::helpers;
-  static_assert(simdutf::validate_utf16_with_errors(u"hello!"_utf16).is_ok());
+  using namespace turbo::tests::helpers;
+  static_assert(turbo::validate_utf16_with_errors(u"hello!"_utf16).is_ok());
 }
 
 TEST(compile_time_validation_with_errors_big) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   static_assert(
-      simdutf::validate_utf16be_with_errors(u"hello!"_utf16be).is_ok());
+      turbo::validate_utf16be_with_errors(u"hello!"_utf16be).is_ok());
 }
 
 #endif

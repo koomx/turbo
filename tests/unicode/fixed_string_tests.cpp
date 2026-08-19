@@ -8,7 +8,7 @@
 #if SIMDUTF_CPLUSPLUS23
 
 TEST(construct_from_user_defined_literals) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
 
   constexpr auto utf32 = U"köttbulle"_utf32;
   static_assert(utf32 == CTString(U"köttbulle"));
@@ -48,16 +48,16 @@ template <typename T>
 concept test_construct_from_range = requires(const std::array<T, 3> &dummy) {
   {
     // this tries to ensure that the following compiles:
-    // constexpr simdutf::tests::helpers::CTString tmp{dummy};
+    // constexpr turbo::tests::helpers::CTString tmp{dummy};
 
     std::integral_constant<
-        std::size_t, sizeof(simdutf::tests::helpers::CTString{dummy}) * 0>{}
+        std::size_t, sizeof(turbo::tests::helpers::CTString{dummy}) * 0>{}
   } -> std::same_as<std::integral_constant<std::size_t, 0>>;
 };
 } // namespace
 
 TEST(construct_from_range) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   constexpr std::array<char32_t, 5> tmp{'h', 'e', 'l', 'l', 'o'};
   constexpr CTString fromrange(tmp);
   static_assert(fromrange[0] == 'h');
@@ -84,7 +84,7 @@ TEST(construct_from_range) {
 
 // this also tests the concepts
 TEST(construct_from_literals) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
 
   static_assert(CTString("abc").size() == 3);
 
@@ -124,7 +124,7 @@ TEST(construct_from_literals) {
 }
 
 TEST(test_endianness) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   // make them equally long so we can compare the type (the length is encoded in
   // the type)
   constexpr auto native = u"NATIVE"_utf16;

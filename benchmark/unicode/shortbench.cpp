@@ -30,20 +30,20 @@ std::vector<BenchmarkFunc> available_functions = {
     {"validate_ascii",
      [](std::span<const char> input, [[maybe_unused]] std::span<char> output) {
        return [input]() -> size_t {
-         return simdutf::validate_ascii(input.data(), input.size());
+         return turbo::validate_ascii(input.data(), input.size());
        };
      }},
     {"validate_utf8",
      [](std::span<const char> input, [[maybe_unused]] std::span<char> output) {
        return [input]() -> size_t {
-         return simdutf::validate_utf8(input.data(), input.size());
+         return turbo::validate_utf8(input.data(), input.size());
        };
      }},
     {"utf8_length_from_latin1",
      [](std::span<const char> input, [[maybe_unused]] std::span<char> output) {
        return [input]() -> size_t {
          size_t len =
-             simdutf::utf8_length_from_latin1(input.data(), input.size());
+             turbo::utf8_length_from_latin1(input.data(), input.size());
          return len;
        };
      }},
@@ -51,7 +51,7 @@ std::vector<BenchmarkFunc> available_functions = {
      [](std::span<const char> input, [[maybe_unused]] std::span<char> output) {
        return [input]() -> size_t {
          size_t len =
-             simdutf::utf16_length_from_utf8(input.data(), input.size());
+             turbo::utf16_length_from_utf8(input.data(), input.size());
          return len;
        };
      }},
@@ -59,21 +59,21 @@ std::vector<BenchmarkFunc> available_functions = {
      [](std::span<const char> input, [[maybe_unused]] std::span<char> output) {
        return [input]() -> size_t {
          size_t len =
-             simdutf::utf32_length_from_utf8(input.data(), input.size());
+             turbo::utf32_length_from_utf8(input.data(), input.size());
          return len;
        };
      }},
     {"count_utf8",
      [](std::span<const char> input, [[maybe_unused]] std::span<char> output) {
        return [input]() -> size_t {
-         size_t count = simdutf::count_utf8(input.data(), input.size());
+         size_t count = turbo::count_utf8(input.data(), input.size());
          return count;
        };
      }},
     {"count_utf16",
      [](std::span<const char> input, [[maybe_unused]] std::span<char> output) {
        return [input]() -> size_t {
-         size_t count = simdutf::count_utf16(
+         size_t count = turbo::count_utf16(
              reinterpret_cast<const char16_t *>(input.data()),
              input.size() / 2);
          return count;
@@ -82,7 +82,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"utf8_length_from_utf16",
      [](std::span<const char> input, [[maybe_unused]] std::span<char> output) {
        return [input]() -> size_t {
-         size_t len = simdutf::utf8_length_from_utf16(
+         size_t len = turbo::utf8_length_from_utf16(
              reinterpret_cast<const char16_t *>(input.data()),
              input.size() / 2);
          return len;
@@ -91,7 +91,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"utf16_length_from_utf32",
      [](std::span<const char> input, [[maybe_unused]] std::span<char> output) {
        return [input]() -> size_t {
-         size_t len = simdutf::utf16_length_from_utf32(
+         size_t len = turbo::utf16_length_from_utf32(
              reinterpret_cast<const char32_t *>(input.data()),
              input.size() / 4);
          return len;
@@ -100,7 +100,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"utf32_length_from_utf16",
      [](std::span<const char> input, [[maybe_unused]] std::span<char> output) {
        return [input]() -> size_t {
-         size_t len = simdutf::utf32_length_from_utf16(
+         size_t len = turbo::utf32_length_from_utf16(
              reinterpret_cast<const char16_t *>(input.data()),
              input.size() / 2);
          return len;
@@ -109,7 +109,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"utf8_length_from_utf32",
      [](std::span<const char> input, [[maybe_unused]] std::span<char> output) {
        return [input]() -> size_t {
-         size_t len = simdutf::utf8_length_from_utf32(
+         size_t len = turbo::utf8_length_from_utf32(
              reinterpret_cast<const char32_t *>(input.data()),
              input.size() / 4);
          return len;
@@ -118,7 +118,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"convert_latin1_to_utf8",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         size_t len = simdutf::convert_latin1_to_utf8(
+         size_t len = turbo::convert_latin1_to_utf8(
              input.data(), input.size(), output.data());
          return len;
        };
@@ -126,7 +126,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"convert_latin1_to_utf16le",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         size_t len = simdutf::convert_latin1_to_utf16le(
+         size_t len = turbo::convert_latin1_to_utf16le(
              input.data(), input.size(),
              reinterpret_cast<char16_t *>(output.data()));
          return len;
@@ -135,7 +135,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"convert_latin1_to_utf16be",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         size_t len = simdutf::convert_latin1_to_utf16be(
+         size_t len = turbo::convert_latin1_to_utf16be(
              input.data(), input.size(),
              reinterpret_cast<char16_t *>(output.data()));
          return len;
@@ -144,7 +144,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"convert_latin1_to_utf32",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         size_t len = simdutf::convert_latin1_to_utf32(
+         size_t len = turbo::convert_latin1_to_utf32(
              input.data(), input.size(),
              reinterpret_cast<char32_t *>(output.data()));
          return len;
@@ -153,7 +153,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"convert_utf8_to_latin1",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         size_t len = simdutf::convert_utf8_to_latin1(
+         size_t len = turbo::convert_utf8_to_latin1(
              input.data(), input.size(), output.data());
          return len;
        };
@@ -161,7 +161,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"convert_utf8_to_utf16le",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         size_t len = simdutf::convert_utf8_to_utf16le(
+         size_t len = turbo::convert_utf8_to_utf16le(
              input.data(), input.size(),
              reinterpret_cast<char16_t *>(output.data()));
          return len;
@@ -170,7 +170,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"convert_utf8_to_utf16be",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         size_t len = simdutf::convert_utf8_to_utf16be(
+         size_t len = turbo::convert_utf8_to_utf16be(
              input.data(), input.size(),
              reinterpret_cast<char16_t *>(output.data()));
          return len;
@@ -179,7 +179,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"convert_utf8_to_utf32",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         size_t len = simdutf::convert_utf8_to_utf32(
+         size_t len = turbo::convert_utf8_to_utf32(
              input.data(), input.size(),
              reinterpret_cast<char32_t *>(output.data()));
          return len;
@@ -188,7 +188,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"convert_utf16le_to_latin1",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         size_t len = simdutf::convert_utf16le_to_latin1(
+         size_t len = turbo::convert_utf16le_to_latin1(
              reinterpret_cast<const char16_t *>(input.data()), input.size() / 2,
              output.data());
          return len;
@@ -197,7 +197,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"convert_utf16le_to_utf8",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         size_t len = simdutf::convert_utf16le_to_utf8(
+         size_t len = turbo::convert_utf16le_to_utf8(
              reinterpret_cast<const char16_t *>(input.data()), input.size() / 2,
              output.data());
          return len;
@@ -206,7 +206,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"convert_utf16le_to_utf32",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         size_t len = simdutf::convert_utf16le_to_utf32(
+         size_t len = turbo::convert_utf16le_to_utf32(
              reinterpret_cast<const char16_t *>(input.data()), input.size() / 2,
              reinterpret_cast<char32_t *>(output.data()));
          return len;
@@ -215,7 +215,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"convert_utf16be_to_latin1",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         size_t len = simdutf::convert_utf16be_to_latin1(
+         size_t len = turbo::convert_utf16be_to_latin1(
              reinterpret_cast<const char16_t *>(input.data()), input.size() / 2,
              output.data());
          return len;
@@ -224,7 +224,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"convert_utf16be_to_utf8",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         size_t len = simdutf::convert_utf16be_to_utf8(
+         size_t len = turbo::convert_utf16be_to_utf8(
              reinterpret_cast<const char16_t *>(input.data()), input.size() / 2,
              output.data());
          return len;
@@ -233,7 +233,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"convert_utf16be_to_utf32",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         size_t len = simdutf::convert_utf16be_to_utf32(
+         size_t len = turbo::convert_utf16be_to_utf32(
              reinterpret_cast<const char16_t *>(input.data()), input.size() / 2,
              reinterpret_cast<char32_t *>(output.data()));
          return len;
@@ -242,7 +242,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"convert_utf32_to_latin1",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         size_t len = simdutf::convert_utf32_to_latin1(
+         size_t len = turbo::convert_utf32_to_latin1(
              reinterpret_cast<const char32_t *>(input.data()), input.size() / 4,
              output.data());
          return len;
@@ -251,7 +251,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"convert_utf32_to_utf8",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         size_t len = simdutf::convert_utf32_to_utf8(
+         size_t len = turbo::convert_utf32_to_utf8(
              reinterpret_cast<const char32_t *>(input.data()), input.size() / 4,
              output.data());
          return len;
@@ -260,7 +260,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"convert_utf32_to_utf16le",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         size_t len = simdutf::convert_utf32_to_utf16le(
+         size_t len = turbo::convert_utf32_to_utf16le(
              reinterpret_cast<const char32_t *>(input.data()), input.size() / 4,
              reinterpret_cast<char16_t *>(output.data()));
          return len;
@@ -269,7 +269,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"convert_utf32_to_utf16be",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         size_t len = simdutf::convert_utf32_to_utf16be(
+         size_t len = turbo::convert_utf32_to_utf16be(
              reinterpret_cast<const char32_t *>(input.data()), input.size() / 4,
              reinterpret_cast<char16_t *>(output.data()));
          return len;
@@ -278,7 +278,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"binary_to_base64",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         size_t len = simdutf::binary_to_base64(input.data(), input.size(),
+         size_t len = turbo::binary_to_base64(input.data(), input.size(),
                                                 output.data());
          return len;
        };
@@ -286,7 +286,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"base64_to_binary",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         auto result = simdutf::base64_to_binary(input.data(), input.size(),
+         auto result = turbo::base64_to_binary(input.data(), input.size(),
                                                  output.data());
          return result.count;
        };
@@ -294,7 +294,7 @@ std::vector<BenchmarkFunc> available_functions = {
     {"base64_to_binary_safe",
      [](std::span<const char> input, std::span<char> output) {
        return [input, output]() -> size_t {
-         auto result = simdutf::base64_to_binary_safe(input, output);
+         auto result = turbo::base64_to_binary_safe(input, output);
          return std::get<1>(result);
        };
      }},
@@ -302,7 +302,7 @@ std::vector<BenchmarkFunc> available_functions = {
      [](std::span<const char> input, [[maybe_unused]] std::span<char> output) {
        return [input]() -> size_t {
          auto it =
-             simdutf::find(input.data(), input.data() + input.size(), '=');
+             turbo::find(input.data(), input.data() + input.size(), '=');
          return it - input.data();
        };
      }},
@@ -498,7 +498,7 @@ int main(int argc, char *argv[]) {
     } else {
       data = read_file(filename);
       file_size = data.size();
-      actual_max = simdutf::detail::min(max_size, file_size);
+      actual_max = turbo::detail::min(max_size, file_size);
       input_desc = std::string("file: ") + filename;
     }
 
@@ -511,8 +511,8 @@ int main(int argc, char *argv[]) {
         printf("# Input size: %zu bytes\n", file_size);
         printf("# Max benchmark size: %zu bytes\n", actual_max);
         printf("# Current system: %.*s\n",
-               int(simdutf::get_active_implementation()->name().size()),
-               simdutf::get_active_implementation()->name().data());
+               int(turbo::get_active_implementation()->name().size()),
+               turbo::get_active_implementation()->name().data());
         printf("\n");
 
         print_table_header(has_events);
@@ -533,8 +533,8 @@ int main(int argc, char *argv[]) {
       printf("# Input size: %zu bytes\n", file_size);
       printf("# Max benchmark size: %zu bytes\n", actual_max);
       printf("# Current system: %.*s\n",
-             int(simdutf::get_active_implementation()->name().size()),
-             simdutf::get_active_implementation()->name().data());
+             int(turbo::get_active_implementation()->name().size()),
+             turbo::get_active_implementation()->name().data());
       printf("\n");
 
       print_table_header(has_events);

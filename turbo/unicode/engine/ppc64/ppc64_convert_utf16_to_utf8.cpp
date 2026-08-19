@@ -134,13 +134,13 @@ simdutf_really_inline void ppc64_convert_utf16_to_1_2_3_bytes_of_utf8(
 
     const uint8_t mask0 = uint8_t(mask);
 
-    const uint8_t* row0 = &simdutf::tables::ppc64_utf16_to_utf8::pack_1_2_3_utf8_bytes[mask0][0];
+    const uint8_t* row0 = &turbo::tables::ppc64_utf16_to_utf8::pack_1_2_3_utf8_bytes[mask0][0];
     const auto shuffle0 = vector_u8::load(row0 + 1);
 
     const auto utf8_0 = shuffle0.lookup_32(as_vector_u8(s4), as_vector_u8(t2));
     const uint8_t mask1 = static_cast<uint8_t>(mask >> 8);
 
-    const uint8_t* row1 = &simdutf::tables::ppc64_utf16_to_utf8::pack_1_2_3_utf8_bytes[mask1][0];
+    const uint8_t* row1 = &turbo::tables::ppc64_utf16_to_utf8::pack_1_2_3_utf8_bytes[mask1][0];
     const auto shuffle1 = vector_u8::load(row1 + 1) + uint8_t(8);
     const auto utf8_1 = shuffle1.lookup_32(as_vector_u8(s4), as_vector_u8(t2));
 

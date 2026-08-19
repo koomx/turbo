@@ -26,11 +26,11 @@ TEST(utf16le_surrogate_pair) {
 
     ASSERT_EQUAL(want, got);
 
-    const simdutf::result got_with_replacement =
+    const turbo::result got_with_replacement =
         implementation.utf8_length_from_utf16le_with_replacement(
             reinterpret_cast<const char16_t *>(input.data()), input.size() / 2);
     ASSERT_EQUAL(want, got_with_replacement.count);
-    ASSERT_EQUAL(simdutf::SURROGATE, got_with_replacement.error);
+    ASSERT_EQUAL(turbo::SURROGATE, got_with_replacement.error);
   }
 }
 
@@ -52,11 +52,11 @@ TEST(utf16be_surrogate_pair) {
 
     ASSERT_EQUAL(want, got);
 
-    const simdutf::result got_with_replacement =
+    const turbo::result got_with_replacement =
         implementation.utf8_length_from_utf16be_with_replacement(
             reinterpret_cast<const char16_t *>(input.data()), input.size() / 2);
     ASSERT_EQUAL(want, got_with_replacement.count);
-    ASSERT_EQUAL(simdutf::SURROGATE, got_with_replacement.error);
+    ASSERT_EQUAL(turbo::SURROGATE, got_with_replacement.error);
   }
 }
 
@@ -71,7 +71,7 @@ TEST(issue001) {
   const auto result1 = implementation.utf8_length_from_utf16be_with_replacement(
       input.data(), input.size());
   ASSERT_EQUAL(result1.count, 11);
-  ASSERT_EQUAL(simdutf::SURROGATE, result1.error);
+  ASSERT_EQUAL(turbo::SURROGATE, result1.error);
 #else
   const size_t standard =
       implementation.utf8_length_from_utf16le(input.data(), input.size());
@@ -79,7 +79,7 @@ TEST(issue001) {
   const auto result2 = implementation.utf8_length_from_utf16le_with_replacement(
       input.data(), input.size());
   ASSERT_EQUAL(result2.count, 11);
-  ASSERT_EQUAL(simdutf::SURROGATE, result2.error);
+  ASSERT_EQUAL(turbo::SURROGATE, result2.error);
 #endif
 }
 
@@ -93,7 +93,7 @@ TEST(issue002) {
   const auto result1 = implementation.utf8_length_from_utf16be_with_replacement(
       input.data(), input.size());
   ASSERT_EQUAL(result1.count, 5);
-  ASSERT_EQUAL(simdutf::SURROGATE, result1.error);
+  ASSERT_EQUAL(turbo::SURROGATE, result1.error);
 #else
   const size_t standard =
       implementation.utf8_length_from_utf16le(input.data(), input.size());
@@ -101,7 +101,7 @@ TEST(issue002) {
   const auto result2 = implementation.utf8_length_from_utf16le_with_replacement(
       input.data(), input.size());
   ASSERT_EQUAL(result2.count, 5);
-  ASSERT_EQUAL(simdutf::SURROGATE, result2.error);
+  ASSERT_EQUAL(turbo::SURROGATE, result2.error);
 #endif
 }
 
@@ -114,15 +114,15 @@ TEST(bug_found_in_release_7_7_0) {
   // to prove the bug in the current implementation.
 
   const std::vector<char16_t> input = {0xD800, 0xDC00, 0xDFFF, 0xD800, 0xDC00};
-  const bool valid = simdutf::validate_utf16(input.data(), input.size());
+  const bool valid = turbo::validate_utf16(input.data(), input.size());
   ASSERT_FALSE(valid);
 
   const auto native_length =
-      simdutf::utf8_length_from_utf16(input.data(), input.size());
+      turbo::utf8_length_from_utf16(input.data(), input.size());
   const auto be_length =
-      simdutf::utf8_length_from_utf16be(input.data(), input.size());
+      turbo::utf8_length_from_utf16be(input.data(), input.size());
   const auto le_length =
-      simdutf::utf8_length_from_utf16le(input.data(), input.size());
+      turbo::utf8_length_from_utf16le(input.data(), input.size());
 #if SIMDUTF_IS_BIG_ENDIAN
   ASSERT_EQUAL(native_length, be_length);
   (void)le_length;
@@ -136,63 +136,63 @@ TEST(bug_found_in_release_7_7_0) {
 
 namespace {
 // makes a malformed string in the requested endianness
-template <simdutf::endianness e> constexpr auto make_malformed() {
-  simdutf::tests::helpers::CTString<
+template <turbo::endianness e> constexpr auto make_malformed() {
+  turbo::tests::helpers::CTString<
       char16_t, 5,
-      e == simdutf::endianness::BIG ? std::endian::big : std::endian::little>
+      e == turbo::endianness::BIG ? std::endian::big : std::endian::little>
       data{};
-  data[2] = simdutf::scalar::utf16::swap_if_needed<e>(0xD800);
+  data[2] = turbo::scalar::utf16::swap_if_needed<e>(0xD800);
   return data;
 }
 } // namespace
 
 TEST(compile_time_utf8_length_from_utf16_with_replacement) {
-  using namespace simdutf::tests::helpers;
-  using enum simdutf::endianness;
+  using namespace turbo::tests::helpers;
+  using enum turbo::endianness;
 
   {
     constexpr auto malformed = make_malformed<NATIVE>();
-    constexpr simdutf::result utf8_length =
-        simdutf::utf8_length_from_utf16_with_replacement(malformed);
+    constexpr turbo::result utf8_length =
+        turbo::utf8_length_from_utf16_with_replacement(malformed);
     static_assert(utf8_length.count == malformed.size() + 2);
-    static_assert(utf8_length.error == simdutf::SURROGATE);
+    static_assert(utf8_length.error == turbo::SURROGATE);
     constexpr auto wellformed = to_wellformed(malformed);
     constexpr size_t utf8_length_check =
-        simdutf::utf8_length_from_utf16(wellformed);
+        turbo::utf8_length_from_utf16(wellformed);
     static_assert(utf8_length.count == utf8_length_check);
   }
 }
 
 TEST(compile_time_utf8_length_from_utf16le_with_replacement) {
-  using namespace simdutf::tests::helpers;
-  using enum simdutf::endianness;
+  using namespace turbo::tests::helpers;
+  using enum turbo::endianness;
 
   {
     constexpr auto malformed = make_malformed<LITTLE>();
-    constexpr simdutf::result utf8_length =
-        simdutf::utf8_length_from_utf16le_with_replacement(malformed);
+    constexpr turbo::result utf8_length =
+        turbo::utf8_length_from_utf16le_with_replacement(malformed);
     static_assert(utf8_length.count == malformed.size() + 2);
-    static_assert(utf8_length.error == simdutf::SURROGATE);
+    static_assert(utf8_length.error == turbo::SURROGATE);
     constexpr auto wellformed = to_wellformed(malformed);
     constexpr size_t utf8_length_check =
-        simdutf::utf8_length_from_utf16le(wellformed);
+        turbo::utf8_length_from_utf16le(wellformed);
     static_assert(utf8_length.count == utf8_length_check);
   }
 }
 
 TEST(compile_time_utf8_length_from_utf16be_with_replacement) {
-  using namespace simdutf::tests::helpers;
-  using enum simdutf::endianness;
+  using namespace turbo::tests::helpers;
+  using enum turbo::endianness;
 
   {
     constexpr auto malformed = make_malformed<BIG>();
-    constexpr simdutf::result utf8_length =
-        simdutf::utf8_length_from_utf16be_with_replacement(malformed);
+    constexpr turbo::result utf8_length =
+        turbo::utf8_length_from_utf16be_with_replacement(malformed);
     static_assert(utf8_length.count == malformed.size() + 2);
-    static_assert(utf8_length.error == simdutf::SURROGATE);
+    static_assert(utf8_length.error == turbo::SURROGATE);
     constexpr auto wellformed = to_wellformed(malformed);
     constexpr size_t utf8_length_check =
-        simdutf::utf8_length_from_utf16be(wellformed);
+        turbo::utf8_length_from_utf16be(wellformed);
     static_assert(utf8_length.count == utf8_length_check);
   }
 }

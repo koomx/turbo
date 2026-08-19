@@ -39,7 +39,7 @@ lsx_convert_latin1_to_utf8(const char* latin1_input, size_t len,
         __m128i one_byte_bytemask = __lsx_vsle_hu(in16, __lsx_vrepli_h(0x7F));
         __m128i utf8_unpacked = __lsx_vbitsel_v(t3, in16, one_byte_bytemask);
 
-        const uint8_t* row = &simdutf::tables::utf16_to_utf8::pack_1_2_utf8_bytes
+        const uint8_t* row = &turbo::tables::utf16_to_utf8::pack_1_2_utf8_bytes
                                  [lsx_1_2_utf8_bytes_mask[(ascii & 0xff)]][0];
         __m128i shuffle = __lsx_vld(row + 1, 0);
         __m128i utf8_packed = __lsx_vshuf_b(zero, utf8_unpacked, shuffle);

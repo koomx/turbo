@@ -3,17 +3,17 @@
 
 #include <turbo/unicode/engine/implementation.h>
 
-namespace simdutf {
+namespace turbo {
     namespace fallback {
 
         namespace {
-            using namespace simdutf;
+            using namespace turbo;
         }
 
-        class implementation final : public simdutf::implementation {
+        class implementation final : public turbo::implementation {
         public:
             simdutf_really_inline implementation()
-                : simdutf::implementation("fallback", "Generic fallback implementation",
+                : turbo::implementation("fallback", "Generic fallback implementation",
                       0) { }
 
 #if SIMDUTF_FEATURE_DETECT_ENCODING
@@ -322,6 +322,6 @@ namespace simdutf {
 #endif // SIMDUTF_FEATURE_BASE64
         };
     } // namespace fallback
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDUTF_FALLBACK_IMPLEMENTATION_H

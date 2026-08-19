@@ -23,7 +23,7 @@
 ///
 /// Nick Kopp. 2013. Base64 Encoding on a GPU.
 /// https://www.codeproject.com/Articles/276993/Base-Encoding-on-a-GPU. (2013).
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
         namespace {
             namespace base64 {
@@ -44,7 +44,7 @@ namespace simdutf {
                     const uint8_t* to_base64 = default_or_url ? tables::base64::to_base64_default_or_url_value
                                                               : (base64_url ? tables::base64::to_base64_url_value
                                                                             : tables::base64::to_base64_value);
-                    auto ri = simdutf::scalar::base64::find_end(src, srclen, options);
+                    auto ri = turbo::scalar::base64::find_end(src, srclen, options);
                     size_t equallocation = ri.equallocation;
                     size_t equalsigns = ri.equalsigns;
                     srclen = ri.srclen;
@@ -215,4 +215,4 @@ namespace simdutf {
             } // namespace base64
         } // unnamed namespace
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo

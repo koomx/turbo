@@ -40,12 +40,12 @@ void random_char_search(impl &implementation) {
   // Use std::find to search for the character
   auto result = std::find(arr.data(), arr.data() + size, search_char);
 
-  // Nest use simdutf::find to search for the character
+  // Nest use turbo::find to search for the character
   auto simd_result =
       implementation.find(arr.data(), arr.data() + size, search_char);
   // Check if the results are the same
   ASSERT_TRUE(simd_result == result);
-  simd_result = simdutf::find(arr.data(), arr.data() + size, search_char);
+  simd_result = turbo::find(arr.data(), arr.data() + size, search_char);
   // Check if the results are the same
   ASSERT_TRUE(simd_result == result);
 }
@@ -64,18 +64,18 @@ TEST(random_char_search_char16_t) {
 #if SIMDUTF_CPLUSPLUS23
 
 TEST(compile_time_find_char) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   constexpr auto s = "ensure find() is constexpr"_latin1;
   constexpr auto loc = std::distance(
-      s.data(), simdutf::find(s.data(), s.data() + s.size(), 'c'));
+      s.data(), turbo::find(s.data(), s.data() + s.size(), 'c'));
   static_assert(loc == 17);
 }
 
 TEST(compile_time_find_utf16) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   constexpr auto s = u"ensure find() is constexpr"_utf16;
   constexpr auto loc = std::distance(
-      s.data(), simdutf::find(s.data(), s.data() + s.size(), 'c'));
+      s.data(), turbo::find(s.data(), s.data() + s.size(), 'c'));
   static_assert(loc == 17);
 }
 

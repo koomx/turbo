@@ -1,6 +1,6 @@
 #include <turbo/unicode/engine/westmere/begin.h>
 
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
         namespace {
 #ifndef SIMDUTF_WESTMERE_H
@@ -90,7 +90,7 @@ namespace simdutf {
 
         } // unnamed namespace
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo
 
 #include <turbo/unicode/engine/generic/buf_block_reader.h>
 #if SIMDUTF_FEATURE_UTF8 || SIMDUTF_FEATURE_DETECT_ENCODING
@@ -145,7 +145,7 @@ namespace simdutf {
 // Implementation-specific overrides
 //
 
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
 
 #if SIMDUTF_FEATURE_DETECT_ENCODING
@@ -153,7 +153,7 @@ namespace simdutf {
         implementation::detect_encodings(const char* input,
             size_t length) const noexcept {
             // If there is a BOM, then we trust it.
-            auto bom_encoding = simdutf::BOM::check_bom(input, length);
+            auto bom_encoding = turbo::BOM::check_bom(input, length);
             if (bom_encoding != encoding_type::unspecified) {
                 return bom_encoding;
             }
@@ -1396,6 +1396,6 @@ namespace simdutf {
 #endif // SIMDUTF_FEATURE_BASE64
 
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo
 
 #include <turbo/unicode/engine/westmere/end.h>

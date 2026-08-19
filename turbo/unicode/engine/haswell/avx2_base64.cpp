@@ -94,7 +94,7 @@ template <bool isbase64url, bool use_lines>
 size_t
 avx2_encode_base64_impl(char* dst, const char* src, size_t srclen,
     base64_options options,
-    size_t line_length = simdutf::default_line_length) {
+    size_t line_length = turbo::default_line_length) {
     size_t offset = 0;
 
     if (line_length < 4) {

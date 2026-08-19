@@ -10,7 +10,7 @@
 #include <tests/unicode/helpers/utf16.h>
 
 TEST_LOOP(validate_utf16be_ascii) {
-  simdutf::tests::helpers::random_utf16 generator{seed, 1, 0};
+  turbo::tests::helpers::random_utf16 generator{seed, 1, 0};
   auto utf16{generator.generate_be(512, seed)};
   generator.to_ascii_be(utf16);
   ASSERT_TRUE(
@@ -21,7 +21,7 @@ TEST_LOOP(validate_utf16be_ascii) {
 }
 
 TEST_LOOP(validate_utf16be_returns_true_for_valid_input_single_words) {
-  simdutf::tests::helpers::random_utf16 generator{seed, 1, 0};
+  turbo::tests::helpers::random_utf16 generator{seed, 1, 0};
   const auto utf16{generator.generate_be(512, seed)};
 
   ASSERT_TRUE(implementation.validate_utf16be(
@@ -29,14 +29,14 @@ TEST_LOOP(validate_utf16be_returns_true_for_valid_input_single_words) {
 }
 
 TEST_LOOP(validate_utf16be_returns_true_for_valid_input_surrogate_pairs_short) {
-  simdutf::tests::helpers::random_utf16 generator{seed, 0, 1};
+  turbo::tests::helpers::random_utf16 generator{seed, 0, 1};
   const auto utf16{generator.generate_be(8)};
   ASSERT_TRUE(implementation.validate_utf16be(
       reinterpret_cast<const char16_t *>(utf16.data()), utf16.size()));
 }
 
 TEST_LOOP(validate_utf16be_returns_true_for_valid_input_surrogate_pairs) {
-  simdutf::tests::helpers::random_utf16 generator{seed, 0, 1};
+  turbo::tests::helpers::random_utf16 generator{seed, 0, 1};
   const auto utf16{generator.generate_be(512)};
   ASSERT_TRUE(implementation.validate_utf16be(
       reinterpret_cast<const char16_t *>(utf16.data()), utf16.size()));
@@ -45,7 +45,7 @@ TEST_LOOP(validate_utf16be_returns_true_for_valid_input_surrogate_pairs) {
 // mixed = either 16-bit or 32-bit codewords
 TEST(validate_utf16be_returns_true_for_valid_input_mixed) {
   uint32_t seed{1234};
-  simdutf::tests::helpers::random_utf16 generator{seed, 1, 1};
+  turbo::tests::helpers::random_utf16 generator{seed, 1, 1};
   const auto utf16{generator.generate_be(512)};
   ASSERT_TRUE(implementation.validate_utf16be(
       reinterpret_cast<const char16_t *>(utf16.data()), utf16.size()));
@@ -71,7 +71,7 @@ TEST(validate_utf16be_returns_true_for_empty_string) {
 */
 TEST_LOOP(
     validate_utf16be_returns_false_when_input_has_wrong_first_word_value) {
-  simdutf::tests::helpers::random_utf16 generator{seed, 1, 0};
+  turbo::tests::helpers::random_utf16 generator{seed, 1, 0};
   auto utf16{generator.generate_be(128)};
   const size_t len = utf16.size();
 
@@ -96,7 +96,7 @@ TEST_LOOP(
 */
 TEST(validate_utf16be_returns_false_when_input_has_wrong_second_word_value) {
   uint32_t seed{1234};
-  simdutf::tests::helpers::random_utf16 generator{seed, 1, 0};
+  turbo::tests::helpers::random_utf16 generator{seed, 1, 0};
   auto utf16{generator.generate_be(128)};
   const size_t len = utf16.size();
 
@@ -131,7 +131,7 @@ TEST(validate_utf16be_returns_false_when_input_has_wrong_second_word_value) {
 TEST(validate_utf16be_returns_false_when_input_is_truncated) {
   const char16_t valid_surrogate_W1 = to_utf16be(0xd800);
   uint32_t seed{1234};
-  simdutf::tests::helpers::random_utf16 generator{seed, 1, 0};
+  turbo::tests::helpers::random_utf16 generator{seed, 1, 0};
   for (size_t size = 1; size < 128; size++) {
     auto utf16{generator.generate_be(128)};
     const size_t len = utf16.size();
@@ -146,29 +146,29 @@ TEST(validate_utf16be_returns_false_when_input_is_truncated) {
 #if SIMDUTF_CPLUSPLUS23
 
 TEST(compile_time_validation) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
 
-  static_assert(simdutf::validate_utf16be(u"hello!"_utf16be));
+  static_assert(turbo::validate_utf16be(u"hello!"_utf16be));
 
   // invalid - two high surrogates following each other
   constexpr auto invalid = u"\xd800\xd800"_utf16;
   constexpr auto invalid_be = to_utf16be(invalid);
-  static_assert(not simdutf::validate_utf16be(invalid_be));
+  static_assert(not turbo::validate_utf16be(invalid_be));
 }
 
 TEST(compile_time_ascii_validation_native_endian) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   static_assert(
-      simdutf::validate_utf16_as_ascii(u"I am ascii, I promise!"_utf16));
+      turbo::validate_utf16_as_ascii(u"I am ascii, I promise!"_utf16));
   static_assert(
-      not simdutf::validate_utf16_as_ascii(u"But this isn't: köttbulle"_utf16));
+      not turbo::validate_utf16_as_ascii(u"But this isn't: köttbulle"_utf16));
 }
 
 TEST(compile_time_ascii_validation_be) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   static_assert(
-      simdutf::validate_utf16be_as_ascii(u"I am ascii, I promise!"_utf16be));
-  static_assert(not simdutf::validate_utf16be_as_ascii(
+      turbo::validate_utf16be_as_ascii(u"I am ascii, I promise!"_utf16be));
+  static_assert(not turbo::validate_utf16be_as_ascii(
       u"But this isn't: köttbulle"_utf16be));
 }
 #endif

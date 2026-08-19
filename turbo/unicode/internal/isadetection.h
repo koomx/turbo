@@ -81,7 +81,7 @@ struct simdutf_riscv_hwprobe {
 // #define HWCAP_LOONGARCH_LASX            (1 << 5)
 #endif
 
-namespace simdutf {
+namespace turbo {
     namespace internal {
 
         enum instruction_set {
@@ -322,6 +322,6 @@ namespace simdutf {
 #endif // end SIMD extension detection code
 
     } // namespace internal
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDutf_INTERNAL_ISADETECTION_H

@@ -1,5 +1,5 @@
 #include <turbo/unicode/engine/rvv/begin.h>
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
         namespace {
 #ifndef SIMDUTF_RVV_H
@@ -8,7 +8,7 @@ namespace simdutf {
 
         } // unnamed namespace
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo
 
 #if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
   // transcoding from UTF-16 to UTF-8 (self-wrapping generic header, must be
@@ -19,7 +19,7 @@ namespace simdutf {
 //
 // Implementation-specific overrides
 //
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
 #include <turbo/unicode/engine/rvv/rvv_helpers.inl.cpp>
 
@@ -46,7 +46,7 @@ namespace simdutf {
         implementation::detect_encodings(const char* input,
             size_t length) const noexcept {
             // If there is a BOM, then we trust it.
-            auto bom_encoding = simdutf::BOM::check_bom(input, length);
+            auto bom_encoding = turbo::BOM::check_bom(input, length);
             if (bom_encoding != encoding_type::unspecified)
                 return bom_encoding;
             // todo: reimplement as a one-pass algorithm.
@@ -70,28 +70,28 @@ namespace simdutf {
         simdutf_warn_unused result implementation::base64_to_binary(
             const char* input, size_t length, char* output, base64_options options,
             last_chunk_handling_options last_chunk_options) const noexcept {
-            return simdutf::scalar::base64::base64_to_binary_details_impl(
+            return turbo::scalar::base64::base64_to_binary_details_impl(
                 input, length, output, options, last_chunk_options);
         }
 
         simdutf_warn_unused result implementation::base64_to_binary(
             const char16_t* input, size_t length, char* output, base64_options options,
             last_chunk_handling_options last_chunk_options) const noexcept {
-            return simdutf::scalar::base64::base64_to_binary_details_impl(
+            return turbo::scalar::base64::base64_to_binary_details_impl(
                 input, length, output, options, last_chunk_options);
         }
 
         simdutf_warn_unused full_result implementation::base64_to_binary_details(
             const char* input, size_t length, char* output, base64_options options,
             last_chunk_handling_options last_chunk_options) const noexcept {
-            return simdutf::scalar::base64::base64_to_binary_details_impl(
+            return turbo::scalar::base64::base64_to_binary_details_impl(
                 input, length, output, options, last_chunk_options);
         }
 
         simdutf_warn_unused full_result implementation::base64_to_binary_details(
             const char16_t* input, size_t length, char* output, base64_options options,
             last_chunk_handling_options last_chunk_options) const noexcept {
-            return simdutf::scalar::base64::base64_to_binary_details_impl(
+            return turbo::scalar::base64::base64_to_binary_details_impl(
                 input, length, output, options, last_chunk_options);
         }
 
@@ -151,6 +151,6 @@ namespace simdutf {
 #endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
 
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo
 
 #include <turbo/unicode/engine/rvv/end.h>

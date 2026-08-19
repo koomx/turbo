@@ -61,10 +61,10 @@ size_t convert_masked_utf8_to_utf16(const char* input,
 
     /// We do not have a fast path available, or the fast path is unimportant, so
     /// we fallback.
-    const uint8_t idx = simdutf::tables::utf8_to_utf16::utf8bigindex
+    const uint8_t idx = turbo::tables::utf8_to_utf16::utf8bigindex
         [input_utf8_end_of_code_point_mask][0];
 
-    const uint8_t consumed = simdutf::tables::utf8_to_utf16::utf8bigindex
+    const uint8_t consumed = turbo::tables::utf8_to_utf16::utf8bigindex
         [input_utf8_end_of_code_point_mask][1];
 
     if (idx < 64) {
@@ -83,7 +83,7 @@ size_t convert_masked_utf8_to_utf16(const char* input,
         // FOUR (4) input code-code units
         // UTF-16 and UTF-32 use similar algorithms, but UTF-32 skips the narrowing.
         uint8x16_t sh = vld1q_u8(reinterpret_cast<const uint8_t*>(
-            simdutf::tables::utf8_to_utf16::shufutf8[idx]));
+            turbo::tables::utf8_to_utf16::shufutf8[idx]));
         // XXX: depending on the system scalar instructions might be faster.
         // 1 byte: 00000000 00000000 0ccccccc
         // 2 byte: 00000000 110bbbbb 10cccccc
@@ -209,7 +209,7 @@ size_t convert_masked_utf8_to_utf16(const char* input,
         }
         // 3 1-4 byte sequences
         uint8x16_t sh = vld1q_u8(reinterpret_cast<const uint8_t*>(
-            simdutf::tables::utf8_to_utf16::shufutf8[idx]));
+            turbo::tables::utf8_to_utf16::shufutf8[idx]));
 
         // 1 byte: 00000000 00000000 00000000 0ddddddd
         // 3 byte: 00000000 00000000 110ccccc 10dddddd

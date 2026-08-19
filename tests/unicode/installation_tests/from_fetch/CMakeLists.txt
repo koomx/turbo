@@ -21,7 +21,7 @@ file(WRITE main.cpp "
 #include \"simdutf.h\"
 int main(int argc, char *argv[]) {
    const char * ascii = \"1234\";
-   bool validutf8 = simdutf::validate_utf8(ascii, 4);
+   bool validutf8 = turbo::validate_utf8(ascii, 4);
    if(validutf8) {
        std::cout << \"valid UTF-8\" << std::endl;
    } else {
@@ -30,13 +30,13 @@ int main(int argc, char *argv[]) {
    }
    char16_t utf16_output[4];
    // convert to UTF-16LE
-   size_t utf16words = simdutf::convert_utf8_to_utf16le(ascii, 4, utf16_output);
+   size_t utf16words = turbo::convert_utf8_to_utf16le(ascii, 4, utf16_output);
    std::cout << \"wrote \" << utf16words << \" UTF-16 code units.\" << std::endl;
    // It wrote utf16words * sizeof(char16_t) bytes.
    //
    // convert it back:
    char buffer[4];
-   size_t utf8words = simdutf::convert_utf16le_to_utf8(utf16_output, utf16words, buffer);
+   size_t utf8words = turbo::convert_utf16le_to_utf8(utf16_output, utf16words, buffer);
    std::cout << \"wrote \" << utf8words << \" UTF-8 code units.\" << std::endl;
    return EXIT_SUCCESS;
 }")
@@ -44,4 +44,4 @@ int main(int argc, char *argv[]) {
 
 
 add_executable(repro main.cpp)
-target_link_libraries(repro PUBLIC simdutf::simdutf)
+target_link_libraries(repro PUBLIC turbo::simdutf)

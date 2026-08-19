@@ -40,27 +40,27 @@ const size_t utf32_size = sizeof(utf32_string) / sizeof(char32_t);
 const size_t number_of_code_points = utf32_size;
 
 TEST(validate_utf8) {
-  simdutf::result res =
+  turbo::result res =
       implementation.validate_utf8_with_errors(utf8, utf8_size);
-  ASSERT_EQUAL(res.error, simdutf::error_code::SUCCESS);
+  ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
 }
 
 TEST(validate_utf16le) {
-  simdutf::result res =
+  turbo::result res =
       implementation.validate_utf16le_with_errors(utf16le, utf16_size);
-  ASSERT_EQUAL(res.error, simdutf::error_code::SUCCESS);
+  ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
 }
 
 TEST(validate_utf16be) {
-  simdutf::result res =
+  turbo::result res =
       implementation.validate_utf16be_with_errors(utf16be, utf16_size);
-  ASSERT_EQUAL(res.error, simdutf::error_code::SUCCESS);
+  ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
 }
 
 TEST(validate_utf32) {
-  simdutf::result res =
+  turbo::result res =
       implementation.validate_utf32_with_errors(utf32, utf32_size);
-  ASSERT_EQUAL(res.error, simdutf::error_code::SUCCESS);
+  ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
 }
 
 TEST(count_utf8) {

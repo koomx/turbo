@@ -13,7 +13,7 @@
   #include <algorithm>
   #include <ranges>
 
-namespace simdutf {
+namespace turbo {
 namespace tests {
 namespace helpers {
 
@@ -262,6 +262,6 @@ concept utf32_ctstring =
 
 } // namespace helpers
 } // namespace tests
-} // namespace simdutf
+} // namespace turbo
 #endif // SIMDUTF_CPLUSPLUS23
 #endif // SIMDUTF_FIXED_STRING_H

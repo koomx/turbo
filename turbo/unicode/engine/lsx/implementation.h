@@ -4,17 +4,17 @@
 #include <turbo/unicode/utf.h>
 #include <turbo/unicode/internal/isadetection.h>
 
-namespace simdutf {
+namespace turbo {
     namespace lsx {
 
         namespace {
-            using namespace simdutf;
+            using namespace turbo;
         }
 
-        class implementation final : public simdutf::implementation {
+        class implementation final : public turbo::implementation {
         public:
             simdutf_really_inline implementation()
-                : simdutf::implementation("lsx", "LOONGARCH SX",
+                : turbo::implementation("lsx", "LOONGARCH SX",
                       internal::instruction_set::LSX) { }
 #if SIMDUTF_FEATURE_DETECT_ENCODING
             simdutf_warn_unused int detect_encodings(const char* input,
@@ -300,6 +300,6 @@ namespace simdutf {
         };
 
     } // namespace lsx
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDUTF_LSX_IMPLEMENTATION_H

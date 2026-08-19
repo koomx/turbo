@@ -1,14 +1,14 @@
 #ifndef SIMDUTF_LATIN1_TO_UTF16_H
 #define SIMDUTF_LATIN1_TO_UTF16_H
 
-namespace simdutf {
+namespace turbo {
     namespace scalar {
         namespace {
             namespace latin1_to_utf16 {
 
                 template <endianness big_endian, typename InputPtr>
 #if SIMDUTF_CPLUSPLUS20
-                    requires simdutf::detail::indexes_into_byte_like<InputPtr>
+                    requires turbo::detail::indexes_into_byte_like<InputPtr>
 #endif
                 simdutf_constexpr23 size_t convert(InputPtr data, size_t len,
                     char16_t* utf16_output) {
@@ -43,6 +43,6 @@ namespace simdutf {
             } // namespace latin1_to_utf16
         } // unnamed namespace
     } // namespace scalar
-} // namespace simdutf
+} // namespace turbo
 
 #endif

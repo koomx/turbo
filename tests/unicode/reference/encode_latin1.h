@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace simdutf {
+namespace turbo {
 namespace tests {
 namespace reference {
 namespace latin1 {
@@ -29,4 +29,4 @@ template <typename CONSUMER> int encode(uint8_t value, CONSUMER consumer) {
 } // namespace latin1
 } // namespace reference
 } // namespace tests
-} // namespace simdutf
+} // namespace turbo

@@ -4,8 +4,8 @@
 #include <stdexcept>
 #include <cstdio>
 
-auto simdutf::test::CommandLine::parse(int argc, char *argv[])
-    -> simdutf::test::CommandLine {
+auto turbo::test::CommandLine::parse(int argc, char *argv[])
+    -> turbo::test::CommandLine {
   CommandLine cmdline;
   cmdline.seed = 42;
 
@@ -104,7 +104,7 @@ void print_architectures(FILE *file) {
   fprintf(file, "Little-endian system detected.\n");
 #endif
   fprintf(file, "Available implementations:\n");
-  for (const auto &implementation : simdutf::get_available_implementations()) {
+  for (const auto &implementation : turbo::get_available_implementations()) {
     if (implementation == nullptr) {
       puts("implementation is null which is unexpected.");
       abort();
@@ -124,17 +124,17 @@ void print_architectures() { print_architectures(stdout); }
 
 void print_tests(FILE *file) {
   fprintf(file, "Available tests:\n");
-  for (const auto &test : simdutf::test::test_procedures()) {
+  for (const auto &test : turbo::test::test_procedures()) {
     fprintf(file, "- %.*s\n", int(test.name.size()), test.name.data());
   }
 }
 
 void print_tests() { print_tests(stdout); }
 
-namespace simdutf {
+namespace turbo {
 namespace test {
 
-void test_entry::operator()(const simdutf::implementation &impl) {
+void test_entry::operator()(const turbo::implementation &impl) {
   std::string title = name;
   std::replace(title.begin(), title.end(), '_', ' ');
   printf("Running '%s'... ", title.c_str());
@@ -160,7 +160,7 @@ void run(const CommandLine &cmdline) {
   }
   size_t matching_implementation{0};
 
-  for (const auto &implementation : simdutf::get_available_implementations()) {
+  for (const auto &implementation : turbo::get_available_implementations()) {
     if (implementation == nullptr) {
       puts("implementation is null which is unexpected");
       abort();
@@ -181,7 +181,7 @@ void run(const CommandLine &cmdline) {
     printf("Checking implementation %.*s\n", int(implementation->name().size()),
            implementation->name().data());
 
-    auto filter = [&cmdline](const simdutf::test::test_entry &test) -> bool {
+    auto filter = [&cmdline](const turbo::test::test_entry &test) -> bool {
       if (cmdline.tests.empty())
         return true;
 
@@ -193,7 +193,7 @@ void run(const CommandLine &cmdline) {
       return false;
     };
 
-    for (auto test : simdutf::test::test_procedures()) {
+    for (auto test : turbo::test::test_procedures()) {
       if (filter(test)) {
         test(*implementation);
       }
@@ -232,4 +232,4 @@ int main(int argc, char *argv[]) {
 }
 
 } // namespace test
-} // namespace simdutf
+} // namespace turbo

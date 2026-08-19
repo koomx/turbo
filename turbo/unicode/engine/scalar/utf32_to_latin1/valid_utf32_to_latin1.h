@@ -3,7 +3,7 @@
 
 #include <cstring>
 
-namespace simdutf {
+namespace turbo {
     namespace scalar {
         namespace {
             namespace utf32_to_latin1 {
@@ -64,6 +64,6 @@ namespace simdutf {
             } // namespace utf32_to_latin1
         } // unnamed namespace
     } // namespace scalar
-} // namespace simdutf
+} // namespace turbo
 
 #endif

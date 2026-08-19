@@ -31,10 +31,10 @@
 
 #define SIMDUTF_TARGET_WESTMERE SIMDUTF_TARGET_REGION("sse4.2,popcnt")
 
-namespace simdutf {
+namespace turbo {
     /// Implementation for Westmere (Intel SSE4.2).
     namespace westmere { } // namespace westmere
-} // namespace simdutf
+} // namespace turbo
 
 //
 // These two need to be included outside SIMDUTF_TARGET_REGION

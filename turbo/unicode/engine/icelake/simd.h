@@ -1,7 +1,7 @@
 #ifndef SIMDUTF_ICELAKE_SIMD_H
 #define SIMDUTF_ICELAKE_SIMD_H
 
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
         namespace {
             namespace simd {
@@ -12,6 +12,6 @@ namespace simdutf {
             } // namespace simd
         } // unnamed namespace
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDUTF_ICELAKE_SIMD_H

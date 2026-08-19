@@ -4,17 +4,17 @@
 #include <turbo/unicode/utf.h>
 #include <turbo/unicode/internal/isadetection.h>
 
-namespace simdutf {
+namespace turbo {
     namespace arm64 {
 
         namespace {
-            using namespace simdutf;
+            using namespace turbo;
         }
 
-        class implementation final : public simdutf::implementation {
+        class implementation final : public turbo::implementation {
         public:
             simdutf_really_inline implementation()
-                : simdutf::implementation("arm64", "ARM NEON",
+                : turbo::implementation("arm64", "ARM NEON",
                       internal::instruction_set::NEON) { }
 #if SIMDUTF_FEATURE_DETECT_ENCODING
             simdutf_warn_unused int detect_encodings(const char* input,
@@ -298,6 +298,6 @@ namespace simdutf {
         };
 
     } // namespace arm64
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDUTF_ARM64_IMPLEMENTATION_H

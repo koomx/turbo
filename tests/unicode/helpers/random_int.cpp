@@ -1,6 +1,6 @@
 #include "random_int.h"
 
-namespace simdutf {
+namespace turbo {
 namespace tests {
 namespace helpers {
 
@@ -27,4 +27,4 @@ uint32_t RandomIntRanges::operator()() noexcept {
 }
 } // namespace helpers
 } // namespace tests
-} // namespace simdutf
+} // namespace turbo

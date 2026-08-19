@@ -12,7 +12,7 @@
 namespace {
 std::array<size_t, 7> input_size{7, 16, 12, 64, 67, 128, 256};
 
-using simdutf::tests::helpers::transcode_utf8_to_latin1_test_base;
+using turbo::tests::helpers::transcode_utf8_to_latin1_test_base;
 
 } // namespace
 
@@ -196,11 +196,11 @@ TEST(ossfuzz_385406635) {
   const auto validation1 =
       implementation.validate_utf8_with_errors((const char *)data, data_len);
   ASSERT_EQUAL(validation1.count, 0);
-  ASSERT_EQUAL(validation1.error, simdutf::error_code::TOO_LONG);
+  ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
 
   const bool validation2 =
       implementation.validate_utf8((const char *)data, data_len);
-  ASSERT_EQUAL(validation1.error == simdutf::error_code::SUCCESS, validation2);
+  ASSERT_EQUAL(validation1.error == turbo::error_code::SUCCESS, validation2);
 
   const auto outlen =
       implementation.latin1_length_from_utf8((const char *)data, data_len);
@@ -276,11 +276,11 @@ TEST(ossfuzz_372067232) {
   const auto validation1 =
       implementation.validate_utf8_with_errors((const char *)data, data_len);
   ASSERT_EQUAL(validation1.count, 0);
-  ASSERT_EQUAL(validation1.error, simdutf::error_code::TOO_LONG);
+  ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
 
   const bool validation2 =
       implementation.validate_utf8((const char *)data, data_len);
-  ASSERT_EQUAL(validation1.error == simdutf::error_code::SUCCESS, validation2);
+  ASSERT_EQUAL(validation1.error == turbo::error_code::SUCCESS, validation2);
 
   const auto outlen =
       implementation.latin1_length_from_utf8((const char *)data, data_len);
@@ -388,11 +388,11 @@ TEST(issue_539) {
   const auto validation1 =
       implementation.validate_utf8_with_errors((const char *)data, data_len);
   ASSERT_EQUAL(validation1.count, 0);
-  ASSERT_EQUAL(validation1.error, simdutf::error_code::TOO_LONG);
+  ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
 
   const bool validation2 =
       implementation.validate_utf8((const char *)data, data_len);
-  ASSERT_EQUAL(validation1.error == simdutf::error_code::SUCCESS, validation2);
+  ASSERT_EQUAL(validation1.error == turbo::error_code::SUCCESS, validation2);
 
   const auto outlen =
       implementation.latin1_length_from_utf8((const char *)data, data_len);
@@ -427,7 +427,7 @@ TEST(issue_convert_utf8_to_latin1_cbf29ce4842223c9) {
 
 // For invalid UTF-8, we expect the conversion to fail (return 0)
 TEST_LOOP(convert_random_inputs) {
-  simdutf::tests::helpers::RandomInt r(0x00, 0xff, seed);
+  turbo::tests::helpers::RandomInt r(0x00, 0xff, seed);
 
   for (size_t size : input_size) {
     std::vector<char> utf8(size);
@@ -439,7 +439,7 @@ TEST_LOOP(convert_random_inputs) {
     std::vector<char> latin1(buffer_size);
     size_t actual_size =
         implementation.convert_utf8_to_latin1(utf8.data(), size, latin1.data());
-    if (simdutf::tests::reference::validate_utf8_to_latin1(utf8.data(), size)) {
+    if (turbo::tests::reference::validate_utf8_to_latin1(utf8.data(), size)) {
       ASSERT_EQUAL(actual_size, buffer_size);
     } else {
       ASSERT_EQUAL(actual_size, 0);
@@ -468,7 +468,7 @@ TEST_LOOP(convert_pure_ASCII) {
 }
 
 TEST_LOOP(convert_1_or_2_valid_UTF8_bytes_to_latin1) {
-  simdutf::tests::helpers::RandomInt random(
+  turbo::tests::helpers::RandomInt random(
       0x0000, 0x0ff, seed); // range for 1 or 2 UTF-8 bytes
 
   auto procedure = [&implementation](const char *utf8, size_t size,
@@ -491,9 +491,9 @@ TEST_LOOP(convert_1_or_2_valid_UTF8_bytes_to_latin1) {
 namespace {
 
 template <auto input> constexpr auto convert() {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   CTString<char, input.size()> tmp;
-  auto N = simdutf::convert_utf8_to_latin1(input, tmp);
+  auto N = turbo::convert_utf8_to_latin1(input, tmp);
   if (N != input.size()) {
     throw "oops";
   }
@@ -503,7 +503,7 @@ template <auto input> constexpr auto convert() {
 } // namespace
 
 TEST(compile_time_convert_utf8_to_latin1) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
 
   constexpr auto input = u8"hello I am over 16 byte long"_utf8;
   constexpr auto expected = "hello I am over 16 byte long"_latin1;

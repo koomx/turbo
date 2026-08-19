@@ -10,7 +10,7 @@
 namespace {
 std::array<size_t, 7> input_size{7, 16, 12, 64, 67, 128, 256};
 
-using simdutf::tests::helpers::transcode_utf8_to_latin1_test_base;
+using turbo::tests::helpers::transcode_utf8_to_latin1_test_base;
 
 } // namespace
 
@@ -35,7 +35,7 @@ TEST_LOOP(convert_pure_ASCII) {
 }
 
 TEST_LOOP(convert_1_or_2_valid_UTF8_bytes_to_latin1) {
-  simdutf::tests::helpers::RandomInt random(
+  turbo::tests::helpers::RandomInt random(
       0x0000, 0x0ff, seed); // range for 1 or 2 UTF-8 bytes
 
   auto procedure = [&implementation](const char *utf8, size_t size,
@@ -57,12 +57,12 @@ TEST_LOOP(convert_1_or_2_valid_UTF8_bytes_to_latin1) {
 
 namespace {
 template <auto input> constexpr auto length() {
-  return simdutf::latin1_length_from_utf8(input);
+  return turbo::latin1_length_from_utf8(input);
 }
 template <auto input> constexpr auto convert() {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   CTString<char, length<input>()> tmp;
-  auto ret = simdutf::convert_valid_utf8_to_latin1(input, tmp);
+  auto ret = turbo::convert_valid_utf8_to_latin1(input, tmp);
   if (ret != tmp.size()) {
     throw "oops";
   }
@@ -71,7 +71,7 @@ template <auto input> constexpr auto convert() {
 } // namespace
 
 TEST(compile_time_convert_valid_utf8_to_latin1) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
 
   constexpr auto input = u8"köttbulle"_utf8;
   constexpr auto expected = "k\xF6ttbulle"_latin1;

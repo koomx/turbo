@@ -29,10 +29,10 @@
 
 #if SIMDUTF_IMPLEMENTATION_LSX
 
-namespace simdutf {
+namespace turbo {
     /// Implementation for LoongArch SX.
     namespace lsx { } // namespace lsx
-} // namespace simdutf
+} // namespace turbo
 
 #include <turbo/unicode/engine/lsx/implementation.h>
 

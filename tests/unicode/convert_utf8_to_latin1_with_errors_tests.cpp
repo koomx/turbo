@@ -10,7 +10,7 @@
 namespace {
 std::array<size_t, 7> input_size{7, 16, 12, 64, 67, 128, 256};
 
-using simdutf::tests::helpers::transcode_utf8_to_latin1_test_base;
+using turbo::tests::helpers::transcode_utf8_to_latin1_test_base;
 
 constexpr int fix_size = 512;
 
@@ -35,7 +35,7 @@ TEST(issue633) {
   const auto r = implementation.convert_utf8_to_latin1_with_errors(
       (const char *)data, data_len, dataout);
   ASSERT_EQUAL(r.count, 0);
-  ASSERT_EQUAL(r.error, simdutf::error_code::TOO_LONG);
+  ASSERT_EQUAL(r.error, turbo::error_code::TOO_LONG);
 }
 
 // triggered by https://oss-fuzz.com/testcase-detail/4942454003924992,
@@ -218,11 +218,11 @@ TEST(ossfuzz_385406635) {
   const auto validation1 =
       implementation.validate_utf8_with_errors((const char *)data, data_len);
   ASSERT_EQUAL(validation1.count, 0);
-  ASSERT_EQUAL(validation1.error, simdutf::error_code::TOO_LONG);
+  ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
 
   const bool validation2 =
       implementation.validate_utf8((const char *)data, data_len);
-  ASSERT_EQUAL(validation1.error == simdutf::error_code::SUCCESS, validation2);
+  ASSERT_EQUAL(validation1.error == turbo::error_code::SUCCESS, validation2);
 
   const auto outlen =
       implementation.latin1_length_from_utf8((const char *)data, data_len);
@@ -230,7 +230,7 @@ TEST(ossfuzz_385406635) {
   std::vector<char> output(outlen);
   const auto r = implementation.convert_utf8_to_latin1_with_errors(
       (const char *)data, data_len, output.data());
-  ASSERT_EQUAL(r.error, simdutf::error_code::TOO_LONG);
+  ASSERT_EQUAL(r.error, turbo::error_code::TOO_LONG);
   ASSERT_EQUAL(r.count, 0);
 }
 
@@ -247,11 +247,11 @@ TEST(issue_convert_utf8_to_latin1_with_errors_01f0c43ba5b92120) {
   const auto validation1 =
       implementation.validate_utf8_with_errors((const char *)data, data_len);
   ASSERT_EQUAL(validation1.count, 64);
-  ASSERT_EQUAL(validation1.error, simdutf::error_code::TOO_LONG);
+  ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
 
   const bool validation2 =
       implementation.validate_utf8((const char *)data, data_len);
-  ASSERT_EQUAL(validation1.error == simdutf::error_code::SUCCESS, validation2);
+  ASSERT_EQUAL(validation1.error == turbo::error_code::SUCCESS, validation2);
 
   const auto outlen =
       implementation.latin1_length_from_utf8((const char *)data, data_len);
@@ -259,7 +259,7 @@ TEST(issue_convert_utf8_to_latin1_with_errors_01f0c43ba5b92120) {
   std::vector<char> output(outlen);
   const auto r = implementation.convert_utf8_to_latin1_with_errors(
       (const char *)data, data_len, output.data());
-  ASSERT_EQUAL(r.error, simdutf::error_code::TOO_LONG);
+  ASSERT_EQUAL(r.error, turbo::error_code::TOO_LONG);
   ASSERT_EQUAL(r.count, 64);
 }
 
@@ -276,7 +276,7 @@ TEST(issue_483) {
   const auto validation1 =
       implementation.validate_utf8_with_errors((const char *)data, data_len);
   ASSERT_EQUAL(validation1.count, 64);
-  ASSERT_EQUAL(validation1.error, simdutf::error_code::TOO_LONG);
+  ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
 
   const auto outlen =
       implementation.latin1_length_from_utf8((const char *)data, data_len);
@@ -284,7 +284,7 @@ TEST(issue_483) {
   std::vector<char> output(outlen);
   const auto r = implementation.convert_utf8_to_latin1_with_errors(
       (const char *)data, data_len, output.data());
-  ASSERT_EQUAL(r.error, simdutf::error_code::TOO_LONG);
+  ASSERT_EQUAL(r.error, turbo::error_code::TOO_LONG);
   ASSERT_EQUAL(r.count, 64);
 }
 
@@ -307,7 +307,7 @@ TEST(issue_convert_utf8_to_latin1_with_errors_a8ec246845d4878e) {
   const auto r = implementation.convert_utf8_to_latin1_with_errors(
       (const char *)data, data_len, output.data());
   ASSERT_EQUAL(r.count, 13);
-  ASSERT_EQUAL(r.error, simdutf::error_code::TOO_LARGE);
+  ASSERT_EQUAL(r.error, turbo::error_code::TOO_LARGE);
 }
 
 TEST(issue_convert_utf8_to_latin1_with_errors_cbf29ce4842223ed) {
@@ -330,7 +330,7 @@ TEST(issue_convert_utf8_to_latin1_with_errors_cbf29ce4842223ed) {
   got return [count=63, error=TOO_SHORT] from implementation fallback
   */
   ASSERT_EQUAL(r.count, 63);
-  ASSERT_EQUAL(r.error, simdutf::error_code::TOO_SHORT);
+  ASSERT_EQUAL(r.error, turbo::error_code::TOO_SHORT);
 }
 
 TEST_LOOP(convert_pure_ASCII) {
@@ -354,7 +354,7 @@ TEST_LOOP(convert_pure_ASCII) {
 }
 
 TEST_LOOP(convert_1_or_2_valid_UTF8_bytes_to_latin1) {
-  simdutf::tests::helpers::RandomInt random(
+  turbo::tests::helpers::RandomInt random(
       0x0000, 0x0ff, seed); // range for 1 or 2 UTF-8 bytes
 
   auto procedure = [&implementation](const char *utf8, size_t size,
@@ -385,7 +385,7 @@ TEST_LOOP(too_large_input) {
     }
   };
 
-  simdutf::tests::helpers::RandomIntRanges random({{0xff, 0x10FFFF}}, seed);
+  turbo::tests::helpers::RandomIntRanges random({{0xff, 0x10FFFF}}, seed);
   transcode_utf8_to_latin1_test_base test(random, fix_size);
   for (unsigned int i = 0; i < fix_size; i++) {
     auto byte_number = getUtf8SequenceLength(test.input_utf8[i]);
@@ -393,9 +393,9 @@ TEST_LOOP(too_large_input) {
 
       auto procedure = [&implementation, &i](const char *utf8, size_t size,
                                              char *latin1) -> size_t {
-        simdutf::result res = implementation.convert_utf8_to_latin1_with_errors(
+        turbo::result res = implementation.convert_utf8_to_latin1_with_errors(
             utf8, size, latin1);
-        ASSERT_EQUAL(res.error, simdutf::error_code::TOO_LARGE);
+        ASSERT_EQUAL(res.error, turbo::error_code::TOO_LARGE);
         ASSERT_EQUAL(res.count, i);
         return 0;
       };
@@ -415,7 +415,7 @@ TEST_LOOP(too_large_input) {
 }
 
 TEST_LOOP(header_bits_error) {
-  simdutf::tests::helpers::RandomIntRanges random({{0x0000, 0xff}}, seed);
+  turbo::tests::helpers::RandomIntRanges random({{0x0000, 0xff}}, seed);
   transcode_utf8_to_latin1_test_base test(random, fix_size);
 
   for (unsigned int i = 0; i < fix_size; i++) {
@@ -424,10 +424,10 @@ TEST_LOOP(header_bits_error) {
         0b10000000) { // Only process leading bytes
       auto procedure = [&implementation, &i](const char *utf8, size_t size,
                                              char *latin1) -> size_t {
-        simdutf::result res = implementation.convert_utf8_to_latin1_with_errors(
+        turbo::result res = implementation.convert_utf8_to_latin1_with_errors(
             utf8, size, latin1);
         ASSERT_EQUAL(res.count, i);
-        ASSERT_EQUAL(res.error, simdutf::error_code::HEADER_BITS);
+        ASSERT_EQUAL(res.error, turbo::error_code::HEADER_BITS);
         return 0;
       };
       const unsigned char old = test.input_utf8[i];
@@ -439,7 +439,7 @@ TEST_LOOP(header_bits_error) {
 }
 
 TEST_LOOP(too_short_error) {
-  simdutf::tests::helpers::RandomIntRanges random({{0x00, 0xff}}, seed);
+  turbo::tests::helpers::RandomIntRanges random({{0x00, 0xff}}, seed);
   transcode_utf8_to_latin1_test_base test(random, fix_size);
   unsigned int leading_byte_pos = 0;
   for (unsigned int i = 0; i < fix_size; i++) {
@@ -451,10 +451,10 @@ TEST_LOOP(too_short_error) {
       auto procedure = [&implementation,
                         &leading_byte_pos](const char *utf8, size_t size,
                                            char *latin1) -> size_t {
-        simdutf::result res = implementation.convert_utf8_to_latin1_with_errors(
+        turbo::result res = implementation.convert_utf8_to_latin1_with_errors(
             utf8, size, latin1);
         ASSERT_EQUAL(res.count, leading_byte_pos);
-        ASSERT_EQUAL(res.error, simdutf::error_code::TOO_SHORT);
+        ASSERT_EQUAL(res.error, turbo::error_code::TOO_SHORT);
         return 0;
       };
 
@@ -469,7 +469,7 @@ TEST_LOOP(too_short_error) {
 }
 
 TEST_LOOP(too_long_error) {
-  simdutf::tests::helpers::RandomIntRanges random(
+  turbo::tests::helpers::RandomIntRanges random(
       {{0x7f, 0xff}},
       seed); // in this context, conversion to latin 1 will register everything
              // past 0xff as a TOO_LARGE error
@@ -480,9 +480,9 @@ TEST_LOOP(too_long_error) {
                         // continuation bytes
       auto procedure = [&implementation, &i](const char *utf8, size_t size,
                                              char *latin1) -> size_t {
-        simdutf::result res = implementation.convert_utf8_to_latin1_with_errors(
+        turbo::result res = implementation.convert_utf8_to_latin1_with_errors(
             utf8, size, latin1);
-        ASSERT_EQUAL(res.error, simdutf::error_code::TOO_LONG);
+        ASSERT_EQUAL(res.error, turbo::error_code::TOO_LONG);
         ASSERT_EQUAL(res.count, i);
         return 0;
       };
@@ -495,7 +495,7 @@ TEST_LOOP(too_long_error) {
 }
 
 TEST_LOOP(overlong_error) {
-  simdutf::tests::helpers::RandomIntRanges random({{0x00, 0xff}}, seed);
+  turbo::tests::helpers::RandomIntRanges random({{0x00, 0xff}}, seed);
   transcode_utf8_to_latin1_test_base test(random, fix_size);
   for (unsigned int i = 1; i < fix_size; i++) {
     if ((unsigned char)test.input_utf8[i] >=
@@ -503,9 +503,9 @@ TEST_LOOP(overlong_error) {
                                      // overlong
       auto procedure = [&implementation, &i](const char *utf8, size_t size,
                                              char *latin1) -> size_t {
-        simdutf::result res = implementation.convert_utf8_to_latin1_with_errors(
+        turbo::result res = implementation.convert_utf8_to_latin1_with_errors(
             utf8, size, latin1);
-        ASSERT_EQUAL(res.error, simdutf::error_code::OVERLONG);
+        ASSERT_EQUAL(res.error, turbo::error_code::OVERLONG);
         ASSERT_EQUAL(res.count, i);
         return 0;
       };
@@ -541,20 +541,20 @@ TEST(issue_446) {
   const auto r = implementation.convert_utf8_to_latin1_with_errors(
       (const char *)crash, crash_len, output.data());
   ASSERT_EQUAL(r.count, 127); // because of the sequence 0xc2, 0xa2
-  ASSERT_EQUAL(r.error, simdutf::error_code::SUCCESS);
+  ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
 }
 
 #if SIMDUTF_CPLUSPLUS23
 
 namespace {
 template <auto input> constexpr auto output_size() {
-  return simdutf::latin1_length_from_utf8(input);
+  return turbo::latin1_length_from_utf8(input);
 }
 
 template <auto input> constexpr auto convert() {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
   CTString<char, output_size<input>()> tmp;
-  auto ret = simdutf::convert_utf8_to_latin1_with_errors(input, tmp);
+  auto ret = turbo::convert_utf8_to_latin1_with_errors(input, tmp);
   auto N = ret.count;
   if (N != tmp.size()) {
     throw "oops";
@@ -565,7 +565,7 @@ template <auto input> constexpr auto convert() {
 } // namespace
 
 TEST(compile_time_convert_utf8_to_latin1_with_errors) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
 
   constexpr auto input = u8"köttbulle"_utf8;
   constexpr auto expected = "k\xF6ttbulle"_latin1;

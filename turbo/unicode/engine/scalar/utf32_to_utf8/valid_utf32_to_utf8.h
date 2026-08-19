@@ -3,14 +3,14 @@
 
 #include <cstring>
 
-namespace simdutf {
+namespace turbo {
     namespace scalar {
         namespace {
             namespace utf32_to_utf8 {
 
                 template <typename InputPtr, typename OutputPtr>
 #if SIMDUTF_CPLUSPLUS20
-                    requires(simdutf::detail::indexes_into_utf32<InputPtr> && simdutf::detail::index_assignable_from_char<OutputPtr>)
+                    requires(turbo::detail::indexes_into_utf32<InputPtr> && turbo::detail::index_assignable_from_char<OutputPtr>)
 #endif
                 simdutf_constexpr23 size_t convert_valid(InputPtr data, size_t len,
                     OutputPtr utf8_output) {
@@ -68,6 +68,6 @@ namespace simdutf {
             } // namespace utf32_to_utf8
         } // unnamed namespace
     } // namespace scalar
-} // namespace simdutf
+} // namespace turbo
 
 #endif

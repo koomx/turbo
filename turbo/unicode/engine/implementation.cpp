@@ -60,7 +60,7 @@ static_assert(sizeof(uint32_t) == sizeof(char32_t),
 // next line is redundant, but it is kept to catch defective systems.
 static_assert(CHAR_BIT == 8, "simdutf requires 8-bit bytes");
 
-namespace simdutf {
+namespace turbo {
     bool implementation::supported_by_runtime_system() const {
         uint32_t required_instruction_sets = this->required_instruction_sets();
         uint32_t supported_instruction_sets = internal::detect_supported_architectures();
@@ -71,7 +71,7 @@ namespace simdutf {
     simdutf_warn_unused encoding_type implementation::autodetect_encoding(
         const char* input, size_t length) const noexcept {
         // If there is a BOM, then we trust it.
-        auto bom_encoding = simdutf::BOM::check_bom(input, length);
+        auto bom_encoding = turbo::BOM::check_bom(input, length);
         if (bom_encoding != encoding_type::unspecified) {
             return bom_encoding;
         }
@@ -1484,19 +1484,19 @@ namespace simdutf {
         static_assert(std::is_trivially_destructible<unsupported_implementation>::value,
             "unsupported_singleton should be trivially destructible");
 
-        size_t available_implementation_list::size() const noexcept {
+        size_t AvailableImplementationList::size() const noexcept {
             return internal::get_available_implementation_pointers().size();
         }
         const implementation* const*
-        available_implementation_list::begin() const noexcept {
+        AvailableImplementationList::begin() const noexcept {
             return internal::get_available_implementation_pointers().begin();
         }
         const implementation* const*
-        available_implementation_list::end() const noexcept {
+        AvailableImplementationList::end() const noexcept {
             return internal::get_available_implementation_pointers().end();
         }
         const implementation*
-        available_implementation_list::detect_best_supported() const noexcept {
+        AvailableImplementationList::detect_best_supported() const noexcept {
             // They are prelisted in priority order, so we just go down the list
             uint32_t supported_instruction_sets = internal::detect_supported_architectures();
             for (const implementation* impl :
@@ -1534,13 +1534,13 @@ namespace simdutf {
 
 /// The list of available implementations compiled into simdutf.
 #if SIMDUTF_USE_STATIC_INITIALIZATION
-    static const internal::available_implementation_list
+    static const internal::AvailableImplementationList
         available_implementations_instance {};
 #endif
-    SIMDUTF_DLLIMPORTEXPORT const internal::available_implementation_list&
+    SIMDUTF_DLLIMPORTEXPORT const internal::AvailableImplementationList&
     get_available_implementations() {
 #if !SIMDUTF_USE_STATIC_INITIALIZATION
-        static const internal::available_implementation_list
+        static const internal::AvailableImplementationList
             available_implementations_instance {};
 #endif
         return available_implementations_instance;
@@ -1822,7 +1822,7 @@ namespace simdutf {
             simdutf_log_assert(temp_outlen <= temp_buffer.size(),
                 "Output buffer is too small");
 
-            simdutf::scalar::memcpy_atomic_write(output + actual_out,
+            turbo::scalar::memcpy_atomic_write(output + actual_out,
                 temp_buffer.data(), temp_outlen);
             actual_out += temp_outlen;
             length -= r.count;
@@ -1967,7 +1967,7 @@ namespace simdutf {
                 // If we cannot read anything, we are done.
                 break;
             }
-            const auto write_len = simdutf::convert_utf16_to_utf8(buf, read_len, utf8_output);
+            const auto write_len = turbo::convert_utf16_to_utf8(buf, read_len, utf8_output);
             if (write_len == 0) {
                 // There was an error in the conversion, we cannot continue.
                 return 0; // indicating failure
@@ -2528,7 +2528,7 @@ namespace simdutf {
         std::array<char, input_block_size> inbuf;
         for (size_t i = 0; i < length; i += input_block_size) {
             const size_t current_block_size = detail::min(input_block_size, length - i);
-            simdutf::scalar::memcpy_atomic_read(inbuf.data(), input + i,
+            turbo::scalar::memcpy_atomic_read(inbuf.data(), input + i,
                 current_block_size);
             const size_t written = binary_to_base64(inbuf.data(), current_block_size,
                 output + retval, options);
@@ -2552,7 +2552,7 @@ namespace simdutf {
                 break;
             }
 
-            const auto write_len = simdutf::convert_latin1_to_utf8(buf, read_len, utf8_output);
+            const auto write_len = turbo::convert_latin1_to_utf8(buf, read_len, utf8_output);
 
             utf8_output += write_len;
             utf8_len -= write_len;
@@ -2601,7 +2601,7 @@ namespace simdutf {
 #endif // SIMDUTF_FEATURE_BASE64
 
 #if SIMDUTF_FEATURE_DETECT_ENCODING
-    simdutf_warn_unused simdutf::encoding_type
+    simdutf_warn_unused turbo::encoding_type
     autodetect_encoding(const char* buf, size_t length) noexcept {
         return get_default_implementation()->autodetect_encoding(buf, length);
     }
@@ -2624,31 +2624,4 @@ namespace simdutf {
         return builtin_impl_instance;
     }
 
-#if SIMDUTF_FEATURE_UTF8
-    simdutf_warn_unused size_t trim_partial_utf8(const char* input, size_t length) {
-        return scalar::utf8::trim_partial_utf8(input, length);
-    }
-#endif // SIMDUTF_FEATURE_UTF8
-
-#if SIMDUTF_FEATURE_UTF16
-    simdutf_warn_unused size_t trim_partial_utf16be(const char16_t* input,
-        size_t length) {
-        return scalar::utf16::trim_partial_utf16<BIG>(input, length);
-    }
-
-    simdutf_warn_unused size_t trim_partial_utf16le(const char16_t* input,
-        size_t length) {
-        return scalar::utf16::trim_partial_utf16<LITTLE>(input, length);
-    }
-
-    simdutf_warn_unused size_t trim_partial_utf16(const char16_t* input,
-        size_t length) {
-#if SIMDUTF_IS_BIG_ENDIAN
-        return trim_partial_utf16be(input, length);
-#else
-        return trim_partial_utf16le(input, length);
-#endif
-    }
-#endif // SIMDUTF_FEATURE_UTF16
-
-} // namespace simdutf
+} // namespace turbo

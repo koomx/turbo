@@ -1,7 +1,7 @@
 template <bool insert_line_feeds>
 size_t encode_base64_rvv(char* dst, const char* src, size_t srclen,
     base64_options options,
-    size_t line_length = simdutf::default_line_length) {
+    size_t line_length = turbo::default_line_length) {
     size_t offset = 0;
     if constexpr (insert_line_feeds) {
         if (line_length < 4) {

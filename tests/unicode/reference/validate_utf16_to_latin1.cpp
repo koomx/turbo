@@ -4,12 +4,12 @@
   #error "SIMDUTF_IS_BIG_ENDIAN should be defined."
 #endif
 
-namespace simdutf {
+namespace turbo {
 namespace tests {
 namespace reference {
 
 simdutf_warn_unused bool
-validate_utf16_to_latin1(simdutf::endianness utf16_endianness,
+validate_utf16_to_latin1(turbo::endianness utf16_endianness,
                          const char16_t *buf, size_t len) noexcept {
   const char16_t *curr = buf;
   const char16_t *end = buf + len;
@@ -32,4 +32,4 @@ validate_utf16_to_latin1(simdutf::endianness utf16_endianness,
 
 } // namespace reference
 } // namespace tests
-} // namespace simdutf
+} // namespace turbo

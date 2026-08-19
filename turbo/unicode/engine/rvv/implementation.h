@@ -4,17 +4,17 @@
 #include <turbo/unicode/utf.h>
 #include <turbo/unicode/internal/isadetection.h>
 
-namespace simdutf {
+namespace turbo {
     namespace rvv {
 
         namespace {
-            using namespace simdutf;
+            using namespace turbo;
         } // namespace
 
-        class implementation final : public simdutf::implementation {
+        class implementation final : public turbo::implementation {
         public:
             simdutf_really_inline implementation()
-                : simdutf::implementation("rvv", "RISC-V Vector Extension",
+                : turbo::implementation("rvv", "RISC-V Vector Extension",
                       internal::instruction_set::RVV)
                 , _supports_zvbb(internal::detect_supported_architectures() & internal::instruction_set::ZVBB) { }
 #if SIMDUTF_FEATURE_DETECT_ENCODING
@@ -311,6 +311,6 @@ namespace simdutf {
         };
 
     } // namespace rvv
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDUTF_RVV_IMPLEMENTATION_H

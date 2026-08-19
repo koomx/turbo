@@ -8,8 +8,8 @@ constexpr size_t DEFAULT_ITERATIONS =
 
 namespace {
 
-using simdutf::benchmarks::CommandLine;
-using simdutf::benchmarks::ListingMode;
+using turbo::benchmarks::CommandLine;
+using turbo::benchmarks::ListingMode;
 
 CommandLine parse_arguments(int argc, char *argv[]) {
   CommandLine cmdline;
@@ -128,7 +128,7 @@ void fixup_and_validate(CommandLine &cmdline) {
 
 } // namespace
 
-namespace simdutf::benchmarks {
+namespace turbo::benchmarks {
 
 CommandLine CommandLine::parse_arguments(int argc, char *argv[]) {
   CommandLine cmdline{::parse_arguments(argc, argv)};
@@ -173,4 +173,4 @@ Examples:
         file);
 }
 
-} // namespace simdutf::benchmarks
+} // namespace turbo::benchmarks

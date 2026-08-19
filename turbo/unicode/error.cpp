@@ -1,3 +1,3 @@
-namespace simdutf {
+namespace turbo {
     // deliberately empty
 }

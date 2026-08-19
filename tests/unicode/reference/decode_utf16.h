@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <turbo/unicode/engine/encoding_types.h>
 
-namespace simdutf {
+namespace turbo {
 namespace tests {
 namespace reference {
 namespace utf16 {
@@ -78,4 +78,4 @@ bool decode(endianness utf16_endianness, const char16_t *codepoints,
 } // namespace utf16
 } // namespace reference
 } // namespace tests
-} // namespace simdutf
+} // namespace turbo

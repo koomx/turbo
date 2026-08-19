@@ -4,10 +4,10 @@
 #include <turbo/unicode/utf.h>
 #include <limits>
 
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
         namespace { } // unnamed namespace
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDUTF_FALLBACK_BITMANIPULATION_H

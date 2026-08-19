@@ -3,17 +3,17 @@
 
 #include <turbo/unicode/engine/implementation.h>
 
-namespace simdutf {
+namespace turbo {
     namespace icelake {
 
         namespace {
-            using namespace simdutf;
+            using namespace turbo;
         }
 
-        class implementation final : public simdutf::implementation {
+        class implementation final : public turbo::implementation {
         public:
             simdutf_really_inline implementation()
-                : simdutf::implementation(
+                : turbo::implementation(
                       "icelake",
                       "Intel AVX512 (AVX-512BW, AVX-512CD, AVX-512VL, AVX-512VBMI2 "
                       "extensions)",
@@ -331,6 +331,6 @@ namespace simdutf {
         };
 
     } // namespace icelake
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDUTF_ICELAKE_IMPLEMENTATION_H

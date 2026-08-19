@@ -70,9 +70,9 @@ size_t convert_masked_utf8_to_utf16(const char* input,
         return 12;
     }
 
-    const uint8_t idx = simdutf::tables::utf8_to_utf16::utf8bigindex
+    const uint8_t idx = turbo::tables::utf8_to_utf16::utf8bigindex
         [input_utf8_end_of_code_point_mask][0];
-    const uint8_t consumed = simdutf::tables::utf8_to_utf16::utf8bigindex
+    const uint8_t consumed = turbo::tables::utf8_to_utf16::utf8bigindex
         [input_utf8_end_of_code_point_mask][1];
     if (idx < 64) {
         // SIX (6) input code-code units
@@ -82,7 +82,7 @@ size_t convert_masked_utf8_to_utf16(const char* input,
         // processors where pdep/pext is fast, we might be able to use a small
         // lookup table.
         const __m128i sh = _mm_loadu_si128(
-            (const __m128i*)simdutf::tables::utf8_to_utf16::shufutf8[idx]);
+            (const __m128i*)turbo::tables::utf8_to_utf16::shufutf8[idx]);
         const __m128i perm = _mm_shuffle_epi8(in, sh);
         const __m128i ascii = _mm_and_si128(perm, _mm_set1_epi16(0x7f));
         const __m128i highbyte = _mm_and_si128(perm, _mm_set1_epi16(0x1f00));
@@ -95,7 +95,7 @@ size_t convert_masked_utf8_to_utf16(const char* input,
     } else if (idx < 145) {
         // FOUR (4) input code-code units
         const __m128i sh = _mm_loadu_si128(
-            (const __m128i*)simdutf::tables::utf8_to_utf16::shufutf8[idx]);
+            (const __m128i*)turbo::tables::utf8_to_utf16::shufutf8[idx]);
         const __m128i perm = _mm_shuffle_epi8(in, sh);
         const __m128i ascii = _mm_and_si128(perm, _mm_set1_epi32(0x7f)); // 7 or 6 bits
         const __m128i middlebyte = _mm_and_si128(perm, _mm_set1_epi32(0x3f00)); // 5 or 6 bits
@@ -120,7 +120,7 @@ size_t convert_masked_utf8_to_utf16(const char* input,
         // do as at the cost of an extra mask.
         /////////////
         const __m128i sh = _mm_loadu_si128(
-            (const __m128i*)simdutf::tables::utf8_to_utf16::shufutf8[idx]);
+            (const __m128i*)turbo::tables::utf8_to_utf16::shufutf8[idx]);
         const __m128i perm = _mm_shuffle_epi8(in, sh);
         const __m128i ascii = _mm_and_si128(perm, _mm_set1_epi32(0x7f));
         const __m128i middlebyte = _mm_and_si128(perm, _mm_set1_epi32(0x3f00));

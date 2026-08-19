@@ -3,7 +3,7 @@
 #if SIMDUTF_ATOMIC_REF
 #include <atomic>
 #include <cstring>
-namespace simdutf {
+namespace turbo {
     namespace scalar {
 
         // This function is a memcpy that uses atomic operations to read from the
@@ -99,6 +99,6 @@ namespace simdutf {
             }
         }
     } // namespace scalar
-} // namespace simdutf
+} // namespace turbo
 #endif // SIMDUTF_ATOMIC_REF
 #endif // SIMDUTF_ATOMIC_UTIL_H

@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-namespace simdutf {
+namespace turbo {
 namespace tests {
 namespace helpers {
 
@@ -50,4 +50,4 @@ private:
 
 } // namespace helpers
 } // namespace tests
-} // namespace simdutf
+} // namespace turbo

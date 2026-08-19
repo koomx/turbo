@@ -4,7 +4,7 @@
 #include <turbo/unicode/utf.h>
 #include <turbo/unicode/engine/lsx/bitmanipulation.h>
 
-namespace simdutf {
+namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
         namespace {
             namespace simd {
@@ -429,6 +429,6 @@ namespace simdutf {
             } // namespace simd
         } // unnamed namespace
     } // namespace SIMDUTF_IMPLEMENTATION
-} // namespace simdutf
+} // namespace turbo
 
 #endif // SIMDUTF_LSX_SIMD_H

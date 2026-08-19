@@ -3,7 +3,7 @@
 
 #include <cstring>
 
-namespace simdutf {
+namespace turbo {
     namespace scalar {
         namespace {
             namespace utf8 {
@@ -243,7 +243,7 @@ namespace simdutf {
 
                 template <typename InputPtr>
 #if SIMDUTF_CPLUSPLUS20
-                    requires simdutf::detail::indexes_into_byte_like<InputPtr>
+                    requires turbo::detail::indexes_into_byte_like<InputPtr>
 #endif
                 simdutf_constexpr23 size_t count_code_points(InputPtr data, size_t len) {
                     size_t counter { 0 };
@@ -259,7 +259,7 @@ namespace simdutf {
 
                 template <typename InputPtr>
 #if SIMDUTF_CPLUSPLUS20
-                    requires simdutf::detail::indexes_into_byte_like<InputPtr>
+                    requires turbo::detail::indexes_into_byte_like<InputPtr>
 #endif
                 simdutf_constexpr23 size_t utf16_length_from_utf8(InputPtr data, size_t len) {
                     size_t counter { 0 };
@@ -276,7 +276,7 @@ namespace simdutf {
 
                 template <typename InputPtr>
 #if SIMDUTF_CPLUSPLUS20
-                    requires simdutf::detail::indexes_into_byte_like<InputPtr>
+                    requires turbo::detail::indexes_into_byte_like<InputPtr>
 #endif
                 simdutf_warn_unused simdutf_constexpr23 size_t
                 trim_partial_utf8(InputPtr input, size_t length) {
@@ -314,6 +314,6 @@ namespace simdutf {
             } // namespace utf8
         } // unnamed namespace
     } // namespace scalar
-} // namespace simdutf
+} // namespace turbo
 
 #endif

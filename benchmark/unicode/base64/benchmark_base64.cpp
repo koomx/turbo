@@ -174,11 +174,11 @@ void pretty_print(size_t, size_t bytes, std::string name, event_aggregate agg) {
 }
 bool can_decode_all(std::vector<std::vector<char>> &data) {
   for (const std::vector<char> &source : data) {
-    std::vector<char> buffer(simdutf::maximal_binary_length_from_base64(
+    std::vector<char> buffer(turbo::maximal_binary_length_from_base64(
         source.data(), source.size()));
 
     auto err =
-        simdutf::base64_to_binary(source.data(), source.size(), buffer.data());
+        turbo::base64_to_binary(source.data(), source.size(), buffer.data());
     if (err.error) {
       return false;
     }
@@ -308,9 +308,9 @@ public:
                                   })
                      ->size();
 
-      buffer1.resize(simdutf::base64_length_from_binary(max_size));
+      buffer1.resize(turbo::base64_length_from_binary(max_size));
       buffer2.resize(max_size);
-      buffer3.resize(simdutf::base64_length_from_binary_with_lines(max_size));
+      buffer3.resize(turbo::base64_length_from_binary_with_lines(max_size));
     }
   }
 
@@ -412,18 +412,18 @@ private:
       printf("# We convert it to base64 and then decode it back.\n");
     }
 
-    for (auto &e : simdutf::get_available_implementations()) {
+    for (auto &e : turbo::get_available_implementations()) {
       if (!e->supported_by_runtime_system()) {
         continue;
       }
-      simdutf::get_active_implementation() = e;
-      summarize(concatenate("simdutf::", e->name()), [this, &e]() {
+      turbo::get_active_implementation() = e;
+      summarize(concatenate("turbo::", e->name()), [this, &e]() {
         for (const std::vector<char> &source : data) {
           size_t base64_size =
               e->binary_to_base64(source.data(), source.size(), buffer1.data(),
-                                  simdutf::base64_url);
+                                  turbo::base64_url);
           auto err = e->base64_to_binary(buffer1.data(), base64_size,
-                                         buffer2.data(), simdutf::base64_url);
+                                         buffer2.data(), turbo::base64_url);
           if (err.error) {
             std::cerr << "Error:  at position " << err.count << std::endl;
           } else if (err.count != source.size()) {
@@ -459,19 +459,19 @@ private:
         base64_size = outlen;
       }
     });
-    for (auto &e : simdutf::get_available_implementations()) {
+    for (auto &e : turbo::get_available_implementations()) {
       if (!e->supported_by_runtime_system()) {
         continue;
       }
-      simdutf::get_active_implementation() = e;
-      summarize(concatenate("simdutf::", e->name()) + "_standard",
+      turbo::get_active_implementation() = e;
+      summarize(concatenate("turbo::", e->name()) + "_standard",
                 [this, &e, &base64_size]() {
                   for (const std::vector<char> &source : data) {
                     base64_size = e->binary_to_base64(
                         source.data(), source.size(), buffer1.data());
                   }
                 });
-      summarize(concatenate("simdutf::", e->name()) + "_with_lines",
+      summarize(concatenate("turbo::", e->name()) + "_with_lines",
                 [this, &e, &base64_size]() {
                   for (const std::vector<char> &source : data) {
                     base64_size = e->binary_to_base64_with_lines(
@@ -479,11 +479,11 @@ private:
                   }
                 });
 #if SIMDUTF_COMPILED_CXX_VERSION >= 20
-      summarize(concatenate("simdutf::atomic_binary_to_base64_",
-                            simdutf::get_active_implementation()->name()),
+      summarize(concatenate("turbo::atomic_binary_to_base64_",
+                            turbo::get_active_implementation()->name()),
                 [this, &base64_size]() {
                   for (const std::vector<char> &source : data) {
-                    base64_size = simdutf::atomic_binary_to_base64(
+                    base64_size = turbo::atomic_binary_to_base64(
                         source.data(), source.size(), buffer1.data());
                   }
                 });
@@ -498,18 +498,18 @@ private:
       printf("# We convert it to base64 and then decode it back.\n");
     }
 
-    for (auto &e : simdutf::get_available_implementations()) {
+    for (auto &e : turbo::get_available_implementations()) {
       if (!e->supported_by_runtime_system()) {
         continue;
       }
-      simdutf::get_active_implementation() = e;
-      summarize(concatenate("simdutf::", e->name()), [this, &e]() {
+      turbo::get_active_implementation() = e;
+      summarize(concatenate("turbo::", e->name()), [this, &e]() {
         for (const std::vector<char> &source : data) {
           size_t base64_size =
               e->binary_to_base64(source.data(), source.size(), buffer1.data(),
-                                  simdutf::base64_url);
+                                  turbo::base64_url);
           auto err = e->base64_to_binary(buffer1.data(), base64_size,
-                                         buffer2.data(), simdutf::base64_url);
+                                         buffer2.data(), turbo::base64_url);
           if (err.error) {
             std::cerr << "Error:  at position " << err.count << std::endl;
           } else if (err.count != source.size()) {
@@ -601,13 +601,13 @@ private:
       }
     });
 
-    for (auto &e : simdutf::get_available_implementations()) {
+    for (auto &e : turbo::get_available_implementations()) {
       if (!e->supported_by_runtime_system()) {
         continue;
       }
-      simdutf::get_active_implementation() = e;
+      turbo::get_active_implementation() = e;
 
-      summarize(concatenate("simdutf::", e->name()), [this, &e]() {
+      summarize(concatenate("turbo::", e->name()), [this, &e]() {
         for (const std::vector<char> &source : data) {
           auto err =
               e->base64_to_binary(source.data(), source.size(), buffer1.data());
@@ -625,12 +625,12 @@ private:
         }
       });
 
-      summarize(concatenate("simdutf::", e->name()) + " (accept garbage)",
+      summarize(concatenate("turbo::", e->name()) + " (accept garbage)",
                 [this, &e]() {
                   for (const std::vector<char> &source : data) {
                     auto err = e->base64_to_binary(
                         source.data(), source.size(), buffer1.data(),
-                        simdutf::base64_default_accept_garbage);
+                        turbo::base64_default_accept_garbage);
                     if (err.error) {
                       std::cerr << "Error: at position " << err.count
                                 << " out of " << source.size() << std::endl;
@@ -647,12 +647,12 @@ private:
                 });
 
 #if SIMDUTF_COMPILED_CXX_VERSION >= 20
-      summarize(concatenate("simdutf::atomic_base64_to_binary_",
-                            simdutf::get_active_implementation()->name()),
+      summarize(concatenate("turbo::atomic_base64_to_binary_",
+                            turbo::get_active_implementation()->name()),
                 [this]() {
                   for (const std::vector<char> &source : data) {
                     size_t len = buffer1.size();
-                    auto err = simdutf::atomic_base64_to_binary_safe(
+                    auto err = turbo::atomic_base64_to_binary_safe(
                         source.data(), source.size(), buffer1.data(), len);
                     if (err.error) {
                       std::cerr << "Error: at position " << err.count
@@ -678,14 +678,14 @@ private:
       printf("# Benchmark only simdutf length functions (maximal and exact)\n");
     }
 
-    for (auto &e : simdutf::get_available_implementations()) {
+    for (auto &e : turbo::get_available_implementations()) {
       if (!e->supported_by_runtime_system()) {
         continue;
       }
-      simdutf::get_active_implementation() = e;
+      turbo::get_active_implementation() = e;
 
       volatile size_t len = 0;
-      summarize(concatenate("simdutf::", e->name()) +
+      summarize(concatenate("turbo::", e->name()) +
                     "_maximal_binary_length_from_base64",
                 [this, &e, &len]() {
                   for (const std::vector<char> &source : data) {
@@ -695,7 +695,7 @@ private:
                 });
 
       summarize(
-          concatenate("simdutf::", e->name()) + "_binary_length_from_base64",
+          concatenate("turbo::", e->name()) + "_binary_length_from_base64",
           [this, &e, &len]() {
             for (const std::vector<char> &source : data) {
               len = e->binary_length_from_base64(source.data(), source.size());
@@ -740,7 +740,7 @@ void bench_bun() {
     std::string source = i.second;
     volatile size_t base64_size;
     std::vector<char> buffer1(
-        simdutf::base64_length_from_binary(source.size()));
+        turbo::base64_length_from_binary(source.size()));
     pretty_print(1, source.size(), "libbase64",
                  bench([&source, &buffer1, &base64_size]() {
                    size_t outlen;
@@ -748,12 +748,12 @@ void bench_bun() {
                                  &outlen, 0);
                    base64_size = outlen;
                  }));
-    for (auto &e : simdutf::get_available_implementations()) {
+    for (auto &e : turbo::get_available_implementations()) {
       if (!e->supported_by_runtime_system()) {
         continue;
       }
-      simdutf::get_active_implementation() = e;
-      pretty_print(1, source.size(), concatenate("simdutf::", e->name()),
+      turbo::get_active_implementation() = e;
+      pretty_print(1, source.size(), concatenate("turbo::", e->name()),
                    bench([&source, &buffer1, &e, &base64_size]() {
                      base64_size = e->binary_to_base64(
                          source.data(), source.size(), buffer1.data());
@@ -869,8 +869,8 @@ int main(int argc, char **argv) {
   }
 
   printf("# current system detected as %.*s.\n",
-         int(simdutf::get_active_implementation()->name().size()),
-         simdutf::get_active_implementation()->name().data());
+         int(turbo::get_active_implementation()->name().size()),
+         turbo::get_active_implementation()->name().data());
 
   std::vector<std::vector<char>> input;
   if (options.benchmark_mode != BenchmarkMode::bun and

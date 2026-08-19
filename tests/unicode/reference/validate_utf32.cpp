@@ -1,6 +1,6 @@
 #include "validate_utf32.h"
 
-namespace simdutf {
+namespace turbo {
 namespace tests {
 namespace reference {
 
@@ -24,4 +24,4 @@ simdutf_warn_unused bool validate_utf32(const char32_t *buf,
 
 } // namespace reference
 } // namespace tests
-} // namespace simdutf
+} // namespace turbo

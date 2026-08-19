@@ -5,9 +5,9 @@
 int main(int argc, char *argv[]) {
 #ifdef SIMDUTF_INTERNAL_TESTS
   bool any_added = false;
-  for (const auto &implementation : simdutf::get_available_implementations()) {
+  for (const auto &implementation : turbo::get_available_implementations()) {
     for (const auto &test : implementation->internal_tests()) {
-      simdutf::test::test_procedures().push_back(simdutf::test::test_entry{
+      turbo::test::test_procedures().push_back(turbo::test::test_entry{
           test.name,
           test.procedure,
       });
@@ -20,8 +20,8 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  const auto cmdline = simdutf::test::CommandLine::parse(argc, argv);
-  simdutf::test::run(cmdline);
+  const auto cmdline = turbo::test::CommandLine::parse(argc, argv);
+  turbo::test::run(cmdline);
 #endif
   return 0;
 }

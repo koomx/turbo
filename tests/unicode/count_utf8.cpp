@@ -24,11 +24,11 @@ std::array<size_t, 10> input_size{7,
 #endif
 };
 
-using simdutf::tests::helpers::transcode_utf8_to_utf16_test_base;
+using turbo::tests::helpers::transcode_utf8_to_utf16_test_base;
 } // namespace
 
 TEST_LOOP(count_pure_ASCII) {
-  simdutf::tests::helpers::random_utf8 random(seed, 1, 0, 0, 0);
+  turbo::tests::helpers::random_utf8 random(seed, 1, 0, 0, 0);
 
   for (size_t size : input_size) {
     auto generated = random.generate_counted(size);
@@ -40,7 +40,7 @@ TEST_LOOP(count_pure_ASCII) {
 }
 
 TEST_LOOP(count_1_or_2_UTF8_bytes) {
-  simdutf::tests::helpers::random_utf8 random(seed, 1, 1, 0, 0);
+  turbo::tests::helpers::random_utf8 random(seed, 1, 1, 0, 0);
 
   for (size_t size : input_size) {
     auto generated = random.generate_counted(size);
@@ -52,7 +52,7 @@ TEST_LOOP(count_1_or_2_UTF8_bytes) {
 }
 
 TEST_LOOP(count_1_or_2_or_3_UTF8_bytes) {
-  simdutf::tests::helpers::random_utf8 random(seed, 1, 1, 1, 0);
+  turbo::tests::helpers::random_utf8 random(seed, 1, 1, 1, 0);
 
   for (size_t size : input_size) {
     auto generated = random.generate_counted(size);
@@ -64,7 +64,7 @@ TEST_LOOP(count_1_or_2_or_3_UTF8_bytes) {
 }
 
 TEST_LOOP(count_1_2_3_or_4_UTF8_bytes) {
-  simdutf::tests::helpers::random_utf8 random(seed, 1, 1, 1, 1);
+  turbo::tests::helpers::random_utf8 random(seed, 1, 1, 1, 1);
 
   for (size_t size : input_size) {
     auto generated = random.generate_counted(size);
@@ -78,9 +78,9 @@ TEST_LOOP(count_1_2_3_or_4_UTF8_bytes) {
 #if SIMDUTF_CPLUSPLUS23
 
 TEST(compile_time_count_utf8) {
-  using namespace simdutf::tests::helpers;
+  using namespace turbo::tests::helpers;
 
-  static_assert(simdutf::count_utf8(u8"köttbulle"_utf8) == 9);
+  static_assert(turbo::count_utf8(u8"köttbulle"_utf8) == 9);
 }
 #endif
 

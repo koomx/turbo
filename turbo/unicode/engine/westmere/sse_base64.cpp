@@ -89,7 +89,7 @@ inline __m128i insert_line_feed16(__m128i input, size_t K) {
 template <bool isbase64url, bool use_lines>
 size_t encode_base64_impl(char* dst, const char* src, size_t srclen,
     base64_options options,
-    size_t line_length = simdutf::default_line_length) {
+    size_t line_length = turbo::default_line_length) {
     size_t offset = 0;
     if (line_length < 4) {
         line_length = 4; // We do not support line_length less than 4

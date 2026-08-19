@@ -6,7 +6,7 @@
 #include <utility>
 #include <cstdint>
 
-namespace simdutf {
+namespace turbo {
 namespace tests {
 namespace helpers {
 
@@ -36,4 +36,4 @@ public:
 
 } // namespace helpers
 } // namespace tests
-} // namespace simdutf
+} // namespace turbo

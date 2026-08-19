@@ -27,10 +27,10 @@ size_t convert_masked_utf8_to_latin1(const char* input,
     }
     /// We do not have a fast path available, or the fast path is unimportant, so
     /// we fallback.
-    const uint8_t idx = simdutf::tables::utf8_to_utf16::utf8bigindex
+    const uint8_t idx = turbo::tables::utf8_to_utf16::utf8bigindex
         [input_utf8_end_of_code_point_mask][0];
 
-    const uint8_t consumed = simdutf::tables::utf8_to_utf16::utf8bigindex
+    const uint8_t consumed = turbo::tables::utf8_to_utf16::utf8bigindex
         [input_utf8_end_of_code_point_mask][1];
     // this indicates an invalid input:
     if (idx >= 64) {
@@ -44,7 +44,7 @@ size_t convert_masked_utf8_to_latin1(const char* input,
     // scenario we process SIX (6) input code-code units. The max length in bytes
     // of six code code units spanning between 1 and 2 bytes each is 12 bytes.
     uint8x16_t sh = vld1q_u8(reinterpret_cast<const uint8_t*>(
-        simdutf::tables::utf8_to_utf16::shufutf8[idx]));
+        turbo::tables::utf8_to_utf16::shufutf8[idx]));
     // Shuffle
     // 1 byte: 00000000 0bbbbbbb
     // 2 byte: 110aaaaa 10bbbbbb

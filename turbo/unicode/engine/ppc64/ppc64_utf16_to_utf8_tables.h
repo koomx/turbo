@@ -3,7 +3,7 @@
 #ifndef PPC64_SIMDUTF_UTF16_TO_UTF8_TABLES_H
 #define PPC64_SIMDUTF_UTF16_TO_UTF8_TABLES_H
 
-namespace simdutf {
+namespace turbo {
     namespace {
         namespace tables {
             namespace ppc64_utf16_to_utf8 {
@@ -1006,6 +1006,6 @@ namespace simdutf {
             } // namespace ppc64_utf16_to_utf8
         } // namespace tables
     } // unnamed namespace
-} // namespace simdutf
+} // namespace turbo
 
 #endif // PPC64_SIMDUTF_UTF16_TO_UTF8_TABLES_H

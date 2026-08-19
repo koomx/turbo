@@ -12,7 +12,7 @@ TEST(test_embed) {
   #embed <embed/valid_utf8.txt>
   };
   // clang-format on
-  static_assert(simdutf::validate_utf8(std::span(binary)));
+  static_assert(turbo::validate_utf8(std::span(binary)));
 }
 
 #else
