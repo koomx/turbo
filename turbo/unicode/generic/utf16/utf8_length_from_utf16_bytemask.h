@@ -6,7 +6,7 @@ namespace turbo {
                 using namespace simd;
 
                 template <endianness big_endian>
-                simdutf_really_inline size_t utf8_length_from_utf16_bytemask(const char16_t* in,
+                KUMO_FORCE_INLINE size_t utf8_length_from_utf16_bytemask(const char16_t* in,
                     size_t size) {
                     size_t pos = 0;
 
@@ -84,7 +84,7 @@ namespace turbo {
                 }
 
                 template <endianness big_endian>
-                simdutf_really_inline result
+                KUMO_FORCE_INLINE UnicodeResult
                 utf8_length_from_utf16_with_replacement(const char16_t* in, size_t size) {
                     using vector_u16 = simd16<uint16_t>;
                     constexpr size_t N = vector_u16::ELEMENTS;
@@ -183,7 +183,7 @@ namespace turbo {
                             count += 2;
                         }
                     }
-                    result scalar_result = scalar::utf16::utf8_length_from_utf16_with_replacement<big_endian>(
+                    UnicodeResult scalar_result = scalar::utf16::utf8_length_from_utf16_with_replacement<big_endian>(
                         in + pos, size - pos);
                     return { any_surrogates ? SURROGATE : scalar_result.error,
                         count + scalar_result.count };

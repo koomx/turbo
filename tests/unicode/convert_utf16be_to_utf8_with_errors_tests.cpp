@@ -22,7 +22,7 @@ TEST(allow_empty_input) {
 
     auto ret = implementation.convert_utf16be_to_utf32_with_errors(
         emptydata.data(), emptydata.size(), output.data());
-    ASSERT_EQUAL(ret.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(ret.error, turbo::UnicodeError::SUCCESS);
 }
 
 TEST(convert_pure_ASCII) {
@@ -31,8 +31,8 @@ TEST(convert_pure_ASCII) {
 
     auto procedure = [&implementation](const char16_t* utf16, size_t size,
                          char* utf8) -> size_t {
-        turbo::result res = implementation.convert_utf16be_to_utf8_with_errors(utf16, size, utf8);
-        ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+        turbo::UnicodeResult res = implementation.convert_utf16be_to_utf8_with_errors(utf16, size, utf8);
+        ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
         return res.count;
     };
 
@@ -54,8 +54,8 @@ TEST_LOOP(convert_into_1_or_2_UTF8_bytes) {
 
     auto procedure = [&implementation](const char16_t* utf16, size_t size,
                          char* utf8) -> size_t {
-        turbo::result res = implementation.convert_utf16be_to_utf8_with_errors(utf16, size, utf8);
-        ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+        turbo::UnicodeResult res = implementation.convert_utf16be_to_utf8_with_errors(utf16, size, utf8);
+        ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
         return res.count;
     };
 
@@ -79,8 +79,8 @@ TEST_LOOP(convert_into_1_or_2_or_3_UTF8_bytes) {
 
     auto procedure = [&implementation](const char16_t* utf16, size_t size,
                          char* utf8) -> size_t {
-        turbo::result res = implementation.convert_utf16be_to_utf8_with_errors(utf16, size, utf8);
-        ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+        turbo::UnicodeResult res = implementation.convert_utf16be_to_utf8_with_errors(utf16, size, utf8);
+        ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
         return res.count;
     };
     auto size_procedure = [&implementation](const char16_t* utf16,
@@ -101,8 +101,8 @@ TEST_LOOP(convert_into_3_or_4_UTF8_bytes) {
 
     auto procedure = [&implementation](const char16_t* utf16, size_t size,
                          char* utf8) -> size_t {
-        const turbo::result res = implementation.convert_utf16be_to_utf8_with_errors(utf16, size, utf8);
-        ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+        const turbo::UnicodeResult res = implementation.convert_utf16be_to_utf8_with_errors(utf16, size, utf8);
+        ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
         return res.count;
     };
     auto size_procedure = [&implementation](const char16_t* utf16,
@@ -125,9 +125,9 @@ TEST(convert_fails_if_there_is_sole_low_surrogate) {
         for (size_t i = 0; i < size; i++) {
             auto procedure = [&implementation, i](const char16_t* utf16, size_t size,
                                  char* utf8) -> size_t {
-                turbo::result res = implementation.convert_utf16be_to_utf8_with_errors(utf16, size,
+                turbo::UnicodeResult res = implementation.convert_utf16be_to_utf8_with_errors(utf16, size,
                     utf8);
-                ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
+                ASSERT_EQUAL(res.error, turbo::UnicodeError::SURROGATE);
                 ASSERT_EQUAL(res.count, i);
                 return 0;
             };
@@ -148,9 +148,9 @@ TEST(convert_fails_if_there_is_sole_high_surrogate) {
         for (size_t i = 0; i < size; i++) {
             auto procedure = [&implementation, &i](const char16_t* utf16, size_t size,
                                  char* utf8) -> size_t {
-                turbo::result res = implementation.convert_utf16be_to_utf8_with_errors(utf16, size,
+                turbo::UnicodeResult res = implementation.convert_utf16be_to_utf8_with_errors(utf16, size,
                     utf8);
-                ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
+                ASSERT_EQUAL(res.error, turbo::UnicodeError::SURROGATE);
                 ASSERT_EQUAL(res.count, i);
                 return 0;
             };
@@ -172,9 +172,9 @@ TEST(
         for (size_t i = 0; i < size - 1; i++) {
             auto procedure = [&implementation, &i](const char16_t* utf16, size_t size,
                                  char* utf8) -> size_t {
-                const turbo::result res = implementation.convert_utf16be_to_utf8_with_errors(utf16, size,
+                const turbo::UnicodeResult res = implementation.convert_utf16be_to_utf8_with_errors(utf16, size,
                     utf8);
-                ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
+                ASSERT_EQUAL(res.error, turbo::UnicodeError::SURROGATE);
                 ASSERT_EQUAL(res.count, i);
                 return 0;
             };
@@ -198,8 +198,8 @@ TEST(convert_fails_if_there_is_surrogate_pair_is_followed_by_high_surrogate) {
     for (size_t i = 0; i < size - 2; i++) {
         auto procedure = [&implementation, &i](const char16_t* utf16, size_t size,
                              char* utf8) -> size_t {
-            const turbo::result res = implementation.convert_utf16be_to_utf8_with_errors(utf16, size, utf8);
-            ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
+            const turbo::UnicodeResult res = implementation.convert_utf16be_to_utf8_with_errors(utf16, size, utf8);
+            ASSERT_EQUAL(res.error, turbo::UnicodeError::SURROGATE);
             ASSERT_EQUAL(res.count, i + 2);
             return 0;
         };
@@ -223,7 +223,7 @@ TEST(issue_445) {
     const auto r = implementation.convert_utf16be_to_utf8_with_errors(
         (const char16_t*)crash, crash_len / sizeof(char16_t), output.data());
     ASSERT_EQUAL(r.count, 1);
-    ASSERT_EQUAL(r.error, turbo::error_code::SURROGATE);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SURROGATE);
 }
 
 TEST_MAIN

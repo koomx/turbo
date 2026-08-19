@@ -5,7 +5,7 @@
 
     Parameters:
     * VectorizedConvert - vectorized procedure that returns structure having
-      three fields: error_code (err), const Source* (input), Destination*
+      three fields: UnicodeError (err), const Source* (input), Destination*
    (output)
     * ScalarConvert - scalar procedure that carries on conversion of tail
     * Source - type of input char (like char16_t, char)
@@ -19,8 +19,8 @@ size_t convert_impl(VectorizedConvert vectorized_convert,
     const auto vr = vectorized_convert(buf, len, output);
     const size_t consumed = vr.input - buf;
     const size_t written = vr.output - output;
-    if (vr.err != turbo::error_code::SUCCESS) {
-        if (vr.err == turbo::error_code::OTHER) {
+    if (vr.err != turbo::UnicodeError::SUCCESS) {
+        if (vr.err == turbo::UnicodeError::OTHER) {
             // Vectorized procedure detected an error, but does not know
             // exact position. The scalar procedure rescan the portion of
             // input and figure out where the error is located.
@@ -48,7 +48,7 @@ size_t convert_impl(VectorizedConvert vectorized_convert,
 
     Parameters:
     * VectorizedConvert - vectorized procedure that returns structure having
-      three fields: error_code (err), const Source* (input), Destination*
+      three fields: UnicodeError (err), const Source* (input), Destination*
    (output)
     * ScalarConvert - scalar procedure that carries on conversion of tail
     * Source - type of input char (like char16_t, char)
@@ -56,7 +56,7 @@ size_t convert_impl(VectorizedConvert vectorized_convert,
 */
 template <typename VectorizedConvert, typename ScalarConvert, typename Source,
     typename Destination>
-turbo::result convert_with_errors_impl(VectorizedConvert vectorized_convert,
+turbo::UnicodeResult convert_with_errors_impl(VectorizedConvert vectorized_convert,
     ScalarConvert scalar_convert,
     const Source* buf, size_t len,
     Destination* output) {
@@ -64,8 +64,8 @@ turbo::result convert_with_errors_impl(VectorizedConvert vectorized_convert,
     const auto vr = vectorized_convert(buf, len, output);
     const size_t consumed = vr.input - buf;
     const size_t written = vr.output - output;
-    if (vr.err != turbo::error_code::SUCCESS) {
-        if (vr.err == turbo::error_code::OTHER) {
+    if (vr.err != turbo::UnicodeError::SUCCESS) {
+        if (vr.err == turbo::UnicodeError::OTHER) {
             // Vectorized procedure detected an error, but does not know
             // exact position. The scalar procedure rescan the portion of
             // input and figure out where the error is located.
@@ -73,14 +73,14 @@ turbo::result convert_with_errors_impl(VectorizedConvert vectorized_convert,
             sr.count += consumed;
             return sr;
         }
-        return turbo::result(vr.err, consumed);
+        return turbo::UnicodeResult(vr.err, consumed);
     }
 
     if (consumed == len) {
-        return turbo::result(turbo::error_code::SUCCESS, written);
+        return turbo::UnicodeResult(turbo::UnicodeError::SUCCESS, written);
     }
 
-    turbo::result sr = scalar_convert(vr.input, len - consumed, vr.output);
+    turbo::UnicodeResult sr = scalar_convert(vr.input, len - consumed, vr.output);
     if (sr.is_ok()) {
         sr.count += written;
     } else {

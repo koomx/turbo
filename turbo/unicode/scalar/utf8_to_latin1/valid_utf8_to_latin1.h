@@ -9,9 +9,6 @@ namespace turbo {
             namespace utf8_to_latin1 {
 
                 template <typename InputPtr>
-#if SIMDUTF_CPLUSPLUS20
-                    requires turbo::detail::indexes_into_byte_like<InputPtr>
-#endif
                  size_t convert_valid(InputPtr data, size_t len,
                     char* latin_output) {
 

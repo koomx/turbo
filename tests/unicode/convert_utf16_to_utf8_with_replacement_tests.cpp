@@ -212,7 +212,7 @@ TEST(length_consistency_be) {
         to_utf16be(char16_t(0xD800)),
         to_utf16be(u'\u4e16') };
 
-    turbo::result len_result = turbo::utf8_length_from_utf16be_with_replacement(input.data(),
+    turbo::UnicodeResult len_result = turbo::utf8_length_from_utf16be_with_replacement(input.data(),
         input.size());
 
     std::vector<char> output(input.size() * 3 + 4);
@@ -275,7 +275,7 @@ TEST_LOOP(length_consistency_le) {
         input[i] = static_cast<char16_t>(dist(gen));
     }
 
-    turbo::result len_result = turbo::utf8_length_from_utf16le_with_replacement(input.data(),
+    turbo::UnicodeResult len_result = turbo::utf8_length_from_utf16le_with_replacement(input.data(),
         input.size());
 
     std::vector<char> output(length * 3 + 1);

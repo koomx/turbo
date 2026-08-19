@@ -3,7 +3,7 @@ namespace turbo {
         namespace {
             namespace utf16 {
 
-                simdutf_really_inline void
+                KUMO_FORCE_INLINE void
                 change_endianness_utf16(const char16_t* in, size_t size, char16_t* output) {
                     size_t pos = 0;
 

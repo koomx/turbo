@@ -35,7 +35,7 @@ TEST(issue_convert_utf16be_to_latin1_with_errors_461) {
     got return [count=16, error=SUCCESS] from implementation fallback
     */
     ASSERT_EQUAL(r.count, 13);
-    ASSERT_EQUAL(r.error, turbo::error_code::TOO_LARGE);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::TOO_LARGE);
 }
 
 TEST(issue_convert_utf16be_to_latin1_with_errors_cbf29ce484222384) {
@@ -54,7 +54,7 @@ TEST(issue_convert_utf16be_to_latin1_with_errors_cbf29ce484222384) {
     */
 
     ASSERT_EQUAL(r.count, 0);
-    ASSERT_EQUAL(r.error, turbo::error_code::TOO_LARGE);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::TOO_LARGE);
 }
 
 TEST_LOOP(convert_2_UTF16_bytes) {
@@ -63,9 +63,9 @@ TEST_LOOP(convert_2_UTF16_bytes) {
 
     auto procedure = [&implementation](const char16_t* utf16, size_t size,
                          char* latin1) -> size_t {
-        const turbo::result res = implementation.convert_utf16be_to_latin1_with_errors(utf16, size,
+        const turbo::UnicodeResult res = implementation.convert_utf16be_to_latin1_with_errors(utf16, size,
             latin1);
-        ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+        ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
         return res.count;
     };
     auto size_procedure =
@@ -92,9 +92,9 @@ TEST(convert_fails_if_input_too_large) {
         for (size_t i = 0; i < size; i++) {
             auto procedure = [&implementation, &i](const char16_t* utf16, size_t size,
                                  char* latin1) -> size_t {
-                const turbo::result res = implementation.convert_utf16be_to_latin1_with_errors(utf16, size,
+                const turbo::UnicodeResult res = implementation.convert_utf16be_to_latin1_with_errors(utf16, size,
                     latin1);
-                ASSERT_EQUAL(res.error, turbo::error_code::TOO_LARGE);
+                ASSERT_EQUAL(res.error, turbo::UnicodeError::TOO_LARGE);
                 ASSERT_EQUAL(res.count, i);
                 return 0;
             };

@@ -25,12 +25,12 @@
 /// https://www.codeproject.com/Articles/276993/Base-Encoding-on-a-GPU. (2013).
 
 template <bool base64_url>
-simdutf_really_inline __m256i lookup_pshufb_improved(const __m256i input) {
+KUMO_FORCE_INLINE __m256i lookup_pshufb_improved(const __m256i input) {
     // Precomputed shuffle masks for K = 1 to 16
     // credit: Wojciech Muła
     __m256i result = _mm256_subs_epu8(input, _mm256_set1_epi8(51));
     const __m256i less = _mm256_cmpgt_epi8(_mm256_set1_epi8(26), input);
-    result = _mm256_or_si256(result, _mm256_and_si256(less, _mm256_set1_epi8(13)));
+    result = _mm256_or_si256(UnicodeResult, _mm256_and_si256(less, _mm256_set1_epi8(13)));
     __m256i shift_LUT;
     if (base64_url) {
         shift_LUT = _mm256_setr_epi8(
@@ -49,10 +49,10 @@ simdutf_really_inline __m256i lookup_pshufb_improved(const __m256i input) {
     }
 
     result = _mm256_shuffle_epi8(shift_LUT, result);
-    return _mm256_add_epi8(result, input);
+    return _mm256_add_epi8(UnicodeResult, input);
 }
 
-simdutf_really_inline __m128i insert_line_feed16(__m128i input, int K) {
+KUMO_FORCE_INLINE __m128i insert_line_feed16(__m128i input, int K) {
     static const uint8_t shuffle_masks[16][16] = {
         { 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 },
         { 0, 15, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 },
@@ -76,7 +76,7 @@ simdutf_really_inline __m128i insert_line_feed16(__m128i input, int K) {
     return _mm_shuffle_epi8(input, mask);
 }
 
-simdutf_really_inline __m256i insert_line_feed32(__m256i input, int K) {
+KUMO_FORCE_INLINE __m256i insert_line_feed32(__m256i input, int K) {
     __m128i lo = _mm256_extracti128_si256(input, 0);
     __m128i hi = _mm256_extracti128_si256(input, 1);
     if (K >= 16) {
@@ -86,14 +86,14 @@ simdutf_really_inline __m256i insert_line_feed32(__m256i input, int K) {
         lo = insert_line_feed16(lo, K);
     }
     __m256i result = _mm256_castsi128_si256(lo);
-    result = _mm256_inserti128_si256(result, hi, 1);
+    result = _mm256_inserti128_si256(UnicodeResult, hi, 1);
     return result;
 }
 
 template <bool isbase64url, bool use_lines>
 size_t
 avx2_encode_base64_impl(char* dst, const char* src, size_t srclen,
-    base64_options options,
+    Base64Options options,
     size_t line_length = turbo::default_line_length) {
     size_t offset = 0;
 
@@ -167,7 +167,7 @@ avx2_encode_base64_impl(char* dst, const char* src, size_t srclen,
                     _mm256_storeu_si256(reinterpret_cast<__m256i*>(out + 1), result);
                     _mm256_storeu_si256(
                         reinterpret_cast<__m256i*>(out),
-                        insert_line_feed32(result, static_cast<int>(location_end)));
+                        insert_line_feed32(UnicodeResult, static_cast<int>(location_end)));
                     offset = to_move;
                     out += 32 + 1;
                 } else {
@@ -185,9 +185,9 @@ avx2_encode_base64_impl(char* dst, const char* src, size_t srclen,
                     _mm256_storeu_si256(reinterpret_cast<__m256i*>(out + 1), result);
                     _mm256_storeu_si256(
                         reinterpret_cast<__m256i*>(out),
-                        insert_line_feed32(result, static_cast<int>(location_end)));
+                        insert_line_feed32(UnicodeResult, static_cast<int>(location_end)));
                     // see above.
-                    // out[32] = static_cast<uint8_t>(_mm256_extract_epi8(result, 31));
+                    // out[32] = static_cast<uint8_t>(_mm256_extract_epi8(UnicodeResult, 31));
                     offset = to_move;
                     out += 32 + 1;
                 } else {
@@ -207,9 +207,9 @@ avx2_encode_base64_impl(char* dst, const char* src, size_t srclen,
                     _mm256_storeu_si256(reinterpret_cast<__m256i*>(out + 1), result);
                     _mm256_storeu_si256(
                         reinterpret_cast<__m256i*>(out),
-                        insert_line_feed32(result, static_cast<int>(location_end)));
+                        insert_line_feed32(UnicodeResult, static_cast<int>(location_end)));
                     // see above.
-                    // out[32] = static_cast<uint8_t>(_mm256_extract_epi8(result, 31));
+                    // out[32] = static_cast<uint8_t>(_mm256_extract_epi8(UnicodeResult, 31));
                     offset = to_move;
                     out += 32 + 1;
                 } else {
@@ -227,9 +227,9 @@ avx2_encode_base64_impl(char* dst, const char* src, size_t srclen,
                     _mm256_storeu_si256(reinterpret_cast<__m256i*>(out + 1), result);
                     _mm256_storeu_si256(
                         reinterpret_cast<__m256i*>(out),
-                        insert_line_feed32(result, static_cast<int>(location_end)));
+                        insert_line_feed32(UnicodeResult, static_cast<int>(location_end)));
                     // see above.
-                    // out[32] = static_cast<uint8_t>(_mm256_extract_epi8(result, 31));
+                    // out[32] = static_cast<uint8_t>(_mm256_extract_epi8(UnicodeResult, 31));
                     offset = to_move;
                     out += 32 + 1;
                 } else {
@@ -339,7 +339,7 @@ avx2_encode_base64_impl(char* dst, const char* src, size_t srclen,
 
 template <bool isbase64url>
 size_t encode_base64(char* dst, const char* src, size_t srclen,
-    base64_options options) {
+    Base64Options options) {
     return avx2_encode_base64_impl<isbase64url, false>(dst, src, srclen, options);
 }
 
@@ -379,7 +379,7 @@ static inline void compress(__m128i data, uint16_t mask, char* output) {
 // --- decoding -----------------------------------------------
 
 template <typename = void>
-simdutf_really_inline void compress(__m256i data, uint32_t mask, char* output) {
+KUMO_FORCE_INLINE void compress(__m256i data, uint32_t mask, char* output) {
     if (mask == 0) {
         _mm256_storeu_si256(reinterpret_cast<__m256i*>(output), data);
         return;
@@ -390,7 +390,7 @@ simdutf_really_inline void compress(__m256i data, uint32_t mask, char* output) {
 }
 
 template <typename = void>
-simdutf_really_inline void base64_decode(char* out, __m256i str) {
+KUMO_FORCE_INLINE void base64_decode(char* out, __m256i str) {
     // credit: aqrit
     const __m256i pack_shuffle = _mm256_setr_epi8(2, 1, 0, 6, 5, 4, 10, 9, 8, 14, 13, 12, -1, -1, -1, -1,
         2, 1, 0, 6, 5, 4, 10, 9, 8, 14, 13, 12, -1, -1, -1, -1);
@@ -404,14 +404,14 @@ simdutf_really_inline void base64_decode(char* out, __m256i str) {
 }
 
 template <typename = void>
-simdutf_really_inline void base64_decode_block(char* out, const char* src) {
+KUMO_FORCE_INLINE void base64_decode_block(char* out, const char* src) {
     base64_decode(out,
         _mm256_loadu_si256(reinterpret_cast<const __m256i*>(src)));
     base64_decode(out + 24, _mm256_loadu_si256(reinterpret_cast<const __m256i*>(src + 32)));
 }
 
 template <typename = void>
-simdutf_really_inline void base64_decode_block_safe(char* out,
+KUMO_FORCE_INLINE void base64_decode_block_safe(char* out,
     const char* src) {
     base64_decode(out,
         _mm256_loadu_si256(reinterpret_cast<const __m256i*>(src)));
@@ -429,14 +429,14 @@ class block64 {
 public:
     // The caller of this function is responsible to ensure that there are 64
     // bytes available from reading at src.
-    simdutf_really_inline block64(const char* src) {
+    KUMO_FORCE_INLINE block64(const char* src) {
         chunks[0] = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(src));
         chunks[1] = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(src + 32));
     }
 
     // The caller of this function is responsible to ensure that there are 128
     // bytes available from reading at src.
-    simdutf_really_inline block64(const char16_t* src) {
+    KUMO_FORCE_INLINE block64(const char16_t* src) {
         const auto m1 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(src));
         const auto m2 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(src + 16));
         const auto m3 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(src + 32));
@@ -451,18 +451,18 @@ public:
         chunks[1] = _mm256_packus_epi16(m3p, m4p);
     }
 
-    simdutf_really_inline void copy_block(char* output) {
+    KUMO_FORCE_INLINE void copy_block(char* output) {
         _mm256_storeu_si256(reinterpret_cast<__m256i*>(output), chunks[0]);
         _mm256_storeu_si256(reinterpret_cast<__m256i*>(output + 32), chunks[1]);
     }
 
     // decode 64 bytes and output 48 bytes
-    simdutf_really_inline void base64_decode_block(char* out) {
+    KUMO_FORCE_INLINE void base64_decode_block(char* out) {
         base64_decode(out, chunks[0]);
         base64_decode(out + 24, chunks[1]);
     }
 
-    simdutf_really_inline void base64_decode_block_safe(char* out) {
+    KUMO_FORCE_INLINE void base64_decode_block_safe(char* out) {
         base64_decode(out, chunks[0]);
         alignas(32) char buffer[32]; // We enforce safety with a buffer.
         base64_decode(buffer, chunks[1]);
@@ -470,7 +470,7 @@ public:
     }
 
     template <bool base64_url, bool ignore_garbage, bool default_or_url>
-    simdutf_really_inline uint64_t to_base64_mask(uint64_t* error) {
+    KUMO_FORCE_INLINE uint64_t to_base64_mask(uint64_t* error) {
         uint32_t err0 = 0;
         uint32_t err1 = 0;
         uint64_t m0 = to_base64_mask<base64_url, ignore_garbage, default_or_url>(
@@ -484,7 +484,7 @@ public:
     }
 
     template <bool base64_url, bool ignore_garbage, bool default_or_url>
-    simdutf_really_inline uint32_t to_base64_mask(__m256i* src, uint32_t* error) {
+    KUMO_FORCE_INLINE uint32_t to_base64_mask(__m256i* src, uint32_t* error) {
         const __m256i ascii_space_tbl = _mm256_setr_epi8(0x20, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x9, 0xa,
             0x0, 0xc, 0xd, 0x0, 0x0, 0x20, 0x0, 0x0, 0x0, 0x0, 0x0,
             0x0, 0x0, 0x0, 0x9, 0xa, 0x0, 0xc, 0xd, 0x0, 0x0);
@@ -600,7 +600,7 @@ public:
         return (uint32_t)mask;
     }
 
-    simdutf_really_inline uint64_t compress_block(uint64_t mask, char* output) {
+    KUMO_FORCE_INLINE uint64_t compress_block(uint64_t mask, char* output) {
         if (is_power_of_two(mask)) {
             return compress_block_single(mask, output);
         }
@@ -612,7 +612,7 @@ public:
         return count_ones(nmask);
     }
 
-    simdutf_really_inline size_t compress_block_single(uint64_t mask,
+    KUMO_FORCE_INLINE size_t compress_block_single(uint64_t mask,
         char* output) {
         const size_t pos64 = trailing_zeroes(mask);
         const int8_t pos = pos64 & 0xf;
@@ -681,7 +681,7 @@ public:
     }
 };
 
-simdutf_warn_unused size_t avx2_binary_length_from_base64(const char* input,
+ [[nodiscard]] size_t avx2_binary_length_from_base64(const char* input,
     size_t length) {
     size_t count = 0;
     const char* ptr = input;
@@ -714,7 +714,7 @@ simdutf_warn_unused size_t avx2_binary_length_from_base64(const char* input,
     return ((count - padding) * 3) / 4;
 }
 
-simdutf_warn_unused size_t avx2_binary_length_from_base64(const char16_t* input,
+ [[nodiscard]] size_t avx2_binary_length_from_base64(const char16_t* input,
     size_t length) {
     size_t count = 0;
     const char16_t* ptr = input;

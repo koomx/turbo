@@ -11,19 +11,19 @@ namespace turbo {
                 // at full speed and only pays extra where an unpaired surrogate is found.
                 //
                 // convert_with_errors behaves like convert_utf16{le,be}_to_utf8_with_errors: on
-                // SUCCESS, result.count is the number of UTF-8 bytes written; on a SURROGATE
-                // error, result.count is the index of the first unpaired surrogate.
+                // SUCCESS, UnicodeResult.count is the number of UTF-8 bytes written; on a SURROGATE
+                // error, UnicodeResult.count is the index of the first unpaired surrogate.
                 // utf8_length is utf8_length_from_utf16{le,be}; only ever called on a prefix
                 // already proved valid, so it matches the bytes just written.
                 template <typename ConvertWithErrors, typename Utf8Length>
-                simdutf_really_inline size_t convert_with_replacement_via(
+                KUMO_FORCE_INLINE size_t convert_with_replacement_via(
                     ConvertWithErrors convert_with_errors, Utf8Length utf8_length,
                     const char16_t* buf, size_t len, char* utf8_output) {
                     char* const start = utf8_output;
                     size_t pos = 0;
                     while (pos < len) {
-                        result r = convert_with_errors(buf + pos, len - pos, utf8_output);
-                        if (r.error != error_code::SURROGATE) {
+                        UnicodeResult r = convert_with_errors(buf + pos, len - pos, utf8_output);
+                        if (r.error != UnicodeError::SURROGATE) {
                             utf8_output += r.count; // SUCCESS: r.count == UTF-8 bytes written
                             break;
                         }

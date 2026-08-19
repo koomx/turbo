@@ -22,35 +22,35 @@ namespace turbo {
                     static const int SIZE = sizeof(value);
 
                     // Conversion from/to SIMD register
-                    simdutf_really_inline base_u8(const __m128i _value)
+                    KUMO_FORCE_INLINE base_u8(const __m128i _value)
                         : value(_value) { }
-                    simdutf_really_inline operator const __m128i&() const { return this->value; }
-                    simdutf_really_inline operator __m128i&() { return this->value; }
+                    KUMO_FORCE_INLINE operator const __m128i&() const { return this->value; }
+                    KUMO_FORCE_INLINE operator __m128i&() { return this->value; }
 
                     // Bit operations
-                    simdutf_really_inline simd8<T> operator|(const simd8<T> other) const {
+                    KUMO_FORCE_INLINE simd8<T> operator|(const simd8<T> other) const {
                         return __lsx_vor_v(this->value, other);
                     }
-                    simdutf_really_inline simd8<T> operator&(const simd8<T> other) const {
+                    KUMO_FORCE_INLINE simd8<T> operator&(const simd8<T> other) const {
                         return __lsx_vand_v(this->value, other);
                     }
-                    simdutf_really_inline simd8<T> operator^(const simd8<T> other) const {
+                    KUMO_FORCE_INLINE simd8<T> operator^(const simd8<T> other) const {
                         return __lsx_vxor_v(this->value, other);
                     }
-                    simdutf_really_inline simd8<T> operator~() const { return *this ^ 0xFFu; }
-                    simdutf_really_inline simd8<T>& operator|=(const simd8<T> other) {
+                    KUMO_FORCE_INLINE simd8<T> operator~() const { return *this ^ 0xFFu; }
+                    KUMO_FORCE_INLINE simd8<T>& operator|=(const simd8<T> other) {
                         auto this_cast = static_cast<simd8<T>*>(this);
                         *this_cast = *this_cast | other;
                         return *this_cast;
                     }
 
-                    friend simdutf_really_inline Mask operator==(const simd8<T> lhs,
+                    friend KUMO_FORCE_INLINE Mask operator==(const simd8<T> lhs,
                         const simd8<T> rhs) {
                         return __lsx_vseq_b(lhs, rhs);
                     }
 
                     template <int N = 1>
-                    simdutf_really_inline simd8<T> prev(const simd8<T> prev_chunk) const {
+                    KUMO_FORCE_INLINE simd8<T> prev(const simd8<T> prev_chunk) const {
                         return __lsx_vor_v(__lsx_vbsll_v(this->value, N),
                             __lsx_vbsrl_v(prev_chunk.value, 16 - N));
                     }
@@ -62,23 +62,23 @@ namespace turbo {
                     typedef uint16_t bitmask_t;
                     typedef uint32_t bitmask2_t;
 
-                    static simdutf_really_inline simd8<bool> splat(bool _value) {
+                    static KUMO_FORCE_INLINE simd8<bool> splat(bool _value) {
                         return __lsx_vreplgr2vr_b(uint8_t(-(!!_value)));
                     }
 
-                    simdutf_really_inline simd8(const __m128i _value)
+                    KUMO_FORCE_INLINE simd8(const __m128i _value)
                         : base_u8<bool>(_value) { }
                     // False constructor
-                    simdutf_really_inline simd8()
+                    KUMO_FORCE_INLINE simd8()
                         : simd8(__lsx_vldi(0)) { }
                     // Splat constructor
-                    simdutf_really_inline simd8(bool _value)
+                    KUMO_FORCE_INLINE simd8(bool _value)
                         : simd8(splat(_value)) { }
-                    simdutf_really_inline void store(uint8_t dst[16]) const {
+                    KUMO_FORCE_INLINE void store(uint8_t dst[16]) const {
                         return __lsx_vst(this->value, dst, 0);
                     }
 
-                    simdutf_really_inline uint32_t to_bitmask() const {
+                    KUMO_FORCE_INLINE uint32_t to_bitmask() const {
                         return __lsx_vpickve2gr_wu(__lsx_vmsknz_b(*this), 0);
                     }
                 };
@@ -86,26 +86,26 @@ namespace turbo {
                 // Unsigned bytes
                 template <>
                 struct simd8<uint8_t> : base_u8<uint8_t> {
-                    static simdutf_really_inline simd8<uint8_t> splat(uint8_t _value) {
+                    static KUMO_FORCE_INLINE simd8<uint8_t> splat(uint8_t _value) {
                         return __lsx_vreplgr2vr_b(_value);
                     }
-                    static simdutf_really_inline simd8<uint8_t> zero() { return __lsx_vldi(0); }
-                    static simdutf_really_inline simd8<uint8_t> load(const uint8_t* values) {
+                    static KUMO_FORCE_INLINE simd8<uint8_t> zero() { return __lsx_vldi(0); }
+                    static KUMO_FORCE_INLINE simd8<uint8_t> load(const uint8_t* values) {
                         return __lsx_vld(values, 0);
                     }
-                    simdutf_really_inline simd8(const __m128i _value)
+                    KUMO_FORCE_INLINE simd8(const __m128i _value)
                         : base_u8<uint8_t>(_value) { }
                     // Zero constructor
-                    simdutf_really_inline simd8()
+                    KUMO_FORCE_INLINE simd8()
                         : simd8(zero()) { }
                     // Array constructor
-                    simdutf_really_inline simd8(const uint8_t values[16])
+                    KUMO_FORCE_INLINE simd8(const uint8_t values[16])
                         : simd8(load(values)) { }
                     // Splat constructor
-                    simdutf_really_inline simd8(uint8_t _value)
+                    KUMO_FORCE_INLINE simd8(uint8_t _value)
                         : simd8(splat(_value)) { }
                     // Member-by-member initialization
-                    simdutf_really_inline
+                    KUMO_FORCE_INLINE
                     simd8(uint8_t v0, uint8_t v1, uint8_t v2, uint8_t v3, uint8_t v4, uint8_t v5,
                         uint8_t v6, uint8_t v7, uint8_t v8, uint8_t v9, uint8_t v10,
                         uint8_t v11, uint8_t v12, uint8_t v13, uint8_t v14, uint8_t v15)
@@ -113,7 +113,7 @@ namespace turbo {
                               v12, v13, v14, v15 }) { }
 
                     // Repeat 16 values as many times as necessary (usually for lookup tables)
-                    simdutf_really_inline static simd8<uint8_t>
+                    KUMO_FORCE_INLINE static simd8<uint8_t>
                     repeat_16(uint8_t v0, uint8_t v1, uint8_t v2, uint8_t v3, uint8_t v4,
                         uint8_t v5, uint8_t v6, uint8_t v7, uint8_t v8, uint8_t v9,
                         uint8_t v10, uint8_t v11, uint8_t v12, uint8_t v13, uint8_t v14,
@@ -123,59 +123,59 @@ namespace turbo {
                     }
 
                     // Store to array
-                    simdutf_really_inline void store(uint8_t dst[16]) const {
+                    KUMO_FORCE_INLINE void store(uint8_t dst[16]) const {
                         return __lsx_vst(this->value, dst, 0);
                     }
 
                     // Order-specific operations
-                    simdutf_really_inline simd8<bool>
+                    KUMO_FORCE_INLINE simd8<bool>
                     operator>=(const simd8<uint8_t> other) const {
                         return __lsx_vsle_bu(other, *this);
                     }
-                    simdutf_really_inline simd8<bool>
+                    KUMO_FORCE_INLINE simd8<bool>
                     operator>(const simd8<uint8_t> other) const {
                         return __lsx_vslt_bu(other, *this);
                     }
-                    simdutf_really_inline simd8& operator-=(const simd8<uint8_t> other) {
+                    KUMO_FORCE_INLINE simd8& operator-=(const simd8<uint8_t> other) {
                         value = __lsx_vsub_b(value, other.value);
                         return *this;
                     }
                     // Same as >, but instead of guaranteeing all 1's == true, false = 0 and true
                     // = nonzero. For ARM, returns all 1's.
-                    simdutf_really_inline simd8<uint8_t>
+                    KUMO_FORCE_INLINE simd8<uint8_t>
                     gt_bits(const simd8<uint8_t> other) const {
                         return simd8<uint8_t>(*this > other);
                     }
 
                     // Bit-specific operations
-                    simdutf_really_inline simd8<bool> any_bits_set(simd8<uint8_t> bits) const {
+                    KUMO_FORCE_INLINE simd8<bool> any_bits_set(simd8<uint8_t> bits) const {
                         return __lsx_vslt_bu(__lsx_vldi(0), __lsx_vand_v(this->value, bits));
                     }
-                    simdutf_really_inline bool is_ascii() const {
+                    KUMO_FORCE_INLINE bool is_ascii() const {
                         return __lsx_vpickve2gr_hu(__lsx_vmskgez_b(this->value), 0) == 0xFFFF;
                     }
 
-                    simdutf_really_inline bool any_bits_set_anywhere() const {
+                    KUMO_FORCE_INLINE bool any_bits_set_anywhere() const {
                         return __lsx_vpickve2gr_hu(__lsx_vmsknz_b(this->value), 0) > 0;
                     }
                     template <int N>
-                    simdutf_really_inline simd8<uint8_t> shr() const {
+                    KUMO_FORCE_INLINE simd8<uint8_t> shr() const {
                         return __lsx_vsrli_b(this->value, N);
                     }
                     template <int N>
-                    simdutf_really_inline simd8<uint8_t> shl() const {
+                    KUMO_FORCE_INLINE simd8<uint8_t> shl() const {
                         return __lsx_vslli_b(this->value, N);
                     }
 
                     // Perform a lookup assuming the value is between 0 and 16 (undefined behavior
                     // for out of range values)
                     template <typename L>
-                    simdutf_really_inline simd8<L> lookup_16(simd8<L> lookup_table) const {
+                    KUMO_FORCE_INLINE simd8<L> lookup_16(simd8<L> lookup_table) const {
                         return lookup_table.apply_lookup_16_to(*this);
                     }
 
                     template <typename L>
-                    simdutf_really_inline simd8<L>
+                    KUMO_FORCE_INLINE simd8<L>
                     lookup_16(L replace0, L replace1, L replace2, L replace3, L replace4,
                         L replace5, L replace6, L replace7, L replace8, L replace9,
                         L replace10, L replace11, L replace12, L replace13, L replace14,
@@ -187,13 +187,13 @@ namespace turbo {
                     }
 
                     template <typename T>
-                    simdutf_really_inline simd8<uint8_t>
+                    KUMO_FORCE_INLINE simd8<uint8_t>
                     apply_lookup_16_to(const simd8<T> original) const {
                         __m128i original_tmp = __lsx_vand_v(original, __lsx_vldi(0x1f));
                         return __lsx_vshuf_b(__lsx_vldi(0), *this, simd8<uint8_t>(original_tmp));
                     }
 
-                    simdutf_really_inline uint64_t sum_bytes() const {
+                    KUMO_FORCE_INLINE uint64_t sum_bytes() const {
                         const auto sum_u16 = __lsx_vhaddw_hu_bu(value, value);
                         const auto sum_u32 = __lsx_vhaddw_wu_hu(sum_u16, sum_u16);
                         const auto sum_u64 = __lsx_vhaddw_du_wu(sum_u32, sum_u32);
@@ -209,16 +209,16 @@ namespace turbo {
 
                     static const int SIZE = sizeof(value);
 
-                    static simdutf_really_inline simd8<int8_t> splat(int8_t _value) {
+                    static KUMO_FORCE_INLINE simd8<int8_t> splat(int8_t _value) {
                         return __lsx_vreplgr2vr_b(_value);
                     }
-                    static simdutf_really_inline simd8<int8_t> zero() { return __lsx_vldi(0); }
-                    static simdutf_really_inline simd8<int8_t> load(const int8_t values[16]) {
+                    static KUMO_FORCE_INLINE simd8<int8_t> zero() { return __lsx_vldi(0); }
+                    static KUMO_FORCE_INLINE simd8<int8_t> load(const int8_t values[16]) {
                         return __lsx_vld(values, 0);
                     }
 
                     template <endianness big_endian>
-                    simdutf_really_inline void store_ascii_as_utf16(char16_t* p) const {
+                    KUMO_FORCE_INLINE void store_ascii_as_utf16(char16_t* p) const {
                         __m128i zero = __lsx_vldi(0);
                         if constexpr (match_system(big_endian)) {
                             __lsx_vst(__lsx_vilvl_b(zero, (__m128i)this->value),
@@ -233,7 +233,7 @@ namespace turbo {
                         }
                     }
 
-                    simdutf_really_inline void store_ascii_as_utf32(char32_t* p) const {
+                    KUMO_FORCE_INLINE void store_ascii_as_utf32(char32_t* p) const {
                         __m128i zero = __lsx_vldi(0);
                         __m128i in16low = __lsx_vilvl_b(zero, (__m128i)this->value);
                         __m128i in16high = __lsx_vilvh_b(zero, (__m128i)this->value);
@@ -250,7 +250,7 @@ namespace turbo {
                     // In places where the table can be reused, which is most uses in simdutf, it
                     // is worth it to do 4 table lookups, as there is no direct zero extension
                     // from u8 to u32.
-                    simdutf_really_inline void store_ascii_as_utf32_tbl(char32_t* p) const {
+                    KUMO_FORCE_INLINE void store_ascii_as_utf32_tbl(char32_t* p) const {
                         const simd8<uint8_t> tb1 { 0, 255, 255, 255, 1, 255, 255, 255,
                             2, 255, 255, 255, 3, 255, 255, 255 };
                         const simd8<uint8_t> tb2 { 4, 255, 255, 255, 5, 255, 255, 255,
@@ -272,54 +272,54 @@ namespace turbo {
                         shuf4.store(reinterpret_cast<int8_t*>(p + 12));
                     }
                     // Conversion from/to SIMD register
-                    simdutf_really_inline simd8(const __m128i _value)
+                    KUMO_FORCE_INLINE simd8(const __m128i _value)
                         : value(_value) { }
 
                     // Zero constructor
-                    simdutf_really_inline simd8()
+                    KUMO_FORCE_INLINE simd8()
                         : simd8(zero()) { }
                     // Splat constructor
-                    simdutf_really_inline simd8(int8_t _value)
+                    KUMO_FORCE_INLINE simd8(int8_t _value)
                         : simd8(splat(_value)) { }
                     // Array constructor
-                    simdutf_really_inline simd8(const int8_t* values)
+                    KUMO_FORCE_INLINE simd8(const int8_t* values)
                         : simd8(load(values)) { }
 
                     // Store to array
-                    simdutf_really_inline void store(int8_t dst[16]) const {
+                    KUMO_FORCE_INLINE void store(int8_t dst[16]) const {
                         return __lsx_vst(value, dst, 0);
                     }
 
-                    simdutf_really_inline operator simd8<uint8_t>() const {
+                    KUMO_FORCE_INLINE operator simd8<uint8_t>() const {
                         return ((__m128i)this->value);
                     }
 
-                    simdutf_really_inline simd8<int8_t>
+                    KUMO_FORCE_INLINE simd8<int8_t>
                     operator|(const simd8<int8_t> other) const {
                         return __lsx_vor_v((__m128i)value, (__m128i)other.value);
                     }
 
-                    simdutf_really_inline bool is_ascii() const {
+                    KUMO_FORCE_INLINE bool is_ascii() const {
                         return (__lsx_vpickve2gr_hu(__lsx_vmskgez_b((__m128i)this->value), 0) == 0xffff);
                     }
 
                     // Order-sensitive comparisons
-                    simdutf_really_inline simd8<bool> operator>(const simd8<int8_t> other) const {
+                    KUMO_FORCE_INLINE simd8<bool> operator>(const simd8<int8_t> other) const {
                         return __lsx_vslt_b((__m128i)other.value, (__m128i)value);
                     }
-                    simdutf_really_inline simd8<bool> operator<(const simd8<int8_t> other) const {
+                    KUMO_FORCE_INLINE simd8<bool> operator<(const simd8<int8_t> other) const {
                         return __lsx_vslt_b((__m128i)value, (__m128i)other.value);
                     }
 
                     template <int N = 1>
-                    simdutf_really_inline simd8<int8_t>
+                    KUMO_FORCE_INLINE simd8<int8_t>
                     prev(const simd8<int8_t> prev_chunk) const {
                         return __lsx_vor_v(__lsx_vbsll_v(this->value, N),
                             __lsx_vbsrl_v(prev_chunk.value, 16 - N));
                     }
 
                     template <typename T>
-                    simdutf_really_inline simd8<int8_t>
+                    KUMO_FORCE_INLINE simd8<int8_t>
                     apply_lookup_16_to(const simd8<T> original) const {
                         __m128i original_tmp = __lsx_vand_v(original, __lsx_vldi(0x1f));
                         return __lsx_vshuf_b(__lsx_vldi(0), (__m128i)this->value,
@@ -341,23 +341,23 @@ namespace turbo {
                         = delete; // no assignment allowed
                     simd8x64() = delete; // no default constructor allowed
 
-                    simdutf_really_inline simd8x64(const simd8<T> chunk0, const simd8<T> chunk1,
+                    KUMO_FORCE_INLINE simd8x64(const simd8<T> chunk0, const simd8<T> chunk1,
                         const simd8<T> chunk2, const simd8<T> chunk3)
                         : chunks { chunk0, chunk1, chunk2, chunk3 } { }
-                    simdutf_really_inline simd8x64(const T* ptr)
+                    KUMO_FORCE_INLINE simd8x64(const T* ptr)
                         : chunks { simd8<T>::load(ptr),
                             simd8<T>::load(ptr + sizeof(simd8<T>) / sizeof(T)),
                             simd8<T>::load(ptr + 2 * sizeof(simd8<T>) / sizeof(T)),
                             simd8<T>::load(ptr + 3 * sizeof(simd8<T>) / sizeof(T)) } { }
 
-                    simdutf_really_inline void store(T* ptr) const {
+                    KUMO_FORCE_INLINE void store(T* ptr) const {
                         this->chunks[0].store(ptr + sizeof(simd8<T>) * 0 / sizeof(T));
                         this->chunks[1].store(ptr + sizeof(simd8<T>) * 1 / sizeof(T));
                         this->chunks[2].store(ptr + sizeof(simd8<T>) * 2 / sizeof(T));
                         this->chunks[3].store(ptr + sizeof(simd8<T>) * 3 / sizeof(T));
                     }
 
-                    simdutf_really_inline simd8x64<T>& operator|=(const simd8x64<T>& other) {
+                    KUMO_FORCE_INLINE simd8x64<T>& operator|=(const simd8x64<T>& other) {
                         this->chunks[0] |= other.chunks[0];
                         this->chunks[1] |= other.chunks[1];
                         this->chunks[2] |= other.chunks[2];
@@ -365,28 +365,28 @@ namespace turbo {
                         return *this;
                     }
 
-                    simdutf_really_inline simd8<T> reduce_or() const {
+                    KUMO_FORCE_INLINE simd8<T> reduce_or() const {
                         return (this->chunks[0] | this->chunks[1]) | (this->chunks[2] | this->chunks[3]);
                     }
 
-                    simdutf_really_inline bool is_ascii() const { return reduce_or().is_ascii(); }
+                    KUMO_FORCE_INLINE bool is_ascii() const { return reduce_or().is_ascii(); }
 
                     template <endianness endian>
-                    simdutf_really_inline void store_ascii_as_utf16(char16_t* ptr) const {
+                    KUMO_FORCE_INLINE void store_ascii_as_utf16(char16_t* ptr) const {
                         this->chunks[0].template store_ascii_as_utf16<endian>(ptr + sizeof(simd8<T>) * 0);
                         this->chunks[1].template store_ascii_as_utf16<endian>(ptr + sizeof(simd8<T>) * 1);
                         this->chunks[2].template store_ascii_as_utf16<endian>(ptr + sizeof(simd8<T>) * 2);
                         this->chunks[3].template store_ascii_as_utf16<endian>(ptr + sizeof(simd8<T>) * 3);
                     }
 
-                    simdutf_really_inline void store_ascii_as_utf32(char32_t* ptr) const {
+                    KUMO_FORCE_INLINE void store_ascii_as_utf32(char32_t* ptr) const {
                         this->chunks[0].store_ascii_as_utf32_tbl(ptr + sizeof(simd8<T>) * 0);
                         this->chunks[1].store_ascii_as_utf32_tbl(ptr + sizeof(simd8<T>) * 1);
                         this->chunks[2].store_ascii_as_utf32_tbl(ptr + sizeof(simd8<T>) * 2);
                         this->chunks[3].store_ascii_as_utf32_tbl(ptr + sizeof(simd8<T>) * 3);
                     }
 
-                    simdutf_really_inline uint64_t to_bitmask() const {
+                    KUMO_FORCE_INLINE uint64_t to_bitmask() const {
                         __m128i mask = __lsx_vbsll_v(__lsx_vmsknz_b(this->chunks[3]), 6);
                         mask = __lsx_vor_v(mask, __lsx_vbsll_v(__lsx_vmsknz_b(this->chunks[2]), 4));
                         mask = __lsx_vor_v(mask, __lsx_vbsll_v(__lsx_vmsknz_b(this->chunks[1]), 2));
@@ -394,25 +394,25 @@ namespace turbo {
                         return __lsx_vpickve2gr_du(mask, 0);
                     }
 
-                    simdutf_really_inline uint64_t lt(const T m) const {
+                    KUMO_FORCE_INLINE uint64_t lt(const T m) const {
                         const simd8<T> mask = simd8<T>::splat(m);
                         return simd8x64<bool>(this->chunks[0] < mask, this->chunks[1] < mask,
                             this->chunks[2] < mask, this->chunks[3] < mask)
                             .to_bitmask();
                     }
-                    simdutf_really_inline uint64_t gt(const T m) const {
+                    KUMO_FORCE_INLINE uint64_t gt(const T m) const {
                         const simd8<T> mask = simd8<T>::splat(m);
                         return simd8x64<bool>(this->chunks[0] > mask, this->chunks[1] > mask,
                             this->chunks[2] > mask, this->chunks[3] > mask)
                             .to_bitmask();
                     }
-                    simdutf_really_inline uint64_t gteq(const T m) const {
+                    KUMO_FORCE_INLINE uint64_t gteq(const T m) const {
                         const simd8<T> mask = simd8<T>::splat(m);
                         return simd8x64<bool>(this->chunks[0] >= mask, this->chunks[1] >= mask,
                             this->chunks[2] >= mask, this->chunks[3] >= mask)
                             .to_bitmask();
                     }
-                    simdutf_really_inline uint64_t gteq_unsigned(const uint8_t m) const {
+                    KUMO_FORCE_INLINE uint64_t gteq_unsigned(const uint8_t m) const {
                         const simd8<uint8_t> mask = simd8<uint8_t>::splat(m);
                         return simd8x64<bool>(simd8<uint8_t>(this->chunks[0].value) >= mask,
                             simd8<uint8_t>(this->chunks[1].value) >= mask,

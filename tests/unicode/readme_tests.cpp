@@ -27,9 +27,9 @@ TEST(base64_fun) {
         std::vector<uint8_t> buffer(turbo::maximal_binary_length_from_base64(
             source.data(), source.size()));
         // convert to binary and check for errors
-        turbo::result r = turbo::base64_to_binary(source.data(), source.size(),
+        turbo::UnicodeResult r = turbo::base64_to_binary(source.data(), source.size(),
             (char*)buffer.data());
-        if (r.error != turbo::error_code::SUCCESS) {
+        if (r.error != turbo::UnicodeError::SUCCESS) {
             ASSERT_TRUE(expected[i].empty());
             std::cout << "output: error" << std::endl;
         } else {
@@ -60,9 +60,9 @@ TEST(base64_fun_safe) {
             source.data(), source.size()));
         // convert to binary and check for errors
         size_t output_length = buffer.size();
-        turbo::result r = turbo::base64_to_binary_safe(
+        turbo::UnicodeResult r = turbo::base64_to_binary_safe(
             source.data(), source.size(), (char*)buffer.data(), output_length);
-        if (r.error != turbo::error_code::SUCCESS) {
+        if (r.error != turbo::UnicodeError::SUCCESS) {
             ASSERT_TRUE(expected[i].empty());
             std::cout << "output: error" << std::endl;
         } else {
@@ -77,7 +77,7 @@ TEST(base64_fun_safe) {
 
 // this is a compile test
 void check_simdutf_result() {
-    turbo::result r;
+    turbo::UnicodeResult r;
 }
 
 // this is a compile test
@@ -179,30 +179,30 @@ TEST(utf16_streaming) {
 TEST(error_location_badascii) {
     // this ASCII string has a bad byte at index 5
     std::string bad_ascii = "\x20\x20\x20\x20\x20\xff\x20\x20\x20";
-    turbo::result res = implementation.validate_ascii_with_errors(
+    turbo::UnicodeResult res = implementation.validate_ascii_with_errors(
         bad_ascii.data(), bad_ascii.size());
-    if (res.error != turbo::error_code::SUCCESS) {
+    if (res.error != turbo::UnicodeError::SUCCESS) {
         printf("error at index %zu\n", res.count);
     }
-    ASSERT_EQUAL(res.error, turbo::error_code::TOO_LARGE);
+    ASSERT_EQUAL(res.error, turbo::UnicodeError::TOO_LARGE);
     ASSERT_EQUAL(res.count, 5);
 }
 
 TEST(error_location_badutf8) {
     // this UTF-8 string has a bad byte at index 5
     std::string bad_utf8 = "\xc3\xa9\xc3\xa9\x20\xff\xc3\xa9";
-    turbo::result res = implementation.validate_utf8_with_errors(
+    turbo::UnicodeResult res = implementation.validate_utf8_with_errors(
         bad_utf8.data(), bad_utf8.size());
-    if (res.error != turbo::error_code::SUCCESS) {
+    if (res.error != turbo::UnicodeError::SUCCESS) {
         printf("error at index %zu\n", res.count);
     }
-    ASSERT_EQUAL(res.error, turbo::error_code::HEADER_BITS);
+    ASSERT_EQUAL(res.error, turbo::UnicodeError::HEADER_BITS);
     ASSERT_EQUAL(res.count, 5);
     res = implementation.validate_utf8_with_errors(bad_utf8.data(), res.count);
-    if (res.error == turbo::error_code::SUCCESS) {
+    if (res.error == turbo::UnicodeError::SUCCESS) {
         printf("we have transcoded %zu valid bytes", res.count);
     }
-    ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(res.count, 5);
 }
 
@@ -212,20 +212,20 @@ TEST(error_location_badutf8_transcoding) {
     size_t budget_utf16 = turbo::utf16_length_from_utf8(bad_utf8.data(), bad_utf8.size());
     std::unique_ptr<char16_t[]> utf16 { new char16_t[budget_utf16] };
 
-    turbo::result res = turbo::convert_utf8_to_utf16_with_errors(
+    turbo::UnicodeResult res = turbo::convert_utf8_to_utf16_with_errors(
         bad_utf8.data(), bad_utf8.size(), utf16.get());
 
-    if (res.error != turbo::error_code::SUCCESS) {
+    if (res.error != turbo::UnicodeError::SUCCESS) {
         printf("error at index %zu\n", res.count);
     }
-    ASSERT_EQUAL(res.error, turbo::error_code::HEADER_BITS);
+    ASSERT_EQUAL(res.error, turbo::UnicodeError::HEADER_BITS);
     ASSERT_EQUAL(res.count, 5);
     res = turbo::convert_utf8_to_utf16_with_errors(bad_utf8.data(), res.count,
         utf16.get());
-    if (res.error == turbo::error_code::SUCCESS) {
+    if (res.error == turbo::UnicodeError::SUCCESS) {
         printf("we have transcoded %zu characters", res.count);
     }
-    ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(res.count, 3);
 }
 

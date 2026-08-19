@@ -30,7 +30,7 @@ TEST_LOOP(to_well_formed_utf16le_single_surrogate) {
     for (size_t j = 0; j < length; j++) {
         for (char16_t surrogate : surrogates) {
             utf16[j] = surrogate;
-            turbo::result utf8_length = implementation.utf8_length_from_utf16le_with_replacement(
+            turbo::UnicodeResult utf8_length = implementation.utf8_length_from_utf16le_with_replacement(
                 (const char16_t*)utf16.data(), utf16.size());
             std::fill(output.begin(), output.end(), 0);
             implementation.to_well_formed_utf16le((const char16_t*)utf16.data(),
@@ -57,7 +57,7 @@ TEST_LOOP(to_well_formed_utf16be_single_surrogate) {
     for (size_t j = 0; j < length; j++) {
         for (char16_t surrogate : surrogates) {
             utf16[j] = surrogate;
-            turbo::result utf8_length = implementation.utf8_length_from_utf16be_with_replacement(
+            turbo::UnicodeResult utf8_length = implementation.utf8_length_from_utf16be_with_replacement(
                 (const char16_t*)utf16.data(), utf16.size());
             std::fill(output.begin(), output.end(), 0);
             implementation.to_well_formed_utf16be((const char16_t*)utf16.data(),
@@ -78,7 +78,7 @@ TEST_LOOP(to_well_formed_utf16le_for_valid_input_surrogate_pairs_short) {
     const auto utf16 { generator.generate_le(8) };
     const auto len = utf16.size();
     std::vector<char16_t> output(len);
-    turbo::result utf8_length = implementation.utf8_length_from_utf16le_with_replacement(utf16.data(),
+    turbo::UnicodeResult utf8_length = implementation.utf8_length_from_utf16le_with_replacement(utf16.data(),
         len);
     implementation.to_well_formed_utf16le(utf16.data(), len, output.data());
     size_t utf8_length_check = implementation.utf8_length_from_utf16le(output.data(), len);
@@ -91,7 +91,7 @@ TEST_LOOP(to_well_formed_utf16be_for_valid_input_surrogate_pairs_short) {
     const auto utf16 { generator.generate_be(8) };
     const auto len = utf16.size();
     std::vector<char16_t> output(len);
-    turbo::result utf8_length = implementation.utf8_length_from_utf16be_with_replacement(utf16.data(),
+    turbo::UnicodeResult utf8_length = implementation.utf8_length_from_utf16be_with_replacement(utf16.data(),
         len);
     implementation.to_well_formed_utf16be(utf16.data(), len, output.data());
     size_t utf8_length_check = implementation.utf8_length_from_utf16be(output.data(), len);
@@ -104,7 +104,7 @@ TEST_LOOP(to_well_formed_utf16le_for_valid_input_surrogate_pairs_long) {
     const auto utf16 { generator.generate_le(512) };
     const auto len = utf16.size();
     std::vector<char16_t> output(len);
-    turbo::result utf8_length = implementation.utf8_length_from_utf16le_with_replacement(utf16.data(),
+    turbo::UnicodeResult utf8_length = implementation.utf8_length_from_utf16le_with_replacement(utf16.data(),
         len);
     implementation.to_well_formed_utf16le(utf16.data(), len, output.data());
     size_t utf8_length_check = implementation.utf8_length_from_utf16le(output.data(), len);
@@ -117,7 +117,7 @@ TEST_LOOP(to_well_formed_utf16be_for_valid_input_surrogate_pairs_long) {
     const auto utf16 { generator.generate_be(512) };
     const auto len = utf16.size();
     std::vector<char16_t> output(len);
-    turbo::result utf8_length = implementation.utf8_length_from_utf16be_with_replacement(utf16.data(),
+    turbo::UnicodeResult utf8_length = implementation.utf8_length_from_utf16be_with_replacement(utf16.data(),
         len);
     implementation.to_well_formed_utf16be(utf16.data(), len, output.data());
     size_t utf8_length_check = implementation.utf8_length_from_utf16be(output.data(), len);
@@ -130,7 +130,7 @@ TEST_LOOP(to_well_formed_utf16le_for_valid_input_mixed_long) {
     const auto utf16 { generator.generate_le(512) };
     const auto len = utf16.size();
     std::vector<char16_t> output(len);
-    turbo::result utf8_length = implementation.utf8_length_from_utf16le_with_replacement(utf16.data(),
+    turbo::UnicodeResult utf8_length = implementation.utf8_length_from_utf16le_with_replacement(utf16.data(),
         len);
     implementation.to_well_formed_utf16le(utf16.data(), len, output.data());
     size_t utf8_length_check = implementation.utf8_length_from_utf16le(output.data(), len);
@@ -143,7 +143,7 @@ TEST_LOOP(to_well_formed_utf16be_for_valid_input_mixed_long) {
     const auto utf16 { generator.generate_be(512) };
     const auto len = utf16.size();
     std::vector<char16_t> output(len);
-    turbo::result utf8_length = implementation.utf8_length_from_utf16be_with_replacement(utf16.data(),
+    turbo::UnicodeResult utf8_length = implementation.utf8_length_from_utf16be_with_replacement(utf16.data(),
         len);
     implementation.to_well_formed_utf16be(utf16.data(), len, output.data());
     size_t utf8_length_check = implementation.utf8_length_from_utf16be(output.data(), len);
@@ -156,7 +156,7 @@ TEST_LOOP(to_well_formed_utf16le_for_valid_input_mixed_long_self) {
     const auto utf16 { generator.generate_le(512) };
     const auto len = utf16.size();
     std::vector<char16_t> output = utf16;
-    turbo::result utf8_length = implementation.utf8_length_from_utf16le_with_replacement(output.data(),
+    turbo::UnicodeResult utf8_length = implementation.utf8_length_from_utf16le_with_replacement(output.data(),
         len);
     implementation.to_well_formed_utf16le(output.data(), len, output.data());
     size_t utf8_length_check = implementation.utf8_length_from_utf16le(output.data(), len);
@@ -169,7 +169,7 @@ TEST_LOOP(to_well_formed_utf16be_for_valid_input_mixed_long_self) {
     const auto utf16 { generator.generate_be(512) };
     const auto len = utf16.size();
     std::vector<char16_t> output = utf16;
-    turbo::result utf8_length = implementation.utf8_length_from_utf16be_with_replacement(output.data(),
+    turbo::UnicodeResult utf8_length = implementation.utf8_length_from_utf16be_with_replacement(output.data(),
         len);
     implementation.to_well_formed_utf16be(output.data(), len, output.data());
     size_t utf8_length_check = implementation.utf8_length_from_utf16be(output.data(), len);
@@ -203,7 +203,7 @@ TEST(to_well_formed_utf16le_bad_input) {
         auto utf16 = random_testcase(512, gen);
         auto len = utf16.size();
         std::vector<char16_t> output(len);
-        turbo::result utf8_length = implementation.utf8_length_from_utf16le_with_replacement(utf16.data(),
+        turbo::UnicodeResult utf8_length = implementation.utf8_length_from_utf16le_with_replacement(utf16.data(),
             len);
         implementation.to_well_formed_utf16le(utf16.data(), len, output.data());
         for (size_t j = 0; j < len; j++) {
@@ -224,7 +224,7 @@ TEST(to_well_formed_utf16be_bad_input) {
         auto utf16 = random_testcase(512, gen);
         auto len = utf16.size();
         std::vector<char16_t> output(len);
-        turbo::result utf8_length = implementation.utf8_length_from_utf16be_with_replacement(utf16.data(),
+        turbo::UnicodeResult utf8_length = implementation.utf8_length_from_utf16be_with_replacement(utf16.data(),
             len);
         implementation.to_well_formed_utf16be(utf16.data(), len, output.data());
         for (size_t j = 0; j < len; j++) {
@@ -245,7 +245,7 @@ TEST(to_well_formed_utf16le_bad_input_self) {
         auto utf16 = random_testcase(512, gen);
         auto len = utf16.size();
         std::vector<char16_t> output = utf16;
-        turbo::result utf8_length = implementation.utf8_length_from_utf16le_with_replacement(output.data(),
+        turbo::UnicodeResult utf8_length = implementation.utf8_length_from_utf16le_with_replacement(output.data(),
             len);
         implementation.to_well_formed_utf16le(output.data(), len, output.data());
         for (size_t j = 0; j < len; j++) {
@@ -266,7 +266,7 @@ TEST(to_well_formed_utf16be_bad_input_self) {
         auto utf16 = random_testcase(512, gen);
         auto len = utf16.size();
         std::vector<char16_t> output = utf16;
-        turbo::result utf8_length = implementation.utf8_length_from_utf16be_with_replacement(output.data(),
+        turbo::UnicodeResult utf8_length = implementation.utf8_length_from_utf16be_with_replacement(output.data(),
             len);
         implementation.to_well_formed_utf16be(output.data(), len, output.data());
         for (size_t j = 0; j < len; j++) {

@@ -1,6 +1,5 @@
-#if SIMDUTF_FEATURE_UTF8 && (SIMDUTF_FEATURE_UTF16 || SIMDUTF_FEATURE_UTF32)
 template <typename Tdst, simdutf_ByteFlip bflip, bool validate = true>
-simdutf_really_inline static size_t rvv_utf8_to_common(char const* src,
+KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
     size_t len, Tdst* dst) {
     static_assert(std::is_same<Tdst, uint16_t>() || std::is_same<Tdst, uint32_t>(),
         "invalid type");
@@ -257,11 +256,8 @@ simdutf_really_inline static size_t rvv_utf8_to_common(char const* src,
         return 0;
     return (size_t)(dst - beg) + ret;
 }
-#endif // SIMDUTF_FEATURE_UTF8 && (SIMDUTF_FEATURE_UTF16 ||
-       // SIMDUTF_FEATURE_UTF32)
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
-simdutf_warn_unused size_t implementation::convert_utf8_to_latin1(
+ [[nodiscard]] size_t implementation::convert_utf8_to_latin1(
     const char* src, size_t len, char* dst) const noexcept {
     const char* beg = dst;
     uint8_t last = 0;
@@ -320,15 +316,15 @@ simdutf_warn_unused size_t implementation::convert_utf8_to_latin1(
     return dst - beg;
 }
 
-simdutf_warn_unused result implementation::convert_utf8_to_latin1_with_errors(
+ [[nodiscard]] UnicodeResult implementation::convert_utf8_to_latin1_with_errors(
     const char* src, size_t len, char* dst) const noexcept {
     size_t res = convert_utf8_to_latin1(src, len, dst);
     if (res)
-        return result(error_code::SUCCESS, res);
+        return UnicodeResult(UnicodeError::SUCCESS, res);
     return scalar::utf8_to_latin1::convert_with_errors(src, len, dst);
 }
 
-simdutf_warn_unused size_t implementation::convert_valid_utf8_to_latin1(
+ [[nodiscard]] size_t implementation::convert_valid_utf8_to_latin1(
     const char* src, size_t len, char* dst) const noexcept {
     const char* beg = dst;
     uint8_t last = 0;
@@ -350,16 +346,14 @@ simdutf_warn_unused size_t implementation::convert_valid_utf8_to_latin1(
     }
     return dst - beg;
 }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
-simdutf_warn_unused size_t implementation::convert_utf8_to_utf16le(
+ [[nodiscard]] size_t implementation::convert_utf8_to_utf16le(
     const char* src, size_t len, char16_t* dst) const noexcept {
     return rvv_utf8_to_common<uint16_t, simdutf_ByteFlip::NONE>(src, len,
         (uint16_t*)dst);
 }
 
-simdutf_warn_unused size_t implementation::convert_utf8_to_utf16be(
+ [[nodiscard]] size_t implementation::convert_utf8_to_utf16be(
     const char* src, size_t len, char16_t* dst) const noexcept {
     if (supports_zvbb())
         return rvv_utf8_to_common<uint16_t, simdutf_ByteFlip::ZVBB>(
@@ -369,31 +363,31 @@ simdutf_warn_unused size_t implementation::convert_utf8_to_utf16be(
             (uint16_t*)dst);
 }
 
-simdutf_warn_unused result implementation::convert_utf8_to_utf16le_with_errors(
+ [[nodiscard]] UnicodeResult implementation::convert_utf8_to_utf16le_with_errors(
     const char* src, size_t len, char16_t* dst) const noexcept {
     size_t res = convert_utf8_to_utf16le(src, len, dst);
     if (res)
-        return result(error_code::SUCCESS, res);
+        return UnicodeResult(UnicodeError::SUCCESS, res);
     return scalar::utf8_to_utf16::convert_with_errors<endianness::LITTLE>(
         src, len, dst);
 }
 
-simdutf_warn_unused result implementation::convert_utf8_to_utf16be_with_errors(
+ [[nodiscard]] UnicodeResult implementation::convert_utf8_to_utf16be_with_errors(
     const char* src, size_t len, char16_t* dst) const noexcept {
     size_t res = convert_utf8_to_utf16be(src, len, dst);
     if (res)
-        return result(error_code::SUCCESS, res);
+        return UnicodeResult(UnicodeError::SUCCESS, res);
     return scalar::utf8_to_utf16::convert_with_errors<endianness::BIG>(src, len,
         dst);
 }
 
-simdutf_warn_unused size_t implementation::convert_valid_utf8_to_utf16le(
+ [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf16le(
     const char* src, size_t len, char16_t* dst) const noexcept {
     return rvv_utf8_to_common<uint16_t, simdutf_ByteFlip::NONE, false>(
         src, len, (uint16_t*)dst);
 }
 
-simdutf_warn_unused size_t implementation::convert_valid_utf8_to_utf16be(
+ [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf16be(
     const char* src, size_t len, char16_t* dst) const noexcept {
     if (supports_zvbb())
         return rvv_utf8_to_common<uint16_t, simdutf_ByteFlip::ZVBB, false>(
@@ -402,26 +396,23 @@ simdutf_warn_unused size_t implementation::convert_valid_utf8_to_utf16be(
         return rvv_utf8_to_common<uint16_t, simdutf_ByteFlip::V, false>(
             src, len, (uint16_t*)dst);
 }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
-simdutf_warn_unused size_t implementation::convert_utf8_to_utf32(
+ [[nodiscard]] size_t implementation::convert_utf8_to_utf32(
     const char* src, size_t len, char32_t* dst) const noexcept {
     return rvv_utf8_to_common<uint32_t, simdutf_ByteFlip::NONE>(src, len,
         (uint32_t*)dst);
 }
 
-simdutf_warn_unused result implementation::convert_utf8_to_utf32_with_errors(
+ [[nodiscard]] UnicodeResult implementation::convert_utf8_to_utf32_with_errors(
     const char* src, size_t len, char32_t* dst) const noexcept {
     size_t res = convert_utf8_to_utf32(src, len, dst);
     if (res)
-        return result(error_code::SUCCESS, res);
+        return UnicodeResult(UnicodeError::SUCCESS, res);
     return scalar::utf8_to_utf32::convert_with_errors(src, len, dst);
 }
 
-simdutf_warn_unused size_t implementation::convert_valid_utf8_to_utf32(
+ [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf32(
     const char* src, size_t len, char32_t* dst) const noexcept {
     return rvv_utf8_to_common<uint32_t, simdutf_ByteFlip::NONE, false>(
         src, len, (uint32_t*)dst);
 }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32

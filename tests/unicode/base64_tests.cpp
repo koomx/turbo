@@ -22,7 +22,7 @@ constexpr std::size_t max_len = SIMDUTF_BASE64_TEST_MAXLEN;
 // Return the length of the prefix that contains count base64 characters.
 // Thus, if count is 3, the function returns the length of the prefix
 // that contains 3 base64 characters. Padding characters are counted.
-size_t prefix_length_base64_index(size_t count, turbo::base64_options options,
+size_t prefix_length_base64_index(size_t count, turbo::Base64Options options,
     const char* input, size_t length) {
     size_t i = 0;
     while (i < length && turbo::base64_ignorable(input[i], options)) {
@@ -47,7 +47,7 @@ size_t prefix_length_base64_index(size_t count, turbo::base64_options options,
 template <typename char_type>
 size_t length_without_empty_tail(
     const std::vector<char_type>& input,
-    turbo::base64_options options = turbo::base64_options::base64_default) {
+    turbo::Base64Options options = turbo::Base64Options::base64_default) {
     if (input.size() == 0) {
         return 0;
     }
@@ -243,8 +243,8 @@ TEST(tc39_illegal_padded_chunks) {
             auto r = turbo::base64_to_binary_safe(
                 input.data(), input.size(), reinterpret_cast<char*>(back.data()),
                 len, turbo::base64_default, option, true);
-            ASSERT_FALSE(r.error == turbo::error_code::SUCCESS);
-            ASSERT_FALSE(r.error == turbo::error_code::OUTPUT_BUFFER_TOO_SMALL);
+            ASSERT_FALSE(r.error == turbo::UnicodeError::SUCCESS);
+            ASSERT_FALSE(r.error == turbo::UnicodeError::OUTPUT_BUFFER_TOO_SMALL);
         }
     }
 }
@@ -254,7 +254,7 @@ TEST(issue_node_anything_goes) {
 
     auto test =
         [](const std::string& input, const std::string& expected,
-            turbo::base64_options options = turbo::base64_options::base64_default_or_url_accept_garbage) {
+            turbo::Base64Options options = turbo::Base64Options::base64_default_or_url_accept_garbage) {
             size_t buflen = turbo::maximal_binary_length_from_base64(
                 input.data(), input.size());
             std::vector<char> back(buflen);
@@ -262,7 +262,7 @@ TEST(issue_node_anything_goes) {
             auto result = turbo::base64_to_binary_safe(
                 input.data(), input.length(), back.data(), written_len,
                 turbo::base64_default_or_url_accept_garbage);
-            ASSERT_EQUAL(result.error, turbo::error_code::SUCCESS);
+            ASSERT_EQUAL(result.error, turbo::UnicodeError::SUCCESS);
             ASSERT_EQUAL(written_len, expected.size());
             ASSERT_TRUE(std::equal(back.begin(), back.begin() + written_len,
                 expected.begin()));
@@ -349,7 +349,7 @@ TEST(issue_dash) {
     size_t len = back.size();
     auto r = turbo::base64_to_binary_safe(input.data(), input.size(),
         back.data(), len);
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(r.count, 4);
     ASSERT_EQUAL(len, 1);
     ASSERT_EQUAL(back[0], '#');
@@ -362,7 +362,7 @@ TEST(issue_dash_partial) {
     auto r = turbo::base64_to_binary_safe(
         input.data(), input.size(), back.data(), len, turbo::base64_default,
         turbo::last_chunk_handling_options::stop_before_partial);
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(r.count, 4);
     ASSERT_EQUAL(len, 1);
     ASSERT_EQUAL(back[0], '#');
@@ -386,7 +386,7 @@ TEST(tc39_4a) {
             input.data(), input.size(), reinterpret_cast<char*>(back.data()), len,
             turbo::base64_default,
             turbo::last_chunk_handling_options::stop_before_partial, true);
-        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+        ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
         ASSERT_EQUAL(len, expected.size());
         ASSERT_EQUAL(back, expected);
     }
@@ -410,7 +410,7 @@ TEST(tc39_4b) {
             input.data(), input.size(), reinterpret_cast<char*>(back.data()), len,
             turbo::base64_default,
             turbo::last_chunk_handling_options::stop_before_partial, true);
-        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+        ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
         ASSERT_EQUAL(len, expected.size());
         ASSERT_EQUAL(back, expected);
     }
@@ -426,7 +426,7 @@ TEST(tc39_3a) {
         input.data(), input.size(), reinterpret_cast<char*>(back.data()), len,
         turbo::base64_default,
         turbo::last_chunk_handling_options::stop_before_partial, true);
-    ASSERT_TRUE(r.error != turbo::error_code::SUCCESS);
+    ASSERT_TRUE(r.error != turbo::UnicodeError::SUCCESS);
 }
 
 // https://github.com/tc39/test262
@@ -439,7 +439,7 @@ TEST(tc39_3b) {
         input.data(), input.size(), reinterpret_cast<char*>(back.data()),
         turbo::base64_default,
         turbo::last_chunk_handling_options::stop_before_partial);
-    ASSERT_TRUE(r.error != turbo::error_code::SUCCESS);
+    ASSERT_TRUE(r.error != turbo::UnicodeError::SUCCESS);
 }
 
 // https://github.com/tc39/test262
@@ -453,7 +453,7 @@ TEST(tc39_1a) {
         input.data(), input.size(), reinterpret_cast<char*>(back.data()), len,
         turbo::base64_default,
         turbo::last_chunk_handling_options::stop_before_partial, true);
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(r.count, 8);
     ASSERT_EQUAL(len, 5);
     ASSERT_EQUAL(back, expected);
@@ -470,7 +470,7 @@ TEST(tc39_1b) {
         input.data(), input.size(), reinterpret_cast<char*>(back.data()), len,
         turbo::base64_default,
         turbo::last_chunk_handling_options::stop_before_partial, true);
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(r.count, 8);
     ASSERT_EQUAL(len, 5);
     ASSERT_EQUAL(back, expected);
@@ -487,7 +487,7 @@ TEST(tc39_2) {
         input.data(), input.size(), reinterpret_cast<char*>(back.data()), len,
         turbo::base64_default,
         turbo::last_chunk_handling_options::stop_before_partial, true);
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(r.count, 4);
     ASSERT_EQUAL(len, 3);
     ASSERT_EQUAL(back, expected);
@@ -513,7 +513,7 @@ TEST(tc39_illegal_padded_chunks_unsafe) {
             auto r = turbo::base64_to_binary(input.data(), input.size(),
                 reinterpret_cast<char*>(back.data()),
                 turbo::base64_default, option);
-            ASSERT_FALSE(r.error == turbo::error_code::SUCCESS);
+            ASSERT_FALSE(r.error == turbo::UnicodeError::SUCCESS);
         }
     }
     std::string base(128, 'A');
@@ -529,7 +529,7 @@ TEST(tc39_illegal_padded_chunks_unsafe) {
             auto r = turbo::base64_to_binary(input.data(), input.size(),
                 reinterpret_cast<char*>(back.data()),
                 turbo::base64_default, option);
-            ASSERT_FALSE(r.error == turbo::error_code::SUCCESS);
+            ASSERT_FALSE(r.error == turbo::UnicodeError::SUCCESS);
         }
     }
     for (const std::string& input_orig : test_cases) {
@@ -544,7 +544,7 @@ TEST(tc39_illegal_padded_chunks_unsafe) {
             auto r = turbo::base64_to_binary(input.data(), input.size(),
                 reinterpret_cast<char*>(back.data()),
                 turbo::base64_default, option);
-            ASSERT_FALSE(r.error == turbo::error_code::SUCCESS);
+            ASSERT_FALSE(r.error == turbo::UnicodeError::SUCCESS);
         }
     }
 }
@@ -583,8 +583,8 @@ TEST(with_lines_pauldreik) {
     std::vector<char> source(max_length, 'f');
     std::vector<char> back(max_length);
     std::vector<char> buffer;
-    for (auto selected_option : { turbo::base64_options::base64_url,
-             turbo::base64_options::base64_default }) {
+    for (auto selected_option : { turbo::Base64Options::base64_url,
+             turbo::Base64Options::base64_default }) {
         for (size_t line_length = 5; line_length < 128; line_length += 7) {
             for (size_t length = 1; length < 2048; length += 17) {
                 buffer.resize(turbo::base64_length_from_binary_with_lines(
@@ -593,7 +593,7 @@ TEST(with_lines_pauldreik) {
                     source.data(), length, buffer.data(), line_length, selected_option);
                 auto r = implementation.base64_to_binary(buffer.data(), buffer.size(),
                     back.data(), selected_option);
-                ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                 ASSERT_TRUE(
                     std::equal(back.begin(), back.begin() + length, source.begin()));
                 ASSERT_EQUAL(size, buffer.size());
@@ -629,7 +629,7 @@ TEST(with_lines) {
                 turbo::full_result r = implementation.base64_to_binary_details(
                     buffer.data(), buffer.size(), back.data(), turbo::base64_default,
                     option);
-                ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                 const size_t expected_output_length = len;
                 const size_t expected_input_length = prefix_length_base64_index(
                     (expected_output_length + 2) / 3 * 4, turbo::base64_default,
@@ -678,7 +678,7 @@ TEST(partial_should_decode_up_to_last_chunk) {
             turbo::full_result r = implementation.base64_to_binary_details(
                 buffer.data(), buffer.size(), back.data(), turbo::base64_default,
                 option);
-            ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+            ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
             const size_t expected_output_length = len;
             const size_t expected_input_length = prefix_length_base64_index(
                 (expected_output_length + 2) / 3 * 4, turbo::base64_default,
@@ -713,7 +713,7 @@ TEST(partial_should_decode_up_to_last_chunk) {
                 r = implementation.base64_to_binary_details(
                     buffer.data(), buffer.size(), back.data(), turbo::base64_default,
                     option);
-                ASSERT_EQUAL(r.error, turbo::error_code::BASE64_INPUT_REMAINDER);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::BASE64_INPUT_REMAINDER);
                 // Next, we empty the last chunk
                 for (size_t i = buffer.size() - 1;; i--) {
                     if (turbo::base64_valid(buffer[i], turbo::base64_default)) {
@@ -724,7 +724,7 @@ TEST(partial_should_decode_up_to_last_chunk) {
                 r = implementation.base64_to_binary_details(
                     buffer.data(), buffer.size(), back.data(), turbo::base64_default,
                     option);
-                ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
             }
         }
     }
@@ -739,7 +739,7 @@ TEST(partial_should_decode_four_wise_chunks) {
     auto r = implementation.base64_to_binary_details(
         input.data(), input.size(), buffer.data(), turbo::base64_default,
         option);
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
     ASSERT_TRUE(r.input_count == 36);
     ASSERT_TRUE(r.output_count == 27);
 }
@@ -751,10 +751,10 @@ TEST(stop_before_partial_one_char) {
     // with stop_before_partial, we should stop before the last character
     // and not decode it. There should be no error.
     // https://tc39.es/proposal-arraybuffer-base64/spec/#sec-frombase64
-    turbo::result r = implementation.base64_to_binary(
+    turbo::UnicodeResult r = implementation.base64_to_binary(
         base64.data(), base64.size(), back.data(), turbo::base64_default,
         turbo::last_chunk_handling_options::stop_before_partial);
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(r.count, 0);
     size_t buflen = back.size();
     ASSERT_EQUAL(buflen, 0);
@@ -762,7 +762,7 @@ TEST(stop_before_partial_one_char) {
         base64.data(), base64.size(), back.data(), buflen,
         turbo::base64_default,
         turbo::last_chunk_handling_options::stop_before_partial);
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(buflen, 0);
     back.resize(base64.size());
     buflen = back.size();
@@ -770,7 +770,7 @@ TEST(stop_before_partial_one_char) {
         base64.data(), base64.size(), back.data(), buflen,
         turbo::base64_default,
         turbo::last_chunk_handling_options::stop_before_partial);
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(buflen, 0);
 }
 
@@ -837,7 +837,7 @@ TEST(hybrid_decoding) {
         auto r = implementation.base64_to_binary(
             base64.data(), base64.size(), reinterpret_cast<char*>(decoded.data()),
             turbo::base64_default_or_url);
-        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+        ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
         ASSERT_EQUAL(r.count, expected.size());
         decoded.resize(r.count);
         ASSERT_EQUAL(decoded, expected);
@@ -870,10 +870,10 @@ TEST(roundtrip_base64_with_spaces) {
                 if (option == turbo::last_chunk_handling_options::stop_before_partial && len % 3 != 0) {
                     continue;
                 }
-                turbo::result r = implementation.base64_to_binary(
+                turbo::UnicodeResult r = implementation.base64_to_binary(
                     buffer.data(), buffer.size(), back.data(), turbo::base64_default,
                     option);
-                ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                 ASSERT_EQUAL(r.count, len);
                 ASSERT_BYTES_EQUAL(source, back, len);
             }
@@ -888,7 +888,7 @@ TEST(roundtrip_base64_with_spaces) {
                 auto r = turbo::base64_to_binary_safe(
                     buffer.data(), buffer.size(), back.data(), back_length,
                     turbo::base64_default, option);
-                ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                 ASSERT_EQUAL(back_length, len);
 
                 for (size_t i = r.count; i < buffer.size(); i++) {
@@ -922,10 +922,10 @@ TEST(roundtrip_base64_with_garbage) {
                 buffer.data(), buffer.size()));
             for (auto option : { turbo::last_chunk_handling_options::strict,
                      turbo::last_chunk_handling_options::loose }) {
-                turbo::result r = implementation.base64_to_binary(
+                turbo::UnicodeResult r = implementation.base64_to_binary(
                     buffer.data(), buffer.size(), back.data(),
                     turbo::base64_default_accept_garbage, option);
-                ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                 ASSERT_EQUAL(r.count, len);
                 ASSERT_TRUE(
                     std::equal(back.begin(), back.begin() + len, source.begin()));
@@ -942,7 +942,7 @@ TEST(roundtrip_base64_with_garbage) {
                     buffer.data(), buffer.size(), back.data(), back_length,
                     turbo::base64_default_accept_garbage, option);
 
-                ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                 ASSERT_EQUAL(back_length, len);
                 for (size_t i = r.count; i < buffer.size(); i++) {
                     ASSERT_TRUE(!turbo::base64_valid(
@@ -981,10 +981,10 @@ TEST(roundtrip_base64_url_with_garbage) {
                 if (option == turbo::last_chunk_handling_options::stop_before_partial && len % 3 != 0) {
                     continue;
                 }
-                turbo::result r = implementation.base64_to_binary(
+                turbo::UnicodeResult r = implementation.base64_to_binary(
                     buffer.data(), buffer.size(), back.data(),
                     turbo::base64_url_accept_garbage, option);
-                ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                 ASSERT_EQUAL(r.count, len);
                 ASSERT_TRUE(
                     std::equal(back.begin(), back.begin() + len, source.begin()));
@@ -1001,7 +1001,7 @@ TEST(roundtrip_base64_url_with_garbage) {
                     buffer.data(), buffer.size(), back.data(), back_length,
                     turbo::base64_url_accept_garbage, option);
 
-                ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                 ASSERT_EQUAL(back_length, len);
 
                 if (option == turbo::last_chunk_handling_options::stop_before_partial) {
@@ -1042,10 +1042,10 @@ TEST(roundtrip_base64_with_lots_of_spaces) {
                 if (option == turbo::last_chunk_handling_options::stop_before_partial && len % 3 != 0) {
                     continue;
                 }
-                turbo::result r = implementation.base64_to_binary(
+                turbo::UnicodeResult r = implementation.base64_to_binary(
                     buffer.data(), buffer.size(), back.data(), turbo::base64_default,
                     option);
-                ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                 ASSERT_EQUAL(r.count, len);
                 ASSERT_TRUE(
                     std::equal(back.begin(), back.begin() + len, source.begin()));
@@ -1061,7 +1061,7 @@ TEST(roundtrip_base64_with_lots_of_spaces) {
                 auto r = turbo::base64_to_binary_safe(
                     buffer.data(), buffer.size(), back.data(), back_length,
                     turbo::base64_default, option);
-                ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                 ASSERT_EQUAL(back_length, len);
 
                 if (option == turbo::last_chunk_handling_options::stop_before_partial) {
@@ -1111,7 +1111,7 @@ TEST(roundtrip_base64_with_lots_of_spaces_at_the_end) {
                 auto r = turbo::base64_to_binary_safe(
                     buffer.data(), buffer.size(), back.data(), back_length,
                     turbo::base64_default, option);
-                ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                 ASSERT_EQUAL(back_length, len);
                 for (size_t i = r.count; i < buffer.size(); i++) {
                     ASSERT_TRUE(is_space(buffer[i]));
@@ -1153,7 +1153,7 @@ TEST(roundtrip_base64_with_lots_of_spaces_at_the_beginning) {
                 auto r = turbo::base64_to_binary_safe(
                     buffer.data(), buffer.size(), back.data(), back_length,
                     turbo::base64_default, option);
-                ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                 ASSERT_EQUAL(back_length, len);
                 for (size_t i = r.count; i < buffer.size(); i++) {
                     ASSERT_TRUE(is_space(buffer[i]));
@@ -1167,21 +1167,21 @@ TEST(roundtrip_base64_with_lots_of_spaces_at_the_beginning) {
 }
 
 TEST(base64_decode_just_one_padding_partial_safe) {
-    std::vector<std::tuple<std::string, turbo::result, size_t>> test_cases = {
-        { "uuuu             uu=", { turbo::error_code::SUCCESS, 4 }, 3 },
+    std::vector<std::tuple<std::string, turbo::UnicodeResult, size_t>> test_cases = {
+        { "uuuu             uu=", { turbo::UnicodeError::SUCCESS, 4 }, 3 },
         // 5. If char is "=", then If chunkLength < 2, then Let error be a new
         // SyntaxError exception.
         { "uuuu             u==",
-            { turbo::error_code::BASE64_INPUT_REMAINDER, 18 },
+            { turbo::UnicodeError::BASE64_INPUT_REMAINDER, 18 },
             3 }, // error
         { "uuuu             u=",
-            { turbo::error_code::BASE64_INPUT_REMAINDER, 18 },
+            { turbo::UnicodeError::BASE64_INPUT_REMAINDER, 18 },
             3 }, // error
         { "uuuu             ==",
-            { turbo::error_code::INVALID_BASE64_CHARACTER, 17 },
+            { turbo::UnicodeError::INVALID_BASE64_CHARACTER, 17 },
             3 }, // error
         { "uuuu             =",
-            { turbo::error_code::INVALID_BASE64_CHARACTER, 17 },
+            { turbo::UnicodeError::INVALID_BASE64_CHARACTER, 17 },
             3 }, // error
     };
     std::vector<char> buffer(128);
@@ -1191,8 +1191,8 @@ TEST(base64_decode_just_one_padding_partial_safe) {
         auto expected_result = std::get<1>(p);
         size_t expected_output = std::get<2>(p);
         printf("input: %s\n", input.c_str());
-        for (auto option : { turbo::base64_options::base64_default,
-                 turbo::base64_options::base64_url }) {
+        for (auto option : { turbo::Base64Options::base64_default,
+                 turbo::Base64Options::base64_url }) {
             for (auto chunk_option :
                 { turbo::last_chunk_handling_options::stop_before_partial }) {
                 for (size_t output = 3; output < buffer.size(); output++) {
@@ -1212,25 +1212,25 @@ TEST(base64_decode_just_one_padding_partial_safe) {
 // partial decoding will succeed and just decode the first 3 bytes, even if we
 // have ample output memory.
 TEST(base64_decode_just_one_padding_partial_generous) {
-    std::vector<std::pair<std::string, turbo::result>> test_cases = {
-        { "uuuu             uu=", { turbo::error_code::SUCCESS, 3 } },
+    std::vector<std::pair<std::string, turbo::UnicodeResult>> test_cases = {
+        { "uuuu             uu=", { turbo::UnicodeError::SUCCESS, 3 } },
         // 5. If char is "=", then If chunkLength < 2, then Let error be a new
         // SyntaxError exception.
         { "uuuu             u==",
-            { turbo::error_code::BASE64_INPUT_REMAINDER, 18 } }, // error
+            { turbo::UnicodeError::BASE64_INPUT_REMAINDER, 18 } }, // error
         { "uuuu             u=",
-            { turbo::error_code::BASE64_INPUT_REMAINDER, 18 } }, // error
+            { turbo::UnicodeError::BASE64_INPUT_REMAINDER, 18 } }, // error
         { "uuuu             ==",
-            { turbo::error_code::INVALID_BASE64_CHARACTER, 17 } }, // error
+            { turbo::UnicodeError::INVALID_BASE64_CHARACTER, 17 } }, // error
         { "uuuu             =",
-            { turbo::error_code::INVALID_BASE64_CHARACTER, 17 } }, // error
+            { turbo::UnicodeError::INVALID_BASE64_CHARACTER, 17 } }, // error
     };
     std::vector<char> buffer(6);
     for (auto& p : test_cases) {
         auto input = p.first;
         auto expected_result = p.second;
-        for (auto option : { turbo::base64_options::base64_default,
-                 turbo::base64_options::base64_url }) {
+        for (auto option : { turbo::Base64Options::base64_default,
+                 turbo::Base64Options::base64_url }) {
             for (auto chunk_option :
                 { turbo::last_chunk_handling_options::stop_before_partial }) {
                 auto result = implementation.base64_to_binary(
@@ -1244,16 +1244,16 @@ TEST(base64_decode_just_one_padding_partial_generous) {
 
 // loose decoding will fail when there is a single leftover padding character.
 TEST(base64_decode_just_one_padding_loose) {
-    std::vector<std::pair<std::string, turbo::result>> test_cases = {
+    std::vector<std::pair<std::string, turbo::UnicodeResult>> test_cases = {
         { "uuuu             =",
-            { turbo::error_code::INVALID_BASE64_CHARACTER, 17 } }
+            { turbo::UnicodeError::INVALID_BASE64_CHARACTER, 17 } }
     };
     std::vector<char> buffer(3);
     for (auto& p : test_cases) {
         auto input = p.first;
         auto expected_result = p.second;
-        for (auto option : { turbo::base64_options::base64_default,
-                 turbo::base64_options::base64_url }) {
+        for (auto option : { turbo::Base64Options::base64_default,
+                 turbo::Base64Options::base64_url }) {
             for (auto chunk_option : { turbo::last_chunk_handling_options::loose }) {
                 auto result = implementation.base64_to_binary(
                     input.data(), input.size(), buffer.data(), option, chunk_option);
@@ -1266,16 +1266,16 @@ TEST(base64_decode_just_one_padding_loose) {
 
 // strict decoding will fail with a pointer to the last valid character.
 TEST(base64_decode_just_one_padding_strict) {
-    std::vector<std::pair<std::string, turbo::result>> test_cases = {
+    std::vector<std::pair<std::string, turbo::UnicodeResult>> test_cases = {
         { "uuuu             =",
-            { turbo::error_code::INVALID_BASE64_CHARACTER, 17 } }
+            { turbo::UnicodeError::INVALID_BASE64_CHARACTER, 17 } }
     };
     std::vector<char> buffer(3);
     for (auto& p : test_cases) {
         auto input = p.first;
         auto expected_result = p.second;
-        for (auto option : { turbo::base64_options::base64_default,
-                 turbo::base64_options::base64_url }) {
+        for (auto option : { turbo::Base64Options::base64_default,
+                 turbo::Base64Options::base64_url }) {
             for (auto chunk_option : { turbo::last_chunk_handling_options::strict }) {
                 auto result = implementation.base64_to_binary(
                     input.data(), input.size(), buffer.data(), option, chunk_option);
@@ -1289,25 +1289,25 @@ TEST(base64_decode_just_one_padding_strict) {
 // partial decoding will succeed and just decode the first 3 bytes.
 // https://tc39.es/proposal-arraybuffer-base64/spec/#sec-frombase64
 TEST(base64_decode_just_one_padding_partial) {
-    std::vector<std::pair<std::string, turbo::result>> test_cases = {
-        { "uuuu             uu=", { turbo::error_code::SUCCESS, 3 } },
+    std::vector<std::pair<std::string, turbo::UnicodeResult>> test_cases = {
+        { "uuuu             uu=", { turbo::UnicodeError::SUCCESS, 3 } },
         // 5. If char is "=", then If chunkLength < 2, then Let error be a new
         // SyntaxError exception.
         { "uuuu             u==",
-            { turbo::error_code::BASE64_INPUT_REMAINDER, 18 } }, // error
+            { turbo::UnicodeError::BASE64_INPUT_REMAINDER, 18 } }, // error
         { "uuuu             u=",
-            { turbo::error_code::BASE64_INPUT_REMAINDER, 18 } }, // error
+            { turbo::UnicodeError::BASE64_INPUT_REMAINDER, 18 } }, // error
         { "uuuu             ==",
-            { turbo::error_code::INVALID_BASE64_CHARACTER, 17 } }, // error
+            { turbo::UnicodeError::INVALID_BASE64_CHARACTER, 17 } }, // error
         { "uuuu             =",
-            { turbo::error_code::INVALID_BASE64_CHARACTER, 17 } }, // error
+            { turbo::UnicodeError::INVALID_BASE64_CHARACTER, 17 } }, // error
     };
     std::vector<char> buffer(3);
     for (auto& p : test_cases) {
         auto input = p.first;
         auto expected_result = p.second;
-        for (auto option : { turbo::base64_options::base64_default,
-                 turbo::base64_options::base64_url }) {
+        for (auto option : { turbo::Base64Options::base64_default,
+                 turbo::Base64Options::base64_url }) {
             for (auto chunk_option :
                 { turbo::last_chunk_handling_options::stop_before_partial }) {
                 auto result = implementation.base64_to_binary(
@@ -1321,14 +1321,14 @@ TEST(base64_decode_just_one_padding_partial) {
 }
 
 TEST(base64_decode_partial_cases) {
-    std::vector<std::pair<std::string, turbo::result>> test_cases = {
-        { "ZXhhZg", { turbo::error_code::SUCCESS, 4 } },
+    std::vector<std::pair<std::string, turbo::UnicodeResult>> test_cases = {
+        { "ZXhhZg", { turbo::UnicodeError::SUCCESS, 4 } },
         { "ZXhhZg                                                               "
           " ",
-            { turbo::error_code::SUCCESS, 4 } },
+            { turbo::UnicodeError::SUCCESS, 4 } },
         { "                                                                "
           "ZXhhZg",
-            { turbo::error_code::SUCCESS, 68 } },
+            { turbo::UnicodeError::SUCCESS, 68 } },
     };
     std::vector<char> buffer(3);
     for (auto& p : test_cases) {
@@ -1346,21 +1346,21 @@ TEST(base64_decode_partial_cases) {
 
 TEST(base64_decode_strict_cases) {
     std::vector<std::pair<std::string, uint64_t>> test_cases = {
-        { "ZXhhZg==", turbo::error_code::SUCCESS },
-        { "YWE=", turbo::error_code::SUCCESS },
-        { "YWF=", turbo::error_code::BASE64_EXTRA_BITS },
-        { "ZXhhZh==", turbo::error_code::BASE64_EXTRA_BITS },
-        // {"ZXhhZg", turbo::error_code::BASE64_INPUT_REMAINDER},
-        // {"ZXhhZh", turbo::error_code::BASE64_INPUT_REMAINDER},
-        { "Z   X  h  h   Z h =   =", turbo::error_code::BASE64_EXTRA_BITS },
-        //{"ZX  h  hZg", turbo::error_code::BASE64_INPUT_REMAINDER},
-        //{"ZXh  hZ  h", turbo::error_code::BASE64_INPUT_REMAINDER},
+        { "ZXhhZg==", turbo::UnicodeError::SUCCESS },
+        { "YWE=", turbo::UnicodeError::SUCCESS },
+        { "YWF=", turbo::UnicodeError::BASE64_EXTRA_BITS },
+        { "ZXhhZh==", turbo::UnicodeError::BASE64_EXTRA_BITS },
+        // {"ZXhhZg", turbo::UnicodeError::BASE64_INPUT_REMAINDER},
+        // {"ZXhhZh", turbo::UnicodeError::BASE64_INPUT_REMAINDER},
+        { "Z   X  h  h   Z h =   =", turbo::UnicodeError::BASE64_EXTRA_BITS },
+        //{"ZX  h  hZg", turbo::UnicodeError::BASE64_INPUT_REMAINDER},
+        //{"ZXh  hZ  h", turbo::UnicodeError::BASE64_INPUT_REMAINDER},
     };
     std::vector<char> buffer(1024);
     for (auto& p : test_cases) {
         auto input = p.first;
         auto expected_error = p.second;
-        turbo::result result = implementation.base64_to_binary(
+        turbo::UnicodeResult result = implementation.base64_to_binary(
             input.data(), input.size(), buffer.data(), turbo::base64_default,
             turbo::last_chunk_handling_options::strict);
         ASSERT_EQUAL(result.error, expected_error);
@@ -1373,17 +1373,17 @@ TEST(base64_decode_strict_cases) {
 }
 
 TEST(base64_decode_strict_cases_length) {
-    std::vector<std::pair<std::string, turbo::result>> test_cases = {
+    std::vector<std::pair<std::string, turbo::UnicodeResult>> test_cases = {
         { "ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
           "dd"
           "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddzzz=",
-            { turbo::error_code::BASE64_EXTRA_BITS, 131 } },
+            { turbo::UnicodeError::BASE64_EXTRA_BITS, 131 } },
     };
     std::vector<char> buffer(1024);
     for (auto& p : test_cases) {
         auto input = p.first;
         auto expected_result = p.second;
-        turbo::result result = implementation.base64_to_binary(
+        turbo::UnicodeResult result = implementation.base64_to_binary(
             input.data(), input.size(), buffer.data(), turbo::base64_default,
             turbo::last_chunk_handling_options::strict);
         ASSERT_EQUAL(result.error, expected_result.error);
@@ -1410,7 +1410,7 @@ TEST(issue_webkit_290829) {
         std::fill(output.begin(), output.end(), 0);
         const auto r1 = implementation.base64_to_binary(data.data(), data.size(), output.data(),
             turbo::base64_default, option);
-        ASSERT_EQUAL(r1.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+        ASSERT_EQUAL(r1.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
         ASSERT_EQUAL(r1.count, 6);
     }
 
@@ -1425,7 +1425,7 @@ TEST(issue_webkit_290829) {
             data.data(), data.size(), output.data(), back_length,
             turbo::base64_default, option, decode_up_to_bad_char);
 
-        ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+        ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
         ASSERT_EQUAL(r.count, 6);
         ASSERT_EQUAL(back_length, 3);
         ASSERT_BYTES_EQUAL(output, expected, 3);
@@ -1445,7 +1445,7 @@ TEST(issue_webkit_utf16_290829) {
         std::fill(output.begin(), output.end(), 0);
         const auto r1 = implementation.base64_to_binary(data.data(), data.size(), output.data(),
             turbo::base64_default, option);
-        ASSERT_EQUAL(r1.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+        ASSERT_EQUAL(r1.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
         ASSERT_EQUAL(r1.count, 6);
     }
 
@@ -1460,7 +1460,7 @@ TEST(issue_webkit_utf16_290829) {
             data.data(), data.size(), output.data(), back_length,
             turbo::base64_default, option, decode_up_to_bad_char);
 
-        ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+        ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
         ASSERT_EQUAL(r.count, 6);
         ASSERT_EQUAL(back_length, 3);
         ASSERT_BYTES_EQUAL(output, expected, 3);
@@ -1485,7 +1485,7 @@ TEST(issue_webkit_utf16_290829_bad_char) {
                 data.data(), data.size(), output.data(), back_length,
                 turbo::base64_default, option, decode_up_to_bad_char);
 
-            ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+            ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
             ASSERT_EQUAL(r.count, invalid);
             size_t expected_length = invalid / 4 * 3;
             ASSERT_EQUAL(back_length, expected_length);
@@ -1512,7 +1512,7 @@ TEST(issue_webkit_utf16_290829_example) {
                 data.data(), data.size(), output.data(), back_length,
                 turbo::base64_default, option, decode_up_to_bad_char);
 
-            ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+            ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
             ASSERT_EQUAL(r.count, invalid);
             size_t expected_length = invalid / 4 * 3;
             ASSERT_EQUAL(back_length, expected_length);
@@ -1532,7 +1532,7 @@ TEST(issue_single_bad16) {
         (const char*)data.data(), data.size(), out.data(),
         turbo::base64_url_with_padding,
         turbo::last_chunk_handling_options::strict);
-    ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
     ASSERT_EQUAL(r.count, 0);
 }
 
@@ -1541,22 +1541,22 @@ TEST(issue_615) {
     std::vector<char> output(100);
     const auto r1 = implementation.base64_to_binary(data.data(), data.size(), output.data(),
         turbo::base64_default, turbo::strict);
-    ASSERT_EQUAL(r1.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+    ASSERT_EQUAL(r1.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
     ASSERT_EQUAL(r1.count, 1);
     const auto r2 = implementation.base64_to_binary(
         data.data() + 1, data.size() - 1, output.data(), turbo::base64_default,
         turbo::strict);
-    ASSERT_EQUAL(r2.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+    ASSERT_EQUAL(r2.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
     ASSERT_EQUAL(r2.count, 0);
     const auto r3 = implementation.base64_to_binary(
         data.data(), data.size(), output.data(), turbo::base64_default,
         turbo::stop_before_partial);
-    ASSERT_EQUAL(r3.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+    ASSERT_EQUAL(r3.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
     ASSERT_EQUAL(r3.count, 1);
     const auto r4 = implementation.base64_to_binary(
         data.data() + 1, data.size() - 1, output.data(), turbo::base64_default,
         turbo::stop_before_partial);
-    ASSERT_EQUAL(r4.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+    ASSERT_EQUAL(r4.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
     ASSERT_EQUAL(r4.count, 0);
 }
 
@@ -1588,7 +1588,7 @@ TEST(issue_kkk) {
         (const char*)data.data(), data.size(), out.data(),
         turbo::base64_url_with_padding,
         turbo::last_chunk_handling_options::strict);
-    ASSERT_EQUAL(r.error, turbo::error_code::BASE64_INPUT_REMAINDER);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::BASE64_INPUT_REMAINDER);
     ASSERT_EQUAL(r.count, 193);
 }
 
@@ -1663,7 +1663,7 @@ TEST(issue_520) {
 
     const auto r = implementation.base64_to_binary((const char*)data.data(), data.size(),
         out.data(), turbo::base64_default);
-    ASSERT_EQUAL(r.error, turbo::error_code::BASE64_INPUT_REMAINDER);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::BASE64_INPUT_REMAINDER);
     ASSERT_EQUAL(r.count, 64);
 }
 
@@ -1682,7 +1682,7 @@ TEST(base64_decode_complete_input) {
             reinterpret_cast<const char*>(input_data.data()), input_data.size(),
             output_buffer.data(), turbo::base64_default, option);
 
-        ASSERT_EQUAL(result.error, turbo::error_code::SUCCESS);
+        ASSERT_EQUAL(result.error, turbo::UnicodeError::SUCCESS);
         ASSERT_EQUAL(result.count, expected_output.size());
         ASSERT_TRUE(
             (std::equal(output_buffer.begin(), output_buffer.begin() + result.count,
@@ -1748,7 +1748,7 @@ TEST(issue_824) {
             reinterpret_cast<char*>(output_buffer.data()), written,
             turbo::base64_default,
             turbo::last_chunk_handling_options::stop_before_partial, true);
-        ASSERT_EQUAL(result.error, turbo::error_code::SUCCESS);
+        ASSERT_EQUAL(result.error, turbo::UnicodeError::SUCCESS);
         ASSERT_EQUAL(result.count, read_write_info.read);
         ASSERT_EQUAL(written, expected_output.size());
         output_buffer.resize(written);
@@ -1766,7 +1766,7 @@ TEST(issue_824) {
             reinterpret_cast<char*>(output_buffer.data()), written,
             turbo::base64_default,
             turbo::last_chunk_handling_options::stop_before_partial, true);
-        ASSERT_EQUAL(result.error, turbo::error_code::SUCCESS);
+        ASSERT_EQUAL(result.error, turbo::UnicodeError::SUCCESS);
         ASSERT_EQUAL(result.count, read_write_info.read);
         ASSERT_EQUAL(written, expected_output.size());
         output_buffer.resize(written);
@@ -1783,7 +1783,7 @@ TEST(issue_824_a) {
         (const char*)base64.data(), base64.size(), outbuf.data(), outlen,
         turbo::base64_default,
         turbo::last_chunk_handling_options::stop_before_partial, false);
-    ASSERT_EQUAL(result.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(result.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(result.count, 0);
     ASSERT_EQUAL(outlen, 0);
 }
@@ -1973,7 +1973,7 @@ TEST(issue_06_05_2025_001) {
         (const char*)base64.data(), base64.size(), outbuf.data(), outlen,
         turbo::base64_default,
         turbo::last_chunk_handling_options::stop_before_partial, true);
-    ASSERT_EQUAL(result.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(result.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(result.count, base64.size());
     ASSERT_EQUAL(outlen, 111);
 };
@@ -2023,7 +2023,7 @@ TEST(base64_decode_webkit_cases) {
                 input_data.data(), input_data.size(),
                 reinterpret_cast<char*>(output_buffer.data()),
                 turbo::base64_default, option);
-            ASSERT_EQUAL(result.error, turbo::error_code::SUCCESS);
+            ASSERT_EQUAL(result.error, turbo::UnicodeError::SUCCESS);
             ASSERT_EQUAL(result.count, expected_output.size());
             output_buffer.resize(result.count);
             ASSERT_TRUE(output_buffer == expected_output);
@@ -2046,7 +2046,7 @@ TEST(base64_decode_webkit_cases) {
                 input_data.data(), input_data.size(),
                 reinterpret_cast<char*>(output_buffer.data()),
                 turbo::base64_default, option);
-            ASSERT_EQUAL(result.error, turbo::error_code::SUCCESS);
+            ASSERT_EQUAL(result.error, turbo::UnicodeError::SUCCESS);
             ASSERT_EQUAL(result.output_count, expected_output.size());
             ASSERT_EQUAL(result.output_count, read_write_info.written);
             ASSERT_EQUAL(result.input_count, read_write_info.read);
@@ -2070,7 +2070,7 @@ TEST(base64_decode_webkit_cases) {
                 input_data.data(), input_data.size(),
                 reinterpret_cast<char*>(output_buffer.data()), written,
                 turbo::base64_default, option);
-            ASSERT_EQUAL(result.error, turbo::error_code::SUCCESS);
+            ASSERT_EQUAL(result.error, turbo::UnicodeError::SUCCESS);
             ASSERT_EQUAL(result.count, read_write_info.read);
             ASSERT_EQUAL(written, expected_output.size());
             output_buffer.resize(written);
@@ -2098,9 +2098,9 @@ TEST(base64_decode_webkit_more_cases) {
                 reinterpret_cast<char*>(output_buffer.data()),
                 turbo::base64_default, option);
             if (option == turbo::last_chunk_handling_options::strict) {
-                ASSERT_EQUAL(result.error, turbo::error_code::BASE64_INPUT_REMAINDER);
+                ASSERT_EQUAL(result.error, turbo::UnicodeError::BASE64_INPUT_REMAINDER);
             } else {
-                ASSERT_EQUAL(result.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(result.error, turbo::UnicodeError::SUCCESS);
                 ASSERT_EQUAL(result.count, 0);
             }
         }
@@ -2118,9 +2118,9 @@ TEST(base64_decode_webkit_more_cases) {
                 reinterpret_cast<char*>(output_buffer.data()), written,
                 turbo::base64_default, option);
             if (option == turbo::last_chunk_handling_options::strict) {
-                ASSERT_EQUAL(result.error, turbo::error_code::BASE64_INPUT_REMAINDER);
+                ASSERT_EQUAL(result.error, turbo::UnicodeError::BASE64_INPUT_REMAINDER);
             } else {
-                ASSERT_EQUAL(result.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(result.error, turbo::UnicodeError::SUCCESS);
                 ASSERT_EQUAL(written, 0);
             }
         }
@@ -2154,9 +2154,9 @@ TEST(base64_decode_webkit_like_but_random_more_cases) {
                         turbo::base64_default, option);
                     if (option == turbo::last_chunk_handling_options::strict) {
                         ASSERT_EQUAL(result.error,
-                            turbo::error_code::BASE64_INPUT_REMAINDER);
+                            turbo::UnicodeError::BASE64_INPUT_REMAINDER);
                     } else {
-                        ASSERT_EQUAL(result.error, turbo::error_code::SUCCESS);
+                        ASSERT_EQUAL(result.error, turbo::UnicodeError::SUCCESS);
                         ASSERT_EQUAL(result.count, (len - 1) / 3 * 3);
                     }
                 }
@@ -2173,9 +2173,9 @@ TEST(base64_decode_webkit_like_but_random_more_cases) {
                         turbo::base64_default, option);
                     if (option == turbo::last_chunk_handling_options::strict) {
                         ASSERT_EQUAL(result.error,
-                            turbo::error_code::BASE64_INPUT_REMAINDER);
+                            turbo::UnicodeError::BASE64_INPUT_REMAINDER);
                     } else {
-                        ASSERT_EQUAL(result.error, turbo::error_code::SUCCESS);
+                        ASSERT_EQUAL(result.error, turbo::UnicodeError::SUCCESS);
                         ASSERT_EQUAL(written, (len - 1) / 3 * 3);
                     }
                 }
@@ -2218,9 +2218,9 @@ TEST(base64_decode_webkit_like_but_random_with_spaces_more_cases) {
                         turbo::base64_default, option);
                     if (option == turbo::last_chunk_handling_options::strict) {
                         ASSERT_EQUAL(result.error,
-                            turbo::error_code::BASE64_INPUT_REMAINDER);
+                            turbo::UnicodeError::BASE64_INPUT_REMAINDER);
                     } else {
-                        ASSERT_EQUAL(result.error, turbo::error_code::SUCCESS);
+                        ASSERT_EQUAL(result.error, turbo::UnicodeError::SUCCESS);
                         ASSERT_EQUAL(result.count, (len - 1) / 3 * 3);
                     }
                 }
@@ -2237,9 +2237,9 @@ TEST(base64_decode_webkit_like_but_random_with_spaces_more_cases) {
                         turbo::base64_default, option);
                     if (option == turbo::last_chunk_handling_options::strict) {
                         ASSERT_EQUAL(result.error,
-                            turbo::error_code::BASE64_INPUT_REMAINDER);
+                            turbo::UnicodeError::BASE64_INPUT_REMAINDER);
                     } else {
-                        ASSERT_EQUAL(result.error, turbo::error_code::SUCCESS);
+                        ASSERT_EQUAL(result.error, turbo::UnicodeError::SUCCESS);
                         ASSERT_EQUAL(written, (len - 1) / 3 * 3);
                     }
                 }
@@ -2268,14 +2268,14 @@ TEST(base64_decode_strict_mode) {
 
         if (input_data.size() % 4 == 0) {
             // Input length is a multiple of 4, expect success
-            ASSERT_EQUAL(result.error, turbo::error_code::SUCCESS);
+            ASSERT_EQUAL(result.error, turbo::UnicodeError::SUCCESS);
             ASSERT_EQUAL(result.count, expected_output.size());
             ASSERT_TRUE((std::equal(output_buffer.begin(),
                 output_buffer.begin() + result.count,
                 expected_output.begin())));
         } else {
             // Input length is not a multiple of 4, expect failure in strict mode
-            ASSERT_EQUAL(result.error, turbo::error_code::BASE64_INPUT_REMAINDER);
+            ASSERT_EQUAL(result.error, turbo::UnicodeError::BASE64_INPUT_REMAINDER);
         }
     }
 }
@@ -2300,7 +2300,7 @@ TEST(base64_decode_stop_before_partial) {
             turbo::base64_default,
             turbo::last_chunk_handling_options::stop_before_partial);
 
-        ASSERT_EQUAL(result.error, turbo::error_code::SUCCESS);
+        ASSERT_EQUAL(result.error, turbo::UnicodeError::SUCCESS);
         ASSERT_EQUAL(result.count, expected_output.size());
         ASSERT_TRUE(
             (std::equal(output_buffer.begin(), output_buffer.begin() + result.count,
@@ -2384,7 +2384,7 @@ TEST(issue_520_url) {
 
     const auto r = implementation.base64_to_binary(
         (const char*)data.data(), data.size(), out.data(), turbo::base64_url);
-    ASSERT_EQUAL(r.error, turbo::error_code::BASE64_INPUT_REMAINDER);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::BASE64_INPUT_REMAINDER);
     ASSERT_EQUAL(r.count, 64);
 }
 
@@ -2401,7 +2401,7 @@ TEST(issue_511) {
     std::vector<char> out(48);
     const auto r = implementation.base64_to_binary(
         (const char*)data.data(), data.size(), out.data(), turbo::base64_url);
-    ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
     ASSERT_EQUAL(r.count, 12);
 }
 
@@ -2410,7 +2410,7 @@ TEST(issue_509) {
     std::vector<char> out(1);
     const auto r = implementation.base64_to_binary(
         data.data(), data.size(), out.data(), turbo::base64_default);
-    ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
     ASSERT_EQUAL(r.count, 1);
 }
 
@@ -2420,7 +2420,7 @@ TEST(issue_502_alt) {
         std::vector<char> out(1);
         const auto r = implementation.base64_to_binary(
             data.data(), data.size(), out.data(), turbo::base64_default);
-        ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+        ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
         ASSERT_EQUAL(r.count, 0);
     }
 }
@@ -2430,7 +2430,7 @@ TEST(issue_504) {
     std::vector<char> out(1);
     const auto r = implementation.base64_to_binary(
         data.data(), data.size(), out.data(), turbo::base64_default);
-    ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
     ASSERT_EQUAL(r.count, 0);
 }
 
@@ -2439,7 +2439,7 @@ TEST(issue_504_8bit) {
     std::vector<char> out(1);
     const auto r = implementation.base64_to_binary(
         data.data(), data.size(), out.data(), turbo::base64_default);
-    ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
     ASSERT_EQUAL(r.count, 0);
 }
 
@@ -2448,7 +2448,7 @@ TEST(issue_502) {
     std::vector<char> out(1);
     const auto r = implementation.base64_to_binary(
         data.data(), data.size(), out.data(), turbo::base64_default);
-    ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
     ASSERT_EQUAL(r.count, 0);
 }
 
@@ -2457,21 +2457,21 @@ TEST(issue_503) {
     std::vector<char> out(1);
     const auto r = implementation.base64_to_binary(
         data.data(), data.size(), out.data(), turbo::base64_default);
-    ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
     ASSERT_EQUAL(r.count, 0);
 }
 
 TEST(decode_non_ascii_utf16) {
     std::vector<std::u16string> cases = { u"Zg\u2009==" };
-    std::vector<turbo::error_code> codes = {
-        turbo::error_code::INVALID_BASE64_CHARACTER
+    std::vector<turbo::UnicodeError> codes = {
+        turbo::UnicodeError::INVALID_BASE64_CHARACTER
     };
     std::vector<size_t> counts = { 2 };
 
     for (size_t i = 0; i < cases.size(); i++) {
         std::vector<char> buffer(implementation.maximal_binary_length_from_base64(
             cases[i].data(), cases[i].size()));
-        turbo::result r = implementation.base64_to_binary(
+        turbo::UnicodeResult r = implementation.base64_to_binary(
             cases[i].data(), cases[i].size(), buffer.data());
         ASSERT_EQUAL(r.error, codes[i]);
         ASSERT_EQUAL(r.count, counts[i]);
@@ -2485,15 +2485,15 @@ TEST(decode_non_ascii_utf16) {
 
 TEST(decode_non_ascii) {
     std::vector<std::string> cases = { "Zg\u2009==" };
-    std::vector<turbo::error_code> codes = {
-        turbo::error_code::INVALID_BASE64_CHARACTER
+    std::vector<turbo::UnicodeError> codes = {
+        turbo::UnicodeError::INVALID_BASE64_CHARACTER
     };
     std::vector<size_t> counts = { 2 };
 
     for (size_t i = 0; i < cases.size(); i++) {
         std::vector<char> buffer(implementation.maximal_binary_length_from_base64(
             cases[i].data(), cases[i].size()));
-        turbo::result r = implementation.base64_to_binary(
+        turbo::UnicodeResult r = implementation.base64_to_binary(
             cases[i].data(), cases[i].size(), buffer.data());
         ASSERT_EQUAL(r.error, codes[i]);
         ASSERT_EQUAL(r.count, counts[i]);
@@ -2507,13 +2507,13 @@ TEST(decode_non_ascii) {
 
 TEST(decode_base64_cases) {
     std::vector<std::vector<char>> cases = { { 0x53, 0x53 } };
-    std::vector<turbo::error_code> codes = { turbo::error_code::SUCCESS };
+    std::vector<turbo::UnicodeError> codes = { turbo::UnicodeError::SUCCESS };
     std::vector<size_t> counts = { 1 };
 
     for (size_t i = 0; i < cases.size(); i++) {
         std::vector<char> buffer(implementation.maximal_binary_length_from_base64(
             cases[i].data(), cases[i].size()));
-        turbo::result r = implementation.base64_to_binary(
+        turbo::UnicodeResult r = implementation.base64_to_binary(
             cases[i].data(), cases[i].size(), buffer.data());
         ASSERT_EQUAL(r.error, codes[i]);
         ASSERT_EQUAL(r.count, counts[i]);
@@ -2608,9 +2608,9 @@ TEST(complete_decode_base64_cases) {
     for (const auto& p : cases::whitespaces) {
         std::vector<char> buffer(implementation.maximal_binary_length_from_base64(
             p.second.data(), p.second.size()));
-        turbo::result r = implementation.base64_to_binary(
+        turbo::UnicodeResult r = implementation.base64_to_binary(
             p.second.data(), p.second.size(), buffer.data());
-        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+        ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
         ASSERT_EQUAL(r.count, p.first.size());
         for (size_t i = 0; i < r.count; i++) {
             ASSERT_EQUAL(buffer[i], p.first[i]);
@@ -2623,23 +2623,13 @@ TEST(complete_safe_decode_base64_cases) {
         std::vector<char> buffer(implementation.maximal_binary_length_from_base64(
             p.second.data(), p.second.size()));
         size_t bufsize = buffer.size();
-        turbo::result r = turbo::base64_to_binary_safe(
+        turbo::UnicodeResult r = turbo::base64_to_binary_safe(
             p.second.data(), p.second.size(), buffer.data(), bufsize);
-        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+        ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
         ASSERT_EQUAL(bufsize, p.first.size());
         for (size_t i = 0; i < bufsize; i++) {
             ASSERT_EQUAL(buffer[i], p.first[i]);
         }
-#if SIMDUTF_ATOMIC_REF
-        bufsize = buffer.size();
-        r = turbo::atomic_base64_to_binary_safe(p.second.data(), p.second.size(),
-            buffer.data(), bufsize);
-        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
-        ASSERT_EQUAL(bufsize, p.first.size());
-        for (size_t i = 0; i < bufsize; i++) {
-            ASSERT_EQUAL(buffer[i], p.first[i]);
-        }
-#endif
     }
 }
 
@@ -2648,25 +2638,15 @@ TEST(complete_safe_decode_base64url_cases) {
         std::vector<char> buffer(implementation.maximal_binary_length_from_base64(
             p.second.data(), p.second.size()));
         size_t bufsize = buffer.size();
-        turbo::result r = turbo::base64_to_binary_safe(
+        turbo::UnicodeResult r = turbo::base64_to_binary_safe(
             p.second.data(), p.second.size(), buffer.data(), bufsize,
             turbo::base64_url);
-        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+        ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
         ASSERT_EQUAL(bufsize, p.first.size());
         for (size_t i = 0; i < bufsize; i++) {
             ASSERT_EQUAL(buffer[i], p.first[i]);
         }
-#if SIMDUTF_ATOMIC_REF
-        bufsize = buffer.size();
-        r = turbo::base64_to_binary_safe(p.second.data(), p.second.size(),
-            buffer.data(), bufsize,
-            turbo::base64_url);
-        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
-        ASSERT_EQUAL(bufsize, p.first.size());
-        for (size_t i = 0; i < bufsize; i++) {
-            ASSERT_EQUAL(buffer[i], p.first[i]);
-        }
-#endif
+
     }
 }
 
@@ -2687,9 +2667,9 @@ TEST(decode_base64_simple) {
         std::vector<char> buffer(implementation.maximal_binary_length_from_base64(
             p.second.data(), p.second.size()));
         ASSERT_EQUAL(buffer.size(), p.first.size());
-        turbo::result r = implementation.base64_to_binary(
+        turbo::UnicodeResult r = implementation.base64_to_binary(
             p.second.data(), p.second.size(), buffer.data());
-        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+        ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
         ASSERT_EQUAL(r.count, p.first.size());
         for (size_t i = 0; i < buffer.size(); i++) {
             ASSERT_EQUAL(buffer[i], p.first[i]);
@@ -2703,9 +2683,9 @@ TEST(safe_decode_base64_simple) {
             p.second.data(), p.second.size()));
         ASSERT_EQUAL(buffer.size(), p.first.size());
         size_t length = buffer.size();
-        turbo::result r = turbo::base64_to_binary_safe(
+        turbo::UnicodeResult r = turbo::base64_to_binary_safe(
             p.second.data(), p.second.size(), buffer.data(), length);
-        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+        ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
         ASSERT_EQUAL(r.count, p.second.size());
         ASSERT_EQUAL(length, p.first.size());
         for (size_t i = 0; i < buffer.size(); i++) {
@@ -2751,9 +2731,9 @@ TEST(decode_base64url) {
         std::vector<char> buffer(implementation.maximal_binary_length_from_base64(
             p.second.data(), p.second.size()));
         ASSERT_EQUAL(buffer.size(), p.first.size());
-        turbo::result r = implementation.base64_to_binary(
+        turbo::UnicodeResult r = implementation.base64_to_binary(
             p.second.data(), p.second.size(), buffer.data(), turbo::base64_url);
-        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+        ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
         ASSERT_EQUAL(r.count, p.first.size());
         for (size_t i = 0; i < buffer.size(); i++) {
             ASSERT_EQUAL(buffer[i], p.first[i]);
@@ -2767,10 +2747,10 @@ TEST(safe_decode_base64url) {
             p.second.data(), p.second.size()));
         ASSERT_EQUAL(buffer.size(), p.first.size());
         size_t length = buffer.size();
-        turbo::result r = turbo::base64_to_binary_safe(
+        turbo::UnicodeResult r = turbo::base64_to_binary_safe(
             p.second.data(), p.second.size(), buffer.data(), length,
             turbo::base64_url);
-        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+        ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
         ASSERT_EQUAL(r.count, p.second.size());
         ASSERT_EQUAL(length, p.first.size());
         for (size_t i = 0; i < buffer.size(); i++) {
@@ -2804,9 +2784,9 @@ TEST(decode_base64_cases_16) {
         std::vector<char> buffer(implementation.maximal_binary_length_from_base64(
             p.second.data(), p.second.size()));
         ASSERT_EQUAL(buffer.size(), p.first.size());
-        turbo::result r = implementation.base64_to_binary(
+        turbo::UnicodeResult r = implementation.base64_to_binary(
             p.second.data(), p.second.size(), buffer.data());
-        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+        ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
         ASSERT_EQUAL(r.count, p.first.size());
         ASSERT_BYTES_EQUAL(buffer, p.first, r.count);
     }
@@ -2818,9 +2798,9 @@ TEST(safe_decode_base64_cases_16) {
             p.second.data(), p.second.size()));
         ASSERT_EQUAL(buffer.size(), p.first.size());
         size_t length = buffer.size();
-        turbo::result r = turbo::base64_to_binary_safe(
+        turbo::UnicodeResult r = turbo::base64_to_binary_safe(
             p.second.data(), p.second.size(), buffer.data(), length);
-        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+        ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
         ASSERT_EQUAL(r.count, p.second.size());
         ASSERT_EQUAL(length, p.first.size());
         for (size_t i = 0; i < buffer.size(); i++) {
@@ -2836,9 +2816,9 @@ TEST(decode_base64url_cases_16) {
         std::vector<char> buffer(implementation.maximal_binary_length_from_base64(
             p.second.data(), p.second.size()));
         ASSERT_EQUAL(buffer.size(), p.first.size());
-        turbo::result r = implementation.base64_to_binary(
+        turbo::UnicodeResult r = implementation.base64_to_binary(
             p.second.data(), p.second.size(), buffer.data(), turbo::base64_url);
-        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+        ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
         ASSERT_EQUAL(r.count, p.first.size());
         for (size_t i = 0; i < buffer.size(); i++) {
             ASSERT_EQUAL(buffer[i], p.first[i]);
@@ -2852,10 +2832,10 @@ TEST(safe_decode_base64url_cases_16) {
             p.second.data(), p.second.size()));
         ASSERT_EQUAL(buffer.size(), p.first.size());
         size_t length = buffer.size();
-        turbo::result r = turbo::base64_to_binary_safe(
+        turbo::UnicodeResult r = turbo::base64_to_binary_safe(
             p.second.data(), p.second.size(), buffer.data(), length,
             turbo::base64_url);
-        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+        ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
         ASSERT_EQUAL(r.count, p.second.size());
         ASSERT_EQUAL(length, p.first.size());
         for (size_t i = 0; i < buffer.size(); i++) {
@@ -2881,8 +2861,8 @@ TEST(roundtrip_base64) {
             size_t size = implementation.binary_to_base64(
                 source.data(), source.size(), buffer.data());
             ASSERT_EQUAL(size, turbo::base64_length_from_binary(len));
-            turbo::result r = implementation.base64_to_binary(buffer.data(), size, back.data());
-            ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+            turbo::UnicodeResult r = implementation.base64_to_binary(buffer.data(), size, back.data());
+            ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
             ASSERT_EQUAL(r.count, len);
             if (back != source) {
                 printf("=====input size %zu\n", len);
@@ -2905,7 +2885,7 @@ TEST(roundtrip_base64) {
                 r = implementation.base64_to_binary(buffer.data(), size, back.data(),
                     turbo::base64_default, option);
                 ASSERT_TRUE((size % 4) == 0);
-                ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                 ASSERT_EQUAL(r.count, len);
                 ASSERT_TRUE(back == source);
             }
@@ -2935,8 +2915,8 @@ TEST(roundtrip_base64_16) {
                 buffer16[i] = buffer[i];
             }
             ASSERT_EQUAL(size, turbo::base64_length_from_binary(len));
-            turbo::result r = implementation.base64_to_binary(buffer16.data(), size, back.data());
-            ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+            turbo::UnicodeResult r = implementation.base64_to_binary(buffer16.data(), size, back.data());
+            ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
             ASSERT_EQUAL(r.count, len);
             if (back != source) {
                 printf("=====input size %zu\n", len);
@@ -2959,7 +2939,7 @@ TEST(roundtrip_base64_16) {
                 r = implementation.base64_to_binary(buffer.data(), size, back.data(),
                     turbo::base64_default, option);
                 ASSERT_TRUE((size % 4) == 0);
-                ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                 ASSERT_EQUAL(r.count, len);
                 ASSERT_TRUE(back == source);
             }
@@ -2985,9 +2965,9 @@ TEST(roundtrip_base64url) {
                 source.data(), source.size(), buffer.data(), turbo::base64_url);
             ASSERT_EQUAL(
                 size, turbo::base64_length_from_binary(len, turbo::base64_url));
-            turbo::result r = implementation.base64_to_binary(
+            turbo::UnicodeResult r = implementation.base64_to_binary(
                 buffer.data(), size, back.data(), turbo::base64_url);
-            ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+            ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
             ASSERT_EQUAL(r.count, len);
             if (back != source) {
                 printf("=====input size %zu\n", len);
@@ -3012,18 +2992,18 @@ TEST(roundtrip_base64url) {
                 r = implementation.base64_to_binary(buffer.data(), size, back.data(),
                     turbo::base64_url, option);
                 if ((size % 4) == 0) {
-                    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                     ASSERT_EQUAL(r.count, len);
                     ASSERT_TRUE(back == source);
                 } else {
                     if (option == turbo::last_chunk_handling_options::strict) {
-                        ASSERT_EQUAL(r.error, turbo::error_code::BASE64_INPUT_REMAINDER);
+                        ASSERT_EQUAL(r.error, turbo::UnicodeError::BASE64_INPUT_REMAINDER);
                     } else if (option == turbo::last_chunk_handling_options::loose) {
-                        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                        ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                         ASSERT_EQUAL(r.count, len);
                         ASSERT_TRUE(back == source);
                     } else if (option == turbo::last_chunk_handling_options::stop_before_partial) {
-                        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                        ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                         ASSERT_EQUAL(r.count, len / 3 * 3);
                         ASSERT_TRUE(std::equal(back.begin(), back.begin() + len / 3 * 3,
                             source.begin()));
@@ -3057,9 +3037,9 @@ TEST(roundtrip_base64url_16) {
             }
             ASSERT_EQUAL(
                 size, turbo::base64_length_from_binary(len, turbo::base64_url));
-            turbo::result r = implementation.base64_to_binary(
+            turbo::UnicodeResult r = implementation.base64_to_binary(
                 buffer16.data(), size, back.data(), turbo::base64_url);
-            ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+            ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
             ASSERT_EQUAL(r.count, len);
             if (back != source) {
                 printf("=====input size %zu\n", len);
@@ -3082,18 +3062,18 @@ TEST(roundtrip_base64url_16) {
                 r = implementation.base64_to_binary(buffer.data(), size, back.data(),
                     turbo::base64_url, option);
                 if ((size % 4) == 0) {
-                    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                     ASSERT_EQUAL(r.count, len);
                     ASSERT_TRUE(back == source);
                 } else {
                     if (option == turbo::last_chunk_handling_options::strict) {
-                        ASSERT_EQUAL(r.error, turbo::error_code::BASE64_INPUT_REMAINDER);
+                        ASSERT_EQUAL(r.error, turbo::UnicodeError::BASE64_INPUT_REMAINDER);
                     } else if (option == turbo::last_chunk_handling_options::loose) {
-                        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                        ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                         ASSERT_EQUAL(r.count, len);
                         ASSERT_TRUE(back == source);
                     } else if (option == turbo::last_chunk_handling_options::stop_before_partial) {
-                        ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                        ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                         ASSERT_EQUAL(r.count, len / 3 * 3);
                         ASSERT_TRUE(std::equal(back.begin(), back.begin() + len / 3 * 3,
                             source.begin()));
@@ -3135,9 +3115,9 @@ TEST(bad_padding_base64) {
                 for (size_t i = 0; i < 5; i++) {
                     add_space(buffer, gen);
                 }
-                turbo::result r = turbo::base64_to_binary(
+                turbo::UnicodeResult r = turbo::base64_to_binary(
                     buffer.data(), buffer.size(), back.data());
-                ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
             } else if (padding == 2) {
                 // adding padding should break
                 {
@@ -3146,8 +3126,8 @@ TEST(bad_padding_base64) {
                     for (size_t i = 0; i < 5; i++) {
                         add_space(copy, gen);
                     }
-                    turbo::result r = turbo::base64_to_binary(copy.data(), copy.size(), back.data());
-                    ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+                    turbo::UnicodeResult r = turbo::base64_to_binary(copy.data(), copy.size(), back.data());
+                    ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
                 }
                 // removing padding should break
                 {
@@ -3156,8 +3136,8 @@ TEST(bad_padding_base64) {
                     for (size_t i = 0; i < 5; i++) {
                         add_space(copy, gen);
                     }
-                    turbo::result r = turbo::base64_to_binary(copy.data(), copy.size(), back.data());
-                    ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+                    turbo::UnicodeResult r = turbo::base64_to_binary(copy.data(), copy.size(), back.data());
+                    ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
                 }
 
             } else {
@@ -3167,8 +3147,8 @@ TEST(bad_padding_base64) {
                     for (size_t i = 0; i < 5; i++) {
                         add_space(copy, gen);
                     }
-                    turbo::result r = turbo::base64_to_binary(copy.data(), copy.size(), back.data());
-                    ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+                    turbo::UnicodeResult r = turbo::base64_to_binary(copy.data(), copy.size(), back.data());
+                    ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
                 }
             }
         }
@@ -3191,8 +3171,8 @@ TEST(doomed_base64_roundtrip) {
             size_t location = add_garbage(buffer, gen, to_base64_value);
             std::vector<char> back(turbo::maximal_binary_length_from_base64(
                 buffer.data(), buffer.size()));
-            turbo::result r = turbo::base64_to_binary(buffer.data(), buffer.size(), back.data());
-            ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+            turbo::UnicodeResult r = turbo::base64_to_binary(buffer.data(), buffer.size(), back.data());
+            ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
             ASSERT_EQUAL(r.count, location);
             for (auto option :
                 { turbo::last_chunk_handling_options::strict,
@@ -3202,7 +3182,7 @@ TEST(doomed_base64_roundtrip) {
                 r = turbo::base64_to_binary_safe(buffer.data(), buffer.size(),
                     back.data(), back_length,
                     turbo::base64_default, option);
-                ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
                 ASSERT_EQUAL(r.count, location);
             }
         }
@@ -3227,14 +3207,14 @@ TEST(doomed_truncated_base64_roundtrip) {
                 buffer.data(), buffer.size()));
             for (auto option : { turbo::last_chunk_handling_options::loose,
                      turbo::last_chunk_handling_options::strict }) {
-                turbo::result r = implementation.base64_to_binary(
+                turbo::UnicodeResult r = implementation.base64_to_binary(
                     buffer.data(), buffer.size(), back.data(), turbo::base64_default,
                     option);
-                ASSERT_EQUAL(r.error, turbo::error_code::BASE64_INPUT_REMAINDER);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::BASE64_INPUT_REMAINDER);
                 size_t back_length = back.size();
                 r = turbo::base64_to_binary_safe(buffer.data(), buffer.size(),
                     back.data(), back_length);
-                ASSERT_EQUAL(r.error, turbo::error_code::BASE64_INPUT_REMAINDER);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::BASE64_INPUT_REMAINDER);
             }
         }
     }
@@ -3261,13 +3241,13 @@ TEST(doomed_truncated_base64_roundtrip_16) {
             }
             std::vector<char> back(implementation.maximal_binary_length_from_base64(
                 buffer16.data(), buffer16.size()));
-            turbo::result r = implementation.base64_to_binary(
+            turbo::UnicodeResult r = implementation.base64_to_binary(
                 buffer16.data(), buffer16.size(), back.data());
-            ASSERT_EQUAL(r.error, turbo::error_code::BASE64_INPUT_REMAINDER);
+            ASSERT_EQUAL(r.error, turbo::UnicodeError::BASE64_INPUT_REMAINDER);
             size_t back_length = back.size();
             r = turbo::base64_to_binary_safe(buffer16.data(), buffer16.size(),
                 back.data(), back_length);
-            ASSERT_EQUAL(r.error, turbo::error_code::BASE64_INPUT_REMAINDER);
+            ASSERT_EQUAL(r.error, turbo::UnicodeError::BASE64_INPUT_REMAINDER);
         }
     }
 }
@@ -3297,9 +3277,9 @@ TEST(roundtrip_base64_16_with_spaces) {
                 buffer16[i] = buffer[i];
             }
             ASSERT_EQUAL(size, turbo::base64_length_from_binary(len));
-            turbo::result r = implementation.base64_to_binary(
+            turbo::UnicodeResult r = implementation.base64_to_binary(
                 buffer16.data(), buffer16.size(), back.data());
-            ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+            ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
             ASSERT_EQUAL(r.count, len);
             if (back != source) {
                 printf("=====input size %zu\n", len);
@@ -3344,10 +3324,10 @@ TEST(roundtrip_base64_16_with_garbage) {
                 buffer16[i] = buffer[i];
             }
             ASSERT_EQUAL(size, turbo::base64_length_from_binary(len));
-            turbo::result r = implementation.base64_to_binary(
+            turbo::UnicodeResult r = implementation.base64_to_binary(
                 buffer16.data(), buffer16.size(), back.data(),
                 turbo::base64_default_accept_garbage);
-            ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+            ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
             ASSERT_EQUAL(r.count, len);
             if (back != source) {
                 printf("=====input size %zu\n", len);
@@ -3393,10 +3373,10 @@ TEST(roundtrip_base64_url_16_with_garbage) {
             }
             ASSERT_EQUAL(
                 size, turbo::base64_length_from_binary(len, turbo::base64_url));
-            turbo::result r = implementation.base64_to_binary(
+            turbo::UnicodeResult r = implementation.base64_to_binary(
                 buffer16.data(), buffer16.size(), back.data(),
                 turbo::base64_url_accept_garbage);
-            ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+            ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
             ASSERT_EQUAL(r.count, len);
             if (back != source) {
                 printf("=====input size %zu\n", len);
@@ -3436,9 +3416,9 @@ TEST(aborted_safe_roundtrip_base64) {
                 size_t limited_length = len - offset; // intentionally too little
                 back.resize(limited_length);
                 back.shrink_to_fit();
-                turbo::result r = turbo::base64_to_binary_safe(
+                turbo::UnicodeResult r = turbo::base64_to_binary_safe(
                     buffer.data(), buffer.size(), back.data(), limited_length);
-                ASSERT_EQUAL(r.error, turbo::error_code::OUTPUT_BUFFER_TOO_SMALL);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::OUTPUT_BUFFER_TOO_SMALL);
                 for (size_t i = 0; i < limited_length; i++) {
                     ASSERT_EQUAL(source[i], back[i]);
                 }
@@ -3450,7 +3430,7 @@ TEST(aborted_safe_roundtrip_base64) {
                 r = turbo::base64_to_binary_safe(buffer.data() + input_index,
                     buffer.size() - input_index,
                     back.data(), second_length);
-                ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                 back.resize(second_length);
                 ASSERT_EQUAL(second_length + limited_length, len);
 
@@ -3488,9 +3468,9 @@ TEST(aborted_safe_roundtrip_base64_16) {
                 size_t limited_length = len - offset; // intentionally too little
                 back.resize(limited_length);
                 back.shrink_to_fit();
-                turbo::result r = turbo::base64_to_binary_safe(
+                turbo::UnicodeResult r = turbo::base64_to_binary_safe(
                     buffer.data(), buffer.size(), back.data(), limited_length);
-                ASSERT_EQUAL(r.error, turbo::error_code::OUTPUT_BUFFER_TOO_SMALL);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::OUTPUT_BUFFER_TOO_SMALL);
                 for (size_t i = 0; i < limited_length; i++) {
                     ASSERT_EQUAL(source[i], back[i]);
                 }
@@ -3502,7 +3482,7 @@ TEST(aborted_safe_roundtrip_base64_16) {
                 r = turbo::base64_to_binary_safe(buffer.data() + input_index,
                     buffer.size() - input_index,
                     back.data(), second_length);
-                ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                 back.resize(second_length);
                 ASSERT_EQUAL(second_length + limited_length, len);
                 for (size_t i = 0; i < second_length; i++) {
@@ -3536,9 +3516,9 @@ TEST(aborted_safe_roundtrip_base64_with_spaces) {
                 size_t limited_length = len - offset; // intentionally too little
                 back.resize(limited_length);
                 back.shrink_to_fit();
-                turbo::result r = turbo::base64_to_binary_safe(
+                turbo::UnicodeResult r = turbo::base64_to_binary_safe(
                     buffer.data(), buffer.size(), back.data(), limited_length);
-                ASSERT_EQUAL(r.error, turbo::error_code::OUTPUT_BUFFER_TOO_SMALL);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::OUTPUT_BUFFER_TOO_SMALL);
                 for (size_t i = 0; i < limited_length; i++) {
                     ASSERT_EQUAL(source[i], back[i]);
                 }
@@ -3550,7 +3530,7 @@ TEST(aborted_safe_roundtrip_base64_with_spaces) {
                 r = turbo::base64_to_binary_safe(buffer.data() + input_index,
                     buffer.size() - input_index,
                     back.data(), second_length);
-                ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                 back.resize(second_length);
                 ASSERT_EQUAL(second_length + limited_length, len);
                 for (size_t i = 0; i < second_length; i++) {
@@ -3590,9 +3570,9 @@ TEST(aborted_safe_roundtrip_base64_16_with_spaces) {
                 size_t limited_length = len - offset; // intentionally too little
                 back.resize(limited_length);
                 back.shrink_to_fit();
-                turbo::result r = turbo::base64_to_binary_safe(
+                turbo::UnicodeResult r = turbo::base64_to_binary_safe(
                     buffer.data(), buffer.size(), back.data(), limited_length);
-                ASSERT_EQUAL(r.error, turbo::error_code::OUTPUT_BUFFER_TOO_SMALL);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::OUTPUT_BUFFER_TOO_SMALL);
                 for (size_t i = 0; i < limited_length; i++) {
                     ASSERT_EQUAL(source[i], back[i]);
                 }
@@ -3604,7 +3584,7 @@ TEST(aborted_safe_roundtrip_base64_16_with_spaces) {
                 r = turbo::base64_to_binary_safe(buffer.data() + input_index,
                     buffer.size() - input_index,
                     back.data(), second_length);
-                ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+                ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
                 back.resize(second_length);
                 ASSERT_EQUAL(second_length + limited_length, len);
                 for (size_t i = 0; i < second_length; i++) {
@@ -3640,7 +3620,7 @@ TEST(streaming_base64_roundtrip) {
                 buffer.data() + pos, count, back.data() + outpos,
                 turbo::base64_default,
                 turbo::last_chunk_handling_options::only_full_chunks);
-            ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+            ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
             ASSERT_TRUE(r.input_count <= count);
             ASSERT_TRUE(r.output_count <= back.size() - outpos);
             ASSERT_TRUE(r.output_count % 3 == 0);
@@ -3659,7 +3639,7 @@ TEST(streaming_base64_roundtrip) {
                 buffer.data() + pos, buffer.size() - pos, back.data() + outpos,
                 turbo::base64_default,
                 turbo::last_chunk_handling_options::strict);
-            ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+            ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
             outpos += r.output_count;
             pos += r.input_count;
         }
@@ -3677,22 +3657,22 @@ TEST(readme_test) {
     for (size_t pos = 0; pos < base64.size(); pos += window) {
         // how many base64 characters we can process in this iteration
         size_t count = std::min(window, base64.size() - pos);
-        turbo::result r = turbo::base64_to_binary(base64.data() + pos, count,
+        turbo::UnicodeResult r = turbo::base64_to_binary(base64.data() + pos, count,
             back.data() + outpos);
-        if (r.error == turbo::error_code::INVALID_BASE64_CHARACTER) {
+        if (r.error == turbo::UnicodeError::INVALID_BASE64_CHARACTER) {
             printf("Invalid base64 character at position %zu\n", pos + r.count);
             return;
         }
         // If we arrived at the end of the base64 input, we must check that the
         // number of characters processed is a multiple of 4, or that we have a
         // remainder of 0, 2 or 3.
-        if (count + pos == base64.size() && r.error == turbo::error_code::BASE64_INPUT_REMAINDER) {
+        if (count + pos == base64.size() && r.error == turbo::UnicodeError::BASE64_INPUT_REMAINDER) {
             puts("The base64 input contained an invalid number of characters");
         }
         // If we are not at then end, we may have to reprocess either 1, 2 or 3
         // bytes, and to drop the last 0, 2 or 3 bytes decoded.
         size_t tail_bytes_to_reprocess = 0;
-        if (r.error == turbo::error_code::BASE64_INPUT_REMAINDER) {
+        if (r.error == turbo::UnicodeError::BASE64_INPUT_REMAINDER) {
             tail_bytes_to_reprocess = 1;
         } else {
             tail_bytes_to_reprocess = (r.count % 3) == 0 ? 0 : (r.count % 3) + 1;
@@ -3710,9 +3690,9 @@ TEST(readme_safe) {
     std::vector<char> base64(len, 'a');
     std::vector<char> back((len + 3) / 4 * 3);
     size_t limited_length = back.size() / 2; // Intentionally too small
-    turbo::result r = turbo::base64_to_binary_safe(
+    turbo::UnicodeResult r = turbo::base64_to_binary_safe(
         base64.data(), base64.size(), back.data(), limited_length);
-    ASSERT_EQUAL(r.error, turbo::error_code::OUTPUT_BUFFER_TOO_SMALL);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::OUTPUT_BUFFER_TOO_SMALL);
 
     // We decoded 'limited_length' bytes to back.
     // Now let us decode the rest !!!
@@ -3721,7 +3701,7 @@ TEST(readme_safe) {
     r = turbo::base64_to_binary_safe(base64.data() + input_index,
         base64.size() - input_index, back.data(),
         limited_length2);
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
     back.resize(limited_length2);
     ASSERT_EQUAL(limited_length2 + limited_length, (len + 3) / 4 * 3);
 }
@@ -3780,7 +3760,7 @@ TEST(binary_length_from_base64_matches_decode_result) {
         // Now decode and verify the exact length matches
         std::vector<char> buffer(max_len);
         auto result = turbo::base64_to_binary(input.data(), input.size(), buffer.data());
-        if (result.error == turbo::error_code::SUCCESS) {
+        if (result.error == turbo::UnicodeError::SUCCESS) {
             ASSERT_EQUAL(exact_len, result.count);
         }
     }
@@ -3858,7 +3838,7 @@ TEST(base64_details_padding_error_consistency) {
     const turbo::full_result fr = implementation.base64_to_binary_details(
         input, input_len, output.data(), opt, lco);
 
-    ASSERT_TRUE(fr.error != turbo::error_code::SUCCESS);
+    ASSERT_TRUE(fr.error != turbo::UnicodeError::SUCCESS);
     ASSERT_TRUE(fr.padding_error);
 }
 
@@ -3876,15 +3856,15 @@ TEST(base64_details_padding_error_various_inputs) {
             input, input_len, output.data(), opt, lco);
 
         std::vector<char> output2(maxbinary + 1);
-        const turbo::result r = implementation.base64_to_binary(
+        const turbo::UnicodeResult r = implementation.base64_to_binary(
             input, input_len, output2.data(), opt, lco);
 
-        const turbo::result r_from_fr = static_cast<turbo::result>(fr);
+        const turbo::UnicodeResult r_from_fr = static_cast<turbo::UnicodeResult>(fr);
         ASSERT_EQUAL(r.error, r_from_fr.error);
         ASSERT_EQUAL(r.count, r_from_fr.count);
 
         // On success, output bytes must match.
-        if (fr.error == turbo::error_code::SUCCESS) {
+        if (fr.error == turbo::UnicodeError::SUCCESS) {
             ASSERT_TRUE(std::equal(output.begin(), output.begin() + fr.output_count,
                 output2.begin()));
         }
@@ -3904,7 +3884,7 @@ TEST(base64_details_padding_error_char16) {
     const turbo::full_result fr = implementation.base64_to_binary_details(
         input, input_len, output.data(), opt, lco);
 
-    ASSERT_TRUE(fr.error != turbo::error_code::SUCCESS);
+    ASSERT_TRUE(fr.error != turbo::UnicodeError::SUCCESS);
     ASSERT_TRUE(fr.padding_error);
 }
 
@@ -3923,7 +3903,7 @@ TEST(base64_details_input_count_on_padding_error) {
     const turbo::full_result fr = implementation.base64_to_binary_details(
         input.data(), input_len, output.data(), opt, lco);
 
-    ASSERT_TRUE(fr.error == turbo::error_code::INVALID_BASE64_CHARACTER);
+    ASSERT_TRUE(fr.error == turbo::UnicodeError::INVALID_BASE64_CHARACTER);
     ASSERT_TRUE(fr.padding_error);
     ASSERT_EQUAL(fr.input_count, size_t(63));
 }
@@ -3960,7 +3940,7 @@ TEST(base64_to_binary_details_basic) {
         base64_input.data(), base64_input.size()));
     turbo::full_result r = turbo::base64_to_binary_details(
         base64_input.data(), base64_input.size(), output.data());
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(r.output_count, expected.size());
     ASSERT_EQUAL(r.input_count, base64_input.size());
     ASSERT_TRUE(std::string(output.data(), r.output_count) == expected);
@@ -3974,7 +3954,7 @@ TEST(base64_to_binary_details_utf16) {
         base64_input.data(), base64_input.size()));
     turbo::full_result r = turbo::base64_to_binary_details(
         base64_input.data(), base64_input.size(), output.data());
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(r.output_count, expected.size());
     ASSERT_EQUAL(r.input_count, base64_input.size());
     ASSERT_TRUE(std::string(output.data(), r.output_count) == expected);
@@ -3987,7 +3967,7 @@ TEST(base64_to_binary_details_with_spaces) {
         base64_input.data(), base64_input.size()));
     turbo::full_result r = turbo::base64_to_binary_details(
         base64_input.data(), base64_input.size(), output.data());
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(r.output_count, expected.size());
     ASSERT_TRUE(std::string(output.data(), r.output_count) == expected);
 }
@@ -4003,7 +3983,7 @@ TEST(base64_to_binary_details_stop_before_partial) {
         base64_input.data(), base64_input.size(), output.data(),
         turbo::base64_default,
         turbo::last_chunk_handling_options::stop_before_partial);
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(r.output_count, expected.size());
     // input_count should stop before the incomplete group
     ASSERT_TRUE(r.input_count < base64_input.size());
@@ -4021,7 +4001,7 @@ TEST(base64_to_binary_details_stop_before_partial_all_consumed) {
         base64_input.data(), base64_input.size(), output.data(),
         turbo::base64_default,
         turbo::last_chunk_handling_options::stop_before_partial);
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(r.output_count, expected.size());
     ASSERT_EQUAL(r.input_count, base64_input.size());
     ASSERT_TRUE(std::string(output.data(), r.output_count) == expected);
@@ -4034,7 +4014,7 @@ TEST(base64_to_binary_details_invalid_character) {
         base64_input.data(), base64_input.size()));
     turbo::full_result r = turbo::base64_to_binary_details(
         base64_input.data(), base64_input.size(), output.data());
-    ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
     ASSERT_EQUAL(r.input_count, 4); // position of first '!'
 }
 
@@ -4046,7 +4026,7 @@ TEST(base64_to_binary_details_input_remainder) {
         base64_input.data(), base64_input.size()));
     turbo::full_result r = turbo::base64_to_binary_details(
         base64_input.data(), base64_input.size(), output.data());
-    ASSERT_EQUAL(r.error, turbo::error_code::BASE64_INPUT_REMAINDER);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::BASE64_INPUT_REMAINDER);
 }
 
 TEST(base64_to_binary_details_with_spaces_utf16) {
@@ -4056,7 +4036,7 @@ TEST(base64_to_binary_details_with_spaces_utf16) {
         base64_input.data(), base64_input.size()));
     turbo::full_result r = turbo::base64_to_binary_details(
         base64_input.data(), base64_input.size(), output.data());
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(r.output_count, expected.size());
     ASSERT_TRUE(std::string(output.data(), r.output_count) == expected);
 }
@@ -4072,7 +4052,7 @@ TEST(base64_to_binary_details_stop_before_partial_utf16) {
         base64_input.data(), base64_input.size(), output.data(),
         turbo::base64_default,
         turbo::last_chunk_handling_options::stop_before_partial);
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(r.output_count, expected.size());
     // input_count should stop before the incomplete group
     ASSERT_TRUE(r.input_count < base64_input.size());
@@ -4090,7 +4070,7 @@ TEST(base64_to_binary_details_stop_before_partial_all_consumed_utf16) {
         base64_input.data(), base64_input.size(), output.data(),
         turbo::base64_default,
         turbo::last_chunk_handling_options::stop_before_partial);
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(r.output_count, expected.size());
     ASSERT_EQUAL(r.input_count, base64_input.size());
     ASSERT_TRUE(std::string(output.data(), r.output_count) == expected);
@@ -4103,7 +4083,7 @@ TEST(base64_to_binary_details_invalid_character_utf16) {
         base64_input.data(), base64_input.size()));
     turbo::full_result r = turbo::base64_to_binary_details(
         base64_input.data(), base64_input.size(), output.data());
-    ASSERT_EQUAL(r.error, turbo::error_code::INVALID_BASE64_CHARACTER);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::INVALID_BASE64_CHARACTER);
     ASSERT_EQUAL(r.input_count, 4); // position of first '!'
 }
 
@@ -4115,7 +4095,7 @@ TEST(base64_to_binary_details_input_remainder_utf16) {
         base64_input.data(), base64_input.size()));
     turbo::full_result r = turbo::base64_to_binary_details(
         base64_input.data(), base64_input.size(), output.data());
-    ASSERT_EQUAL(r.error, turbo::error_code::BASE64_INPUT_REMAINDER);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::BASE64_INPUT_REMAINDER);
 }
 
 TEST(base64_valid_runtime) {

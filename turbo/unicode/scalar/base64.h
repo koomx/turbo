@@ -30,12 +30,12 @@ namespace turbo {
 
                 template <class char_type>
                  bool is_ignorable(char_type c,
-                    turbo::base64_options options) {
+                    turbo::Base64Options options) {
                     const uint8_t* to_base64 = (options & base64_default_or_url)
                         ? tables::base64::to_base64_default_or_url_value
                         : ((options & base64_url) ? tables::base64::to_base64_url_value
                                                   : tables::base64::to_base64_value);
-                    const bool ignore_garbage = (options == base64_options::base64_url_accept_garbage) || (options == base64_options::base64_default_accept_garbage) || (options == base64_options::base64_default_or_url_accept_garbage);
+                    const bool ignore_garbage = (options == Base64Options::base64_url_accept_garbage) || (options == Base64Options::base64_default_accept_garbage) || (options == Base64Options::base64_default_or_url_accept_garbage);
                     uint8_t code = to_base64[uint8_t(c)];
                     if (is_eight_byte(c) && code <= 63) {
                         return false;
@@ -47,7 +47,7 @@ namespace turbo {
                 }
                 template <class char_type>
                  bool is_base64(char_type c,
-                    turbo::base64_options options) {
+                    turbo::Base64Options options) {
                     const uint8_t* to_base64 = (options & base64_default_or_url)
                         ? tables::base64::to_base64_default_or_url_value
                         : ((options & base64_url) ? tables::base64::to_base64_url_value
@@ -61,7 +61,7 @@ namespace turbo {
 
                 template <class char_type>
                  bool is_base64_or_padding(char_type c,
-                    turbo::base64_options options) {
+                    turbo::Base64Options options) {
                     const uint8_t* to_base64 = (options & base64_default_or_url)
                         ? tables::base64::to_base64_default_or_url_value
                         : ((options & base64_url) ? tables::base64::to_base64_url_value
@@ -77,7 +77,7 @@ namespace turbo {
                 }
 
                 template <class char_type>
-                bool is_ignorable_or_padding(char_type c, turbo::base64_options options) {
+                bool is_ignorable_or_padding(char_type c, turbo::Base64Options options) {
                     return is_ignorable(c, options) || c == '=';
                 }
 
@@ -96,12 +96,12 @@ namespace turbo {
                 // modified. The function assumes that there are at most two padding characters.
                 template <class char_type>
                  reduced_input find_end(const char_type* src, size_t srclen,
-                    turbo::base64_options options) {
+                    turbo::Base64Options options) {
                     const uint8_t* to_base64 = (options & base64_default_or_url)
                         ? tables::base64::to_base64_default_or_url_value
                         : ((options & base64_url) ? tables::base64::to_base64_url_value
                                                   : tables::base64::to_base64_value);
-                    const bool ignore_garbage = (options == base64_options::base64_url_accept_garbage) || (options == base64_options::base64_default_accept_garbage) || (options == base64_options::base64_default_or_url_accept_garbage);
+                    const bool ignore_garbage = (options == Base64Options::base64_url_accept_garbage) || (options == Base64Options::base64_default_accept_garbage) || (options == Base64Options::base64_default_or_url_accept_garbage);
 
                     size_t equalsigns = 0;
                     // We intentionally include trailing spaces in the full input length.
@@ -152,7 +152,7 @@ namespace turbo {
                     char* dst, size_t outlen, const char_type* src, size_t length,
                     size_t padding_characters, // number of padding characters
                                                // '=', typically 0, 1, 2.
-                    base64_options options, last_chunk_handling_options last_chunk_options) {
+                    Base64Options options, last_chunk_handling_options last_chunk_options) {
                     char* dstend = dst + outlen;
                     (void)dstend;
                     // This looks like 10 branches, but we expect the compiler to resolve this to
@@ -177,7 +177,7 @@ namespace turbo {
                         ? tables::base64::base64_default_or_url::d3
                         : ((options & base64_url) ? tables::base64::base64_url::d3
                                                   : tables::base64::base64_default::d3);
-                    const bool ignore_garbage = (options == base64_options::base64_url_accept_garbage) || (options == base64_options::base64_default_accept_garbage) || (options == base64_options::base64_default_or_url_accept_garbage);
+                    const bool ignore_garbage = (options == Base64Options::base64_url_accept_garbage) || (options == Base64Options::base64_default_accept_garbage) || (options == Base64Options::base64_default_or_url_accept_garbage);
 
                     const char_type* srcend = src + length;
                     const char_type* srcinit = src;
@@ -323,7 +323,7 @@ namespace turbo {
                     char* dst, const char_type* src, size_t length,
                     size_t padding_characters, // number of padding characters
                                                // '=', typically 0, 1, 2.
-                    base64_options options, last_chunk_handling_options last_chunk_options) {
+                    Base64Options options, last_chunk_handling_options last_chunk_options) {
                     return base64_tail_decode_impl<false>(dst, 0, src, length, padding_characters,
                         options, last_chunk_options);
                 }
@@ -337,7 +337,7 @@ namespace turbo {
                     char* dst, size_t outlen, const char_type* src, size_t length,
                     size_t padding_characters, // number of padding characters
                                                // '=', typically 0, 1, 2.
-                    base64_options options, last_chunk_handling_options last_chunk_options) {
+                    Base64Options options, last_chunk_handling_options last_chunk_options) {
                     return base64_tail_decode_impl<true>(dst, outlen, src, length,
                         padding_characters, options,
                         last_chunk_options);
@@ -353,7 +353,7 @@ namespace turbo {
                         r.input_count = equallocation;
                     }
 
-                    if (r.error == error_code::SUCCESS) {
+                    if (r.error == UnicodeError::SUCCESS) {
                         if (!is_partial(last_chunk_options)) {
                             // A success when we are not in stop_before_partial mode.
                             // means that we have consumed the whole input buffer.
@@ -369,7 +369,7 @@ namespace turbo {
                 // enough. It will add padding (=) if needed.
                 template <bool use_lines = false>
                  size_t tail_encode_base64_impl(
-                    char* dst, const char* src, size_t srclen, base64_options options,
+                    char* dst, const char* src, size_t srclen, Base64Options options,
                     size_t line_length = turbo::default_line_length, size_t line_offset = 0) {
                     if constexpr (use_lines) {
                         // sanitize line_length and starting_line_offset.
@@ -597,13 +597,13 @@ namespace turbo {
 
                 // Returns the number of bytes written. The destination buffer must be large
                 // enough. It will add padding (=) if needed.
-                simdutf_unused inline  size_t tail_encode_base64(
-                    char* dst, const char* src, size_t srclen, base64_options options) {
+                [[maybe_unused]] inline  size_t tail_encode_base64(
+                    char* dst, const char* src, size_t srclen, Base64Options options) {
                     return tail_encode_base64_impl(dst, src, srclen, options);
                 }
 
                 template <class InputPtr>
-                simdutf_warn_unused  size_t
+                 [[nodiscard]]  size_t
                 maximal_binary_length_from_base64(InputPtr input, size_t length) noexcept {
                     // We process the padding characters ('=') at the end to make sure
                     // that we return an exact result when the input has no ignorable characters
@@ -649,7 +649,7 @@ namespace turbo {
                 // We use a simple check (c > ' ') which is easy to parallelize and matches
                 // SIMD behavior. Only the last few characters are checked for padding '='.
                 template <class char_type>
-                simdutf_warn_unused  size_t
+                 [[nodiscard]]  size_t
                 binary_length_from_base64(const char_type* input, size_t length) noexcept {
                     // Count non-whitespace characters (c > ' ') with loop unrolling
                     size_t count = 0;
@@ -674,11 +674,11 @@ namespace turbo {
                 }
 
                 template <typename char_type>
-                simdutf_warn_unused  full_result
+                 [[nodiscard]]  full_result
                 base64_to_binary_details_impl(
-                    const char_type* input, size_t length, char* output, base64_options options,
+                    const char_type* input, size_t length, char* output, Base64Options options,
                     last_chunk_handling_options last_chunk_options) noexcept {
-                    const bool ignore_garbage = (options == base64_options::base64_url_accept_garbage) || (options == base64_options::base64_default_accept_garbage) || (options == base64_options::base64_default_or_url_accept_garbage);
+                    const bool ignore_garbage = (options == Base64Options::base64_url_accept_garbage) || (options == Base64Options::base64_default_accept_garbage) || (options == Base64Options::base64_default_or_url_accept_garbage);
                     auto ri = turbo::scalar::base64::find_end(input, length, options);
                     size_t equallocation = ri.equallocation;
                     size_t equalsigns = ri.equalsigns;
@@ -694,7 +694,7 @@ namespace turbo {
                         output, input, length, equalsigns, options, last_chunk_options);
                     r = scalar::base64::patch_tail_result(r, 0, 0, equallocation,
                         full_input_length, last_chunk_options);
-                    if (!is_partial(last_chunk_options) && r.error == error_code::SUCCESS && equalsigns > 0 && !ignore_garbage) {
+                    if (!is_partial(last_chunk_options) && r.error == UnicodeError::SUCCESS && equalsigns > 0 && !ignore_garbage) {
                         // additional checks
                         if ((r.output_count % 3 == 0) || ((r.output_count % 3) + 1 + equalsigns != 4)) {
                             return { INVALID_BASE64_CHARACTER, equallocation, r.output_count, true };
@@ -704,7 +704,7 @@ namespace turbo {
                     // the end of the stream (beyond whitespace) or right after a non-ignorable
                     // character or at the very beginning of the stream.
                     // See https://tc39.es/proposal-arraybuffer-base64/spec/#sec-frombase64
-                    if (is_partial(last_chunk_options) && r.error == error_code::SUCCESS && r.input_count < full_input_length) {
+                    if (is_partial(last_chunk_options) && r.error == UnicodeError::SUCCESS && r.input_count < full_input_length) {
                         // First check if we can extend the input to the end of the stream
                         while (r.input_count < full_input_length && base64_ignorable(*(input + r.input_count), options)) {
                             r.input_count++;
@@ -721,12 +721,12 @@ namespace turbo {
                 }
 
                 template <typename char_type>
-                 simdutf_warn_unused full_result
+                  [[nodiscard]] full_result
                 base64_to_binary_details_safe_impl(
                     const char_type* input, size_t length, char* output, size_t outlen,
-                    base64_options options,
+                    Base64Options options,
                     last_chunk_handling_options last_chunk_options) noexcept {
-                    const bool ignore_garbage = (options == base64_options::base64_url_accept_garbage) || (options == base64_options::base64_default_accept_garbage) || (options == base64_options::base64_default_or_url_accept_garbage);
+                    const bool ignore_garbage = (options == Base64Options::base64_url_accept_garbage) || (options == Base64Options::base64_default_accept_garbage) || (options == Base64Options::base64_default_or_url_accept_garbage);
                     auto ri = turbo::scalar::base64::find_end(input, length, options);
                     size_t equallocation = ri.equallocation;
                     size_t equalsigns = ri.equalsigns;
@@ -742,7 +742,7 @@ namespace turbo {
                         output, outlen, input, length, equalsigns, options, last_chunk_options);
                     r = scalar::base64::patch_tail_result(r, 0, 0, equallocation,
                         full_input_length, last_chunk_options);
-                    if (!is_partial(last_chunk_options) && r.error == error_code::SUCCESS && equalsigns > 0 && !ignore_garbage) {
+                    if (!is_partial(last_chunk_options) && r.error == UnicodeError::SUCCESS && equalsigns > 0 && !ignore_garbage) {
                         // additional checks
                         if ((r.output_count % 3 == 0) || ((r.output_count % 3) + 1 + equalsigns != 4)) {
                             return { INVALID_BASE64_CHARACTER, equallocation, r.output_count };
@@ -753,7 +753,7 @@ namespace turbo {
                     // the end of the stream (beyond whitespace) or right after a non-ignorable
                     // character or at the very beginning of the stream.
                     // See https://tc39.es/proposal-arraybuffer-base64/spec/#sec-frombase64
-                    if (is_partial(last_chunk_options) && r.error == error_code::SUCCESS && r.input_count < full_input_length) {
+                    if (is_partial(last_chunk_options) && r.error == UnicodeError::SUCCESS && r.input_count < full_input_length) {
                         // First check if we can extend the input to the end of the stream
                         while (r.input_count < full_input_length && base64_ignorable(*(input + r.input_count), options)) {
                             r.input_count++;
@@ -769,8 +769,8 @@ namespace turbo {
                     return r;
                 }
 
-                simdutf_warn_unused  size_t
-                base64_length_from_binary(size_t length, base64_options options) noexcept {
+                 [[nodiscard]]  size_t
+                base64_length_from_binary(size_t length, Base64Options options) noexcept {
                     // By default, we use padding if we are not using the URL variant.
                     // This is check with ((options & base64_url) == 0) which returns true if we
                     // are not using the URL variant. However, we also allow 'inversion' of the
@@ -786,8 +786,8 @@ namespace turbo {
                     return (length + 2) / 3 * 4; // We use padding to make the length a multiple of 4.
                 }
 
-                simdutf_warn_unused  size_t
-                base64_length_from_binary_with_lines(size_t length, base64_options options,
+                 [[nodiscard]]  size_t
+                base64_length_from_binary_with_lines(size_t length, Base64Options options,
                     size_t line_length) noexcept {
                     if (length == 0) {
                         return 0;
@@ -806,8 +806,8 @@ namespace turbo {
                 // The function returns (size_t)-1 if there is not enough base64 characters in
                 // the input.
                 template <typename char_type>
-                simdutf_warn_unused size_t prefix_length(size_t count,
-                    turbo::base64_options options,
+                 [[nodiscard]] size_t prefix_length(size_t count,
+                    turbo::Base64Options options,
                     const char_type* input,
                     size_t length) noexcept {
                     size_t i = 0;

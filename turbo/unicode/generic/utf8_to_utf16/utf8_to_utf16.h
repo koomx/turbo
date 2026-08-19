@@ -4,7 +4,7 @@ namespace turbo {
             namespace utf8_to_utf16 {
                 using namespace simd;
 
-                simdutf_really_inline simd8<uint8_t>
+                KUMO_FORCE_INLINE simd8<uint8_t>
                 check_special_cases(const simd8<uint8_t> input, const simd8<uint8_t> prev1) {
                     // Bit 0 = Too Short (lead byte/ASCII followed by lead byte/ASCII)
                     // Bit 1 = Too Long (ASCII followed by continuation)
@@ -92,7 +92,7 @@ namespace turbo {
                         TOO_SHORT, TOO_SHORT, TOO_SHORT, TOO_SHORT);
                     return (byte_1_high & byte_1_low & byte_2_high);
                 }
-                simdutf_really_inline simd8<uint8_t>
+                KUMO_FORCE_INLINE simd8<uint8_t>
                 check_multibyte_lengths(const simd8<uint8_t> input,
                     const simd8<uint8_t> prev_input,
                     const simd8<uint8_t> sc) {
@@ -112,7 +112,7 @@ namespace turbo {
                     //
                     // Check whether the current bytes are valid UTF-8.
                     //
-                    simdutf_really_inline void check_utf8_bytes(const simd8<uint8_t> input,
+                    KUMO_FORCE_INLINE void check_utf8_bytes(const simd8<uint8_t> input,
                         const simd8<uint8_t> prev_input) {
                         // Flip prev1...prev3 so we can easily determine if they are 2+, 3+ or 4+
                         // lead bytes (2, 3, 4-byte leads become large positive numbers instead of
@@ -123,7 +123,7 @@ namespace turbo {
                     }
 
                     template <endianness endian>
-                    simdutf_really_inline size_t convert(const char* in, size_t size,
+                    KUMO_FORCE_INLINE size_t convert(const char* in, size_t size,
                         char16_t* utf16_output) {
                         size_t pos = 0;
                         char16_t* start { utf16_output };
@@ -210,7 +210,7 @@ namespace turbo {
                     }
 
                     template <endianness endian>
-                    simdutf_really_inline result convert_with_errors(const char* in, size_t size,
+                    KUMO_FORCE_INLINE UnicodeResult convert_with_errors(const char* in, size_t size,
                         char16_t* utf16_output) {
                         size_t pos = 0;
                         char16_t* start { utf16_output };
@@ -255,7 +255,7 @@ namespace turbo {
                                     // rewind_and_convert_with_errors will seek a potential error from
                                     // in+pos onward, with the ability to go back up to pos bytes, and
                                     // read size-pos bytes forward.
-                                    result res = scalar::utf8_to_utf16::rewind_and_convert_with_errors<endian>(
+                                    UnicodeResult res = scalar::utf8_to_utf16::rewind_and_convert_with_errors<endian>(
                                         pos, in + pos, size - pos, utf16_output);
                                     res.count += pos;
                                     return res;
@@ -292,7 +292,7 @@ namespace turbo {
                             // rewind_and_convert_with_errors will seek a potential error from in+pos
                             // onward, with the ability to go back up to pos bytes, and read size-pos
                             // bytes forward.
-                            result res = scalar::utf8_to_utf16::rewind_and_convert_with_errors<endian>(
+                            UnicodeResult res = scalar::utf8_to_utf16::rewind_and_convert_with_errors<endian>(
                                 pos, in + pos, size - pos, utf16_output);
                             res.count += pos;
                             return res;
@@ -301,7 +301,7 @@ namespace turbo {
                             // rewind_and_convert_with_errors will seek a potential error from in+pos
                             // onward, with the ability to go back up to pos bytes, and read size-pos
                             // bytes forward.
-                            result res = scalar::utf8_to_utf16::rewind_and_convert_with_errors<endian>(
+                            UnicodeResult res = scalar::utf8_to_utf16::rewind_and_convert_with_errors<endian>(
                                 pos, in + pos, size - pos, utf16_output);
                             if (res.error) { // In case of error, we want the error position
                                 res.count += pos;
@@ -310,10 +310,10 @@ namespace turbo {
                                 utf16_output += res.count;
                             }
                         }
-                        return result(error_code::SUCCESS, utf16_output - start);
+                        return UnicodeResult(UnicodeError::SUCCESS, utf16_output - start);
                     }
 
-                    simdutf_really_inline bool errors() const {
+                    KUMO_FORCE_INLINE bool errors() const {
                         return this->error.any_bits_set_anywhere();
                     }
 

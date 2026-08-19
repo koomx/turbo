@@ -3,7 +3,7 @@ namespace turbo {
         namespace {
             namespace base64_lengths {
 
-                simdutf_warn_unused size_t binary_length_from_base64(const char* input,
+                 [[nodiscard]] size_t binary_length_from_base64(const char* input,
                     size_t length) {
                     size_t pos = 0;
                     size_t count = 0;
@@ -30,7 +30,7 @@ namespace turbo {
                     return ((count - padding) * 3) / 4;
                 }
 
-                simdutf_warn_unused size_t binary_length_from_base64(const char16_t* input,
+                 [[nodiscard]] size_t binary_length_from_base64(const char16_t* input,
                     size_t length) {
                     size_t pos = 0;
                     size_t count = 0;

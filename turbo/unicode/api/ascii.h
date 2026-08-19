@@ -16,7 +16,7 @@
 #pragma once
 
 #include <turbo/unicode/engine/common_defs.h>
-#include <turbo/unicode/engine/compiler_check.h>
+
 #include <turbo/unicode/text_encoding.h>
 #include <turbo/unicode/error.h>
 
@@ -29,7 +29,7 @@ namespace turbo {
     /// @param buf the ASCII string to validate.
     /// @param len the length of the string in bytes.
     /// @return true if and only if the string is valid ASCII.
-    simdutf_warn_unused bool validate_ascii(const char* buf, size_t len) noexcept;
+     [[nodiscard]] bool validate_ascii(const char* buf, size_t len) noexcept;
 
     /// Validate the ASCII string and stop on error. It might be faster than
     /// validate_utf8 when an error is expected to occur early.
@@ -38,11 +38,11 @@ namespace turbo {
     ///
     /// @param buf the ASCII string to validate.
     /// @param len the length of the string in bytes.
-    /// @return a result pair struct (of type turbo::result containing the two
+    /// @return a UnicodeResult pair struct (of type turbo::UnicodeResult containing the two
     /// fields error and count) with an error code and either position of the error
     /// (in the input in code units) if any, or the number of code units validated if
     /// successful.
-    simdutf_warn_unused result validate_ascii_with_errors(const char* buf,
+     [[nodiscard]] UnicodeResult validate_ascii_with_errors(const char* buf,
         size_t len) noexcept;
 
 }  // namespace turbo

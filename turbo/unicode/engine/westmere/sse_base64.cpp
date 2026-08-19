@@ -38,7 +38,7 @@ __m128i lookup_pshufb_improved(const __m128i input) {
     //         0 .. 25 -> remains 0
     //        26 .. 51 -> becomes 13
     const __m128i less = _mm_cmpgt_epi8(_mm_set1_epi8(26), input);
-    result = _mm_or_si128(result, _mm_and_si128(less, _mm_set1_epi8(13)));
+    result = _mm_or_si128(UnicodeResult, _mm_and_si128(less, _mm_set1_epi8(13)));
 
     __m128i shift_LUT;
     if (base64_url) {
@@ -54,7 +54,7 @@ __m128i lookup_pshufb_improved(const __m128i input) {
     // read shift
     result = _mm_shuffle_epi8(shift_LUT, result);
 
-    return _mm_add_epi8(result, input);
+    return _mm_add_epi8(UnicodeResult, input);
 }
 
 inline __m128i insert_line_feed16(__m128i input, size_t K) {
@@ -88,7 +88,7 @@ inline __m128i insert_line_feed16(__m128i input, size_t K) {
 }
 template <bool isbase64url, bool use_lines>
 size_t encode_base64_impl(char* dst, const char* src, size_t srclen,
-    base64_options options,
+    Base64Options options,
     size_t line_length = turbo::default_line_length) {
     size_t offset = 0;
     if (line_length < 4) {
@@ -316,13 +316,13 @@ size_t encode_base64_impl(char* dst, const char* src, size_t srclen,
 
 template <bool isbase64url>
 size_t encode_base64(char* dst, const char* src, size_t srclen,
-    base64_options options) {
+    Base64Options options) {
     return encode_base64_impl<isbase64url, false>(dst, src, srclen, options);
 }
 
 // --- decoding -----------------------------------------------
 
-static simdutf_really_inline void compress(__m128i data, uint16_t mask,
+static KUMO_FORCE_INLINE void compress(__m128i data, uint16_t mask,
     char* output) {
     if (mask == 0) {
         _mm_storeu_si128(reinterpret_cast<__m128i*>(output), data);
@@ -356,7 +356,7 @@ static simdutf_really_inline void compress(__m128i data, uint16_t mask,
     _mm_storeu_si128(reinterpret_cast<__m128i*>(output), answer);
 }
 
-static simdutf_really_inline void base64_decode(char* out, __m128i str) {
+static KUMO_FORCE_INLINE void base64_decode(char* out, __m128i str) {
     // credit: aqrit
 
     const __m128i pack_shuffle = _mm_setr_epi8(2, 1, 0, 6, 5, 4, 10, 9, 8, 14, 13, 12, -1, -1, -1, -1);
@@ -400,7 +400,7 @@ class block64 {
 public:
     // The caller of this function is responsible to ensure that there are 64
     // bytes available from reading at src.
-    simdutf_really_inline block64(const char* src) {
+    KUMO_FORCE_INLINE block64(const char* src) {
         chunks[0] = _mm_loadu_si128(reinterpret_cast<const __m128i*>(src));
         chunks[1] = _mm_loadu_si128(reinterpret_cast<const __m128i*>(src + 16));
         chunks[2] = _mm_loadu_si128(reinterpret_cast<const __m128i*>(src + 32));
@@ -411,7 +411,7 @@ public:
     // The caller of this function is responsible to ensure that there are 128
     // bytes available from reading at src. The data is read into a block64
     // structure.
-    simdutf_really_inline block64(const char16_t* src) {
+    KUMO_FORCE_INLINE block64(const char16_t* src) {
         const auto m1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(src));
         const auto m2 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(src + 8));
         const auto m3 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(src + 16));
@@ -427,7 +427,7 @@ public:
     }
 
 public:
-    simdutf_really_inline void copy_block(char* output) {
+    KUMO_FORCE_INLINE void copy_block(char* output) {
         _mm_storeu_si128(reinterpret_cast<__m128i*>(output), chunks[0]);
         _mm_storeu_si128(reinterpret_cast<__m128i*>(output + 16), chunks[1]);
         _mm_storeu_si128(reinterpret_cast<__m128i*>(output + 32), chunks[2]);
@@ -435,7 +435,7 @@ public:
     }
 
 public:
-    simdutf_really_inline uint64_t compress_block(uint64_t mask, char* output) {
+    KUMO_FORCE_INLINE uint64_t compress_block(uint64_t mask, char* output) {
         if (is_power_of_two(mask)) {
             return compress_block_single(mask, output);
         }
@@ -452,7 +452,7 @@ public:
     }
 
 private:
-    simdutf_really_inline size_t compress_block_single(uint64_t mask,
+    KUMO_FORCE_INLINE size_t compress_block_single(uint64_t mask,
         char* output) {
         const size_t pos64 = trailing_zeroes(mask);
         const int8_t pos = pos64 & 0xf;
@@ -515,7 +515,7 @@ private:
 
 public:
     template <bool base64_url, bool ignore_garbage, bool default_or_url>
-    simdutf_really_inline uint64_t to_base64_mask(uint64_t* error) {
+    KUMO_FORCE_INLINE uint64_t to_base64_mask(uint64_t* error) {
         uint32_t err0 = 0;
         uint32_t err1 = 0;
         uint32_t err2 = 0;
@@ -536,7 +536,7 @@ public:
 
 private:
     template <bool base64_url, bool ignore_garbage, bool default_or_url>
-    simdutf_really_inline uint16_t to_base64_mask(__m128i* src, uint32_t* error) {
+    KUMO_FORCE_INLINE uint16_t to_base64_mask(__m128i* src, uint32_t* error) {
         const __m128i ascii_space_tbl = _mm_setr_epi8(0x20, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x9, 0xa,
             0x0, 0xc, 0xd, 0x0, 0x0);
         // credit: aqrit
@@ -620,7 +620,7 @@ private:
     }
 
 public:
-    simdutf_really_inline void base64_decode_block(char* out) {
+    KUMO_FORCE_INLINE void base64_decode_block(char* out) {
         base64_decode(out, chunks[0]);
         base64_decode(out + 12, chunks[1]);
         base64_decode(out + 24, chunks[2]);
@@ -628,7 +628,7 @@ public:
     }
 
 public:
-    simdutf_really_inline void base64_decode_block_safe(char* out) {
+    KUMO_FORCE_INLINE void base64_decode_block_safe(char* out) {
         base64_decode(out, chunks[0]);
         base64_decode(out + 12, chunks[1]);
         base64_decode(out + 24, chunks[2]);

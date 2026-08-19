@@ -24,11 +24,11 @@ namespace turbo {
     }
 
 
-    simdutf_warn_unused encoding_type implementation::autodetect_encoding(
+     [[nodiscard]] TextEncoding implementation::autodetect_encoding(
         const char* input, size_t length) const noexcept {
         // If there is a BOM, then we trust it.
         auto bom_encoding = turbo::BOM::check_bom(input, length);
-        if (bom_encoding != encoding_type::unspecified) {
+        if (bom_encoding != TextEncoding::unspecified) {
             return bom_encoding;
         }
         // UTF8 is common, it includes ASCII, and is commonly represented
@@ -39,7 +39,7 @@ namespace turbo {
         // An interesting twist might be to check for UTF-16 ASCII first (every
         // other byte is zero).
         if (validate_utf8(input, length)) {
-            return encoding_type::UTF8;
+            return TextEncoding::UTF8;
         }
         // The next most common encoding that might appear without BOM is probably
         // UTF-16LE, so try that next.
@@ -47,15 +47,15 @@ namespace turbo {
             // important: we need to divide by two
             if (validate_utf16le(reinterpret_cast<const char16_t*>(input),
                     length / 2)) {
-                return encoding_type::UTF16_LE;
+                return TextEncoding::UTF16_LE;
                     }
         }
         if ((length % 4) == 0) {
             if (validate_utf32(reinterpret_cast<const char32_t*>(input), length / 4)) {
-                return encoding_type::UTF32_LE;
+                return TextEncoding::UTF32_LE;
             }
         }
-        return encoding_type::unspecified;
+        return TextEncoding::unspecified;
     }
 
 #ifdef SIMDUTF_INTERNAL_TESTS
@@ -66,28 +66,28 @@ namespace turbo {
 #endif
 
 
-    simdutf_warn_unused size_t implementation::maximal_binary_length_from_base64(
+     [[nodiscard]] size_t implementation::maximal_binary_length_from_base64(
         const char* input, size_t length) const noexcept {
         return scalar::base64::maximal_binary_length_from_base64(input, length);
     }
 
-    simdutf_warn_unused size_t implementation::maximal_binary_length_from_base64(
+     [[nodiscard]] size_t implementation::maximal_binary_length_from_base64(
         const char16_t* input, size_t length) const noexcept {
         return scalar::base64::maximal_binary_length_from_base64(input, length);
     }
 
-    simdutf_warn_unused size_t implementation::binary_length_from_base64(
+     [[nodiscard]] size_t implementation::binary_length_from_base64(
         const char* input, size_t length) const noexcept {
         return scalar::base64::binary_length_from_base64(input, length);
     }
 
-    simdutf_warn_unused size_t implementation::binary_length_from_base64(
+     [[nodiscard]] size_t implementation::binary_length_from_base64(
     const char16_t* input, size_t length) const noexcept {
         return scalar::base64::binary_length_from_base64(input, length);
     }
 
-    simdutf_warn_unused size_t implementation::base64_length_from_binary(
-    size_t length, base64_options options) const noexcept {
+     [[nodiscard]] size_t implementation::base64_length_from_binary(
+    size_t length, Base64Options options) const noexcept {
         return scalar::base64::base64_length_from_binary(length, options);
     }
 

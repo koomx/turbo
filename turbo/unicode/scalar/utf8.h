@@ -1,5 +1,19 @@
-#ifndef SIMDUTF_UTF8_H
-#define SIMDUTF_UTF8_H
+// Copyright (C) 2026 Kumo inc. and its affiliates. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+#pragma once
 
 #include <cstring>
 
@@ -10,11 +24,11 @@ namespace turbo {
 
                 // credit: based on code from Google Fuchsia (Apache Licensed)
                 template <class BytePtr>
-                 simdutf_warn_unused bool validate(BytePtr data,
+                  [[nodiscard]] bool validate(BytePtr data,
                     size_t len) noexcept {
                     static_assert(
                         std::is_same<typename std::decay<decltype(*data)>::type, uint8_t>::value,
-                        "dereferencing the data pointer must result in a uint8_t");
+                        "dereferencing the data pointer must UnicodeResult in a uint8_t");
                     uint64_t pos = 0;
                     uint32_t code_point = 0;
                     while (pos < len) {
@@ -101,17 +115,17 @@ namespace turbo {
                     return true;
                 }
 
-                simdutf_really_inline simdutf_warn_unused bool validate(const char* buf,
+                [[nodiscard]] KUMO_FORCE_INLINE bool validate(const char* buf,
                     size_t len) noexcept {
                     return validate(reinterpret_cast<const uint8_t*>(buf), len);
                 }
 
                 template <class BytePtr>
-                 simdutf_warn_unused result
+                  [[nodiscard]] UnicodeResult
                 validate_with_errors(BytePtr data, size_t len) noexcept {
                     static_assert(
                         std::is_same<typename std::decay<decltype(*data)>::type, uint8_t>::value,
-                        "dereferencing the data pointer must result in a uint8_t");
+                        "dereferencing the data pointer must UnicodeResult in a uint8_t");
                     size_t pos = 0;
                     uint32_t code_point = 0;
                     while (pos < len) {
@@ -132,7 +146,7 @@ namespace turbo {
 
                         while (byte < 0b10000000) {
                             if (++pos == len) {
-                                return result(error_code::SUCCESS, len);
+                                return UnicodeResult(UnicodeError::SUCCESS, len);
                             }
                             byte = data[pos];
                         }
@@ -140,71 +154,71 @@ namespace turbo {
                         if ((byte & 0b11100000) == 0b11000000) {
                             next_pos = pos + 2;
                             if (next_pos > len) {
-                                return result(error_code::TOO_SHORT, pos);
+                                return UnicodeResult(UnicodeError::TOO_SHORT, pos);
                             }
                             if ((data[pos + 1] & 0b11000000) != 0b10000000) {
-                                return result(error_code::TOO_SHORT, pos);
+                                return UnicodeResult(UnicodeError::TOO_SHORT, pos);
                             }
                             // range check
                             code_point = (byte & 0b00011111) << 6 | (data[pos + 1] & 0b00111111);
                             if (code_point < 0x80) {
-                                return result(error_code::OVERLONG, pos);
+                                return UnicodeResult(UnicodeError::OVERLONG, pos);
                             }
                         } else if ((byte & 0b11110000) == 0b11100000) {
                             next_pos = pos + 3;
                             if (next_pos > len) {
-                                return result(error_code::TOO_SHORT, pos);
+                                return UnicodeResult(UnicodeError::TOO_SHORT, pos);
                             }
                             if ((data[pos + 1] & 0b11000000) != 0b10000000) {
-                                return result(error_code::TOO_SHORT, pos);
+                                return UnicodeResult(UnicodeError::TOO_SHORT, pos);
                             }
                             if ((data[pos + 2] & 0b11000000) != 0b10000000) {
-                                return result(error_code::TOO_SHORT, pos);
+                                return UnicodeResult(UnicodeError::TOO_SHORT, pos);
                             }
                             // range check
                             code_point = (byte & 0b00001111) << 12 | (data[pos + 1] & 0b00111111) << 6 | (data[pos + 2] & 0b00111111);
                             if (code_point < 0x800) {
-                                return result(error_code::OVERLONG, pos);
+                                return UnicodeResult(UnicodeError::OVERLONG, pos);
                             }
                             if (0xd7ff < code_point && code_point < 0xe000) {
-                                return result(error_code::SURROGATE, pos);
+                                return UnicodeResult(UnicodeError::SURROGATE, pos);
                             }
                         } else if ((byte & 0b11111000) == 0b11110000) { // 0b11110000
                             next_pos = pos + 4;
                             if (next_pos > len) {
-                                return result(error_code::TOO_SHORT, pos);
+                                return UnicodeResult(UnicodeError::TOO_SHORT, pos);
                             }
                             if ((data[pos + 1] & 0b11000000) != 0b10000000) {
-                                return result(error_code::TOO_SHORT, pos);
+                                return UnicodeResult(UnicodeError::TOO_SHORT, pos);
                             }
                             if ((data[pos + 2] & 0b11000000) != 0b10000000) {
-                                return result(error_code::TOO_SHORT, pos);
+                                return UnicodeResult(UnicodeError::TOO_SHORT, pos);
                             }
                             if ((data[pos + 3] & 0b11000000) != 0b10000000) {
-                                return result(error_code::TOO_SHORT, pos);
+                                return UnicodeResult(UnicodeError::TOO_SHORT, pos);
                             }
                             // range check
                             code_point = (byte & 0b00000111) << 18 | (data[pos + 1] & 0b00111111) << 12 | (data[pos + 2] & 0b00111111) << 6 | (data[pos + 3] & 0b00111111);
                             if (code_point <= 0xffff) {
-                                return result(error_code::OVERLONG, pos);
+                                return UnicodeResult(UnicodeError::OVERLONG, pos);
                             }
                             if (0x10ffff < code_point) {
-                                return result(error_code::TOO_LARGE, pos);
+                                return UnicodeResult(UnicodeError::TOO_LARGE, pos);
                             }
                         } else {
                             // we either have too many continuation bytes or an invalid leading byte
                             if ((byte & 0b11000000) == 0b10000000) {
-                                return result(error_code::TOO_LONG, pos);
+                                return UnicodeResult(UnicodeError::TOO_LONG, pos);
                             } else {
-                                return result(error_code::HEADER_BITS, pos);
+                                return UnicodeResult(UnicodeError::HEADER_BITS, pos);
                             }
                         }
                         pos = next_pos;
                     }
-                    return result(error_code::SUCCESS, len);
+                    return UnicodeResult(UnicodeError::SUCCESS, len);
                 }
 
-                simdutf_really_inline simdutf_warn_unused result
+                [[nodiscard]] KUMO_FORCE_INLINE UnicodeResult
                 validate_with_errors(const char* buf, size_t len) noexcept {
                     return validate_with_errors(reinterpret_cast<const uint8_t*>(buf), len);
                 }
@@ -215,11 +229,11 @@ namespace turbo {
                 // to check that it is the case, we ask that you pass a pointer to the start of
                 // the stream (start). Note that the resulting count is underflowed if an error
                 // is encountered in the rewinded segment.
-                inline simdutf_warn_unused result rewind_and_validate_with_errors(
+                [[nodiscard]] inline UnicodeResult rewind_and_validate_with_errors(
                     const char* start, const char* buf, size_t len) noexcept {
                     // First check that we start with a leading byte
                     if ((*start & 0b11000000) == 0b10000000) {
-                        return result(error_code::TOO_LONG, 0);
+                        return UnicodeResult(UnicodeError::TOO_LONG, 0);
                     }
                     size_t extra_len { 0 };
                     // A leading byte cannot be further than 4 bytes away
@@ -233,15 +247,12 @@ namespace turbo {
                         }
                     }
 
-                    result res = validate_with_errors(buf, len + extra_len);
+                    UnicodeResult res = validate_with_errors(buf, len + extra_len);
                     res.count -= extra_len; // Might underflow
                     return res;
                 }
 
                 template <typename InputPtr>
-#if SIMDUTF_CPLUSPLUS20
-                    requires turbo::detail::indexes_into_byte_like<InputPtr>
-#endif
                  size_t count_code_points(InputPtr data, size_t len) {
                     size_t counter { 0 };
                     for (size_t i = 0; i < len; i++) {
@@ -255,9 +266,6 @@ namespace turbo {
                 }
 
                 template <typename InputPtr>
-#if SIMDUTF_CPLUSPLUS20
-                    requires turbo::detail::indexes_into_byte_like<InputPtr>
-#endif
                  size_t utf16_length_from_utf8(InputPtr data, size_t len) {
                     size_t counter { 0 };
                     for (size_t i = 0; i < len; i++) {
@@ -272,10 +280,7 @@ namespace turbo {
                 }
 
                 template <typename InputPtr>
-#if SIMDUTF_CPLUSPLUS20
-                    requires turbo::detail::indexes_into_byte_like<InputPtr>
-#endif
-                simdutf_warn_unused  size_t
+                 [[nodiscard]]  size_t
                 trim_partial_utf8(InputPtr input, size_t length) {
                     if (length < 3) {
                         switch (length) {
@@ -312,5 +317,3 @@ namespace turbo {
         } // unnamed namespace
     } // namespace scalar
 } // namespace turbo
-
-#endif

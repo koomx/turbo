@@ -26,7 +26,7 @@ TEST(utf16le_surrogate_pair) {
 
         ASSERT_EQUAL(want, got);
 
-        const turbo::result got_with_replacement = implementation.utf8_length_from_utf16le_with_replacement(
+        const turbo::UnicodeResult got_with_replacement = implementation.utf8_length_from_utf16le_with_replacement(
             reinterpret_cast<const char16_t*>(input.data()), input.size() / 2);
         ASSERT_EQUAL(want, got_with_replacement.count);
         ASSERT_EQUAL(turbo::SURROGATE, got_with_replacement.error);
@@ -51,7 +51,7 @@ TEST(utf16be_surrogate_pair) {
 
         ASSERT_EQUAL(want, got);
 
-        const turbo::result got_with_replacement = implementation.utf8_length_from_utf16be_with_replacement(
+        const turbo::UnicodeResult got_with_replacement = implementation.utf8_length_from_utf16be_with_replacement(
             reinterpret_cast<const char16_t*>(input.data()), input.size() / 2);
         ASSERT_EQUAL(want, got_with_replacement.count);
         ASSERT_EQUAL(turbo::SURROGATE, got_with_replacement.error);

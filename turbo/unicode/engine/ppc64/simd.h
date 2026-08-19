@@ -122,51 +122,51 @@ template <typename T> struct vector_u32_type_for_element_aux {
                 using vector_u32 = simd32<uint32_t>;
                 using vector_i8 = simd8<int8_t>;
 
-                simdutf_really_inline vector_u8 as_vector_u8(const vector_u16 v) {
+                KUMO_FORCE_INLINE vector_u8 as_vector_u8(const vector_u16 v) {
                     return vector_u8::vector_type(v.value);
                 }
 
-                simdutf_really_inline vector_u8 as_vector_u8(const vector_u32 v) {
+                KUMO_FORCE_INLINE vector_u8 as_vector_u8(const vector_u32 v) {
                     return vector_u8::vector_type(v.value);
                 }
 
-                simdutf_really_inline vector_u8 as_vector_u8(const vector_i8 v) {
+                KUMO_FORCE_INLINE vector_u8 as_vector_u8(const vector_i8 v) {
                     return vector_u8::vector_type(v.value);
                 }
 
-                simdutf_really_inline vector_u8 as_vector_u8(const simd16<bool> v) {
+                KUMO_FORCE_INLINE vector_u8 as_vector_u8(const simd16<bool> v) {
                     return vector_u8::vector_type(v.value);
                 }
 
-                simdutf_really_inline vector_i8 as_vector_i8(const vector_u8 v) {
+                KUMO_FORCE_INLINE vector_i8 as_vector_i8(const vector_u8 v) {
                     return vector_i8::vector_type(v.value);
                 }
 
-                simdutf_really_inline vector_u16 as_vector_u16(const vector_u8 v) {
+                KUMO_FORCE_INLINE vector_u16 as_vector_u16(const vector_u8 v) {
                     return vector_u16::vector_type(v.value);
                 }
 
-                simdutf_really_inline vector_u16 as_vector_u16(const simd16<bool> v) {
+                KUMO_FORCE_INLINE vector_u16 as_vector_u16(const simd16<bool> v) {
                     return vector_u16::vector_type(v.value);
                 }
 
-                simdutf_really_inline vector_u32 as_vector_u32(const vector_u8 v) {
+                KUMO_FORCE_INLINE vector_u32 as_vector_u32(const vector_u8 v) {
                     return vector_u32::vector_type(v.value);
                 }
 
-                simdutf_really_inline vector_u32 as_vector_u32(const vector_u16 v) {
+                KUMO_FORCE_INLINE vector_u32 as_vector_u32(const vector_u16 v) {
                     return vector_u32::vector_type(v.value);
                 }
 
-                simdutf_really_inline vector_u32 max(vector_u32 a, vector_u32 b) {
+                KUMO_FORCE_INLINE vector_u32 max(vector_u32 a, vector_u32 b) {
                     return vec_max(a.value, b.value);
                 }
 
-                simdutf_really_inline vector_u32 max(vector_u32 a, vector_u32 b, vector_u32 c) {
+                KUMO_FORCE_INLINE vector_u32 max(vector_u32 a, vector_u32 b, vector_u32 c) {
                     return max(max(a, b), c);
                 }
 
-                simdutf_really_inline vector_u32 sum4bytes(vector_u8 bytes, vector_u32 acc) {
+                KUMO_FORCE_INLINE vector_u32 sum4bytes(vector_u8 bytes, vector_u32 acc) {
                     return vec_sum4s(bytes.value, acc.value);
                 }
 

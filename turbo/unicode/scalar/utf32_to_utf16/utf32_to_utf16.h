@@ -42,7 +42,7 @@ namespace turbo {
                 }
 
                 template <endianness big_endian>
-                 result convert_with_errors(const char32_t* data, size_t len,
+                 UnicodeResult convert_with_errors(const char32_t* data, size_t len,
                     char16_t* utf16_output) {
                     size_t pos = 0;
                     char16_t* start { utf16_output };
@@ -50,7 +50,7 @@ namespace turbo {
                         uint32_t word = data[pos];
                         if ((word & 0xFFFF0000) == 0) {
                             if (word >= 0xD800 && word <= 0xDFFF) {
-                                return result(error_code::SURROGATE, pos);
+                                return UnicodeResult(UnicodeError::SURROGATE, pos);
                             }
                             // will not generate a surrogate pair
                             *utf16_output++ = !match_system(big_endian)
@@ -59,7 +59,7 @@ namespace turbo {
                         } else {
                             // will generate a surrogate pair
                             if (word > 0x10FFFF) {
-                                return result(error_code::TOO_LARGE, pos);
+                                return UnicodeResult(UnicodeError::TOO_LARGE, pos);
                             }
                             word -= 0x10000;
                             uint16_t high_surrogate = uint16_t(0xD800 + (word >> 10));
@@ -73,7 +73,7 @@ namespace turbo {
                         }
                         pos++;
                     }
-                    return result(error_code::SUCCESS, utf16_output - start);
+                    return UnicodeResult(UnicodeError::SUCCESS, utf16_output - start);
                 }
 
             } // namespace utf32_to_utf16

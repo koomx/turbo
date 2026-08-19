@@ -10,7 +10,7 @@ namespace turbo {
                     return a <= b ? a : b;
                 }
 
-                simdutf_really_inline size_t utf8_length_from_utf32(const char32_t* input,
+                KUMO_FORCE_INLINE size_t utf8_length_from_utf32(const char32_t* input,
                     size_t length) {
                     using vector_u32 = simd32<uint32_t>;
 

@@ -5,7 +5,7 @@ struct expansion_result_t {
 
 // This function is used to check for invalid UTF-32 characters
 // and surrogate pairs in the input
-simdutf_really_inline uint64_t invalid_utf32(const uint32x4x2_t in) {
+KUMO_FORCE_INLINE uint64_t invalid_utf32(const uint32x4x2_t in) {
     const auto standardmax = vdupq_n_u32(0x10ffff);
     const auto v_d800 = vdupq_n_u32(0xd800);
     const auto v_fffff800 = vdupq_n_u32(0xfffff800);
@@ -21,7 +21,7 @@ simdutf_really_inline uint64_t invalid_utf32(const uint32x4x2_t in) {
 }
 
 // This function is used to check for surrogate pairs in the input
-simdutf_really_inline uint64_t fast_invalid_utf32(const uint32x4x2_t in) {
+KUMO_FORCE_INLINE uint64_t fast_invalid_utf32(const uint32x4x2_t in) {
     const auto v_d800 = vdupq_n_u32(0xd800);
     const auto v_fffff800 = vdupq_n_u32(0xfffff800);
     const auto surrogate1 = vceqq_u32(vandq_u32(in.val[0], v_fffff800), v_d800);
@@ -32,7 +32,7 @@ simdutf_really_inline uint64_t fast_invalid_utf32(const uint32x4x2_t in) {
 }
 
 template <endianness byte_order>
-simdutf_really_inline expansion_result_t
+KUMO_FORCE_INLINE expansion_result_t
 neon_expand_surrogate(const uint32x4_t in) {
     const uint32x4_t v_ffff0000 = vdupq_n_u32(0xffff0000);
     const uint32x4_t non_surrogate_mask = vceqzq_u32(vandq_u32(in, v_ffff0000));
@@ -75,7 +75,7 @@ arm_convert_utf32_to_utf16(const char32_t* buf, size_t len,
 
         // Check if no bits set above 16th
         uint32_t max_val = vmaxvq_u32(vmaxq_u32(in.val[0], in.val[1]));
-        if (simdutf_likely(max_val <= 0xFFFF)) {
+        if (KUMO_LIKELY(max_val <= 0xFFFF)) {
             uint16x8_t utf16_packed = vuzp1q_u16(vreinterpretq_u16_u32(in.val[0]),
                 vreinterpretq_u16_u32(in.val[1]));
 
@@ -92,7 +92,7 @@ arm_convert_utf32_to_utf16(const char32_t* buf, size_t len,
             utf16_output += 8;
             buf += 8;
         } else {
-            if (simdutf_unlikely(fast_invalid_utf32(in) || max_val > 0x10ffff)) {
+            if (KUMO_UNLIKELY(fast_invalid_utf32(in) || max_val > 0x10ffff)) {
                 return std::make_pair(nullptr,
                     reinterpret_cast<char16_t*>(utf16_output));
             }
@@ -115,7 +115,7 @@ arm_convert_utf32_to_utf16(const char32_t* buf, size_t len,
 }
 
 template <endianness big_endian>
-std::pair<result, char16_t*>
+std::pair<UnicodeResult, char16_t*>
 arm_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
     char16_t* utf16_out) {
     uint16_t* utf16_output = reinterpret_cast<uint16_t*>(utf16_out);
@@ -129,7 +129,7 @@ arm_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
 
         // Check if no bits set above 16th
         uint32_t max_val = vmaxvq_u32(vmaxq_u32(in.val[0], in.val[1]));
-        if (simdutf_likely(max_val <= 0xFFFF)) {
+        if (KUMO_LIKELY(max_val <= 0xFFFF)) {
             uint16x8_t utf16_packed = vuzp1q_u16(vreinterpretq_u16_u32(in.val[0]),
                 vreinterpretq_u16_u32(in.val[1]));
 
@@ -137,7 +137,7 @@ arm_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
             const uint16x8_t v_f800 = vmovq_n_u16((uint16_t)0xf800);
             const uint16x8_t forbidden_bytemask = vceqq_u16(vandq_u16(utf16_packed, v_f800), v_d800);
             if (any_lane_set(forbidden_bytemask)) {
-                return std::make_pair(result(error_code::SURROGATE, buf - start),
+                return std::make_pair(UnicodeResult(UnicodeError::SURROGATE, buf - start),
                     reinterpret_cast<char16_t*>(utf16_output));
             }
 
@@ -150,7 +150,7 @@ arm_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
             buf += 8;
         } else {
             const uint64_t err = max_val <= 0x10ffff ? fast_invalid_utf32(in) : invalid_utf32(in);
-            if (simdutf_unlikely(err)) {
+            if (KUMO_UNLIKELY(err)) {
                 const size_t pos = trailing_zeroes(err) / 8;
                 for (size_t k = 0; k < pos; k++) {
                     uint32_t word = buf[k];
@@ -175,14 +175,14 @@ arm_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
                 const uint32_t word = buf[pos];
                 const size_t error_pos = buf - start + pos;
                 if (word > 0x10FFFF) {
-                    return { result(error_code::TOO_LARGE, error_pos),
+                    return { UnicodeResult(UnicodeError::TOO_LARGE, error_pos),
                         reinterpret_cast<char16_t*>(utf16_output) };
                 }
                 if (word >= 0xD800 && word <= 0xDFFF) {
-                    return { result(error_code::SURROGATE, error_pos),
+                    return { UnicodeResult(UnicodeError::SURROGATE, error_pos),
                         reinterpret_cast<char16_t*>(utf16_output) };
                 }
-                return { result(error_code::OTHER, error_pos),
+                return { UnicodeResult(UnicodeError::OTHER, error_pos),
                     reinterpret_cast<char16_t*>(utf16_output) };
             }
             expansion_result_t res = neon_expand_surrogate<big_endian>(in.val[0]);
@@ -195,6 +195,6 @@ arm_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
         }
     }
 
-    return std::make_pair(result(error_code::SUCCESS, buf - start),
+    return std::make_pair(UnicodeResult(UnicodeError::SUCCESS, buf - start),
         reinterpret_cast<char16_t*>(utf16_output));
 }

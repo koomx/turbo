@@ -44,10 +44,10 @@ const result lasx_validate_utf32le_with_errors(const char32_t* input,
     while (((uint64_t)input & 0x1F) && input < end) {
         uint32_t word = *input;
         if (word > 0x10FFFF) {
-            return result(error_code::TOO_LARGE, input - start);
+            return UnicodeResult(UnicodeError::TOO_LARGE, input - start);
         }
         if (word >= 0xD800 && word <= 0xDFFF) {
-            return result(error_code::SURROGATE, input - start);
+            return UnicodeResult(UnicodeError::SURROGATE, input - start);
         }
         input++;
     }
@@ -65,15 +65,15 @@ const result lasx_validate_utf32le_with_errors(const char32_t* input,
 
         __m256i is_zero = __lasx_xvxor_v(__lasx_xvmax_wu(currentmax, standardmax), standardmax);
         if (__lasx_xbnz_v(is_zero)) {
-            return result(error_code::TOO_LARGE, input - start);
+            return UnicodeResult(UnicodeError::TOO_LARGE, input - start);
         }
         is_zero = __lasx_xvxor_v(__lasx_xvmax_wu(currentoffsetmax, standardoffsetmax),
             standardoffsetmax);
         if (__lasx_xbnz_v(is_zero)) {
-            return result(error_code::SURROGATE, input - start);
+            return UnicodeResult(UnicodeError::SURROGATE, input - start);
         }
         input += 8;
     }
 
-    return result(error_code::SUCCESS, input - start);
+    return UnicodeResult(UnicodeError::SUCCESS, input - start);
 }

@@ -308,7 +308,7 @@ sse_convert_utf32_to_utf8(const char32_t* buf, size_t len, char* utf8_output) {
     return std::make_pair(buf, utf8_output);
 }
 
-std::pair<result, char*>
+std::pair<UnicodeResult, char*>
 sse_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
     char* utf8_output) {
     const char32_t* end = buf + len;
@@ -334,7 +334,7 @@ sse_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
         if (static_cast<uint16_t>(_mm_movemask_epi8(
                 _mm_cmpeq_epi32(max_input, v_10ffff)))
             != 0xffff) {
-            return std::make_pair(result(error_code::TOO_LARGE, buf - start),
+            return std::make_pair(UnicodeResult(UnicodeError::TOO_LARGE, buf - start),
                 utf8_output);
         }
 
@@ -421,7 +421,7 @@ sse_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
             const __m128i v_d800 = _mm_set1_epi16((uint16_t)0xd800);
             const __m128i forbidden_bytemask = _mm_cmpeq_epi16(_mm_and_si128(in_16, v_f800), v_d800);
             if (static_cast<uint32_t>(_mm_movemask_epi8(forbidden_bytemask)) != 0) {
-                return std::make_pair(result(error_code::SURROGATE, buf - start),
+                return std::make_pair(UnicodeResult(UnicodeError::SURROGATE, buf - start),
                     utf8_output);
             }
 
@@ -531,7 +531,7 @@ sse_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
                 } else if ((word & 0xFFFF0000) == 0) {
                     if (word >= 0xD800 && word <= 0xDFFF) {
                         return std::make_pair(
-                            result(error_code::SURROGATE, buf - start + k), utf8_output);
+                            UnicodeResult(UnicodeError::SURROGATE, buf - start + k), utf8_output);
                     }
                     *utf8_output++ = char((word >> 12) | 0b11100000);
                     *utf8_output++ = char(((word >> 6) & 0b111111) | 0b10000000);
@@ -539,7 +539,7 @@ sse_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
                 } else {
                     if (word > 0x10FFFF) {
                         return std::make_pair(
-                            result(error_code::TOO_LARGE, buf - start + k), utf8_output);
+                            UnicodeResult(UnicodeError::TOO_LARGE, buf - start + k), utf8_output);
                     }
                     *utf8_output++ = char((word >> 18) | 0b11110000);
                     *utf8_output++ = char(((word >> 12) & 0b111111) | 0b10000000);
@@ -550,5 +550,5 @@ sse_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
             buf += k;
         }
     } // while
-    return std::make_pair(result(error_code::SUCCESS, buf - start), utf8_output);
+    return std::make_pair(UnicodeResult(UnicodeError::SUCCESS, buf - start), utf8_output);
 }

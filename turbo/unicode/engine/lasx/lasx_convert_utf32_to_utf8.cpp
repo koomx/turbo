@@ -267,7 +267,7 @@ lasx_convert_utf32_to_utf8(const char32_t* buf, size_t len, char* utf8_out) {
     return std::make_pair(buf, reinterpret_cast<char*>(utf8_output));
 }
 
-std::pair<result, char*>
+std::pair<UnicodeResult, char*>
 lasx_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
     char* utf8_out) {
     uint8_t* utf8_output = reinterpret_cast<uint8_t*>(utf8_out);
@@ -284,7 +284,7 @@ lasx_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
             *utf8_output++ = char((word & 0b111111) | 0b10000000);
         } else if ((word & 0xFFFF0000) == 0) {
             if (word >= 0xD800 && word <= 0xDFFF) {
-                return std::make_pair(result(error_code::SURROGATE, buf - start),
+                return std::make_pair(UnicodeResult(UnicodeError::SURROGATE, buf - start),
                     reinterpret_cast<char*>(utf8_output));
             }
             *utf8_output++ = char((word >> 12) | 0b11100000);
@@ -292,7 +292,7 @@ lasx_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
             *utf8_output++ = char((word & 0b111111) | 0b10000000);
         } else {
             if (word > 0x10FFFF) {
-                return std::make_pair(result(error_code::TOO_LARGE, buf - start),
+                return std::make_pair(UnicodeResult(UnicodeError::TOO_LARGE, buf - start),
                     reinterpret_cast<char*>(utf8_output));
             }
             *utf8_output++ = char((word >> 18) | 0b11110000);
@@ -388,7 +388,7 @@ lasx_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
                         __lasx_xvsle_h(v_d800, utf16_packed)), // utf16_packed >= 0xd800
                     forbidden_bytemask);
                 if (__lasx_xbnz_v(forbidden_bytemask)) {
-                    return std::make_pair(result(error_code::SURROGATE, buf - start),
+                    return std::make_pair(UnicodeResult(UnicodeError::SURROGATE, buf - start),
                         reinterpret_cast<char*>(utf8_output));
                 }
                 /* In this branch we handle three cases:
@@ -516,7 +516,7 @@ lasx_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
                 } else if ((word & 0xFFFF0000) == 0) {
                     if (word >= 0xD800 && word <= 0xDFFF) {
                         return std::make_pair(
-                            result(error_code::SURROGATE, buf - start + k),
+                            UnicodeResult(UnicodeError::SURROGATE, buf - start + k),
                             reinterpret_cast<char*>(utf8_output));
                     }
                     *utf8_output++ = char((word >> 12) | 0b11100000);
@@ -525,7 +525,7 @@ lasx_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
                 } else {
                     if (word > 0x10FFFF) {
                         return std::make_pair(
-                            result(error_code::TOO_LARGE, buf - start + k),
+                            UnicodeResult(UnicodeError::TOO_LARGE, buf - start + k),
                             reinterpret_cast<char*>(utf8_output));
                     }
                     *utf8_output++ = char((word >> 18) | 0b11110000);
@@ -538,6 +538,6 @@ lasx_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
         }
     } // while
 
-    return std::make_pair(result(error_code::SUCCESS, buf - start),
+    return std::make_pair(UnicodeResult(UnicodeError::SUCCESS, buf - start),
         reinterpret_cast<char*>(utf8_output));
 }

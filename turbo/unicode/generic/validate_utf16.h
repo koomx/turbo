@@ -46,9 +46,9 @@ namespace turbo {
                    code units and recheck this word in the next iteration
                 */
                 template <endianness big_endian>
-                const result validate_utf16_with_errors(const char16_t* input, size_t size) {
-                    if (simdutf_unlikely(size == 0)) {
-                        return result(error_code::SUCCESS, 0);
+                const UnicodeResult validate_utf16_with_errors(const char16_t* input, size_t size) {
+                    if (KUMO_UNLIKELY(size == 0)) {
+                        return UnicodeResult(UnicodeError::SUCCESS, 0);
                     }
 
                     const char16_t* start = input;
@@ -115,19 +115,19 @@ namespace turbo {
                                 // one, 2) reject sole high surrogate.
                                 input += 15;
                             } else {
-                                return result(error_code::SURROGATE, input - start);
+                                return UnicodeResult(UnicodeError::SURROGATE, input - start);
                             }
                         }
                     }
 
-                    return result(error_code::SUCCESS, input - start);
+                    return UnicodeResult(UnicodeError::SUCCESS, input - start);
                 }
 
                 template <endianness big_endian>
-                const result validate_utf16_as_ascii_with_errors(const char16_t* input,
+                const UnicodeResult validate_utf16_as_ascii_with_errors(const char16_t* input,
                     size_t size) {
-                    if (simdutf_unlikely(size == 0)) {
-                        return result(error_code::SUCCESS, 0);
+                    if (KUMO_UNLIKELY(size == 0)) {
+                        return UnicodeResult(UnicodeError::SUCCESS, 0);
                     }
                     size_t pos = 0;
                     for (; pos < size / 32 * 32; pos += 32) {
@@ -140,7 +140,7 @@ namespace turbo {
                         if (~matches) {
                             // Found a match, return the first one
                             int index = trailing_zeroes(~matches) / 2;
-                            return result(error_code::TOO_LARGE, pos + index);
+                            return UnicodeResult(UnicodeError::TOO_LARGE, pos + index);
                         }
                     }
 
@@ -149,11 +149,11 @@ namespace turbo {
 
                         char16_t v = scalar::utf16::swap_if_needed<big_endian>(input[pos]);
                         if (v > 0x7F) {
-                            return result(error_code::TOO_LARGE, pos);
+                            return UnicodeResult(UnicodeError::TOO_LARGE, pos);
                         }
                         pos++;
                     }
-                    return result(error_code::SUCCESS, size);
+                    return UnicodeResult(UnicodeError::SUCCESS, size);
                 }
 
             } // namespace utf16

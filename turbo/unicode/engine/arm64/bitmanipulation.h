@@ -6,7 +6,7 @@ namespace turbo {
         namespace {
 
             /* result might be undefined when input_num is zero */
-            simdutf_really_inline int count_ones(uint64_t input_num) {
+            KUMO_FORCE_INLINE int count_ones(uint64_t input_num) {
 #ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
                 return vaddv_u8(vcnt_u8(vcreate_u8(input_num)));
 #else
@@ -18,7 +18,7 @@ namespace turbo {
             }
 
 #if SIMDUTF_NEED_TRAILING_ZEROES
-            simdutf_really_inline int trailing_zeroes(uint64_t input_num) {
+            KUMO_FORCE_INLINE int trailing_zeroes(uint64_t input_num) {
 #ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
                 unsigned long ret;
                 // Search the mask data from least significant bit (LSB)

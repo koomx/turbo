@@ -22,12 +22,12 @@ namespace turbo {
 
     constexpr size_t default_line_length = 76; ///< default line length for base64 encoding with lines
 
-    // base64_options are used to specify the base64 encoding options.
+    // Base64Options are used to specify the base64 encoding options.
     // ASCII spaces are ' ', '\t', '\n', '\r', '\f'
     // garbage characters are characters that are not part of the base64 alphabet
     // nor ASCII spaces.
     constexpr uint64_t base64_reverse_padding = 2; /* modifier for base64_default and base64_url */
-    enum base64_options : uint64_t {
+    enum Base64Options : uint64_t {
         base64_default = 0, /* standard base64 format (with padding) */
         base64_url = 1, /* base64url format (no padding) */
         base64_default_no_padding = base64_default | base64_reverse_padding, /* standard base64 format without padding */

@@ -4,7 +4,7 @@ namespace turbo {
             namespace utf8_to_latin1 {
                 using namespace simd;
 
-                simdutf_really_inline size_t convert_valid(const char* in, size_t size,
+                KUMO_FORCE_INLINE size_t convert_valid(const char* in, size_t size,
                     char* latin1_output) {
                     size_t pos = 0;
                     char* start { latin1_output };

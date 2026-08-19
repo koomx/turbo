@@ -75,7 +75,7 @@ vector_u8 encoding_translate_6bit_values(const vector_u8 input) {
    each byte stores 6 bits of data
 */
 template <typename = void>
-simdutf_really_inline vector_u8 encoding_expand_6bit_fields(vector_u8 input) {
+KUMO_FORCE_INLINE vector_u8 encoding_expand_6bit_fields(vector_u8 input) {
 #if SIMDUTF_IS_BIG_ENDIAN
 #define indices4(dx) (dx + 0), (dx + 1), (dx + 1), (dx + 2)
     const auto expand_3_to_4 = vector_u8(indices4(0 * 3), indices4(1 * 3),
@@ -133,7 +133,7 @@ simdutf_really_inline vector_u8 encoding_expand_6bit_fields(vector_u8 input) {
 
 template <bool isbase64url>
 size_t encode_base64(char* dst, const char* src, size_t srclen,
-    base64_options options) {
+    Base64Options options) {
 
     const uint8_t* input = (const uint8_t*)src;
 
@@ -182,7 +182,7 @@ size_t encode_base64(char* dst, const char* src, size_t srclen,
 
 // --- decoding -----------------------------------------------
 
-static simdutf_really_inline void compress(const vector_u8 data, uint16_t mask,
+static KUMO_FORCE_INLINE void compress(const vector_u8 data, uint16_t mask,
     char* output) {
     if (mask == 0) {
         data.store(output);
@@ -235,7 +235,7 @@ static simdutf_really_inline void compress(const vector_u8 data, uint16_t mask,
     answer.store(output);
 }
 
-static simdutf_really_inline vector_u8 decoding_pack(vector_u8 input) {
+static KUMO_FORCE_INLINE vector_u8 decoding_pack(vector_u8 input) {
 #if SIMDUTF_IS_BIG_ENDIAN
     // in   = [00aaaaaa|00bbbbbb|00cccccc|00dddddd]
     // want = [00000000|aaaaaabb|bbbbcccc|ccdddddd]
@@ -282,12 +282,12 @@ static simdutf_really_inline vector_u8 decoding_pack(vector_u8 input) {
     return t;
 #endif // SIMDUTF_IS_BIG_ENDIAN
 }
-static simdutf_really_inline void base64_decode(char* out, vector_u8 input) {
+static KUMO_FORCE_INLINE void base64_decode(char* out, vector_u8 input) {
     const auto expanded = decoding_pack(input);
     expanded.store(out);
 }
 
-static simdutf_really_inline void base64_decode_block(char* out,
+static KUMO_FORCE_INLINE void base64_decode_block(char* out,
     const char* src) {
     base64_decode(out + 12 * 0, vector_u8::load(src + 0 * 16));
     base64_decode(out + 12 * 1, vector_u8::load(src + 1 * 16));
@@ -295,7 +295,7 @@ static simdutf_really_inline void base64_decode_block(char* out,
     base64_decode(out + 12 * 3, vector_u8::load(src + 3 * 16));
 }
 
-static simdutf_really_inline void base64_decode_block_safe(char* out,
+static KUMO_FORCE_INLINE void base64_decode_block_safe(char* out,
     const char* src) {
     base64_decode(out + 12 * 0, vector_u8::load(src + 0 * 16));
     base64_decode(out + 12 * 1, vector_u8::load(src + 1 * 16));
@@ -312,16 +312,16 @@ class block64 {
     simd8x64<uint8_t> b;
 
 public:
-    simdutf_really_inline block64(const char* src)
+    KUMO_FORCE_INLINE block64(const char* src)
         : b(load_block(src)) { }
-    simdutf_really_inline block64(const char16_t* src)
+    KUMO_FORCE_INLINE block64(const char16_t* src)
         : b(load_block(src)) { }
 
 private:
     // The caller of this function is responsible to ensure that there are 64
     // bytes available from reading at src. The data is read into a block64
     // structure.
-    static simdutf_really_inline simd8x64<uint8_t> load_block(const char* src) {
+    static KUMO_FORCE_INLINE simd8x64<uint8_t> load_block(const char* src) {
         const auto v0 = vector_u8::load(src + 16 * 0);
         const auto v1 = vector_u8::load(src + 16 * 1);
         const auto v2 = vector_u8::load(src + 16 * 2);
@@ -333,7 +333,7 @@ private:
     // The caller of this function is responsible to ensure that there are 128
     // bytes available from reading at src. The data is read into a block64
     // structure.
-    static simdutf_really_inline simd8x64<uint8_t>
+    static KUMO_FORCE_INLINE simd8x64<uint8_t>
     load_block(const char16_t* src) {
         const auto m1 = vector_u16::load(src + 8 * 0);
         const auto m2 = vector_u16::load(src + 8 * 1);
@@ -411,7 +411,7 @@ public:
     }
 
     template <bool base64_url, bool ignore_garbage, bool default_or_url>
-    simdutf_really_inline uint64_t to_base64_mask(uint64_t* error) {
+    KUMO_FORCE_INLINE uint64_t to_base64_mask(uint64_t* error) {
         uint16_t err0 = 0;
         uint16_t err1 = 0;
         uint16_t err2 = 0;
@@ -431,11 +431,11 @@ public:
         return m0 | (m1 << 16) | (m2 << 32) | (m3 << 48);
     }
 
-    simdutf_really_inline void copy_block(char* output) {
+    KUMO_FORCE_INLINE void copy_block(char* output) {
         b.store(reinterpret_cast<uint8_t*>(output));
     }
 
-    simdutf_really_inline uint64_t compress_block(uint64_t mask, char* output) {
+    KUMO_FORCE_INLINE uint64_t compress_block(uint64_t mask, char* output) {
         uint64_t nmask = ~mask;
         compress(b.chunks[0], uint16_t(mask), output);
         compress(b.chunks[1], uint16_t(mask >> 16),
@@ -447,14 +447,14 @@ public:
         return count_ones(nmask);
     }
 
-    simdutf_really_inline void base64_decode_block(char* out) {
+    KUMO_FORCE_INLINE void base64_decode_block(char* out) {
         base64_decode(out + 12 * 0, b.chunks[0]);
         base64_decode(out + 12 * 1, b.chunks[1]);
         base64_decode(out + 12 * 2, b.chunks[2]);
         base64_decode(out + 12 * 3, b.chunks[3]);
     }
 
-    simdutf_really_inline void base64_decode_block_safe(char* out) {
+    KUMO_FORCE_INLINE void base64_decode_block_safe(char* out) {
         base64_decode(out + 12 * 0, b.chunks[0]);
         base64_decode(out + 12 * 1, b.chunks[1]);
         base64_decode(out + 12 * 2, b.chunks[2]);

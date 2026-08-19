@@ -8,7 +8,7 @@ namespace turbo {
     namespace tests {
         namespace reference {
 
-            simdutf_warn_unused bool
+             [[nodiscard]] bool
             validate_utf16_to_latin1(turbo::endianness utf16_endianness,
                 const char16_t* buf, size_t len) noexcept {
                 const char16_t* curr = buf;

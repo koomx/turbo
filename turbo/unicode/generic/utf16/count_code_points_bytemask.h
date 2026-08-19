@@ -6,7 +6,7 @@ namespace turbo {
                 using namespace simd;
 
                 template <endianness big_endian>
-                simdutf_really_inline size_t count_code_points(const char16_t* in,
+                KUMO_FORCE_INLINE size_t count_code_points(const char16_t* in,
                     size_t size) {
                     using vector_u16 = simd16<uint16_t>;
                     constexpr size_t N = vector_u16::ELEMENTS;

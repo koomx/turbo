@@ -26,7 +26,7 @@ lasx_convert_utf16_to_latin1(const char16_t* buf, size_t len,
 }
 
 template <endianness big_endian>
-std::pair<result, char*>
+std::pair<UnicodeResult, char*>
 lasx_convert_utf16_to_latin1_with_errors(const char16_t* buf, size_t len,
     char* latin1_output) {
     const char16_t* start = buf;
@@ -53,12 +53,12 @@ lasx_convert_utf16_to_latin1_with_errors(const char16_t* buf, size_t len,
                 if (word <= 0xff) {
                     *latin1_output++ = char(word);
                 } else {
-                    return std::make_pair(result(error_code::TOO_LARGE, buf - start + k),
+                    return std::make_pair(UnicodeResult(UnicodeError::TOO_LARGE, buf - start + k),
                         latin1_output);
                 }
             }
         }
     } // while
-    return std::make_pair(result(error_code::SUCCESS, buf - start),
+    return std::make_pair(UnicodeResult(UnicodeError::SUCCESS, buf - start),
         latin1_output);
 }

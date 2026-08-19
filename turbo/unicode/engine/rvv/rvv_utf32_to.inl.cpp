@@ -1,11 +1,10 @@
-#if SIMDUTF_FEATURE_UTF32 && SIMDUTF_FEATURE_LATIN1
-simdutf_warn_unused size_t implementation::convert_utf32_to_latin1(
+ [[nodiscard]] size_t implementation::convert_utf32_to_latin1(
     const char32_t* src, size_t len, char* dst) const noexcept {
-    result res = convert_utf32_to_latin1_with_errors(src, len, dst);
-    return res.error == error_code::SUCCESS ? res.count : 0;
+    UnicodeResult res = convert_utf32_to_latin1_with_errors(src, len, dst);
+    return res.error == UnicodeError::SUCCESS ? res.count : 0;
 }
 
-simdutf_warn_unused result implementation::convert_utf32_to_latin1_with_errors(
+ [[nodiscard]] UnicodeResult implementation::convert_utf32_to_latin1_with_errors(
     const char32_t* src, size_t len, char* dst) const noexcept {
     const char32_t* const beg = src;
     for (size_t vl; len > 0; len -= vl, src += vl, dst += vl) {
@@ -13,7 +12,7 @@ simdutf_warn_unused result implementation::convert_utf32_to_latin1_with_errors(
         vuint32m8_t v = __riscv_vle32_v_u32m8((uint32_t*)src, vl);
         long idx = __riscv_vfirst_m_b4(__riscv_vmsgtu_vx_u32m8_b4(v, 255, vl), vl);
         if (idx >= 0)
-            return result(error_code::TOO_LARGE, src - beg + idx);
+            return UnicodeResult(UnicodeError::TOO_LARGE, src - beg + idx);
         /* We don't use vcompress here, because its performance varies widely on
          * current platforms. This might be worth reconsidering once there is more
          * hardware available. */
@@ -21,18 +20,16 @@ simdutf_warn_unused result implementation::convert_utf32_to_latin1_with_errors(
             (uint8_t*)dst,
             __riscv_vncvt_x_x_w_u8m2(__riscv_vncvt_x_x_w_u16m4(v, vl), vl), vl);
     }
-    return result(error_code::SUCCESS, src - beg);
+    return UnicodeResult(UnicodeError::SUCCESS, src - beg);
 }
 
-simdutf_warn_unused size_t implementation::convert_valid_utf32_to_latin1(
+ [[nodiscard]] size_t implementation::convert_valid_utf32_to_latin1(
     const char32_t* src, size_t len, char* dst) const noexcept {
     return convert_utf32_to_latin1(src, len, dst);
 }
-#endif // SIMDUTF_FEATURE_UTF32 && SIMDUTF_FEATURE_LATIN1
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
 template <bool with_validation>
-simdutf_warn_unused result convert_utf32_to_utf8_aux(const char32_t* src,
+ [[nodiscard]] UnicodeResult convert_utf32_to_utf8_aux(const char32_t* src,
     size_t len,
     char* dst) noexcept {
     size_t n = len;
@@ -96,9 +93,9 @@ simdutf_warn_unused result convert_utf32_to_utf8_aux(const char32_t* src,
             const long idx2 = __riscv_vfirst_m_b8(sur, vl);
             if (idx1 >= 0 || idx2 >= 0) {
                 if (static_cast<unsigned long>(idx1) <= static_cast<unsigned long>(idx2)) {
-                    return result(error_code::TOO_LARGE, src - srcBeg + idx1);
+                    return UnicodeResult(UnicodeError::TOO_LARGE, src - srcBeg + idx1);
                 } else {
-                    return result(error_code::SURROGATE, src - srcBeg + idx2);
+                    return UnicodeResult(UnicodeError::SURROGATE, src - srcBeg + idx2);
                 }
             }
         }
@@ -155,7 +152,7 @@ simdutf_warn_unused result convert_utf32_to_utf8_aux(const char32_t* src,
                 if (word < 0x10000)
                     break;
                 if (word > 0x10FFFF)
-                    return result(error_code::TOO_LARGE, src - srcBeg);
+                    return UnicodeResult(UnicodeError::TOO_LARGE, src - srcBeg);
                 *dst++ = (uint8_t)((word >> 18) | 0b11110000);
                 *dst++ = (uint8_t)(((word >> 12) & 0b111111) | 0b10000000);
                 *dst++ = (uint8_t)(((word >> 6) & 0b111111) | 0b10000000);
@@ -165,32 +162,30 @@ simdutf_warn_unused result convert_utf32_to_utf8_aux(const char32_t* src,
             }
     }
 
-    return result(error_code::SUCCESS, dst - dstBeg);
+    return UnicodeResult(UnicodeError::SUCCESS, dst - dstBeg);
 }
 
-simdutf_warn_unused result implementation::convert_utf32_to_utf8_with_errors(
+ [[nodiscard]] UnicodeResult implementation::convert_utf32_to_utf8_with_errors(
     const char32_t* src, size_t len, char* dst) const noexcept {
     constexpr bool with_validation = true;
     return convert_utf32_to_utf8_aux<with_validation>(src, len, dst);
 }
 
-simdutf_warn_unused size_t implementation::convert_utf32_to_utf8(
+ [[nodiscard]] size_t implementation::convert_utf32_to_utf8(
     const char32_t* src, size_t len, char* dst) const noexcept {
-    result res = convert_utf32_to_utf8_with_errors(src, len, dst);
-    return res.error == error_code::SUCCESS ? res.count : 0;
+    UnicodeResult res = convert_utf32_to_utf8_with_errors(src, len, dst);
+    return res.error == UnicodeError::SUCCESS ? res.count : 0;
 }
 
-simdutf_warn_unused size_t implementation::convert_valid_utf32_to_utf8(
+ [[nodiscard]] size_t implementation::convert_valid_utf32_to_utf8(
     const char32_t* src, size_t len, char* dst) const noexcept {
     constexpr bool with_validation = false;
     const auto res = convert_utf32_to_utf8_aux<with_validation>(src, len, dst);
     return res.count;
 }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32
 template <simdutf_ByteFlip bflip>
-simdutf_really_inline static result
+KUMO_FORCE_INLINE static UnicodeResult
 rvv_convert_utf32_to_utf16_with_errors(const char32_t* src, size_t len,
     char16_t* dst) {
     size_t vl8m2 = __riscv_vsetvlmax_e8m2();
@@ -207,7 +202,7 @@ rvv_convert_utf32_to_utf16_with_errors(const char32_t* src, size_t len,
         const long idx = __riscv_vfirst_m_b8(__riscv_vmsgtu_vx_u32m4_b8(v, 0xFFFF, vl), vl);
         if (idx < 0) {
             if (err_surrogate_idx >= 0) {
-                return result(error_code::SURROGATE, src - srcBeg + err_surrogate_idx);
+                return UnicodeResult(UnicodeError::SURROGATE, src - srcBeg + err_surrogate_idx);
             }
 
             vlOut = vl;
@@ -219,36 +214,36 @@ rvv_convert_utf32_to_utf16_with_errors(const char32_t* src, size_t len,
         const long err_too_big_idx = __riscv_vfirst_m_b8(__riscv_vmsgtu_vx_u32m4_b8(v, 0x10FFFF, vl), vl);
         if (err_too_big_idx >= 0 || err_surrogate_idx >= 0) {
             if (static_cast<unsigned long>(err_too_big_idx) <= static_cast<unsigned long>(err_surrogate_idx)) {
-                return result(error_code::TOO_LARGE, src - srcBeg + err_too_big_idx);
+                return UnicodeResult(UnicodeError::TOO_LARGE, src - srcBeg + err_too_big_idx);
             } else {
-                return result(error_code::SURROGATE, src - srcBeg + err_surrogate_idx);
+                return UnicodeResult(UnicodeError::SURROGATE, src - srcBeg + err_surrogate_idx);
             }
         }
 
         vlOut = rvv_utf32_store_utf16_m4<bflip>((uint16_t*)dst, v, vl, m4even);
     }
-    return result(error_code::SUCCESS, dst - dstBeg);
+    return UnicodeResult(UnicodeError::SUCCESS, dst - dstBeg);
 }
 
-simdutf_warn_unused size_t implementation::convert_utf32_to_utf16le(
+ [[nodiscard]] size_t implementation::convert_utf32_to_utf16le(
     const char32_t* src, size_t len, char16_t* dst) const noexcept {
-    result res = convert_utf32_to_utf16le_with_errors(src, len, dst);
-    return res.error == error_code::SUCCESS ? res.count : 0;
+    UnicodeResult res = convert_utf32_to_utf16le_with_errors(src, len, dst);
+    return res.error == UnicodeError::SUCCESS ? res.count : 0;
 }
 
-simdutf_warn_unused size_t implementation::convert_utf32_to_utf16be(
+ [[nodiscard]] size_t implementation::convert_utf32_to_utf16be(
     const char32_t* src, size_t len, char16_t* dst) const noexcept {
-    result res = convert_utf32_to_utf16be_with_errors(src, len, dst);
-    return res.error == error_code::SUCCESS ? res.count : 0;
+    UnicodeResult res = convert_utf32_to_utf16be_with_errors(src, len, dst);
+    return res.error == UnicodeError::SUCCESS ? res.count : 0;
 }
 
-simdutf_warn_unused result implementation::convert_utf32_to_utf16le_with_errors(
+ [[nodiscard]] UnicodeResult implementation::convert_utf32_to_utf16le_with_errors(
     const char32_t* src, size_t len, char16_t* dst) const noexcept {
     return rvv_convert_utf32_to_utf16_with_errors<simdutf_ByteFlip::NONE>(
         src, len, dst);
 }
 
-simdutf_warn_unused result implementation::convert_utf32_to_utf16be_with_errors(
+ [[nodiscard]] UnicodeResult implementation::convert_utf32_to_utf16be_with_errors(
     const char32_t* src, size_t len, char16_t* dst) const noexcept {
     if (supports_zvbb())
         return rvv_convert_utf32_to_utf16_with_errors<simdutf_ByteFlip::ZVBB>(
@@ -259,7 +254,7 @@ simdutf_warn_unused result implementation::convert_utf32_to_utf16be_with_errors(
 }
 
 template <simdutf_ByteFlip bflip>
-simdutf_really_inline static size_t
+KUMO_FORCE_INLINE static size_t
 rvv_convert_valid_utf32_to_utf16(const char32_t* src, size_t len,
     char16_t* dst) {
     size_t vl8m2 = __riscv_vsetvlmax_e8m2();
@@ -280,13 +275,13 @@ rvv_convert_valid_utf32_to_utf16(const char32_t* src, size_t len,
     return dst - dstBeg;
 }
 
-simdutf_warn_unused size_t implementation::convert_valid_utf32_to_utf16le(
+ [[nodiscard]] size_t implementation::convert_valid_utf32_to_utf16le(
     const char32_t* src, size_t len, char16_t* dst) const noexcept {
     return rvv_convert_valid_utf32_to_utf16<simdutf_ByteFlip::NONE>(src, len,
         dst);
 }
 
-simdutf_warn_unused size_t implementation::convert_valid_utf32_to_utf16be(
+ [[nodiscard]] size_t implementation::convert_valid_utf32_to_utf16be(
     const char32_t* src, size_t len, char16_t* dst) const noexcept {
     if (supports_zvbb())
         return rvv_convert_valid_utf32_to_utf16<simdutf_ByteFlip::ZVBB>(src, len,
@@ -294,4 +289,3 @@ simdutf_warn_unused size_t implementation::convert_valid_utf32_to_utf16be(
     else
         return rvv_convert_valid_utf32_to_utf16<simdutf_ByteFlip::V>(src, len, dst);
 }
-#endif // SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32

@@ -18,7 +18,7 @@ using utf8_to_utf32_result = std::pair<const char*, uint32_t*>;
     bytes have been processed, upon success.
 */
 template <block_processing_mode tail, endianness big_endian>
-simdutf_really_inline bool
+KUMO_FORCE_INLINE bool
 process_block_utf8_to_utf16(const char*& in, char16_t*& out, size_t gap) {
     // constants
     __m512i mask_identity = _mm512_set_epi8(
@@ -428,7 +428,7 @@ process_block_utf8_to_utf16(const char*& in, char16_t*& out, size_t gap) {
     keep the value in a (constant) register.
 */
 template <endianness big_endian>
-simdutf_really_inline size_t utf32_to_utf16_masked(const __m512i byteflip,
+KUMO_FORCE_INLINE size_t utf32_to_utf16_masked(const __m512i byteflip,
     __m512i utf32,
     unsigned int count,
     char16_t* output) {
@@ -518,7 +518,7 @@ simdutf_really_inline size_t utf32_to_utf16_masked(const __m512i byteflip,
     keep the value in a (constant) register.
 */
 template <endianness big_endian>
-simdutf_really_inline size_t utf32_to_utf16(const __m512i byteflip,
+KUMO_FORCE_INLINE size_t utf32_to_utf16(const __m512i byteflip,
     __m512i utf32, unsigned int count,
     char16_t* output) {
     // check if we have any surrogate pairs
@@ -588,7 +588,7 @@ simdutf_really_inline size_t utf32_to_utf16(const __m512i byteflip,
     0x8080800N, where N is 4 highest bits from the leading byte; 0x80 resets
     corresponding bytes during pshufb.
 */
-simdutf_really_inline __m512i expanded_utf8_to_utf32(__m512i char_class,
+KUMO_FORCE_INLINE __m512i expanded_utf8_to_utf32(__m512i char_class,
     __m512i utf8) {
     /*
         Input:
@@ -698,7 +698,7 @@ simdutf_really_inline __m512i expanded_utf8_to_utf32(__m512i char_class,
     return values;
 }
 
-simdutf_really_inline __m512i expand_and_identify(__m512i lane0, __m512i lane1,
+KUMO_FORCE_INLINE __m512i expand_and_identify(__m512i lane0, __m512i lane1,
     int& count) {
     const __m512i merged = _mm512_mask_mov_epi32(lane0, 0x1000, lane1);
     const __m512i expand_ver2 = _mm512_setr_epi64(
@@ -715,7 +715,7 @@ simdutf_really_inline __m512i expand_and_identify(__m512i lane0, __m512i lane1,
         input);
 }
 
-simdutf_really_inline __m512i expand_utf8_to_utf32(__m512i input) {
+KUMO_FORCE_INLINE __m512i expand_utf8_to_utf32(__m512i input) {
     __m512i char_class = _mm512_srli_epi32(input, 4);
     /*  char_class = ((input >> 4) & 0x0f) | 0x80808000 */
     const __m512i v_0000_000f = _mm512_set1_epi32(0x0f);

@@ -3,8 +3,8 @@ namespace turbo {
         namespace {
             namespace utf32 {
 
-                simdutf_really_inline bool validate(const char32_t* input, size_t size) {
-                    if (simdutf_unlikely(size == 0)) {
+                KUMO_FORCE_INLINE bool validate(const char32_t* input, size_t size) {
+                    if (KUMO_UNLIKELY(size == 0)) {
                         // empty input is valid UTF-32. protect the implementation from
                         // handling nullptr
                         return true;
@@ -46,12 +46,12 @@ namespace turbo {
                     return scalar::utf32::validate(input, end - input);
                 }
 
-                simdutf_really_inline result validate_with_errors(const char32_t* input,
+                KUMO_FORCE_INLINE UnicodeResult validate_with_errors(const char32_t* input,
                     size_t size) {
-                    if (simdutf_unlikely(size == 0)) {
+                    if (KUMO_UNLIKELY(size == 0)) {
                         // empty input is valid UTF-32. protect the implementation from
                         // handling nullptr
-                        return result(error_code::SUCCESS, 0);
+                        return UnicodeResult(UnicodeError::SUCCESS, 0);
                     }
 
                     const char32_t* start = input;
@@ -75,7 +75,7 @@ namespace turbo {
                         const auto surrogate = (in & surrogate_mask) == surrogate_byte;
 
                         const auto combined = too_large | surrogate;
-                        if (simdutf_unlikely(combined.any())) {
+                        if (KUMO_UNLIKELY(combined.any())) {
                             const size_t consumed = input - start;
                             auto sr = scalar::utf32::validate_with_errors(input, end - input);
                             sr.count += consumed;

@@ -7,10 +7,10 @@ namespace turbo {
             template <size_t STEP_SIZE>
             struct buf_block_reader {
             public:
-                simdutf_really_inline buf_block_reader(const uint8_t* _buf, size_t _len);
-                simdutf_really_inline size_t block_index();
-                simdutf_really_inline bool has_full_block() const;
-                simdutf_really_inline const uint8_t* full_block() const;
+                KUMO_FORCE_INLINE buf_block_reader(const uint8_t* _buf, size_t _len);
+                KUMO_FORCE_INLINE size_t block_index();
+                KUMO_FORCE_INLINE bool has_full_block() const;
+                KUMO_FORCE_INLINE const uint8_t* full_block() const;
                 /// Get the last block, padded with spaces.
                 ///
                 /// There will always be a last block, with at least 1 byte, unless len == 0
@@ -19,8 +19,8 @@ namespace turbo {
                 /// block with STEP_SIZE bytes and no spaces for padding.
                 ///
                 /// @return the number of effective characters in the last block.
-                simdutf_really_inline size_t get_remainder(uint8_t* dst) const;
-                simdutf_really_inline void advance();
+                KUMO_FORCE_INLINE size_t get_remainder(uint8_t* dst) const;
+                KUMO_FORCE_INLINE void advance();
 
             private:
                 const uint8_t* buf;
@@ -30,7 +30,7 @@ namespace turbo {
             };
 
             template <size_t STEP_SIZE>
-            simdutf_really_inline
+            KUMO_FORCE_INLINE
             buf_block_reader<STEP_SIZE>::buf_block_reader(const uint8_t* _buf, size_t _len)
                 : buf { _buf }
                 , len { _len }
@@ -38,23 +38,23 @@ namespace turbo {
                 , idx { 0 } { }
 
             template <size_t STEP_SIZE>
-            simdutf_really_inline size_t buf_block_reader<STEP_SIZE>::block_index() {
+            KUMO_FORCE_INLINE size_t buf_block_reader<STEP_SIZE>::block_index() {
                 return idx;
             }
 
             template <size_t STEP_SIZE>
-            simdutf_really_inline bool buf_block_reader<STEP_SIZE>::has_full_block() const {
+            KUMO_FORCE_INLINE bool buf_block_reader<STEP_SIZE>::has_full_block() const {
                 return idx < lenminusstep;
             }
 
             template <size_t STEP_SIZE>
-            simdutf_really_inline const uint8_t*
+            KUMO_FORCE_INLINE const uint8_t*
             buf_block_reader<STEP_SIZE>::full_block() const {
                 return &buf[idx];
             }
 
             template <size_t STEP_SIZE>
-            simdutf_really_inline size_t
+            KUMO_FORCE_INLINE size_t
             buf_block_reader<STEP_SIZE>::get_remainder(uint8_t* dst) const {
                 if (len == idx) {
                     return 0;
@@ -67,7 +67,7 @@ namespace turbo {
             }
 
             template <size_t STEP_SIZE>
-            simdutf_really_inline void buf_block_reader<STEP_SIZE>::advance() {
+            KUMO_FORCE_INLINE void buf_block_reader<STEP_SIZE>::advance() {
                 idx += STEP_SIZE;
             }
 

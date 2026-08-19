@@ -140,7 +140,7 @@ int main(int argc, char **argv) {
   printf("# input detected as %.*s.\n",
          int(turbo::to_string(detected_encoding).size()),
          turbo::to_string(detected_encoding).data());
-  if (detected_encoding == turbo::encoding_type::UTF8) {
+  if (detected_encoding == turbo::TextEncoding::UTF8) {
     run_from_utf8_output(input_data);
     std::cout << "----" << std::endl;
 

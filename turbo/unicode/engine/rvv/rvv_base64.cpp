@@ -1,6 +1,6 @@
 template <bool insert_line_feeds>
 size_t encode_base64_rvv(char* dst, const char* src, size_t srclen,
-    base64_options options,
+    Base64Options options,
     size_t line_length = turbo::default_line_length) {
     size_t offset = 0;
     if constexpr (insert_line_feeds) {
@@ -227,6 +227,6 @@ size_t encode_base64_rvv(char* dst, const char* src, size_t srclen,
 }
 
 size_t encode_base64(char* dst, const char* src, size_t srclen,
-    base64_options options) {
+    Base64Options options) {
     return encode_base64_rvv<false>(dst, src, srclen, options);
 }

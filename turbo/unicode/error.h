@@ -1,10 +1,25 @@
-#ifndef SIMDUTF_ERROR_H
-#define SIMDUTF_ERROR_H
+// Copyright (C) 2026 Kumo inc. and its affiliates. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+#pragma once
+
 #include <string_view>
 
 namespace turbo {
 
-    enum error_code {
+    enum UnicodeError {
         SUCCESS = 0,
         HEADER_BITS, // Any byte must have fewer than 5 header bits.
         TOO_SHORT, // The leading byte must be followed by N-1 continuation bytes,
@@ -44,7 +59,7 @@ namespace turbo {
         OTHER // Not related to validation/transcoding.
     };
 
-    inline std::string_view error_to_string(error_code code) noexcept {
+    inline std::string_view error_to_string(UnicodeError code) noexcept {
         switch (code) {
         case SUCCESS:
             return "SUCCESS";
@@ -73,63 +88,63 @@ namespace turbo {
         }
     }
 
-    struct result {
-        error_code error;
+    struct UnicodeResult {
+        UnicodeError error;
         size_t count; // In case of error, indicates the position of the error. In
                       // case of success, indicates the number of code units
                       // validated/written.
 
-        simdutf_really_inline  result() noexcept
-            : error { error_code::SUCCESS }
+        KUMO_FORCE_INLINE  UnicodeResult() noexcept
+            : error { UnicodeError::SUCCESS }
             , count { 0 } { }
 
-        simdutf_really_inline  result(error_code err,
+        KUMO_FORCE_INLINE  UnicodeResult(UnicodeError err,
             size_t pos) noexcept
             : error { err }
             , count { pos } { }
 
-        simdutf_really_inline  bool is_ok() const noexcept {
-            return error == error_code::SUCCESS;
+        KUMO_FORCE_INLINE  bool is_ok() const noexcept {
+            return error == UnicodeError::SUCCESS;
         }
 
-        simdutf_really_inline  bool is_err() const noexcept {
-            return error != error_code::SUCCESS;
+        KUMO_FORCE_INLINE  bool is_err() const noexcept {
+            return error != UnicodeError::SUCCESS;
         }
     };
 
     struct full_result {
-        error_code error;
+        UnicodeError error;
         size_t input_count;
         size_t output_count;
         bool padding_error = false; // true if the error is due to padding, only
                                     // meaningful when error is not SUCCESS
 
-        simdutf_really_inline  full_result() noexcept
-            : error { error_code::SUCCESS }
+        KUMO_FORCE_INLINE  full_result() noexcept
+            : error { UnicodeError::SUCCESS }
             , input_count { 0 }
             , output_count { 0 } { }
 
-        simdutf_really_inline  full_result(error_code err,
+        KUMO_FORCE_INLINE  full_result(UnicodeError err,
             size_t pos_in,
             size_t pos_out) noexcept
             : error { err }
             , input_count { pos_in }
             , output_count { pos_out } { }
-        simdutf_really_inline  full_result(
-            error_code err, size_t pos_in, size_t pos_out, bool padding_err) noexcept
+        KUMO_FORCE_INLINE  full_result(
+            UnicodeError err, size_t pos_in, size_t pos_out, bool padding_err) noexcept
             : error { err }
             , input_count { pos_in }
             , output_count { pos_out }
             , padding_error { padding_err } { }
 
-        simdutf_really_inline  operator result() const noexcept {
-            if (error == error_code::SUCCESS) {
-                return result { error, output_count };
+        KUMO_FORCE_INLINE  operator UnicodeResult() const noexcept {
+            if (error == UnicodeError::SUCCESS) {
+                return UnicodeResult { error, output_count };
             } else {
-                return result { error, input_count };
+                return UnicodeResult { error, input_count };
             }
         }
     };
 
 } // namespace turbo
-#endif
+

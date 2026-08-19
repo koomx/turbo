@@ -50,7 +50,7 @@
 // Auxiliary procedure used by UTF-16 and UTF-32 into UTF-8.
 // Note the pointer is passed by reference, it is updated by the procedure.
 template <typename T>
-simdutf_really_inline void ppc64_convert_utf16_to_1_2_3_bytes_of_utf8(
+KUMO_FORCE_INLINE void ppc64_convert_utf16_to_1_2_3_bytes_of_utf8(
     const vector_u16 in, uint16_t one_byte_bitmask,
     const T one_or_two_bytes_bytemask, uint16_t one_or_two_bytes_bitmask,
     char*& utf8_output) {
@@ -151,7 +151,7 @@ simdutf_really_inline void ppc64_convert_utf16_to_1_2_3_bytes_of_utf8(
 }
 
 struct utf16_to_utf8_t {
-    error_code err;
+    UnicodeError err;
     const char16_t* input;
     char* output;
 };
@@ -265,7 +265,7 @@ utf16_to_utf8_t ppc64_convert_utf16_to_utf8(const char16_t* buf, size_t len,
                     k++;
                     uint16_t diff2 = uint16_t(next_word - 0xDC00);
                     if ((diff | diff2) > 0x3FF) {
-                        return utf16_to_utf8_t { error_code::SURROGATE, buf + k - 1,
+                        return utf16_to_utf8_t { UnicodeError::SURROGATE, buf + k - 1,
                             utf8_output };
                     }
                     uint32_t value = (diff << 10) + diff2 + 0x10000;
@@ -279,5 +279,5 @@ utf16_to_utf8_t ppc64_convert_utf16_to_utf8(const char16_t* buf, size_t len,
         }
     } // while
 
-    return utf16_to_utf8_t { error_code::SUCCESS, buf, utf8_output };
+    return utf16_to_utf8_t { UnicodeError::SUCCESS, buf, utf8_output };
 }

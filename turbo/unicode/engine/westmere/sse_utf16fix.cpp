@@ -7,7 +7,7 @@
  * If that character is illsequenced, it too is overwritten.
  */
 template <endianness big_endian, bool in_place>
-simdutf_really_inline void utf16fix_block_sse(char16_t* out,
+KUMO_FORCE_INLINE void utf16fix_block_sse(char16_t* out,
     const char16_t* in) {
     auto swap_if_needed = [](uint16_t x) constexpr -> uint16_t {
         return scalar::utf16::swap_if_needed<big_endian>(x);

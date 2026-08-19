@@ -1,7 +1,7 @@
 // file included directly
 
 bool validate_utf32(const char32_t* buf, size_t len) {
-    if (simdutf_unlikely(len == 0)) {
+    if (KUMO_UNLIKELY(len == 0)) {
         return true;
     }
     const char32_t* end = buf + len;

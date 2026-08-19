@@ -88,7 +88,7 @@ const char16_t* arm_validate_utf16_as_ascii(const char16_t* input,
 }
 
 template <endianness big_endian>
-const result arm_validate_utf16_with_errors(const char16_t* input,
+const UnicodeResult arm_validate_utf16_with_errors(const char16_t* input,
     size_t size) {
     const char16_t* start = input;
     const char16_t* end = input + size;
@@ -151,9 +151,9 @@ const result arm_validate_utf16_with_errors(const char16_t* input,
                 // one, 2) reject sole high surrogate.
                 input += 15;
             } else {
-                return result(error_code::SURROGATE, input - start);
+                return UnicodeResult(UnicodeError::SURROGATE, input - start);
             }
         }
     }
-    return result(error_code::SUCCESS, input - start);
+    return UnicodeResult(UnicodeError::SUCCESS, input - start);
 }

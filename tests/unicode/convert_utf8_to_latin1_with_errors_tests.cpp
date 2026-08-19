@@ -34,7 +34,7 @@ TEST(issue633) {
     const auto r = implementation.convert_utf8_to_latin1_with_errors(
         (const char*)data, data_len, dataout);
     ASSERT_EQUAL(r.count, 0);
-    ASSERT_EQUAL(r.error, turbo::error_code::TOO_LONG);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::TOO_LONG);
 }
 
 // triggered by https://oss-fuzz.com/testcase-detail/4942454003924992,
@@ -217,17 +217,17 @@ TEST(ossfuzz_385406635) {
     constexpr std::size_t data_len = data_len_bytes / sizeof(char);
     const auto validation1 = implementation.validate_utf8_with_errors((const char*)data, data_len);
     ASSERT_EQUAL(validation1.count, 0);
-    ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
+    ASSERT_EQUAL(validation1.error, turbo::UnicodeError::TOO_LONG);
 
     const bool validation2 = implementation.validate_utf8((const char*)data, data_len);
-    ASSERT_EQUAL(validation1.error == turbo::error_code::SUCCESS, validation2);
+    ASSERT_EQUAL(validation1.error == turbo::UnicodeError::SUCCESS, validation2);
 
     const auto outlen = implementation.latin1_length_from_utf8((const char*)data, data_len);
     ASSERT_EQUAL(outlen, 2005);
     std::vector<char> output(outlen);
     const auto r = implementation.convert_utf8_to_latin1_with_errors(
         (const char*)data, data_len, output.data());
-    ASSERT_EQUAL(r.error, turbo::error_code::TOO_LONG);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::TOO_LONG);
     ASSERT_EQUAL(r.count, 0);
 }
 
@@ -244,17 +244,17 @@ TEST(issue_convert_utf8_to_latin1_with_errors_01f0c43ba5b92120) {
     constexpr std::size_t data_len = data_len_bytes / sizeof(char);
     const auto validation1 = implementation.validate_utf8_with_errors((const char*)data, data_len);
     ASSERT_EQUAL(validation1.count, 64);
-    ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
+    ASSERT_EQUAL(validation1.error, turbo::UnicodeError::TOO_LONG);
 
     const bool validation2 = implementation.validate_utf8((const char*)data, data_len);
-    ASSERT_EQUAL(validation1.error == turbo::error_code::SUCCESS, validation2);
+    ASSERT_EQUAL(validation1.error == turbo::UnicodeError::SUCCESS, validation2);
 
     const auto outlen = implementation.latin1_length_from_utf8((const char*)data, data_len);
     ASSERT_EQUAL(outlen, 62);
     std::vector<char> output(outlen);
     const auto r = implementation.convert_utf8_to_latin1_with_errors(
         (const char*)data, data_len, output.data());
-    ASSERT_EQUAL(r.error, turbo::error_code::TOO_LONG);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::TOO_LONG);
     ASSERT_EQUAL(r.count, 64);
 }
 
@@ -271,14 +271,14 @@ TEST(issue_483) {
     constexpr std::size_t data_len = data_len_bytes / sizeof(char);
     const auto validation1 = implementation.validate_utf8_with_errors((const char*)data, data_len);
     ASSERT_EQUAL(validation1.count, 64);
-    ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
+    ASSERT_EQUAL(validation1.error, turbo::UnicodeError::TOO_LONG);
 
     const auto outlen = implementation.latin1_length_from_utf8((const char*)data, data_len);
     ASSERT_EQUAL(outlen, 64);
     std::vector<char> output(outlen);
     const auto r = implementation.convert_utf8_to_latin1_with_errors(
         (const char*)data, data_len, output.data());
-    ASSERT_EQUAL(r.error, turbo::error_code::TOO_LONG);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::TOO_LONG);
     ASSERT_EQUAL(r.count, 64);
 }
 
@@ -302,7 +302,7 @@ TEST(issue_convert_utf8_to_latin1_with_errors_a8ec246845d4878e) {
     const auto r = implementation.convert_utf8_to_latin1_with_errors(
         (const char*)data, data_len, output.data());
     ASSERT_EQUAL(r.count, 13);
-    ASSERT_EQUAL(r.error, turbo::error_code::TOO_LARGE);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::TOO_LARGE);
 }
 
 TEST(issue_convert_utf8_to_latin1_with_errors_cbf29ce4842223ed) {
@@ -326,7 +326,7 @@ TEST(issue_convert_utf8_to_latin1_with_errors_cbf29ce4842223ed) {
     got return [count=63, error=TOO_SHORT] from implementation fallback
     */
     ASSERT_EQUAL(r.count, 63);
-    ASSERT_EQUAL(r.error, turbo::error_code::TOO_SHORT);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::TOO_SHORT);
 }
 
 TEST_LOOP(convert_pure_ASCII) {
@@ -389,9 +389,9 @@ TEST_LOOP(too_large_input) {
 
             auto procedure = [&implementation, &i](const char* utf8, size_t size,
                                  char* latin1) -> size_t {
-                turbo::result res = implementation.convert_utf8_to_latin1_with_errors(
+                turbo::UnicodeResult res = implementation.convert_utf8_to_latin1_with_errors(
                     utf8, size, latin1);
-                ASSERT_EQUAL(res.error, turbo::error_code::TOO_LARGE);
+                ASSERT_EQUAL(res.error, turbo::UnicodeError::TOO_LARGE);
                 ASSERT_EQUAL(res.count, i);
                 return 0;
             };
@@ -419,10 +419,10 @@ TEST_LOOP(header_bits_error) {
         if ((test.input_utf8[i] & 0b11000000) != 0b10000000) { // Only process leading bytes
             auto procedure = [&implementation, &i](const char* utf8, size_t size,
                                  char* latin1) -> size_t {
-                turbo::result res = implementation.convert_utf8_to_latin1_with_errors(
+                turbo::UnicodeResult res = implementation.convert_utf8_to_latin1_with_errors(
                     utf8, size, latin1);
                 ASSERT_EQUAL(res.count, i);
-                ASSERT_EQUAL(res.error, turbo::error_code::HEADER_BITS);
+                ASSERT_EQUAL(res.error, turbo::UnicodeError::HEADER_BITS);
                 return 0;
             };
             const unsigned char old = test.input_utf8[i];
@@ -445,10 +445,10 @@ TEST_LOOP(too_short_error) {
             auto procedure = [&implementation,
                                  &leading_byte_pos](const char* utf8, size_t size,
                                  char* latin1) -> size_t {
-                turbo::result res = implementation.convert_utf8_to_latin1_with_errors(
+                turbo::UnicodeResult res = implementation.convert_utf8_to_latin1_with_errors(
                     utf8, size, latin1);
                 ASSERT_EQUAL(res.count, leading_byte_pos);
-                ASSERT_EQUAL(res.error, turbo::error_code::TOO_SHORT);
+                ASSERT_EQUAL(res.error, turbo::UnicodeError::TOO_SHORT);
                 return 0;
             };
 
@@ -473,9 +473,9 @@ TEST_LOOP(too_long_error) {
                                                                  // continuation bytes
             auto procedure = [&implementation, &i](const char* utf8, size_t size,
                                  char* latin1) -> size_t {
-                turbo::result res = implementation.convert_utf8_to_latin1_with_errors(
+                turbo::UnicodeResult res = implementation.convert_utf8_to_latin1_with_errors(
                     utf8, size, latin1);
-                ASSERT_EQUAL(res.error, turbo::error_code::TOO_LONG);
+                ASSERT_EQUAL(res.error, turbo::UnicodeError::TOO_LONG);
                 ASSERT_EQUAL(res.count, i);
                 return 0;
             };
@@ -495,9 +495,9 @@ TEST_LOOP(overlong_error) {
                                                                               // overlong
             auto procedure = [&implementation, &i](const char* utf8, size_t size,
                                  char* latin1) -> size_t {
-                turbo::result res = implementation.convert_utf8_to_latin1_with_errors(
+                turbo::UnicodeResult res = implementation.convert_utf8_to_latin1_with_errors(
                     utf8, size, latin1);
-                ASSERT_EQUAL(res.error, turbo::error_code::OVERLONG);
+                ASSERT_EQUAL(res.error, turbo::UnicodeError::OVERLONG);
                 ASSERT_EQUAL(res.count, i);
                 return 0;
             };
@@ -534,7 +534,7 @@ TEST(issue_446) {
     const auto r = implementation.convert_utf8_to_latin1_with_errors(
         (const char*)crash, crash_len, output.data());
     ASSERT_EQUAL(r.count, 127); // because of the sequence 0xc2, 0xa2
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
 }
 
 TEST_MAIN

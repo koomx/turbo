@@ -9,7 +9,7 @@
  * If that character is illsequenced, it too is overwritten.
  */
 template <endianness big_endian, bool in_place>
-simdutf_really_inline void utf16fix_block(char16_t* out, const char16_t* in) {
+KUMO_FORCE_INLINE void utf16fix_block(char16_t* out, const char16_t* in) {
     const char16_t replacement = scalar::utf16::replacement<big_endian>();
     __m512i lookback, block, lb_masked, block_masked;
     __mmask32 lb_is_high, block_is_low, illseq;

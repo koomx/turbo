@@ -20,17 +20,17 @@
 
 namespace turbo {
 
-    simdutf_warn_unused size_t trim_partial_utf16be(const char16_t* input,
+     [[nodiscard]] size_t trim_partial_utf16be(const char16_t* input,
         size_t length) {
         return scalar::utf16::trim_partial_utf16<BIG>(input, length);
     }
 
-    simdutf_warn_unused size_t trim_partial_utf16le(const char16_t* input,
+     [[nodiscard]] size_t trim_partial_utf16le(const char16_t* input,
         size_t length) {
         return scalar::utf16::trim_partial_utf16<LITTLE>(input, length);
     }
 
-    simdutf_warn_unused size_t trim_partial_utf16(const char16_t* input,
+     [[nodiscard]] size_t trim_partial_utf16(const char16_t* input,
         size_t length) {
 #if SIMDUTF_IS_BIG_ENDIAN
         return trim_partial_utf16be(input, length);
@@ -39,15 +39,15 @@ namespace turbo {
 #endif
     }
 
-    simdutf_warn_unused bool validate_utf16le_as_ascii(const char16_t* buf,
+     [[nodiscard]] bool validate_utf16le_as_ascii(const char16_t* buf,
         size_t len) noexcept {
         return get_default_implementation()->validate_utf16le_as_ascii(buf, len);
     }
-    simdutf_warn_unused bool validate_utf16be_as_ascii(const char16_t* buf,
+     [[nodiscard]] bool validate_utf16be_as_ascii(const char16_t* buf,
         size_t len) noexcept {
         return get_default_implementation()->validate_utf16be_as_ascii(buf, len);
     }
-    simdutf_warn_unused bool validate_utf16_as_ascii(const char16_t* input,
+     [[nodiscard]] bool validate_utf16_as_ascii(const char16_t* input,
         size_t length) noexcept {
 #if SIMDUTF_IS_BIG_ENDIAN
         return validate_utf16be_as_ascii(input, length);
@@ -56,7 +56,7 @@ namespace turbo {
 #endif
     }
 
-    simdutf_warn_unused bool validate_utf16(const char16_t* buf,
+     [[nodiscard]] bool validate_utf16(const char16_t* buf,
         size_t len) noexcept {
 #if SIMDUTF_IS_BIG_ENDIAN
         return validate_utf16be(buf, len);
@@ -83,16 +83,16 @@ namespace turbo {
 #endif
     }
 
-    simdutf_warn_unused bool validate_utf16le(const char16_t* buf,
+     [[nodiscard]] bool validate_utf16le(const char16_t* buf,
     size_t len) noexcept {
         return get_default_implementation()->validate_utf16le(buf, len);
     }
 
-    simdutf_warn_unused bool validate_utf16be(const char16_t* buf,
+     [[nodiscard]] bool validate_utf16be(const char16_t* buf,
         size_t len) noexcept {
         return get_default_implementation()->validate_utf16be(buf, len);
     }
-    simdutf_warn_unused result validate_utf16_with_errors(const char16_t* buf,
+     [[nodiscard]] UnicodeResult validate_utf16_with_errors(const char16_t* buf,
         size_t len) noexcept {
 #if SIMDUTF_IS_BIG_ENDIAN
         return validate_utf16be_with_errors(buf, len);
@@ -100,16 +100,16 @@ namespace turbo {
         return validate_utf16le_with_errors(buf, len);
 #endif
     }
-    simdutf_warn_unused result validate_utf16le_with_errors(const char16_t* buf,
+     [[nodiscard]] UnicodeResult validate_utf16le_with_errors(const char16_t* buf,
         size_t len) noexcept {
         return get_default_implementation()->validate_utf16le_with_errors(buf, len);
     }
-    simdutf_warn_unused result validate_utf16be_with_errors(const char16_t* buf,
+     [[nodiscard]] UnicodeResult validate_utf16be_with_errors(const char16_t* buf,
         size_t len) noexcept {
         return get_default_implementation()->validate_utf16be_with_errors(buf, len);
     }
 
-    simdutf_warn_unused size_t convert_utf16_to_utf8(const char16_t* buf,
+     [[nodiscard]] size_t convert_utf16_to_utf8(const char16_t* buf,
         size_t len,
         char* utf8_buffer) noexcept {
 #if SIMDUTF_IS_BIG_ENDIAN
@@ -119,7 +119,7 @@ namespace turbo {
 #endif
     }
 
-    simdutf_warn_unused size_t
+     [[nodiscard]] size_t
     convert_utf16_to_utf8_safe(const char16_t* buf, size_t len, char* utf8_output,
         size_t utf8_len) noexcept {
         const auto start { utf8_output };
@@ -164,14 +164,14 @@ namespace turbo {
         full_result r = scalar::utf16_to_utf8::convert_with_errors<endianness::LITTLE, true>(
             buf, len, utf8_output, utf8_len);
 #endif
-        if (r.error != error_code::SUCCESS && r.error != error_code::OUTPUT_BUFFER_TOO_SMALL) {
+        if (r.error != UnicodeError::SUCCESS && r.error != UnicodeError::OUTPUT_BUFFER_TOO_SMALL) {
             // If there was an error, we return 0 to indicate failure.
             return 0; // indicating failure
         }
         return r.output_count + (utf8_output - start);
     }
 
-    simdutf_warn_unused size_t convert_utf16_to_latin1(
+     [[nodiscard]] size_t convert_utf16_to_latin1(
         const char16_t* buf, size_t len, char* latin1_buffer) noexcept {
 #if SIMDUTF_IS_BIG_ENDIAN
         return convert_utf16be_to_latin1(buf, len, latin1_buffer);
@@ -180,50 +180,50 @@ namespace turbo {
 #endif
     }
 
-    simdutf_warn_unused size_t convert_utf16be_to_latin1(
+     [[nodiscard]] size_t convert_utf16be_to_latin1(
         const char16_t* buf, size_t len, char* latin1_buffer) noexcept {
         return get_default_implementation()->convert_utf16be_to_latin1(buf, len,
             latin1_buffer);
     }
-    simdutf_warn_unused size_t convert_utf16le_to_latin1(
+     [[nodiscard]] size_t convert_utf16le_to_latin1(
         const char16_t* buf, size_t len, char* latin1_buffer) noexcept {
         return get_default_implementation()->convert_utf16le_to_latin1(buf, len,
             latin1_buffer);
     }
-    simdutf_warn_unused size_t convert_valid_utf16be_to_latin1(
+     [[nodiscard]] size_t convert_valid_utf16be_to_latin1(
         const char16_t* buf, size_t len, char* latin1_buffer) noexcept {
         return get_default_implementation()->convert_valid_utf16be_to_latin1(
             buf, len, latin1_buffer);
     }
-    simdutf_warn_unused size_t convert_valid_utf16le_to_latin1(
+     [[nodiscard]] size_t convert_valid_utf16le_to_latin1(
         const char16_t* buf, size_t len, char* latin1_buffer) noexcept {
         return get_default_implementation()->convert_valid_utf16le_to_latin1(
             buf, len, latin1_buffer);
     }
-    simdutf_warn_unused result convert_utf16le_to_latin1_with_errors(
+     [[nodiscard]] UnicodeResult convert_utf16le_to_latin1_with_errors(
         const char16_t* buf, size_t len, char* latin1_buffer) noexcept {
         return get_default_implementation()->convert_utf16le_to_latin1_with_errors(
             buf, len, latin1_buffer);
     }
-    simdutf_warn_unused result convert_utf16be_to_latin1_with_errors(
+     [[nodiscard]] UnicodeResult convert_utf16be_to_latin1_with_errors(
         const char16_t* buf, size_t len, char* latin1_buffer) noexcept {
         return get_default_implementation()->convert_utf16be_to_latin1_with_errors(
             buf, len, latin1_buffer);
     }
 
-    simdutf_warn_unused size_t convert_utf16le_to_utf8(const char16_t* buf,
+     [[nodiscard]] size_t convert_utf16le_to_utf8(const char16_t* buf,
         size_t len,
         char* utf8_buffer) noexcept {
         return get_default_implementation()->convert_utf16le_to_utf8(buf, len,
             utf8_buffer);
     }
-    simdutf_warn_unused size_t convert_utf16be_to_utf8(const char16_t* buf,
+     [[nodiscard]] size_t convert_utf16be_to_utf8(const char16_t* buf,
         size_t len,
         char* utf8_buffer) noexcept {
         return get_default_implementation()->convert_utf16be_to_utf8(buf, len,
             utf8_buffer);
     }
-    simdutf_warn_unused result convert_utf16_to_utf8_with_errors(
+     [[nodiscard]] UnicodeResult convert_utf16_to_utf8_with_errors(
         const char16_t* buf, size_t len, char* utf8_buffer) noexcept {
 #if SIMDUTF_IS_BIG_ENDIAN
         return convert_utf16be_to_utf8_with_errors(buf, len, utf8_buffer);
@@ -232,7 +232,7 @@ namespace turbo {
 #endif
     }
 
-    simdutf_warn_unused result convert_utf16_to_latin1_with_errors(
+     [[nodiscard]] UnicodeResult convert_utf16_to_latin1_with_errors(
        const char16_t* buf, size_t len, char* latin1_buffer) noexcept {
 #if SIMDUTF_IS_BIG_ENDIAN
         return convert_utf16be_to_latin1_with_errors(buf, len, latin1_buffer);
@@ -242,17 +242,17 @@ namespace turbo {
     }
 
 
-    simdutf_warn_unused result convert_utf16le_to_utf8_with_errors(
+     [[nodiscard]] UnicodeResult convert_utf16le_to_utf8_with_errors(
         const char16_t* buf, size_t len, char* utf8_buffer) noexcept {
         return get_default_implementation()->convert_utf16le_to_utf8_with_errors(
             buf, len, utf8_buffer);
     }
-    simdutf_warn_unused result convert_utf16be_to_utf8_with_errors(
+     [[nodiscard]] UnicodeResult convert_utf16be_to_utf8_with_errors(
         const char16_t* buf, size_t len, char* utf8_buffer) noexcept {
         return get_default_implementation()->convert_utf16be_to_utf8_with_errors(
             buf, len, utf8_buffer);
     }
-    simdutf_warn_unused size_t convert_valid_utf16_to_utf8(
+     [[nodiscard]] size_t convert_valid_utf16_to_utf8(
         const char16_t* buf, size_t len, char* utf8_buffer) noexcept {
 #if SIMDUTF_IS_BIG_ENDIAN
         return convert_valid_utf16be_to_utf8(buf, len, utf8_buffer);
@@ -261,7 +261,7 @@ namespace turbo {
 #endif
     }
 
-    simdutf_warn_unused size_t convert_valid_utf16_to_latin1(
+     [[nodiscard]] size_t convert_valid_utf16_to_latin1(
         const char16_t* buf, size_t len, char* latin1_buffer) noexcept {
 #if SIMDUTF_IS_BIG_ENDIAN
         return convert_valid_utf16be_to_latin1(buf, len, latin1_buffer);
@@ -270,24 +270,24 @@ namespace turbo {
 #endif
     }
 
-    simdutf_warn_unused size_t convert_valid_utf16le_to_utf8(
+     [[nodiscard]] size_t convert_valid_utf16le_to_utf8(
         const char16_t* buf, size_t len, char* utf8_buffer) noexcept {
         return get_default_implementation()->convert_valid_utf16le_to_utf8(
             buf, len, utf8_buffer);
     }
-    simdutf_warn_unused size_t convert_valid_utf16be_to_utf8(
+     [[nodiscard]] size_t convert_valid_utf16be_to_utf8(
         const char16_t* buf, size_t len, char* utf8_buffer) noexcept {
         return get_default_implementation()->convert_valid_utf16be_to_utf8(
             buf, len, utf8_buffer);
     }
 
-    simdutf_warn_unused size_t convert_utf32_to_utf16le(
+     [[nodiscard]] size_t convert_utf32_to_utf16le(
         const char32_t* buf, size_t len, char16_t* utf16_buffer) noexcept {
         return get_default_implementation()->convert_utf32_to_utf16le(buf, len,
             utf16_buffer);
     }
 
-    simdutf_warn_unused size_t convert_utf16_to_utf32(
+     [[nodiscard]] size_t convert_utf16_to_utf32(
         const char16_t* buf, size_t len, char32_t* utf32_buffer) noexcept {
 #if SIMDUTF_IS_BIG_ENDIAN
         return convert_utf16be_to_utf32(buf, len, utf32_buffer);
@@ -295,17 +295,17 @@ namespace turbo {
         return convert_utf16le_to_utf32(buf, len, utf32_buffer);
 #endif
     }
-    simdutf_warn_unused size_t convert_utf16le_to_utf32(
+     [[nodiscard]] size_t convert_utf16le_to_utf32(
         const char16_t* buf, size_t len, char32_t* utf32_buffer) noexcept {
         return get_default_implementation()->convert_utf16le_to_utf32(buf, len,
             utf32_buffer);
     }
-    simdutf_warn_unused size_t convert_utf16be_to_utf32(
+     [[nodiscard]] size_t convert_utf16be_to_utf32(
         const char16_t* buf, size_t len, char32_t* utf32_buffer) noexcept {
         return get_default_implementation()->convert_utf16be_to_utf32(buf, len,
             utf32_buffer);
     }
-    simdutf_warn_unused result convert_utf16_to_utf32_with_errors(
+     [[nodiscard]] UnicodeResult convert_utf16_to_utf32_with_errors(
         const char16_t* buf, size_t len, char32_t* utf32_buffer) noexcept {
 #if SIMDUTF_IS_BIG_ENDIAN
         return convert_utf16be_to_utf32_with_errors(buf, len, utf32_buffer);
@@ -313,17 +313,17 @@ namespace turbo {
         return convert_utf16le_to_utf32_with_errors(buf, len, utf32_buffer);
 #endif
     }
-    simdutf_warn_unused result convert_utf16le_to_utf32_with_errors(
+     [[nodiscard]] UnicodeResult convert_utf16le_to_utf32_with_errors(
         const char16_t* buf, size_t len, char32_t* utf32_buffer) noexcept {
         return get_default_implementation()->convert_utf16le_to_utf32_with_errors(
             buf, len, utf32_buffer);
     }
-    simdutf_warn_unused result convert_utf16be_to_utf32_with_errors(
+     [[nodiscard]] UnicodeResult convert_utf16be_to_utf32_with_errors(
         const char16_t* buf, size_t len, char32_t* utf32_buffer) noexcept {
         return get_default_implementation()->convert_utf16be_to_utf32_with_errors(
             buf, len, utf32_buffer);
     }
-    simdutf_warn_unused size_t convert_valid_utf16_to_utf32(
+     [[nodiscard]] size_t convert_valid_utf16_to_utf32(
         const char16_t* buf, size_t len, char32_t* utf32_buffer) noexcept {
 #if SIMDUTF_IS_BIG_ENDIAN
         return convert_valid_utf16be_to_utf32(buf, len, utf32_buffer);
@@ -331,12 +331,12 @@ namespace turbo {
         return convert_valid_utf16le_to_utf32(buf, len, utf32_buffer);
 #endif
     }
-    simdutf_warn_unused size_t convert_valid_utf16le_to_utf32(
+     [[nodiscard]] size_t convert_valid_utf16le_to_utf32(
         const char16_t* buf, size_t len, char32_t* utf32_buffer) noexcept {
         return get_default_implementation()->convert_valid_utf16le_to_utf32(
             buf, len, utf32_buffer);
     }
-    simdutf_warn_unused size_t convert_valid_utf16be_to_utf32(
+     [[nodiscard]] size_t convert_valid_utf16be_to_utf32(
         const char16_t* buf, size_t len, char32_t* utf32_buffer) noexcept {
         return get_default_implementation()->convert_valid_utf16be_to_utf32(
             buf, len, utf32_buffer);
@@ -346,7 +346,7 @@ namespace turbo {
         char16_t* output) noexcept {
         get_default_implementation()->change_endianness_utf16(input, length, output);
     }
-    simdutf_warn_unused size_t count_utf16(const char16_t* input,
+     [[nodiscard]] size_t count_utf16(const char16_t* input,
         size_t length) noexcept {
 #if SIMDUTF_IS_BIG_ENDIAN
         return count_utf16be(input, length);
@@ -354,16 +354,16 @@ namespace turbo {
         return count_utf16le(input, length);
 #endif
     }
-    simdutf_warn_unused size_t count_utf16le(const char16_t* input,
+     [[nodiscard]] size_t count_utf16le(const char16_t* input,
         size_t length) noexcept {
         return get_default_implementation()->count_utf16le(input, length);
     }
-    simdutf_warn_unused size_t count_utf16be(const char16_t* input,
+     [[nodiscard]] size_t count_utf16be(const char16_t* input,
         size_t length) noexcept {
         return get_default_implementation()->count_utf16be(input, length);
     }
 
-    simdutf_warn_unused size_t utf8_length_from_utf16(const char16_t* input,
+     [[nodiscard]] size_t utf8_length_from_utf16(const char16_t* input,
         size_t length) noexcept {
 #if SIMDUTF_IS_BIG_ENDIAN
         return utf8_length_from_utf16be(input, length);
@@ -371,7 +371,7 @@ namespace turbo {
         return utf8_length_from_utf16le(input, length);
 #endif
     }
-    simdutf_warn_unused result utf8_length_from_utf16_with_replacement(
+     [[nodiscard]] UnicodeResult utf8_length_from_utf16_with_replacement(
         const char16_t* input, size_t length) noexcept {
 #if SIMDUTF_IS_BIG_ENDIAN
         return utf8_length_from_utf16be_with_replacement(input, length);
@@ -379,16 +379,16 @@ namespace turbo {
         return utf8_length_from_utf16le_with_replacement(input, length);
 #endif
     }
-    simdutf_warn_unused size_t utf8_length_from_utf16le(const char16_t* input,
+     [[nodiscard]] size_t utf8_length_from_utf16le(const char16_t* input,
         size_t length) noexcept {
         return get_default_implementation()->utf8_length_from_utf16le(input, length);
     }
-    simdutf_warn_unused size_t utf8_length_from_utf16be(const char16_t* input,
+     [[nodiscard]] size_t utf8_length_from_utf16be(const char16_t* input,
         size_t length) noexcept {
         return get_default_implementation()->utf8_length_from_utf16be(input, length);
     }
 
-    simdutf_warn_unused size_t utf32_length_from_utf16(const char16_t* input,
+     [[nodiscard]] size_t utf32_length_from_utf16(const char16_t* input,
         size_t length) noexcept {
 #if SIMDUTF_IS_BIG_ENDIAN
         return utf32_length_from_utf16be(input, length);
@@ -396,32 +396,32 @@ namespace turbo {
         return utf32_length_from_utf16le(input, length);
 #endif
     }
-    simdutf_warn_unused size_t utf32_length_from_utf16le(const char16_t* input,
+     [[nodiscard]] size_t utf32_length_from_utf16le(const char16_t* input,
         size_t length) noexcept {
         return get_default_implementation()->utf32_length_from_utf16le(input, length);
     }
-    simdutf_warn_unused size_t utf32_length_from_utf16be(const char16_t* input,
+     [[nodiscard]] size_t utf32_length_from_utf16be(const char16_t* input,
         size_t length) noexcept {
         return get_default_implementation()->utf32_length_from_utf16be(input, length);
     }
 
-    simdutf_warn_unused size_t utf16_length_from_utf8(const char* input,
+     [[nodiscard]] size_t utf16_length_from_utf8(const char* input,
         size_t length) noexcept {
         return get_default_implementation()->utf16_length_from_utf8(input, length);
     }
-    simdutf_warn_unused result utf8_length_from_utf16le_with_replacement(
+     [[nodiscard]] UnicodeResult utf8_length_from_utf16le_with_replacement(
         const char16_t* input, size_t length) noexcept {
         return get_default_implementation()
             ->utf8_length_from_utf16le_with_replacement(input, length);
     }
 
-    simdutf_warn_unused result utf8_length_from_utf16be_with_replacement(
+     [[nodiscard]] UnicodeResult utf8_length_from_utf16be_with_replacement(
         const char16_t* input, size_t length) noexcept {
         return get_default_implementation()
             ->utf8_length_from_utf16be_with_replacement(input, length);
     }
 
-    simdutf_warn_unused size_t convert_utf16_to_utf8_with_replacement(
+     [[nodiscard]] size_t convert_utf16_to_utf8_with_replacement(
         const char16_t* input, size_t length, char* utf8_buffer) noexcept {
 #if SIMDUTF_IS_BIG_ENDIAN
         return convert_utf16be_to_utf8_with_replacement(input, length, utf8_buffer);
@@ -430,13 +430,13 @@ namespace turbo {
 #endif
     }
 
-    simdutf_warn_unused size_t convert_utf16le_to_utf8_with_replacement(
+     [[nodiscard]] size_t convert_utf16le_to_utf8_with_replacement(
         const char16_t* input, size_t length, char* utf8_buffer) noexcept {
         return get_default_implementation()->convert_utf16le_to_utf8_with_replacement(
             input, length, utf8_buffer);
     }
 
-    simdutf_warn_unused size_t convert_utf16be_to_utf8_with_replacement(
+     [[nodiscard]] size_t convert_utf16be_to_utf8_with_replacement(
         const char16_t* input, size_t length, char* utf8_buffer) noexcept {
         return get_default_implementation()->convert_utf16be_to_utf8_with_replacement(
             input, length, utf8_buffer);

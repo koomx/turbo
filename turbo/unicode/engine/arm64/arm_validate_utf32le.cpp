@@ -24,7 +24,7 @@ const char32_t* arm_validate_utf32le(const char32_t* input, size_t size) {
     return input;
 }
 
-const result arm_validate_utf32le_with_errors(const char32_t* input,
+const UnicodeResult arm_validate_utf32le_with_errors(const char32_t* input,
     size_t size) {
     const char32_t* start = input;
     const char32_t* end = input + size;
@@ -45,16 +45,16 @@ const result arm_validate_utf32le_with_errors(const char32_t* input,
         // one of them occurred.
         const uint32x4_t too_large = vcgtq_u32(currentmax, standardmax);
         const uint32x4_t surrogate = vcgtq_u32(currentoffsetmax, standardoffsetmax);
-        if (simdutf_unlikely(any_lane_set(
+        if (KUMO_UNLIKELY(any_lane_set(
                 vreinterpretq_u16_u32(vorrq_u32(too_large, surrogate))))) {
             if (any_lane_set(vreinterpretq_u16_u32(too_large))) {
-                return result(error_code::TOO_LARGE, input - start);
+                return UnicodeResult(UnicodeError::TOO_LARGE, input - start);
             }
-            return result(error_code::SURROGATE, input - start);
+            return UnicodeResult(UnicodeError::SURROGATE, input - start);
         }
 
         input += 4;
     }
 
-    return result(error_code::SUCCESS, input - start);
+    return UnicodeResult(UnicodeError::SUCCESS, input - start);
 }

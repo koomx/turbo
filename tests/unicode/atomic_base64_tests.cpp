@@ -1,8 +1,6 @@
 #include <turbo/unicode/utf.h>
 
-#if SIMDUTF_CPLUSPLUS20
-#include <barrier>
-#endif
+
 #include <iomanip>
 #include <iostream>
 #include <random>

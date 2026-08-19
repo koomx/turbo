@@ -305,7 +305,7 @@ avx2_convert_utf16_to_utf8(const char16_t* buf, size_t len, char* utf8_output) {
   tail if needed.
 */
 template <endianness big_endian>
-std::pair<result, char*>
+std::pair<UnicodeResult, char*>
 avx2_convert_utf16_to_utf8_with_errors(const char16_t* buf, size_t len,
     char* utf8_output) {
     const char16_t* start = buf;
@@ -539,7 +539,7 @@ avx2_convert_utf16_to_utf8_with_errors(const char16_t* buf, size_t len,
                     uint16_t diff2 = uint16_t(next_word - 0xDC00);
                     if ((diff | diff2) > 0x3FF) {
                         return std::make_pair(
-                            result(error_code::SURROGATE, buf - start + k - 1),
+                            UnicodeResult(UnicodeError::SURROGATE, buf - start + k - 1),
                             utf8_output);
                     }
                     uint32_t value = (diff << 10) + diff2 + 0x10000;
@@ -552,5 +552,5 @@ avx2_convert_utf16_to_utf8_with_errors(const char16_t* buf, size_t len,
             buf += k;
         }
     } // while
-    return std::make_pair(result(error_code::SUCCESS, buf - start), utf8_output);
+    return std::make_pair(UnicodeResult(UnicodeError::SUCCESS, buf - start), utf8_output);
 }

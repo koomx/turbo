@@ -25,7 +25,7 @@ namespace turbo::internal {
         class AvailableImplementationList {
         public:
             /// Get the list of available implementations compiled into simdutf
-            simdutf_really_inline AvailableImplementationList() { }
+            KUMO_FORCE_INLINE AvailableImplementationList() { }
             /// Number of implementations
             size_t size() const noexcept;
             /// STL const begin() iterator
@@ -116,7 +116,7 @@ namespace turbo::internal {
 
 namespace turbo {
     /// The list of available implementations compiled into simdutf.
-    extern SIMDUTF_DLLIMPORTEXPORT const internal::AvailableImplementationList&
+    extern KUMO_DLL const internal::AvailableImplementationList&
     get_available_implementations();
 
     const implementation* get_default_implementation();
@@ -126,7 +126,7 @@ namespace turbo {
     ///
     /// Automatically initialized on first use to the most advanced implementation
     /// supported by this hardware.
-    extern SIMDUTF_DLLIMPORTEXPORT internal::atomic_ptr<const implementation>&
+    extern KUMO_DLL internal::atomic_ptr<const implementation>&
     get_active_implementation();
 
 }

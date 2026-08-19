@@ -27,7 +27,7 @@ namespace turbo {
                     return latin1_output - start;
                 }
 
-                inline  result convert_with_errors(const char32_t* data,
+                inline  UnicodeResult convert_with_errors(const char32_t* data,
                     size_t len,
                     char* latin1_output) {
                     char* start { latin1_output };
@@ -52,10 +52,10 @@ namespace turbo {
                             *latin1_output++ = (char)(utf32_char & 0xFF);
                             pos++;
                         } else {
-                            return result(error_code::TOO_LARGE, pos);
+                            return UnicodeResult(UnicodeError::TOO_LARGE, pos);
                         };
                     }
-                    return result(error_code::SUCCESS, latin1_output - start);
+                    return UnicodeResult(UnicodeError::SUCCESS, latin1_output - start);
                 }
 
             } // namespace utf32_to_latin1

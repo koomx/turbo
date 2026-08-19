@@ -29,7 +29,7 @@ namespace turbo {
 
                 /// Validates that the string is actual UTF-8 and stops on errors.
                 template <class checker>
-                result generic_validate_utf8_with_errors(const uint8_t* input, size_t length) {
+                UnicodeResult generic_validate_utf8_with_errors(const uint8_t* input, size_t length) {
                     checker c {};
                     buf_block_reader<64> reader(input, length);
                     size_t count { 0 };
@@ -40,7 +40,7 @@ namespace turbo {
                             if (count != 0) {
                                 count--;
                             } // Sometimes the error is only detected in the next chunk
-                            result res = scalar::utf8::rewind_and_validate_with_errors(
+                            UnicodeResult res = scalar::utf8::rewind_and_validate_with_errors(
                                 reinterpret_cast<const char*>(input),
                                 reinterpret_cast<const char*>(input + count), length - count);
                             res.count += count;
@@ -59,17 +59,17 @@ namespace turbo {
                         if (count != 0) {
                             count--;
                         } // Sometimes the error is only detected in the next chunk
-                        result res = scalar::utf8::rewind_and_validate_with_errors(
+                        UnicodeResult res = scalar::utf8::rewind_and_validate_with_errors(
                             reinterpret_cast<const char*>(input),
                             reinterpret_cast<const char*>(input) + count, length - count);
                         res.count += count;
                         return res;
                     } else {
-                        return result(error_code::SUCCESS, length);
+                        return UnicodeResult(UnicodeError::SUCCESS, length);
                     }
                 }
 
-                result generic_validate_utf8_with_errors(const char* input, size_t length) {
+                UnicodeResult generic_validate_utf8_with_errors(const char* input, size_t length) {
                     return generic_validate_utf8_with_errors<utf8_checker>(
                         reinterpret_cast<const uint8_t*>(input), length);
                 }

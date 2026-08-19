@@ -4,7 +4,7 @@ namespace turbo {
             namespace utf16 {
 
                 template <endianness big_endian>
-                simdutf_really_inline size_t utf8_length_from_utf16(const char16_t* in,
+                KUMO_FORCE_INLINE size_t utf8_length_from_utf16(const char16_t* in,
                     size_t size) {
                     size_t pos = 0;
                     size_t count = 0;

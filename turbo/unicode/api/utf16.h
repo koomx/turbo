@@ -16,7 +16,7 @@
 #pragma once
 
 #include <turbo/unicode/engine/common_defs.h>
-#include <turbo/unicode/engine/compiler_check.h>
+
 #include <turbo/unicode/text_encoding.h>
 #include <turbo/unicode/error.h>
 
@@ -31,7 +31,7 @@ namespace turbo {
     /// @param buf the UTF-16 string to validate.
     /// @param len the length of the string in bytes.
     /// @return true if and only if the string is valid ASCII.
-    simdutf_warn_unused bool validate_utf16_as_ascii(const char16_t* buf,
+     [[nodiscard]] bool validate_utf16_as_ascii(const char16_t* buf,
         size_t len) noexcept;
 
     /// Validate the ASCII string as a UTF-16BE sequence.
@@ -43,7 +43,7 @@ namespace turbo {
     /// @param buf the UTF-16BE string to validate.
     /// @param len the length of the string in bytes.
     /// @return true if and only if the string is valid ASCII.
-    simdutf_warn_unused bool validate_utf16be_as_ascii(const char16_t* buf,
+     [[nodiscard]] bool validate_utf16be_as_ascii(const char16_t* buf,
         size_t len) noexcept;
 
     /// Validate the ASCII string as a UTF-16LE sequence.
@@ -55,7 +55,7 @@ namespace turbo {
     /// @param buf the UTF-16LE string to validate.
     /// @param len the length of the string in bytes.
     /// @return true if and only if the string is valid ASCII.
-    simdutf_warn_unused bool validate_utf16le_as_ascii(const char16_t* buf,
+     [[nodiscard]] bool validate_utf16le_as_ascii(const char16_t* buf,
         size_t len) noexcept;
 
 
@@ -71,7 +71,7 @@ namespace turbo {
     /// @param len the length of the string in number of 2-byte code units
     /// (char16_t).
     /// @return true if and only if the string is valid UTF-16.
-    simdutf_warn_unused bool validate_utf16(const char16_t* buf,
+     [[nodiscard]] bool validate_utf16(const char16_t* buf,
         size_t len) noexcept;
 
     /// Validate the UTF-16LE string. This function may be best when you expect
@@ -86,7 +86,7 @@ namespace turbo {
     /// @param len the length of the string in number of 2-byte code units
     /// (char16_t).
     /// @return true if and only if the string is valid UTF-16LE.
-    simdutf_warn_unused bool validate_utf16le(const char16_t* buf,
+     [[nodiscard]] bool validate_utf16le(const char16_t* buf,
         size_t len) noexcept;
 
     /// Validate the UTF-16BE string. This function may be best when you expect
@@ -101,7 +101,7 @@ namespace turbo {
     /// @param len the length of the string in number of 2-byte code units
     /// (char16_t).
     /// @return true if and only if the string is valid UTF-16BE.
-    simdutf_warn_unused bool validate_utf16be(const char16_t* buf,
+     [[nodiscard]] bool validate_utf16be(const char16_t* buf,
         size_t len) noexcept;
 
     /// Using native endianness; Validate the UTF-16 string and stop on error.
@@ -115,11 +115,11 @@ namespace turbo {
     /// @param buf the UTF-16 string to validate.
     /// @param len the length of the string in number of 2-byte code units
     /// (char16_t).
-    /// @return a result pair struct (of type turbo::result containing the two
+    /// @return a UnicodeResult pair struct (of type turbo::UnicodeResult containing the two
     /// fields error and count) with an error code and either position of the error
     /// (in the input in code units) if any, or the number of code units validated if
     /// successful.
-    simdutf_warn_unused result validate_utf16_with_errors(const char16_t* buf,
+     [[nodiscard]] UnicodeResult validate_utf16_with_errors(const char16_t* buf,
         size_t len) noexcept;
 
     /// Validate the UTF-16LE string and stop on error. It might be faster than
@@ -132,11 +132,11 @@ namespace turbo {
     /// @param buf the UTF-16LE string to validate.
     /// @param len the length of the string in number of 2-byte code units
     /// (char16_t).
-    /// @return a result pair struct (of type turbo::result containing the two
+    /// @return a UnicodeResult pair struct (of type turbo::UnicodeResult containing the two
     /// fields error and count) with an error code and either position of the error
     /// (in the input in code units) if any, or the number of code units validated if
     /// successful.
-    simdutf_warn_unused result validate_utf16le_with_errors(const char16_t* buf,
+     [[nodiscard]] UnicodeResult validate_utf16le_with_errors(const char16_t* buf,
         size_t len) noexcept;
 
 
@@ -150,11 +150,11 @@ namespace turbo {
     /// @param buf the UTF-16BE string to validate.
     /// @param len the length of the string in number of 2-byte code units
     /// (char16_t).
-    /// @return a result pair struct (of type turbo::result containing the two
+    /// @return a UnicodeResult pair struct (of type turbo::UnicodeResult containing the two
     /// fields error and count) with an error code and either position of the error
     /// (in the input in code units) if any, or the number of code units validated if
     /// successful.
-    simdutf_warn_unused result validate_utf16be_with_errors(const char16_t* buf,
+     [[nodiscard]] UnicodeResult validate_utf16be_with_errors(const char16_t* buf,
         size_t len) noexcept;
 
     /// Fixes an ill-formed UTF-16LE string by replacing mismatched surrogates with
@@ -207,10 +207,10 @@ namespace turbo {
     ///
     /// @param input         the UTF-16 string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param utf8_buffer   the pointer to buffer that can hold conversion result
+    /// @param utf8_buffer   the pointer to buffer that can hold conversion UnicodeResult
     /// @return number of written code units; 0 if input is not a valid UTF-16LE
     /// string
-    simdutf_warn_unused size_t convert_utf16_to_utf8(const char16_t* input,
+     [[nodiscard]] size_t convert_utf16_to_utf8(const char16_t* input,
         size_t length,
         char* utf8_buffer) noexcept;
 
@@ -232,10 +232,10 @@ namespace turbo {
     ///
     /// @param input         the UTF-16 string to convert
     /// @param length        the length of the string in 16-bit code units (char16_t)
-    /// @param utf8_output  	the pointer to buffer that can hold conversion result
+    /// @param utf8_output  	the pointer to buffer that can hold conversion UnicodeResult
     /// @param utf8_len      the maximum output length
     /// @return the number of written char; 0 if conversion is not possible
-    simdutf_warn_unused size_t convert_utf16_to_utf8_safe(const char16_t* input,
+     [[nodiscard]] size_t convert_utf16_to_utf8_safe(const char16_t* input,
         size_t length,
         char* utf8_output,
         size_t utf8_len) noexcept;
@@ -250,10 +250,10 @@ namespace turbo {
     ///
     /// @param input         the UTF-16 string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param latin1_buffer   the pointer to buffer that can hold conversion result
+    /// @param latin1_buffer   the pointer to buffer that can hold conversion UnicodeResult
     /// @return number of written code units; 0 if input is not a valid UTF-16 string
     /// or if it cannot be represented as Latin1
-    simdutf_warn_unused size_t convert_utf16_to_latin1(
+     [[nodiscard]] size_t convert_utf16_to_latin1(
         const char16_t* input, size_t length, char* latin1_buffer) noexcept;
 
     /// Convert possibly broken UTF-16LE string into Latin1 string.
@@ -267,10 +267,10 @@ namespace turbo {
     ///
     /// @param input         the UTF-16LE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param latin1_buffer   the pointer to buffer that can hold conversion result
+    /// @param latin1_buffer   the pointer to buffer that can hold conversion UnicodeResult
     /// @return number of written code units; 0 if input is not a valid UTF-16LE
     /// string or if it cannot be represented as Latin1
-    simdutf_warn_unused size_t convert_utf16le_to_latin1(
+     [[nodiscard]] size_t convert_utf16le_to_latin1(
         const char16_t* input, size_t length, char* latin1_buffer) noexcept;
 
 
@@ -283,10 +283,10 @@ namespace turbo {
     ///
     /// @param input         the UTF-16BE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param latin1_buffer   the pointer to buffer that can hold conversion result
+    /// @param latin1_buffer   the pointer to buffer that can hold conversion UnicodeResult
     /// @return number of written code units; 0 if input is not a valid UTF-16BE
     /// string or if it cannot be represented as Latin1
-    simdutf_warn_unused size_t convert_utf16be_to_latin1(
+     [[nodiscard]] size_t convert_utf16be_to_latin1(
         const char16_t* input, size_t length, char* latin1_buffer) noexcept;
 
     /// Convert possibly broken UTF-16LE string into UTF-8 string.
@@ -298,10 +298,10 @@ namespace turbo {
     ///
     /// @param input         the UTF-16LE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param utf8_buffer   the pointer to buffer that can hold conversion result
+    /// @param utf8_buffer   the pointer to buffer that can hold conversion UnicodeResult
     /// @return number of written code units; 0 if input is not a valid UTF-16LE
     /// string
-    simdutf_warn_unused size_t convert_utf16le_to_utf8(const char16_t* input,
+     [[nodiscard]] size_t convert_utf16le_to_utf8(const char16_t* input,
         size_t length,
         char* utf8_buffer) noexcept;
 
@@ -315,10 +315,10 @@ namespace turbo {
     ///
     /// @param input         the UTF-16BE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param utf8_buffer   the pointer to buffer that can hold conversion result
+    /// @param utf8_buffer   the pointer to buffer that can hold conversion UnicodeResult
     /// @return number of written code units; 0 if input is not a valid UTF-16LE
     /// string
-    simdutf_warn_unused size_t convert_utf16be_to_utf8(const char16_t* input,
+     [[nodiscard]] size_t convert_utf16be_to_utf8(const char16_t* input,
         size_t length,
         char* utf8_buffer) noexcept;
 
@@ -331,12 +331,12 @@ namespace turbo {
     ///
     /// @param input         the UTF-16 string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param latin1_buffer   the pointer to buffer that can hold conversion result
-    /// @return a result pair struct (of type turbo::result containing the two
+    /// @param latin1_buffer   the pointer to buffer that can hold conversion UnicodeResult
+    /// @return a UnicodeResult pair struct (of type turbo::UnicodeResult containing the two
     /// fields error and count) with an error code and either position of the error
     /// (in the input in code units) if any, or the number of char written if
     /// successful.
-    simdutf_warn_unused result convert_utf16_to_latin1_with_errors(
+     [[nodiscard]] UnicodeResult convert_utf16_to_latin1_with_errors(
         const char16_t* input, size_t length, char* latin1_buffer) noexcept;
 
     /// Convert possibly broken UTF-16LE string into Latin1 string.
@@ -347,12 +347,12 @@ namespace turbo {
     ///
     /// @param input         the UTF-16LE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param latin1_buffer   the pointer to buffer that can hold conversion result
-    /// @return a result pair struct (of type turbo::result containing the two
+    /// @param latin1_buffer   the pointer to buffer that can hold conversion UnicodeResult
+    /// @return a UnicodeResult pair struct (of type turbo::UnicodeResult containing the two
     /// fields error and count) with an error code and either position of the error
     /// (in the input in code units) if any, or the number of char written if
     /// successful.
-    simdutf_warn_unused result convert_utf16le_to_latin1_with_errors(
+     [[nodiscard]] UnicodeResult convert_utf16le_to_latin1_with_errors(
         const char16_t* input, size_t length, char* latin1_buffer) noexcept;
 
 
@@ -366,12 +366,12 @@ namespace turbo {
     ///
     /// @param input         the UTF-16BE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param latin1_buffer   the pointer to buffer that can hold conversion result
-    /// @return a result pair struct (of type turbo::result containing the two
+    /// @param latin1_buffer   the pointer to buffer that can hold conversion UnicodeResult
+    /// @return a UnicodeResult pair struct (of type turbo::UnicodeResult containing the two
     /// fields error and count) with an error code and either position of the error
     /// (in the input in code units) if any, or the number of char written if
     /// successful.
-    simdutf_warn_unused result convert_utf16be_to_latin1_with_errors(
+     [[nodiscard]] UnicodeResult convert_utf16be_to_latin1_with_errors(
         const char16_t* input, size_t length, char* latin1_buffer) noexcept;
 
 
@@ -385,12 +385,12 @@ namespace turbo {
     ///
     /// @param input         the UTF-16 string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param utf8_buffer   the pointer to buffer that can hold conversion result
-    /// @return a result pair struct (of type turbo::result containing the two
+    /// @param utf8_buffer   the pointer to buffer that can hold conversion UnicodeResult
+    /// @return a UnicodeResult pair struct (of type turbo::UnicodeResult containing the two
     /// fields error and count) with an error code and either position of the error
     /// (in the input in code units) if any, or the number of char written if
     /// successful.
-    simdutf_warn_unused result convert_utf16_to_utf8_with_errors(
+     [[nodiscard]] UnicodeResult convert_utf16_to_utf8_with_errors(
         const char16_t* input, size_t length, char* utf8_buffer) noexcept;
 
 
@@ -403,12 +403,12 @@ namespace turbo {
     ///
     /// @param input         the UTF-16LE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param utf8_buffer   the pointer to buffer that can hold conversion result
-    /// @return a result pair struct (of type turbo::result containing the two
+    /// @param utf8_buffer   the pointer to buffer that can hold conversion UnicodeResult
+    /// @return a UnicodeResult pair struct (of type turbo::UnicodeResult containing the two
     /// fields error and count) with an error code and either position of the error
     /// (in the input in code units) if any, or the number of char written if
     /// successful.
-    simdutf_warn_unused result convert_utf16le_to_utf8_with_errors(
+     [[nodiscard]] UnicodeResult convert_utf16le_to_utf8_with_errors(
         const char16_t* input, size_t length, char* utf8_buffer) noexcept;
 
     /// Convert possibly broken UTF-16BE string into UTF-8 string and stop on error.
@@ -420,12 +420,12 @@ namespace turbo {
     ///
     /// @param input         the UTF-16BE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param utf8_buffer   the pointer to buffer that can hold conversion result
-    /// @return a result pair struct (of type turbo::result containing the two
+    /// @param utf8_buffer   the pointer to buffer that can hold conversion UnicodeResult
+    /// @return a UnicodeResult pair struct (of type turbo::UnicodeResult containing the two
     /// fields error and count) with an error code and either position of the error
     /// (in the input in code units) if any, or the number of char written if
     /// successful.
-    simdutf_warn_unused result convert_utf16be_to_utf8_with_errors(
+     [[nodiscard]] UnicodeResult convert_utf16be_to_utf8_with_errors(
         const char16_t* input, size_t length, char* utf8_buffer) noexcept;
 
     /// Convert possibly broken UTF-16LE string into UTF-8 string, replacing
@@ -438,9 +438,9 @@ namespace turbo {
     ///
     /// @param input         the UTF-16LE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param utf8_buffer   the pointer to buffer that can hold conversion result
+    /// @param utf8_buffer   the pointer to buffer that can hold conversion UnicodeResult
     /// @return number of written code units
-    simdutf_warn_unused size_t convert_utf16le_to_utf8_with_replacement(
+     [[nodiscard]] size_t convert_utf16le_to_utf8_with_replacement(
         const char16_t* input, size_t length, char* utf8_buffer) noexcept;
 
     /// Convert possibly broken UTF-16BE string into UTF-8 string, replacing
@@ -453,9 +453,9 @@ namespace turbo {
     ///
     /// @param input         the UTF-16BE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param utf8_buffer   the pointer to buffer that can hold conversion result
+    /// @param utf8_buffer   the pointer to buffer that can hold conversion UnicodeResult
     /// @return number of written code units
-    simdutf_warn_unused size_t convert_utf16be_to_utf8_with_replacement(
+     [[nodiscard]] size_t convert_utf16be_to_utf8_with_replacement(
         const char16_t* input, size_t length, char* utf8_buffer) noexcept;
 
 
@@ -469,9 +469,9 @@ namespace turbo {
     ///
     /// @param input         the UTF-16 string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param utf8_buffer   the pointer to buffer that can hold conversion result
+    /// @param utf8_buffer   the pointer to buffer that can hold conversion UnicodeResult
     /// @return number of written code units
-    simdutf_warn_unused size_t convert_utf16_to_utf8_with_replacement(
+     [[nodiscard]] size_t convert_utf16_to_utf8_with_replacement(
         const char16_t* input, size_t length, char* utf8_buffer) noexcept;
 
 
@@ -484,15 +484,15 @@ namespace turbo {
     /// @param input         the UTF-16 string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
     /// @param utf8_buffer   the pointer to a buffer that can hold the conversion
-    /// result
+    /// UnicodeResult
     /// @return number of written code units; 0 if conversion is not possible
-    simdutf_warn_unused size_t convert_valid_utf16_to_utf8(
+     [[nodiscard]] size_t convert_valid_utf16_to_utf8(
         const char16_t* input, size_t length, char* utf8_buffer) noexcept;
 
     /// Using native endianness, convert UTF-16 string into Latin1 string.
     ///
     /// This function assumes that the input string is valid UTF-16 and that it can
-    /// be represented as Latin1. If you violate this assumption, the result is
+    /// be represented as Latin1. If you violate this assumption, the UnicodeResult is
     /// implementation defined and may include system-dependent behavior such as
     /// crashes.
     ///
@@ -504,16 +504,16 @@ namespace turbo {
     ///
     /// @param input         the UTF-16 string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param latin1_buffer   the pointer to buffer that can hold conversion result
+    /// @param latin1_buffer   the pointer to buffer that can hold conversion UnicodeResult
     /// @return number of written code units; 0 if conversion is not possible
-    simdutf_warn_unused size_t convert_valid_utf16_to_latin1(
+     [[nodiscard]] size_t convert_valid_utf16_to_latin1(
         const char16_t* input, size_t length, char* latin1_buffer) noexcept;
 
 
     /// Convert valid UTF-16LE string into Latin1 string.
     ///
     /// This function assumes that the input string is valid UTF-16LE and that it can
-    /// be represented as Latin1. If you violate this assumption, the result is
+    /// be represented as Latin1. If you violate this assumption, the UnicodeResult is
     /// implementation defined and may include system-dependent behavior such as
     /// crashes.
     ///
@@ -525,16 +525,16 @@ namespace turbo {
     ///
     /// @param input         the UTF-16LE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param latin1_buffer   the pointer to buffer that can hold conversion result
+    /// @param latin1_buffer   the pointer to buffer that can hold conversion UnicodeResult
     /// @return number of written code units; 0 if conversion is not possible
-    simdutf_warn_unused size_t convert_valid_utf16le_to_latin1(
+     [[nodiscard]] size_t convert_valid_utf16le_to_latin1(
         const char16_t* input, size_t length, char* latin1_buffer) noexcept;
 
 
     /// Convert valid UTF-16BE string into Latin1 string.
     ///
     /// This function assumes that the input string is valid UTF-16BE and that it can
-    /// be represented as Latin1. If you violate this assumption, the result is
+    /// be represented as Latin1. If you violate this assumption, the UnicodeResult is
     /// implementation defined and may include system-dependent behavior such as
     /// crashes.
     ///
@@ -546,9 +546,9 @@ namespace turbo {
     ///
     /// @param input         the UTF-16BE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param latin1_buffer   the pointer to buffer that can hold conversion result
+    /// @param latin1_buffer   the pointer to buffer that can hold conversion UnicodeResult
     /// @return number of written code units; 0 if conversion is not possible
-    simdutf_warn_unused size_t convert_valid_utf16be_to_latin1(
+     [[nodiscard]] size_t convert_valid_utf16be_to_latin1(
         const char16_t* input, size_t length, char* latin1_buffer) noexcept;
 
 
@@ -561,9 +561,9 @@ namespace turbo {
     /// @param input         the UTF-16LE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
     /// @param utf8_buffer   the pointer to a buffer that can hold the conversion
-    /// result
+    /// UnicodeResult
     /// @return number of written code units; 0 if conversion is not possible
-    simdutf_warn_unused size_t convert_valid_utf16le_to_utf8(
+     [[nodiscard]] size_t convert_valid_utf16le_to_utf8(
         const char16_t* input, size_t length, char* utf8_buffer) noexcept;
 
 
@@ -576,9 +576,9 @@ namespace turbo {
     /// @param input         the UTF-16BE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
     /// @param utf8_buffer   the pointer to a buffer that can hold the conversion
-    /// result
+    /// UnicodeResult
     /// @return number of written code units; 0 if conversion is not possible
-    simdutf_warn_unused size_t convert_valid_utf16be_to_utf8(
+     [[nodiscard]] size_t convert_valid_utf16be_to_utf8(
         const char16_t* input, size_t length, char* utf8_buffer) noexcept;
 
      /// Using native endianness, convert possibly broken UTF-16 string into UTF-32
@@ -591,10 +591,10 @@ namespace turbo {
     ///
     /// @param input         the UTF-16 string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param utf32_buffer   the pointer to buffer that can hold conversion result
+    /// @param utf32_buffer   the pointer to buffer that can hold conversion UnicodeResult
     /// @return number of written code units; 0 if input is not a valid UTF-16LE
     /// string
-    simdutf_warn_unused size_t convert_utf16_to_utf32(
+     [[nodiscard]] size_t convert_utf16_to_utf32(
         const char16_t* input, size_t length, char32_t* utf32_buffer) noexcept;
 
 
@@ -607,10 +607,10 @@ namespace turbo {
     ///
     /// @param input         the UTF-16LE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param utf32_buffer   the pointer to buffer that can hold conversion result
+    /// @param utf32_buffer   the pointer to buffer that can hold conversion UnicodeResult
     /// @return number of written code units; 0 if input is not a valid UTF-16LE
     /// string
-    simdutf_warn_unused size_t convert_utf16le_to_utf32(
+     [[nodiscard]] size_t convert_utf16le_to_utf32(
         const char16_t* input, size_t length, char32_t* utf32_buffer) noexcept;
 
     /// Convert possibly broken UTF-16BE string into UTF-32 string.
@@ -622,10 +622,10 @@ namespace turbo {
     ///
     /// @param input         the UTF-16BE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param utf32_buffer   the pointer to buffer that can hold conversion result
+    /// @param utf32_buffer   the pointer to buffer that can hold conversion UnicodeResult
     /// @return number of written code units; 0 if input is not a valid UTF-16LE
     /// string
-    simdutf_warn_unused size_t convert_utf16be_to_utf32(
+     [[nodiscard]] size_t convert_utf16be_to_utf32(
         const char16_t* input, size_t length, char32_t* utf32_buffer) noexcept;
 
     /// Using native endianness, convert possibly broken UTF-16 string into
@@ -638,12 +638,12 @@ namespace turbo {
     ///
     /// @param input         the UTF-16 string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param utf32_buffer   the pointer to buffer that can hold conversion result
-    /// @return a result pair struct (of type turbo::result containing the two
+    /// @param utf32_buffer   the pointer to buffer that can hold conversion UnicodeResult
+    /// @return a UnicodeResult pair struct (of type turbo::UnicodeResult containing the two
     /// fields error and count) with an error code and either position of the error
     /// (in the input in code units) if any, or the number of char32_t written if
     /// successful.
-    simdutf_warn_unused result convert_utf16_to_utf32_with_errors(
+     [[nodiscard]] UnicodeResult convert_utf16_to_utf32_with_errors(
         const char16_t* input, size_t length, char32_t* utf32_buffer) noexcept;
 
 
@@ -656,12 +656,12 @@ namespace turbo {
     ///
     /// @param input         the UTF-16LE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param utf32_buffer   the pointer to buffer that can hold conversion result
-    /// @return a result pair struct (of type turbo::result containing the two
+    /// @param utf32_buffer   the pointer to buffer that can hold conversion UnicodeResult
+    /// @return a UnicodeResult pair struct (of type turbo::UnicodeResult containing the two
     /// fields error and count) with an error code and either position of the error
     /// (in the input in code units) if any, or the number of char32_t written if
     /// successful.
-    simdutf_warn_unused result convert_utf16le_to_utf32_with_errors(
+     [[nodiscard]] UnicodeResult convert_utf16le_to_utf32_with_errors(
         const char16_t* input, size_t length, char32_t* utf32_buffer) noexcept;
 
 
@@ -674,12 +674,12 @@ namespace turbo {
     ///
     /// @param input         the UTF-16BE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @param utf32_buffer   the pointer to buffer that can hold conversion result
-    /// @return a result pair struct (of type turbo::result containing the two
+    /// @param utf32_buffer   the pointer to buffer that can hold conversion UnicodeResult
+    /// @return a UnicodeResult pair struct (of type turbo::UnicodeResult containing the two
     /// fields error and count) with an error code and either position of the error
     /// (in the input in code units) if any, or the number of char32_t written if
     /// successful.
-    simdutf_warn_unused result convert_utf16be_to_utf32_with_errors(
+     [[nodiscard]] UnicodeResult convert_utf16be_to_utf32_with_errors(
         const char16_t* input, size_t length, char32_t* utf32_buffer) noexcept;
 
     /// Using native endianness, convert valid UTF-16 string into UTF-32 string.
@@ -692,9 +692,9 @@ namespace turbo {
     /// @param input         the UTF-16 string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
     /// @param utf32_buffer   the pointer to a buffer that can hold the conversion
-    /// result
+    /// UnicodeResult
     /// @return number of written code units; 0 if conversion is not possible
-    simdutf_warn_unused size_t convert_valid_utf16_to_utf32(
+     [[nodiscard]] size_t convert_valid_utf16_to_utf32(
         const char16_t* input, size_t length, char32_t* utf32_buffer) noexcept;
 
 
@@ -707,9 +707,9 @@ namespace turbo {
     /// @param input         the UTF-16LE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
     /// @param utf32_buffer   the pointer to a buffer that can hold the conversion
-    /// result
+    /// UnicodeResult
     /// @return number of written code units; 0 if conversion is not possible
-    simdutf_warn_unused size_t convert_valid_utf16le_to_utf32(
+     [[nodiscard]] size_t convert_valid_utf16le_to_utf32(
         const char16_t* input, size_t length, char32_t* utf32_buffer) noexcept;
 
 
@@ -722,21 +722,21 @@ namespace turbo {
     /// @param input         the UTF-16BE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
     /// @param utf32_buffer   the pointer to a buffer that can hold the conversion
-    /// result
+    /// UnicodeResult
     /// @return number of written code units; 0 if conversion is not possible
-    simdutf_warn_unused size_t convert_valid_utf16be_to_utf32(
+     [[nodiscard]] size_t convert_valid_utf16be_to_utf32(
         const char16_t* input, size_t length, char32_t* utf32_buffer) noexcept;
 
     /// Using native endianness; Compute the number of bytes that this UTF-16
     /// string would require in UTF-8 format.
     ///
     /// This function does not validate the input. It is acceptable to pass invalid
-    /// UTF-16 strings but in such cases the result is implementation defined.
+    /// UTF-16 strings but in such cases the UnicodeResult is implementation defined.
     ///
     /// @param input         the UTF-16 string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
     /// @return the number of bytes required to encode the UTF-16LE string as UTF-8
-    simdutf_warn_unused size_t utf8_length_from_utf16(const char16_t* input,
+     [[nodiscard]] size_t utf8_length_from_utf16(const char16_t* input,
         size_t length) noexcept;
 
 
@@ -747,7 +747,7 @@ namespace turbo {
     ///
     /// @param input         the UTF-16 string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @return a result pair struct (of type turbo::result containing the two
+    /// @return a UnicodeResult pair struct (of type turbo::UnicodeResult containing the two
     /// fields error and count) where the count is the number of bytes required to
     /// encode the UTF-16 string as UTF-8, and the error code is either SUCCESS or
     /// SURROGATE. The count is correct regardless of the error field.
@@ -756,31 +756,31 @@ namespace turbo {
     /// surrogates may be matched or not (thus this function does not validate). If
     /// the returned error code is SUCCESS, then the input contains no surrogate, is
     /// in the Basic Multilingual Plane, and is necessarily valid.
-    simdutf_warn_unused result utf8_length_from_utf16_with_replacement(
+     [[nodiscard]] UnicodeResult utf8_length_from_utf16_with_replacement(
         const char16_t* input, size_t length) noexcept;
 
     /// Compute the number of bytes that this UTF-16LE string would require in UTF-8
     /// format.
     ///
     /// This function does not validate the input. It is acceptable to pass invalid
-    /// UTF-16 strings but in such cases the result is implementation defined.
+    /// UTF-16 strings but in such cases the UnicodeResult is implementation defined.
     ///
     /// @param input         the UTF-16LE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
     /// @return the number of bytes required to encode the UTF-16LE string as UTF-8
-    simdutf_warn_unused size_t utf8_length_from_utf16le(const char16_t* input,
+     [[nodiscard]] size_t utf8_length_from_utf16le(const char16_t* input,
         size_t length) noexcept;
 
     /// Compute the number of bytes that this UTF-16BE string would require in UTF-8
     /// format.
     ///
     /// This function does not validate the input. It is acceptable to pass invalid
-    /// UTF-16 strings but in such cases the result is implementation defined.
+    /// UTF-16 strings but in such cases the UnicodeResult is implementation defined.
     ///
     /// @param input         the UTF-16BE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
     /// @return the number of bytes required to encode the UTF-16BE string as UTF-8
-    simdutf_warn_unused size_t utf8_length_from_utf16be(const char16_t* input,
+     [[nodiscard]] size_t utf8_length_from_utf16be(const char16_t* input,
         size_t length) noexcept;
 
 
@@ -794,7 +794,7 @@ namespace turbo {
     /// @param input         the UTF-16 string to process
     /// @param length        the length of the string in 2-byte code units (char16_t)
     /// @param output        the pointer to a buffer that can hold the conversion
-    /// result
+    /// UnicodeResult
     void change_endianness_utf16(const char16_t* input, size_t length,
         char16_t* output) noexcept;
 
@@ -804,14 +804,14 @@ namespace turbo {
     ///
     /// This function assumes that the input string is valid UTF-16 (native
     /// endianness). It is acceptable to pass invalid UTF-16 strings but in such
-    /// cases the result is implementation defined.
+    /// cases the UnicodeResult is implementation defined.
     ///
     /// This function is not BOM-aware.
     ///
     /// @param input         the UTF-16 string to process
     /// @param length        the length of the string in 2-byte code units (char16_t)
     /// @return number of code points
-    simdutf_warn_unused size_t count_utf16(const char16_t* input,
+     [[nodiscard]] size_t count_utf16(const char16_t* input,
         size_t length) noexcept;
 
     /// Count the number of code points (characters) in the string assuming that
@@ -819,14 +819,14 @@ namespace turbo {
     ///
     /// This function assumes that the input string is valid UTF-16LE.
     /// It is acceptable to pass invalid UTF-16 strings but in such cases
-    /// the result is implementation defined.
+    /// the UnicodeResult is implementation defined.
     ///
     /// This function is not BOM-aware.
     ///
     /// @param input         the UTF-16LE string to process
     /// @param length        the length of the string in 2-byte code units (char16_t)
     /// @return number of code points
-    simdutf_warn_unused size_t count_utf16le(const char16_t* input,
+     [[nodiscard]] size_t count_utf16le(const char16_t* input,
         size_t length) noexcept;
 
     /// Count the number of code points (characters) in the string assuming that
@@ -834,14 +834,14 @@ namespace turbo {
     ///
     /// This function assumes that the input string is valid UTF-16BE.
     /// It is acceptable to pass invalid UTF-16 strings but in such cases
-    /// the result is implementation defined.
+    /// the UnicodeResult is implementation defined.
     ///
     /// This function is not BOM-aware.
     ///
     /// @param input         the UTF-16BE string to process
     /// @param length        the length of the string in 2-byte code units (char16_t)
     /// @return number of code points
-    simdutf_warn_unused size_t count_utf16be(const char16_t* input,
+     [[nodiscard]] size_t count_utf16be(const char16_t* input,
         size_t length) noexcept;
 
     /// Given a valid UTF-16BE string having a possibly truncated last character,
@@ -856,7 +856,7 @@ namespace turbo {
     /// @param input         the UTF-16BE string to process
     /// @param length        the length of the string in bytes
     /// @return the length of the string in bytes, possibly shorter by 1 unit
-    simdutf_warn_unused size_t trim_partial_utf16be(const char16_t* input,
+     [[nodiscard]] size_t trim_partial_utf16be(const char16_t* input,
         size_t length);
 
 
@@ -872,7 +872,7 @@ namespace turbo {
     /// @param input         the UTF-16LE string to process
     /// @param length        the length of the string in bytes
     /// @return the length of the string in unit, possibly shorter by 1 unit
-    simdutf_warn_unused size_t trim_partial_utf16le(const char16_t* input,
+     [[nodiscard]] size_t trim_partial_utf16le(const char16_t* input,
         size_t length);
 
     /// Given a valid UTF-16 string having a possibly truncated last character,
@@ -887,7 +887,7 @@ namespace turbo {
     /// @param input         the UTF-16 string to process
     /// @param length        the length of the string in bytes
     /// @return the length of the string in unit, possibly shorter by 1 unit
-    simdutf_warn_unused size_t trim_partial_utf16(const char16_t* input,
+     [[nodiscard]] size_t trim_partial_utf16(const char16_t* input,
         size_t length);
 
     /// Compute the number of bytes that this UTF-16 string would require in Latin1
@@ -896,7 +896,7 @@ namespace turbo {
     /// @param length        the length of the string in Latin1 code units (char)
     /// @return the length of the string in Latin1 code units (char) required to
     /// encode the UTF-16 string as Latin1
-    simdutf_really_inline simdutf_warn_unused  size_t
+    [[nodiscard]] KUMO_FORCE_INLINE  size_t
     latin1_length_from_utf16(size_t length) noexcept {
         return length;
     }
@@ -908,14 +908,14 @@ namespace turbo {
     /// This function is equivalent to count_utf16.
     ///
     /// This function does not validate the input. It is acceptable to pass invalid
-    /// UTF-16 strings but in such cases the result is implementation defined.
+    /// UTF-16 strings but in such cases the UnicodeResult is implementation defined.
     ///
     /// This function is not BOM-aware.
     ///
     /// @param input         the UTF-16 string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
     /// @return the number of bytes required to encode the UTF-16LE string as UTF-32
-    simdutf_warn_unused size_t utf32_length_from_utf16(const char16_t* input,
+     [[nodiscard]] size_t utf32_length_from_utf16(const char16_t* input,
         size_t length) noexcept;
 
 
@@ -926,14 +926,14 @@ namespace turbo {
     /// This function is equivalent to count_utf16le.
     ///
     /// This function does not validate the input. It is acceptable to pass invalid
-    /// UTF-16 strings but in such cases the result is implementation defined.
+    /// UTF-16 strings but in such cases the UnicodeResult is implementation defined.
     ///
     /// This function is not BOM-aware.
     ///
     /// @param input         the UTF-16LE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
     /// @return the number of bytes required to encode the UTF-16LE string as UTF-32
-    simdutf_warn_unused size_t utf32_length_from_utf16le(const char16_t* input,
+     [[nodiscard]] size_t utf32_length_from_utf16le(const char16_t* input,
         size_t length) noexcept;
 
 
@@ -944,14 +944,14 @@ namespace turbo {
     /// This function is equivalent to count_utf16be.
     ///
     /// This function does not validate the input. It is acceptable to pass invalid
-    /// UTF-16 strings but in such cases the result is implementation defined.
+    /// UTF-16 strings but in such cases the UnicodeResult is implementation defined.
     ///
     /// This function is not BOM-aware.
     ///
     /// @param input         the UTF-16BE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
     /// @return the number of bytes required to encode the UTF-16BE string as UTF-32
-    simdutf_warn_unused size_t utf32_length_from_utf16be(const char16_t* input,
+     [[nodiscard]] size_t utf32_length_from_utf16be(const char16_t* input,
         size_t length) noexcept;
 
 
@@ -961,7 +961,7 @@ namespace turbo {
     ///
     /// @param input         the UTF-16LE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @return a result pair struct (of type turbo::result containing the two
+    /// @return a UnicodeResult pair struct (of type turbo::UnicodeResult containing the two
     /// fields error and count) where the count is the number of bytes required to
     /// encode the UTF-16LE string as UTF-8, and the error code is either SUCCESS or
     /// SURROGATE. The count is correct regardless of the error field.
@@ -970,7 +970,7 @@ namespace turbo {
     /// surrogates may be matched or not (thus this function does not validate). If
     /// the returned error code is SUCCESS, then the input contains no surrogate, is
     /// in the Basic Multilingual Plane, and is necessarily valid.
-    simdutf_warn_unused result utf8_length_from_utf16le_with_replacement(
+     [[nodiscard]] UnicodeResult utf8_length_from_utf16le_with_replacement(
         const char16_t* input, size_t length) noexcept;
 
 
@@ -980,7 +980,7 @@ namespace turbo {
     ///
     /// @param input         the UTF-16BE string to convert
     /// @param length        the length of the string in 2-byte code units (char16_t)
-    /// @return a result pair struct (of type turbo::result containing the two
+    /// @return a UnicodeResult pair struct (of type turbo::UnicodeResult containing the two
     /// fields error and count) where the count is the number of bytes required to
     /// encode the UTF-16BE string as UTF-8, and the error code is either SUCCESS or
     /// SURROGATE. The count is correct regardless of the error field.
@@ -989,7 +989,7 @@ namespace turbo {
     /// surrogates may be matched or not (thus this function does not validate). If
     /// the returned error code is SUCCESS, then the input contains no surrogate, is
     /// in the Basic Multilingual Plane, and is necessarily valid.
-    simdutf_warn_unused result utf8_length_from_utf16be_with_replacement(
+     [[nodiscard]] UnicodeResult utf8_length_from_utf16be_with_replacement(
         const char16_t* input, size_t length) noexcept;
 
 

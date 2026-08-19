@@ -1,5 +1,5 @@
 struct utf16_to_utf32_t {
-    error_code err; // error code
+    UnicodeError err; // error code
     const char16_t* input; // last position in input buffer
     char32_t* output; // last position in output buffer
 };
@@ -69,7 +69,7 @@ utf16_to_utf32_t ppc64_convert_utf16_to_utf32(const char16_t* buf, size_t len,
                     k++;
                     uint16_t diff2 = uint16_t(next_word - 0xDC00);
                     if ((diff | diff2) > 0x3FF) {
-                        return utf16_to_utf32_t { error_code::SURROGATE, buf + k - 1,
+                        return utf16_to_utf32_t { UnicodeError::SURROGATE, buf + k - 1,
                             utf32_output };
                     }
                     uint32_t value = (diff << 10) + diff2 + 0x10000;
@@ -80,5 +80,5 @@ utf16_to_utf32_t ppc64_convert_utf16_to_utf32(const char16_t* buf, size_t len,
         }
     } // while
 
-    return utf16_to_utf32_t { error_code::SUCCESS, buf, utf32_output };
+    return utf16_to_utf32_t { UnicodeError::SUCCESS, buf, utf32_output };
 }

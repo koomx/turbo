@@ -4,7 +4,7 @@ namespace turbo {
             namespace utf8_to_latin1 {
                 using namespace simd;
 
-                simdutf_really_inline simd8<uint8_t>
+                KUMO_FORCE_INLINE simd8<uint8_t>
                 check_special_cases(const simd8<uint8_t> input, const simd8<uint8_t> prev1) {
                     // For UTF-8 to Latin 1, we can allow any ASCII character, and any
                     // continuation byte, but the non-ASCII leading bytes must be 0b11000011 or
@@ -100,7 +100,7 @@ namespace turbo {
                     //
                     // Check whether the current bytes are valid UTF-8.
                     //
-                    simdutf_really_inline void check_utf8_bytes(const simd8<uint8_t> input,
+                    KUMO_FORCE_INLINE void check_utf8_bytes(const simd8<uint8_t> input,
                         const simd8<uint8_t> prev_input) {
                         // Flip prev1...prev3 so we can easily determine if they are 2+, 3+ or 4+
                         // lead bytes (2, 3, 4-byte leads become large positive numbers instead of
@@ -109,7 +109,7 @@ namespace turbo {
                         this->error |= check_special_cases(input, prev1);
                     }
 
-                    simdutf_really_inline size_t convert(const char* in, size_t size,
+                    KUMO_FORCE_INLINE size_t convert(const char* in, size_t size,
                         char* latin1_output) {
                         size_t pos = 0;
                         char* start { latin1_output };
@@ -195,7 +195,7 @@ namespace turbo {
                         return latin1_output - start;
                     }
 
-                    simdutf_really_inline result convert_with_errors(const char* in, size_t size,
+                    KUMO_FORCE_INLINE UnicodeResult convert_with_errors(const char* in, size_t size,
                         char* latin1_output) {
                         size_t pos = 0;
                         char* start { latin1_output };
@@ -239,7 +239,7 @@ namespace turbo {
                                     // rewind_and_convert_with_errors will seek a potential error from
                                     // in+pos onward, with the ability to go back up to pos bytes, and
                                     // read size-pos bytes forward.
-                                    result res = scalar::utf8_to_latin1::rewind_and_convert_with_errors(
+                                    UnicodeResult res = scalar::utf8_to_latin1::rewind_and_convert_with_errors(
                                         pos, in + pos, size - pos, latin1_output);
                                     res.count += pos;
                                     return res;
@@ -277,7 +277,7 @@ namespace turbo {
                             // rewind_and_convert_with_errors will seek a potential error from in+pos
                             // onward, with the ability to go back up to pos bytes, and read size-pos
                             // bytes forward.
-                            result res = scalar::utf8_to_latin1::rewind_and_convert_with_errors(
+                            UnicodeResult res = scalar::utf8_to_latin1::rewind_and_convert_with_errors(
                                 pos, in + pos, size - pos, latin1_output);
                             res.count += pos;
                             return res;
@@ -286,7 +286,7 @@ namespace turbo {
                             // rewind_and_convert_with_errors will seek a potential error from in+pos
                             // onward, with the ability to go back up to pos bytes, and read size-pos
                             // bytes forward.
-                            result res = scalar::utf8_to_latin1::rewind_and_convert_with_errors(
+                            UnicodeResult res = scalar::utf8_to_latin1::rewind_and_convert_with_errors(
                                 pos, in + pos, size - pos, latin1_output);
                             if (res.error) { // In case of error, we want the error position
                                 res.count += pos;
@@ -295,10 +295,10 @@ namespace turbo {
                                 latin1_output += res.count;
                             }
                         }
-                        return result(error_code::SUCCESS, latin1_output - start);
+                        return UnicodeResult(UnicodeError::SUCCESS, latin1_output - start);
                     }
 
-                    simdutf_really_inline bool errors() const {
+                    KUMO_FORCE_INLINE bool errors() const {
                         return this->error.any_bits_set_anywhere();
                     }
 

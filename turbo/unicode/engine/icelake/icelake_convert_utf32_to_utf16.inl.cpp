@@ -45,7 +45,7 @@ avx512_convert_utf32_to_utf16(const char32_t* buf, size_t len,
             __mmask32 error = _mm512_mask_cmpeq_epi32_mask(
                 saturation_bitmask, _mm512_and_si512(in, v_f800), v_d800);
             error |= _mm512_mask_cmpgt_epu32_mask(surrogate_bitmask, in, v_10ffff);
-            if (simdutf_unlikely(error)) {
+            if (KUMO_UNLIKELY(error)) {
                 return std::make_pair(nullptr, utf16_output);
             }
             __m512i v1, v2, v;
@@ -105,7 +105,7 @@ avx512_convert_utf32_to_utf16(const char32_t* buf, size_t len,
             __mmask32 error = _mm512_mask_cmpeq_epi32_mask(
                 saturation_bitmask, _mm512_and_si512(in, v_f800), v_d800);
             error |= _mm512_mask_cmpgt_epu32_mask(surrogate_bitmask, in, v_10ffff);
-            if (simdutf_unlikely(error)) {
+            if (KUMO_UNLIKELY(error)) {
                 return std::make_pair(nullptr, utf16_output);
             }
             __m512i v1, v2, v;
@@ -145,7 +145,7 @@ avx512_convert_utf32_to_utf16(const char32_t* buf, size_t len,
 }
 
 template <endianness big_endian>
-std::pair<result, char16_t*>
+std::pair<UnicodeResult, char16_t*>
 avx512_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
     char16_t* utf16_output) {
     const char32_t* start = buf;
@@ -160,7 +160,7 @@ avx512_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
     const __m512i v_3ff = _mm512_set1_epi32(0x3FF);
     const __m512i v_dc00d800 = _mm512_set1_epi32((int32_t)0xDC00D800);
     int error_idx = 0;
-    error_code code = error_code::SUCCESS;
+    UnicodeError code = UnicodeError::SUCCESS;
     bool err = false;
 
     while (end - buf >= std::ptrdiff_t(16)) {
@@ -179,12 +179,12 @@ avx512_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
                     4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
                 utf16_packed = _mm256_shuffle_epi8(utf16_packed, swap);
             }
-            if (simdutf_unlikely(forbidden_bytemask)) {
+            if (KUMO_UNLIKELY(forbidden_bytemask)) {
                 int idx = _tzcnt_u32(forbidden_bytemask);
                 _mm256_mask_storeu_epi16(
                     utf16_output, __mmask16(_blsmsk_u32(forbidden_bytemask) >> 1),
                     utf16_packed);
-                return std::make_pair(result(error_code::SURROGATE, buf - start + idx),
+                return std::make_pair(UnicodeResult(UnicodeError::SURROGATE, buf - start + idx),
                     utf16_output + idx);
             }
             _mm256_storeu_si256((__m256i*)utf16_output, utf16_packed);
@@ -195,17 +195,17 @@ avx512_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
             __mmask32 error_surrogate = _mm512_mask_cmpeq_epi32_mask(
                 saturation_bitmask, _mm512_and_si512(in, v_f800), v_d800);
             __mmask32 error_too_large = _mm512_mask_cmpgt_epu32_mask(surrogate_bitmask, in, v_10ffff);
-            if (simdutf_unlikely(error_surrogate || error_too_large)) {
+            if (KUMO_UNLIKELY(error_surrogate || error_too_large)) {
                 // Need to find the lowest set bit between the two error masks
                 // Need to also write the partial chunk until the error index to output.
                 int large_idx = _tzcnt_u32(error_too_large);
                 int surrogate_idx = _tzcnt_u32(error_surrogate);
                 err = true;
                 if (large_idx < surrogate_idx) {
-                    code = error_code::TOO_LARGE;
+                    code = UnicodeError::TOO_LARGE;
                     error_idx = large_idx;
                 } else {
-                    code = error_code::SURROGATE;
+                    code = UnicodeError::SURROGATE;
                     error_idx = surrogate_idx;
                 }
                 output_mask &= __mmask32((uint64_t(1) << (2 * error_idx)) - 1);
@@ -234,8 +234,8 @@ avx512_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
                 compressed);
             //_mm512_mask_compressstoreu_epi16(utf16_output, output_mask, in);
             utf16_output += written_out;
-            if (simdutf_unlikely(err)) {
-                return std::make_pair(result(code, buf - start + error_idx),
+            if (KUMO_UNLIKELY(err)) {
+                return std::make_pair(UnicodeResult(code, buf - start + error_idx),
                     utf16_output);
             }
         }
@@ -256,12 +256,12 @@ avx512_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
                     4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
                 utf16_packed = _mm256_shuffle_epi8(utf16_packed, swap);
             }
-            if (simdutf_unlikely(forbidden_bytemask)) {
+            if (KUMO_UNLIKELY(forbidden_bytemask)) {
                 int idx = _tzcnt_u32(forbidden_bytemask);
                 _mm256_mask_storeu_epi16(
                     utf16_output, __mmask16(_blsmsk_u32(forbidden_bytemask) >> 1),
                     utf16_packed);
-                return std::make_pair(result(error_code::SURROGATE, buf - start + idx),
+                return std::make_pair(UnicodeResult(UnicodeError::SURROGATE, buf - start + idx),
                     utf16_output + idx);
             }
             _mm256_mask_storeu_epi16(utf16_output, input_mask, utf16_packed);
@@ -273,15 +273,15 @@ avx512_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
             __mmask32 error_surrogate = _mm512_mask_cmpeq_epi32_mask(
                 saturation_bitmask, _mm512_and_si512(in, v_f800), v_d800);
             __mmask32 error_too_large = _mm512_mask_cmpgt_epu32_mask(surrogate_bitmask, in, v_10ffff);
-            if (simdutf_unlikely(error_surrogate || error_too_large)) {
+            if (KUMO_UNLIKELY(error_surrogate || error_too_large)) {
                 int large_idx = _tzcnt_u32(error_too_large);
                 int surrogate_idx = _tzcnt_u32(error_surrogate);
                 err = true;
                 if (large_idx < surrogate_idx) {
-                    code = error_code::TOO_LARGE;
+                    code = UnicodeError::TOO_LARGE;
                     error_idx = large_idx;
                 } else {
-                    code = error_code::SURROGATE;
+                    code = UnicodeError::SURROGATE;
                     error_idx = surrogate_idx;
                 }
                 output_mask &= __mmask32((uint64_t(1) << (2 * error_idx)) - 1);
@@ -310,13 +310,13 @@ avx512_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
                 compressed);
             //_mm512_mask_compressstoreu_epi16(utf16_output, output_mask, in);
             utf16_output += written_out;
-            if (simdutf_unlikely(err)) {
-                return std::make_pair(result(code, buf - start + error_idx),
+            if (KUMO_UNLIKELY(err)) {
+                return std::make_pair(UnicodeResult(code, buf - start + error_idx),
                     utf16_output);
             }
         }
         buf += remaining_len;
     }
 
-    return std::make_pair(result(error_code::SUCCESS, buf - start), utf16_output);
+    return std::make_pair(UnicodeResult(UnicodeError::SUCCESS, buf - start), utf16_output);
 }

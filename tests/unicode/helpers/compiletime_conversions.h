@@ -1,6 +1,5 @@
 #ifndef SIMDUTF_COMPILETIME_CONVERSIONS_H
 #define SIMDUTF_COMPILETIME_CONVERSIONS_H
 
-#include <turbo/unicode/engine/compiler_check.h>
 
 #endif // SIMDUTF_COMPILETIME_CONVERSIONS_H

@@ -16,23 +16,23 @@
 #pragma once
 
 #include <turbo/unicode/engine/common_defs.h>
-#include <turbo/unicode/engine/compiler_check.h>
+
 #include <turbo/unicode/text_encoding.h>
 #include <turbo/unicode/error.h>
 
 namespace turbo {
 
     /// Autodetect the encoding of the input, a single encoding is recommended.
-    /// E.g., the function might return turbo::encoding_type::UTF8,
-    /// turbo::encoding_type::UTF16_LE, turbo::encoding_type::UTF16_BE, or
-    /// turbo::encoding_type::UTF32_LE.
+    /// E.g., the function might return turbo::TextEncoding::UTF8,
+    /// turbo::TextEncoding::UTF16_LE, turbo::TextEncoding::UTF16_BE, or
+    /// turbo::TextEncoding::UTF32_LE.
     ///
     /// @param input the string to analyze.
     /// @param length the length of the string in bytes.
     /// @return the detected encoding type
-    simdutf_warn_unused turbo::encoding_type
+     [[nodiscard]] turbo::TextEncoding
     autodetect_encoding(const char* input, size_t length) noexcept;
-    simdutf_really_inline simdutf_warn_unused turbo::encoding_type
+    [[nodiscard]] KUMO_FORCE_INLINE turbo::TextEncoding
     autodetect_encoding(const uint8_t* input, size_t length) noexcept {
         return autodetect_encoding(reinterpret_cast<const char*>(input), length);
     }
@@ -40,16 +40,16 @@ namespace turbo {
 
     /// Autodetect the possible encodings of the input in one pass.
     /// E.g., if the input might be UTF-16LE or UTF-8, this function returns
-    /// the value (turbo::encoding_type::UTF8 | turbo::encoding_type::UTF16_LE).
+    /// the value (turbo::TextEncoding::UTF8 | turbo::TextEncoding::UTF16_LE).
     ///
     /// Overridden by each implementation.
     ///
     /// @param input the string to analyze.
     /// @param length the length of the string in bytes.
     /// @return the detected encoding type
-    simdutf_warn_unused int detect_encodings(const char* input,
+     [[nodiscard]] int detect_encodings(const char* input,
         size_t length) noexcept;
-    simdutf_really_inline simdutf_warn_unused int
+    [[nodiscard]] KUMO_FORCE_INLINE int
     detect_encodings(const uint8_t* input, size_t length) noexcept {
         return detect_encodings(reinterpret_cast<const char*>(input), length);
     }

@@ -4,7 +4,7 @@
  * first 11 bits are encoded into utf8
  * !important! utf8_output must have at least 16 writable bytes
  */
-simdutf_really_inline void
+KUMO_FORCE_INLINE void
 write_v_u16_11bits_to_utf8(const vector_u16 v_u16, char*& utf8_output,
     const vector_u8 one_byte_bytemask,
     const uint16_t one_byte_bitmask) {

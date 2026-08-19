@@ -28,16 +28,16 @@ TEST(issue_convert_utf32_to_utf16le_with_errors_97798701a75ebb21) {
     const auto validation1 = implementation.validate_utf32_with_errors(
         (const char32_t*)data, data_len);
     ASSERT_EQUAL(validation1.count, 0);
-    ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LARGE);
+    ASSERT_EQUAL(validation1.error, turbo::UnicodeError::TOO_LARGE);
 
     const bool validation2 = implementation.validate_utf32((const char32_t*)data, data_len);
-    ASSERT_EQUAL(validation1.error == turbo::error_code::SUCCESS, validation2);
+    ASSERT_EQUAL(validation1.error == turbo::UnicodeError::SUCCESS, validation2);
 
     const auto outlen = implementation.utf16_length_from_utf32((const char32_t*)data, data_len);
     std::vector<char16_t> output(outlen);
     const auto r = implementation.convert_utf32_to_utf16le_with_errors(
         (const char32_t*)data, data_len, output.data());
-    ASSERT_EQUAL(r.error, turbo::error_code::TOO_LARGE);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::TOO_LARGE);
     ASSERT_EQUAL(r.count, 0);
 }
 
@@ -48,8 +48,8 @@ TEST_LOOP(convert_into_2_UTF16_bytes) {
 
     auto procedure = [&implementation](const char32_t* utf32, size_t size,
                          char16_t* utf16) -> size_t {
-        turbo::result res = implementation.convert_utf32_to_utf16le_with_errors(utf32, size, utf16);
-        ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+        turbo::UnicodeResult res = implementation.convert_utf32_to_utf16le_with_errors(utf32, size, utf16);
+        ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
         return res.count;
     };
     auto size_procedure = [&implementation](const char32_t* utf32,
@@ -69,8 +69,8 @@ TEST_LOOP(convert_into_4_UTF16_bytes) {
 
     auto procedure = [&implementation](const char32_t* utf32, size_t size,
                          char16_t* utf16) -> size_t {
-        turbo::result res = implementation.convert_utf32_to_utf16le_with_errors(utf32, size, utf16);
-        ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+        turbo::UnicodeResult res = implementation.convert_utf32_to_utf16le_with_errors(utf32, size, utf16);
+        ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
         return res.count;
     };
     auto size_procedure = [&implementation](const char32_t* utf32,
@@ -91,8 +91,8 @@ TEST_LOOP(convert_into_2_or_4_UTF16_bytes) {
 
     auto procedure = [&implementation](const char32_t* utf32, size_t size,
                          char16_t* utf16) -> size_t {
-        turbo::result res = implementation.convert_utf32_to_utf16le_with_errors(utf32, size, utf16);
-        ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+        turbo::UnicodeResult res = implementation.convert_utf32_to_utf16le_with_errors(utf32, size, utf16);
+        ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
         return res.count;
     };
     auto size_procedure = [&implementation](const char32_t* utf32,
@@ -114,9 +114,9 @@ TEST(convert_fails_if_there_is_surrogate) {
         for (size_t i = 0; i < size; i++) {
             auto procedure = [&implementation, &i](const char32_t* utf32, size_t size,
                                  char16_t* utf16) -> size_t {
-                turbo::result res = implementation.convert_utf32_to_utf16le_with_errors(utf32, size,
+                turbo::UnicodeResult res = implementation.convert_utf32_to_utf16le_with_errors(utf32, size,
                     utf16);
-                ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
+                ASSERT_EQUAL(res.error, turbo::UnicodeError::SURROGATE);
                 ASSERT_EQUAL(res.count, i);
                 return 0;
             };
@@ -140,9 +140,9 @@ TEST(convert_fails_if_input_too_large) {
         for (size_t i = 0; i < size; i++) {
             auto procedure = [&implementation, &i](const char32_t* utf32, size_t size,
                                  char16_t* utf16) -> size_t {
-                turbo::result res = implementation.convert_utf32_to_utf16le_with_errors(utf32, size,
+                turbo::UnicodeResult res = implementation.convert_utf32_to_utf16le_with_errors(utf32, size,
                     utf16);
-                ASSERT_EQUAL(res.error, turbo::error_code::TOO_LARGE);
+                ASSERT_EQUAL(res.error, turbo::UnicodeError::TOO_LARGE);
                 ASSERT_EQUAL(res.count, i);
                 return 0;
             };

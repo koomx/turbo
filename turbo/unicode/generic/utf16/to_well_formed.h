@@ -14,7 +14,7 @@ namespace turbo {
                  * If that character is illsequenced, it too is overwritten.
                  */
                 template <endianness big_endian, bool in_place>
-                simdutf_really_inline void utf16fix_block(char16_t* out, const char16_t* in) {
+                KUMO_FORCE_INLINE void utf16fix_block(char16_t* out, const char16_t* in) {
                     const char16_t replacement = scalar::utf16::replacement<big_endian>();
 
                     using vector_u16 = simd16<uint16_t>;

@@ -1,5 +1,5 @@
 struct utf32_to_utf16_t {
-    error_code err;
+    UnicodeError err;
     const char32_t* input;
     char16_t* output;
 };
@@ -52,7 +52,7 @@ utf32_to_utf16_t ppc64_convert_utf32_to_utf16(const char32_t* buf, size_t len,
                 if (not forbidden.is_zero()) {
                     // scalar procedure will rescan the portion of buffer we've just
                     // analysed
-                    return utf32_to_utf16_t { error_code::OTHER, buf, utf16_output };
+                    return utf32_to_utf16_t { UnicodeError::OTHER, buf, utf16_output };
                 }
                 break;
             case ErrorReporting::at_the_end:
@@ -76,14 +76,14 @@ utf32_to_utf16_t ppc64_convert_utf32_to_utf16(const char32_t* buf, size_t len,
                 if ((word & 0xFFFF0000) == 0) {
                     // will not generate a surrogate pair
                     if (word >= 0xD800 && word <= 0xDFFF) {
-                        return utf32_to_utf16_t { error_code::SURROGATE, buf + k,
+                        return utf32_to_utf16_t { UnicodeError::SURROGATE, buf + k,
                             utf16_output };
                     }
                     *utf16_output++ = scalar::utf16::swap_if_needed<big_endian>(uint16_t(word));
                 } else {
                     // will generate a surrogate pair
                     if (word > 0x10FFFF) {
-                        return utf32_to_utf16_t { error_code::TOO_LARGE, buf + k,
+                        return utf32_to_utf16_t { UnicodeError::TOO_LARGE, buf + k,
                             utf16_output };
                     }
                     word -= 0x10000;
@@ -102,9 +102,9 @@ utf32_to_utf16_t ppc64_convert_utf32_to_utf16(const char32_t* buf, size_t len,
     if (er == ErrorReporting::at_the_end) {
         // check for invalid input
         if (not forbidden_global.is_zero()) {
-            return utf32_to_utf16_t { error_code::SURROGATE, buf, utf16_output };
+            return utf32_to_utf16_t { UnicodeError::SURROGATE, buf, utf16_output };
         }
     }
 
-    return utf32_to_utf16_t { error_code::SUCCESS, buf, utf16_output };
+    return utf32_to_utf16_t { UnicodeError::SUCCESS, buf, utf16_output };
 }

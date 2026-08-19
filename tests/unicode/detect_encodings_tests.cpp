@@ -15,7 +15,7 @@ namespace {
 
     template <typename Pointer>
     bool has_bom(Pointer* data, size_t size) {
-        return (turbo::BOM::check_bom(data, size) != turbo::encoding_type::unspecified);
+        return (turbo::BOM::check_bom(data, size) != turbo::TextEncoding::unspecified);
     }
 
     template <typename RandomGenerator>
@@ -179,7 +179,7 @@ TEST(issue_516) {
 TEST(issue818) {
     std::string data = "\xEF\xBB\xBF";
     const auto r = turbo::BOM::check_bom(data.data(), data.size());
-    ASSERT_EQUAL(r, turbo::encoding_type::UTF8);
+    ASSERT_EQUAL(r, turbo::TextEncoding::UTF8);
 }
 
 TEST(boommmmm) {
@@ -187,11 +187,11 @@ TEST(boommmmm) {
     const char* utf16be_bom = "\xfe\xff";
     const char* utf16le_bom = "\xff\xfe";
     ASSERT_EQUAL(implementation.detect_encodings(utf8_bom, 3),
-        turbo::encoding_type::UTF8);
+        turbo::TextEncoding::UTF8);
     ASSERT_EQUAL(implementation.detect_encodings(utf16be_bom, 2),
-        turbo::encoding_type::UTF16_BE);
+        turbo::TextEncoding::UTF16_BE);
     ASSERT_EQUAL(implementation.detect_encodings(utf16le_bom, 2),
-        turbo::encoding_type::UTF16_LE);
+        turbo::TextEncoding::UTF16_LE);
 }
 
 #if !SIMDUTF_IS_BIG_ENDIAN
@@ -343,7 +343,7 @@ TEST_LOOP(pure_utf8_ASCII) {
 
     for (size_t size : input_size) {
         const auto generated = generate_utf8(random, size);
-        auto expected = turbo::encoding_type::UTF8 | turbo::encoding_type::UTF16_LE;
+        auto expected = turbo::TextEncoding::UTF8 | turbo::TextEncoding::UTF16_LE;
         auto actual = implementation.detect_encodings(
             reinterpret_cast<const char*>(generated.data()), size);
         ASSERT_EQUAL(actual, expected);
@@ -355,7 +355,7 @@ TEST_LOOP(pure_utf16_ASCII) {
 
     for (size_t size : input_size) {
         const auto generated = generate_u16(random, size / 2);
-        auto expected = turbo::encoding_type::UTF8 | turbo::encoding_type::UTF16_LE;
+        auto expected = turbo::TextEncoding::UTF8 | turbo::TextEncoding::UTF16_LE;
         auto actual = implementation.detect_encodings(
             reinterpret_cast<const char*>(generated.data()), size);
         ASSERT_TRUE((actual & expected) == expected); // Must be at least UTF8 and UTF16_LE.
@@ -367,7 +367,7 @@ TEST_LOOP(pure_utf32_ASCII) {
 
     for (size_t size : input_size) {
         const auto generated = generate_u32(random, size / 4);
-        auto expected = turbo::encoding_type::UTF8 | turbo::encoding_type::UTF16_LE | turbo::encoding_type::UTF32_LE;
+        auto expected = turbo::TextEncoding::UTF8 | turbo::TextEncoding::UTF16_LE | turbo::TextEncoding::UTF32_LE;
         auto actual = implementation.detect_encodings(
             reinterpret_cast<const char*>(generated.data()), size);
         ASSERT_TRUE((actual & expected) == expected); // Must be at least UTF8 and UTF16_LE and UTF32_LE.
@@ -388,7 +388,7 @@ TEST_LOOP(no_utf8_bytes_no_surrogates) {
     }
 
     auto expected =
-        turbo::encoding_type::UTF16_LE | turbo::encoding_type::UTF32_LE;
+        turbo::TextEncoding::UTF16_LE | turbo::TextEncoding::UTF32_LE;
     auto actual = implementation.detect_encodings(
         reinterpret_cast<const char *>(generated.data()), size);
     ASSERT_EQUAL((actual & expected),
@@ -402,14 +402,14 @@ TEST_LOOP(two_utf8_bytes) {
 
     for (size_t size : input_size) {
         const auto generated = generate_utf8(random, size);
-        auto expected = turbo::encoding_type::UTF8 | turbo::encoding_type::UTF16_LE;
+        auto expected = turbo::TextEncoding::UTF8 | turbo::TextEncoding::UTF16_LE;
         auto actual = implementation.detect_encodings(
             reinterpret_cast<const char*>(generated.data()), size);
         if (actual != expected) {
-            if ((actual & turbo::encoding_type::UTF8) == 0) {
+            if ((actual & turbo::TextEncoding::UTF8) == 0) {
                 puts("failed to detect valid UTF-8.");
             }
-            if ((actual & turbo::encoding_type::UTF16_LE) == 0) {
+            if ((actual & turbo::TextEncoding::UTF16_LE) == 0) {
                 puts("failed to detect valid UTF-16LE.");
             }
         }
@@ -422,7 +422,7 @@ TEST_LOOP(utf_16_surrogates) {
 
     for (size_t size : input_size) {
         const auto generated = generate_utf16_le(random, size / 2);
-        auto expected = turbo::encoding_type::UTF16_LE;
+        auto expected = turbo::TextEncoding::UTF16_LE;
         auto actual = implementation.detect_encodings(
             reinterpret_cast<const char*>(generated.data()), size);
         ASSERT_TRUE((actual & expected) == expected); // Must be at least UTF16_LE.
@@ -438,7 +438,7 @@ TEST_LOOP(utf32_surrogates) {
         for (unsigned int i = 0; i < size / 4; i++) {
             generated.push_back((random_prefix() & 0xffff0000) + random_suffix());
         }
-        auto expected = turbo::encoding_type::UTF32_LE;
+        auto expected = turbo::TextEncoding::UTF32_LE;
         auto actual = implementation.detect_encodings(
             reinterpret_cast<const char*>(generated.data()), size);
         ASSERT_TRUE((actual & expected) == expected); // Must be at least UTF32_LE.
@@ -459,7 +459,7 @@ TEST_LOOP(edge_surrogate) {
         generated[i + 1] = to_utf16le(W2);
         i += 32;
     }
-    auto expected = turbo::encoding_type::UTF16_LE;
+    auto expected = turbo::TextEncoding::UTF16_LE;
     auto actual = implementation.detect_encodings(
         reinterpret_cast<const char*>(generated.data()), size);
     ASSERT_TRUE((actual & expected) == expected); // Must be at least UTF16_LE.
@@ -470,7 +470,7 @@ TEST_LOOP(tail_utf8) {
     std::array<size_t, 5> multiples_three { 12, 54, 66, 126, 252 };
     for (size_t size : multiples_three) {
         const auto generated = generate_utf8(random, size);
-        auto expected = turbo::encoding_type::UTF8 | turbo::encoding_type::UTF16_LE;
+        auto expected = turbo::TextEncoding::UTF8 | turbo::TextEncoding::UTF16_LE;
         auto actual = implementation.detect_encodings(
             reinterpret_cast<const char*>(generated.data()), size);
         ASSERT_TRUE((actual & expected) == expected); // Must be at least UTF8 and UTF16_LE.

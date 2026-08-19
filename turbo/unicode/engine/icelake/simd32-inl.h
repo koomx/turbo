@@ -8,11 +8,11 @@ struct simd32<uint32_t> {
 
     __m512i value;
 
-    simdutf_really_inline simd32(const __m512i v)
+    KUMO_FORCE_INLINE simd32(const __m512i v)
         : value(v) { }
 
     template <typename Pointer>
-    simdutf_really_inline simd32(const Pointer* ptr)
+    KUMO_FORCE_INLINE simd32(const Pointer* ptr)
         : value(_mm512_loadu_si512(reinterpret_cast<const __m512i*>(ptr))) { }
 
     uint64_t sum() const {
@@ -24,27 +24,27 @@ struct simd32<uint32_t> {
     }
 
     // operators
-    simdutf_really_inline simd32& operator+=(const simd32 other) {
+    KUMO_FORCE_INLINE simd32& operator+=(const simd32 other) {
         value = _mm512_add_epi32(value, other.value);
         return *this;
     }
 
     // static members
-    simdutf_really_inline static simd32<uint32_t> zero() {
+    KUMO_FORCE_INLINE static simd32<uint32_t> zero() {
         return _mm512_setzero_si512();
     }
 
-    simdutf_really_inline static simd32<uint32_t> splat(uint32_t v) {
+    KUMO_FORCE_INLINE static simd32<uint32_t> splat(uint32_t v) {
         return _mm512_set1_epi32(v);
     }
 };
 
-simdutf_really_inline simd32<uint32_t> min(const simd32<uint32_t> b,
+KUMO_FORCE_INLINE simd32<uint32_t> min(const simd32<uint32_t> b,
     const simd32<uint32_t> a) {
     return _mm512_min_epu32(a.value, b.value);
 }
 
-simdutf_really_inline simd32<uint32_t> operator&(const simd32<uint32_t> b,
+KUMO_FORCE_INLINE simd32<uint32_t> operator&(const simd32<uint32_t> b,
     const simd32<uint32_t> a) {
     return _mm512_and_si512(a.value, b.value);
 }

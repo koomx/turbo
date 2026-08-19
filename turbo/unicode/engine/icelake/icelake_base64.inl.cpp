@@ -109,7 +109,7 @@ static inline size_t write_multi_lf_m256i(__m256i chunk, uint8_t* out,
 
 template <bool base64_url, bool use_lines>
 size_t encode_base64_impl(char* dst, const char* src, size_t srclen,
-    base64_options options,
+    Base64Options options,
     size_t line_length = turbo::default_line_length) {
     size_t offset = 0;
     if (line_length < 4) {
@@ -145,14 +145,14 @@ size_t encode_base64_impl(char* dst, const char* src, size_t srclen,
                         _mm512_set1_epi8('\n'), ~(1ULL << ((line_length - offset))),
                         result);
                     _mm512_storeu_si512(reinterpret_cast<__m512i*>(out), expanded);
-                    __m128i last_lane = _mm512_extracti32x4_epi32(result, 3); // Lane 3 (bytes 48-63)
+                    __m128i last_lane = _mm512_extracti32x4_epi32(UnicodeResult, 3); // Lane 3 (bytes 48-63)
                     uint8_t last_byte = static_cast<uint8_t>(_mm_extract_epi8(last_lane, 15));
                     out[64] = last_byte;
                     out += 65;
                     offset = 64 - (line_length - offset);
                 } else { // slow path
-                    __m256i lo = _mm512_extracti64x4_epi64(result, 0);
-                    __m256i hi = _mm512_extracti64x4_epi64(result, 1);
+                    __m256i lo = _mm512_extracti64x4_epi64(UnicodeResult, 0);
+                    __m256i hi = _mm512_extracti64x4_epi64(UnicodeResult, 1);
                     out += write_multi_lf_m256i(lo, out, 32, line_length, offset);
                     out += write_multi_lf_m256i(hi, out, 32, line_length, offset);
                 }
@@ -209,13 +209,13 @@ size_t encode_base64_impl(char* dst, const char* src, size_t srclen,
                 }
             } else {
                 if (output_len > 32) {
-                    __m256i lo = _mm512_extracti64x4_epi64(result, 0);
-                    __m256i hi = _mm512_extracti64x4_epi64(result, 1);
+                    __m256i lo = _mm512_extracti64x4_epi64(UnicodeResult, 0);
+                    __m256i hi = _mm512_extracti64x4_epi64(UnicodeResult, 1);
                     out += write_multi_lf_m256i(lo, out, 32, line_length, offset);
                     out += write_multi_lf_m256i(hi, out, output_len - 32, line_length,
                         offset);
                 } else {
-                    __m256i lo = _mm512_extracti64x4_epi64(result, 0);
+                    __m256i lo = _mm512_extracti64x4_epi64(UnicodeResult, 0);
                     out += write_multi_lf_m256i(lo, out, output_len, line_length, offset);
                 }
             }
@@ -234,7 +234,7 @@ size_t encode_base64_impl(char* dst, const char* src, size_t srclen,
 
 template <bool base64_url>
 size_t encode_base64(char* dst, const char* src, size_t srclen,
-    base64_options options) {
+    Base64Options options) {
     return encode_base64_impl<base64_url, false>(dst, src, srclen, options);
 }
 
@@ -372,7 +372,7 @@ template <bool base64_url, bool ignore_garbage, bool default_or_url,
     typename chartype>
 full_result
 compress_decode_base64(char* dst, const chartype* src, size_t srclen,
-    base64_options options,
+    Base64Options options,
     last_chunk_handling_options last_chunk_options) {
     (void)options;
     const uint8_t* to_base64 = default_or_url ? tables::base64::to_base64_default_or_url_value
@@ -409,7 +409,7 @@ compress_decode_base64(char* dst, const chartype* src, size_t srclen,
             if (!ignore_garbage && error) {
                 src -= 64;
                 size_t error_offset = _tzcnt_u64(error);
-                return { error_code::INVALID_BASE64_CHARACTER,
+                return { UnicodeError::INVALID_BASE64_CHARACTER,
                     size_t(src - srcinit + error_offset), size_t(dst - dstinit) };
             }
             if (badcharmask != 0) {
@@ -446,7 +446,7 @@ compress_decode_base64(char* dst, const chartype* src, size_t srclen,
             input_mask);
         if (!ignore_garbage && error) {
             size_t error_offset = _tzcnt_u64(error);
-            return { error_code::INVALID_BASE64_CHARACTER,
+            return { UnicodeError::INVALID_BASE64_CHARACTER,
                 size_t(src - srcinit + error_offset), size_t(dst - dstinit) };
         }
         src += last_block_len;
@@ -605,7 +605,7 @@ compress_decode_base64(char* dst, const chartype* src, size_t srclen,
     return { SUCCESS, srclen, size_t(dst - dstinit) };
 }
 
-simdutf_warn_unused size_t icelake_binary_length_from_base64(const char* input,
+ [[nodiscard]] size_t icelake_binary_length_from_base64(const char* input,
     size_t length) {
     size_t count = 0;
     const char* ptr = input;
@@ -642,7 +642,7 @@ simdutf_warn_unused size_t icelake_binary_length_from_base64(const char* input,
     return ((count - padding) * 3) / 4;
 }
 
-simdutf_warn_unused size_t
+ [[nodiscard]] size_t
 icelake_binary_length_from_base64(const char16_t* input, size_t length) {
     size_t count = 0;
     const char16_t* ptr = input;

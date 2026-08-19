@@ -3,7 +3,7 @@ namespace turbo {
         namespace {
             namespace util {
 
-                simdutf_really_inline const char* find(const char* start, const char* end,
+                KUMO_FORCE_INLINE const char* find(const char* start, const char* end,
                     char character) noexcept {
                     // Handle empty or invalid range
                     if (start >= end)
@@ -42,7 +42,7 @@ namespace turbo {
                     return end;
                 }
 
-                simdutf_really_inline const char16_t*
+                KUMO_FORCE_INLINE const char16_t*
                 find(const char16_t* start, const char16_t* end, char16_t character) noexcept {
                     // Handle empty or invalid range
                     if (start >= end)

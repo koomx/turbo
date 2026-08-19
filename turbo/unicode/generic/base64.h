@@ -39,7 +39,7 @@ namespace turbo {
                     typename chartype>
                 full_result
                 compress_decode_base64(char* dst, const chartype* src, size_t srclen,
-                    base64_options options,
+                    Base64Options options,
                     last_chunk_handling_options last_chunk_options) {
                     const uint8_t* to_base64 = default_or_url ? tables::base64::to_base64_default_or_url_value
                                                               : (base64_url ? tables::base64::to_base64_url_value
@@ -78,7 +78,7 @@ namespace turbo {
                             if (!ignore_garbage && error) {
                                 src -= 64;
                                 const size_t error_offset = trailing_zeroes(error);
-                                return { error_code::INVALID_BASE64_CHARACTER,
+                                return { UnicodeError::INVALID_BASE64_CHARACTER,
                                     size_t(src - srcinit + error_offset), size_t(dst - dstinit) };
                             }
                             if (badcharmask != 0) {
@@ -122,7 +122,7 @@ namespace turbo {
                             uint8_t val = to_base64[uint8_t(*src)];
                             *bufferptr = char(val);
                             if (!ignore_garbage && (!scalar::base64::is_eight_byte(*src) || val > 64)) {
-                                return { error_code::INVALID_BASE64_CHARACTER, size_t(src - srcinit),
+                                return { UnicodeError::INVALID_BASE64_CHARACTER, size_t(src - srcinit),
                                     size_t(dst - dstinit) };
                             }
                             bufferptr += (val <= 63);
@@ -188,7 +188,7 @@ namespace turbo {
                         // the end of the stream (beyond whitespace) or right after a non-ignorable
                         // character or at the very beginning of the stream.
                         // See https://tc39.es/proposal-arraybuffer-base64/spec/#sec-frombase64
-                        if (is_partial(last_chunk_options) && r.error == error_code::SUCCESS && r.input_count < full_input_length) {
+                        if (is_partial(last_chunk_options) && r.error == UnicodeError::SUCCESS && r.input_count < full_input_length) {
                             // First check if we can extend the input to the end of the stream
                             while (r.input_count < full_input_length && base64_ignorable(*(srcinit + r.input_count), options)) {
                                 r.input_count++;

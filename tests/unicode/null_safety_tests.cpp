@@ -23,13 +23,13 @@ TEST(test_empty) {
         auto* o32 = o32data.data();
 
         // empty input is interpreted as utf-8
-        ASSERT_EQUAL(turbo::encoding_type::UTF8,
+        ASSERT_EQUAL(turbo::TextEncoding::UTF8,
             implementation.autodetect_encoding(i8, 0));
         ASSERT_EQUAL(0, turbo::base64_length_from_binary(0));
 
-        auto test_base64 = [](const turbo::result& r) {
+        auto test_base64 = [](const turbo::UnicodeResult& r) {
             ASSERT_EQUAL(r.count, 0);
-            ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+            ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
         };
 
         test_base64(implementation.base64_to_binary(i16, 0, o8));
@@ -76,8 +76,8 @@ TEST(test_empty) {
         ASSERT_EQUAL(0, implementation.utf8_length_from_utf16le(i16, 0));
         ASSERT_EQUAL(0, implementation.utf8_length_from_utf32(i32, 0));
 
-        auto is_valid = [](const turbo::result& r) {
-            return r.count == 0 && r.error == turbo::error_code::SUCCESS;
+        auto is_valid = [](const turbo::UnicodeResult& r) {
+            return r.count == 0 && r.error == turbo::UnicodeError::SUCCESS;
         };
 
         ASSERT_TRUE(implementation.validate_utf16be(i16, 0));

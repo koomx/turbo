@@ -3,7 +3,7 @@
 // File contains conversion procedure from valid UTF-8 strings.
 
 template <bool is_remaining>
-simdutf_really_inline size_t process_valid_block_from_utf8_to_latin1(
+KUMO_FORCE_INLINE size_t process_valid_block_from_utf8_to_latin1(
     const char* buf, size_t len, char* latin_output, __m512i minus64,
     __m512i one, __mmask64* next_leading_ptr, __mmask64* next_bit6_ptr) {
     __mmask64 load_mask = is_remaining ? _bzhi_u64(~0ULL, (unsigned int)len) : ~0ULL;

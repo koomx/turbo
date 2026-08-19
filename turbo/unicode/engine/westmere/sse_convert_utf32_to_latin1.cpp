@@ -32,7 +32,7 @@ sse_convert_utf32_to_latin1(const char32_t* buf, size_t len,
     return std::make_pair(buf, latin1_output);
 }
 
-std::pair<result, char*>
+std::pair<UnicodeResult, char*>
 sse_convert_utf32_to_latin1_with_errors(const char32_t* buf, size_t len,
     char* latin1_output) {
     const char32_t* start = buf;
@@ -58,7 +58,7 @@ sse_convert_utf32_to_latin1_with_errors(const char32_t* buf, size_t len,
                 if (codepoint <= 0xff) {
                     *latin1_output++ = char(codepoint);
                 } else {
-                    return std::make_pair(result(error_code::TOO_LARGE, buf - start + k),
+                    return std::make_pair(UnicodeResult(UnicodeError::TOO_LARGE, buf - start + k),
                         latin1_output);
                 }
             }
@@ -75,6 +75,6 @@ sse_convert_utf32_to_latin1_with_errors(const char32_t* buf, size_t len,
         buf += 16;
     }
 
-    return std::make_pair(result(error_code::SUCCESS, buf - start),
+    return std::make_pair(UnicodeResult(UnicodeError::SUCCESS, buf - start),
         latin1_output);
 }

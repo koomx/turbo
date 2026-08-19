@@ -105,7 +105,7 @@ lasx_convert_utf32_to_utf16(const char32_t* buf, size_t len,
 }
 
 template <endianness big_endian>
-std::pair<result, char16_t*>
+std::pair<UnicodeResult, char16_t*>
 lasx_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
     char16_t* utf16_out) {
     uint16_t* utf16_output = reinterpret_cast<uint16_t*>(utf16_out);
@@ -118,7 +118,7 @@ lasx_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
         if ((word & 0xFFFF0000) == 0) {
             // will not generate a surrogate pair
             if (word >= 0xD800 && word <= 0xDFFF) {
-                return std::make_pair(result(error_code::SURROGATE, buf - start - 1),
+                return std::make_pair(UnicodeResult(UnicodeError::SURROGATE, buf - start - 1),
                     reinterpret_cast<char16_t*>(utf16_output));
             }
             *utf16_output++ = !match_system(big_endian)
@@ -127,7 +127,7 @@ lasx_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
         } else {
             // will generate a surrogate pair
             if (word > 0x10FFFF) {
-                return std::make_pair(result(error_code::TOO_LARGE, buf - start - 1),
+                return std::make_pair(UnicodeResult(UnicodeError::TOO_LARGE, buf - start - 1),
                     reinterpret_cast<char16_t*>(utf16_output));
             }
             word -= 0x10000;
@@ -158,7 +158,7 @@ lasx_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
                     __lasx_xvsle_h(v_d800, utf16_packed)), // utf16_packed >= 0xd800
                 forbidden_bytemask);
             if (__lasx_xbnz_v(forbidden_bytemask)) {
-                return std::make_pair(result(error_code::SURROGATE, buf - start),
+                return std::make_pair(UnicodeResult(UnicodeError::SURROGATE, buf - start),
                     reinterpret_cast<char16_t*>(utf16_output));
             }
 
@@ -181,7 +181,7 @@ lasx_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
                     // will not generate a surrogate pair
                     if (word >= 0xD800 && word <= 0xDFFF) {
                         return std::make_pair(
-                            result(error_code::SURROGATE, buf - start + k),
+                            UnicodeResult(UnicodeError::SURROGATE, buf - start + k),
                             reinterpret_cast<char16_t*>(utf16_output));
                     }
                     *utf16_output++ = !match_system(big_endian)
@@ -191,7 +191,7 @@ lasx_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
                     // will generate a surrogate pair
                     if (word > 0x10FFFF) {
                         return std::make_pair(
-                            result(error_code::TOO_LARGE, buf - start + k),
+                            UnicodeResult(UnicodeError::TOO_LARGE, buf - start + k),
                             reinterpret_cast<char16_t*>(utf16_output));
                     }
                     word -= 0x10000;
@@ -209,6 +209,6 @@ lasx_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
         }
     }
 
-    return std::make_pair(result(error_code::SUCCESS, buf - start),
+    return std::make_pair(UnicodeResult(UnicodeError::SUCCESS, buf - start),
         reinterpret_cast<char16_t*>(utf16_output));
 }

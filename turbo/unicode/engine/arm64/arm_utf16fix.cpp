@@ -5,7 +5,7 @@
  * can use the two-instruction test (shrn + fcmp) instead of a reduction
  * followed by a costly move to a general-purpose register.
  */
-simdutf_really_inline bool veq_non_zero(uint8x16_t v) {
+KUMO_FORCE_INLINE bool veq_non_zero(uint8x16_t v) {
     return any_lane_set(vreinterpretq_u16_u8(v));
 }
 
@@ -81,7 +81,7 @@ uint8x16_t get_mismatch_copy(const char16_t* in, char16_t* out) {
     return illseq;
 }
 
-simdutf_really_inline uint64_t get_mask(uint8x16_t illse0, uint8x16_t illse1,
+KUMO_FORCE_INLINE uint64_t get_mask(uint8x16_t illse0, uint8x16_t illse1,
     uint8x16_t illse2, uint8x16_t illse3) {
 #ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
     uint8x16_t bit_mask = simdutf_make_uint8x16_t(0x01, 0x02, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80,

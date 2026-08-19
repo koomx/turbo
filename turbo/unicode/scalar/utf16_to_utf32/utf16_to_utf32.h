@@ -42,7 +42,7 @@ namespace turbo {
                 }
 
                 template <endianness big_endian>
-                 result convert_with_errors(const char16_t* data, size_t len,
+                 UnicodeResult convert_with_errors(const char16_t* data, size_t len,
                     char32_t* utf32_output) {
                     size_t pos = 0;
                     char32_t* start { utf32_output };
@@ -56,24 +56,24 @@ namespace turbo {
                             // must be a surrogate pair
                             uint16_t diff = uint16_t(word - 0xD800);
                             if (diff > 0x3FF) {
-                                return result(error_code::SURROGATE, pos);
+                                return UnicodeResult(UnicodeError::SURROGATE, pos);
                             }
                             if (pos + 1 >= len) {
-                                return result(error_code::SURROGATE, pos);
+                                return UnicodeResult(UnicodeError::SURROGATE, pos);
                             } // minimal bound checking
                             uint16_t next_word = !match_system(big_endian)
                                 ? u16_swap_bytes(data[pos + 1])
                                 : data[pos + 1];
                             uint16_t diff2 = uint16_t(next_word - 0xDC00);
                             if (diff2 > 0x3FF) {
-                                return result(error_code::SURROGATE, pos);
+                                return UnicodeResult(UnicodeError::SURROGATE, pos);
                             }
                             uint32_t value = (diff << 10) + diff2 + 0x10000;
                             *utf32_output++ = char32_t(value);
                             pos += 2;
                         }
                     }
-                    return result(error_code::SUCCESS, utf32_output - start);
+                    return UnicodeResult(UnicodeError::SUCCESS, utf32_output - start);
                 }
 
             } // namespace utf16_to_utf32

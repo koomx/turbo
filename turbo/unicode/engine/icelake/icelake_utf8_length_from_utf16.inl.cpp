@@ -1,11 +1,11 @@
 template <endianness big_endian>
-simdutf_really_inline size_t icelake_utf8_length_from_utf16(const char16_t* in,
+KUMO_FORCE_INLINE size_t icelake_utf8_length_from_utf16(const char16_t* in,
     size_t size) {
 
     using vector_u16 = simd16<uint16_t>;
     constexpr size_t N = vector_u16::ELEMENTS; // 32 on AVX-512
     if (N + 1 > size) {
-        result scalar_result = scalar::utf16::utf8_length_from_utf16_with_replacement<big_endian>(
+        UnicodeResult scalar_result = scalar::utf16::utf8_length_from_utf16_with_replacement<big_endian>(
             in, size);
         return scalar_result.count;
     } // special case for short inputs
@@ -98,7 +98,7 @@ simdutf_really_inline size_t icelake_utf8_length_from_utf16(const char16_t* in,
 }
 
 template <endianness big_endian>
-simdutf_really_inline result icelake_utf8_length_from_utf16_with_replacement(
+KUMO_FORCE_INLINE UnicodeResult icelake_utf8_length_from_utf16_with_replacement(
     const char16_t* in, size_t size) {
     ///////
     // We repeat 3 times the same algorithm.

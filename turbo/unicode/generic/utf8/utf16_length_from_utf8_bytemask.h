@@ -5,7 +5,7 @@ namespace turbo {
 
                 using namespace simd;
 
-                simdutf_really_inline size_t utf16_length_from_utf8_bytemask(const char* in,
+                KUMO_FORCE_INLINE size_t utf16_length_from_utf8_bytemask(const char* in,
                     size_t size) {
                     using vector_i8 = simd8<int8_t>;
                     using vector_u8 = simd8<uint8_t>;

@@ -265,7 +265,7 @@ avx512_convert_utf32_to_utf8(const char32_t* buf, size_t len,
 }
 
 // Todo: currently, this is just the haswell code, optimize for icelake kernel.
-std::pair<result, char*>
+std::pair<UnicodeResult, char*>
 avx512_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
     char* utf8_output) {
     const char32_t* end = buf + len;
@@ -290,7 +290,7 @@ avx512_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
         if (static_cast<uint32_t>(_mm256_movemask_epi8(
                 _mm256_cmpeq_epi32(max_input, v_10ffff)))
             != 0xffffffff) {
-            return std::make_pair(result(error_code::TOO_LARGE, buf - start),
+            return std::make_pair(UnicodeResult(UnicodeError::TOO_LARGE, buf - start),
                 utf8_output);
         }
 
@@ -379,7 +379,7 @@ avx512_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
             const __m256i v_d800 = _mm256_set1_epi16((uint16_t)0xd800);
             const __m256i forbidden_bytemask = _mm256_cmpeq_epi16(_mm256_and_si256(in_16, v_f800), v_d800);
             if (static_cast<uint32_t>(_mm256_movemask_epi8(forbidden_bytemask)) != 0x0) {
-                return std::make_pair(result(error_code::SURROGATE, buf - start),
+                return std::make_pair(UnicodeResult(UnicodeError::SURROGATE, buf - start),
                     utf8_output);
             }
 
@@ -507,7 +507,7 @@ avx512_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
                 } else if ((word & 0xFFFF0000) == 0) { // 3-byte
                     if (word >= 0xD800 && word <= 0xDFFF) {
                         return std::make_pair(
-                            result(error_code::SURROGATE, buf - start + k), utf8_output);
+                            UnicodeResult(UnicodeError::SURROGATE, buf - start + k), utf8_output);
                     }
                     *utf8_output++ = char((word >> 12) | 0b11100000);
                     *utf8_output++ = char(((word >> 6) & 0b111111) | 0b10000000);
@@ -515,7 +515,7 @@ avx512_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
                 } else { // 4-byte
                     if (word > 0x10FFFF) {
                         return std::make_pair(
-                            result(error_code::TOO_LARGE, buf - start + k), utf8_output);
+                            UnicodeResult(UnicodeError::TOO_LARGE, buf - start + k), utf8_output);
                     }
                     *utf8_output++ = char((word >> 18) | 0b11110000);
                     *utf8_output++ = char(((word >> 12) & 0b111111) | 0b10000000);
@@ -527,5 +527,5 @@ avx512_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
         }
     } // while
 
-    return std::make_pair(result(error_code::SUCCESS, buf - start), utf8_output);
+    return std::make_pair(UnicodeResult(UnicodeError::SUCCESS, buf - start), utf8_output);
 }

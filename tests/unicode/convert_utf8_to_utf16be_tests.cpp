@@ -33,10 +33,10 @@ TEST(issue_631) {
     constexpr std::size_t data_len = data_len_bytes / sizeof(char);
     const auto validation1 = implementation.validate_utf8_with_errors((const char*)data, data_len);
     ASSERT_EQUAL(validation1.count, 1);
-    ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
+    ASSERT_EQUAL(validation1.error, turbo::UnicodeError::TOO_LONG);
 
     const bool validation2 = implementation.validate_utf8((const char*)data, data_len);
-    ASSERT_EQUAL(validation1.error == turbo::error_code::SUCCESS, validation2);
+    ASSERT_EQUAL(validation1.error == turbo::UnicodeError::SUCCESS, validation2);
 
     const auto outlen = implementation.utf16_length_from_utf8((const char*)data, data_len);
     ASSERT_EQUAL(outlen, 36);
@@ -142,10 +142,10 @@ TEST(issue_ossfuzz_71218) {
     constexpr std::size_t data_len = data_len_bytes / sizeof(char);
     const auto validation1 = implementation.validate_utf8_with_errors((const char*)data, data_len);
     ASSERT_EQUAL(validation1.count, 0);
-    ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
+    ASSERT_EQUAL(validation1.error, turbo::UnicodeError::TOO_LONG);
 
     const bool validation2 = implementation.validate_utf8((const char*)data, data_len);
-    ASSERT_EQUAL(validation1.error == turbo::error_code::SUCCESS, validation2);
+    ASSERT_EQUAL(validation1.error == turbo::UnicodeError::SUCCESS, validation2);
 
     const auto outlen = implementation.utf16_length_from_utf8((const char*)data, data_len);
     ASSERT_EQUAL(outlen, 1049);
@@ -195,10 +195,10 @@ TEST(issue_514) {
     constexpr std::size_t data_len = data_len_bytes / sizeof(char);
     const auto validation1 = implementation.validate_utf8_with_errors((const char*)data, data_len);
     ASSERT_EQUAL(validation1.count, 4);
-    ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
+    ASSERT_EQUAL(validation1.error, turbo::UnicodeError::TOO_LONG);
 
     const bool validation2 = implementation.validate_utf8((const char*)data, data_len);
-    ASSERT_EQUAL(validation1.error == turbo::error_code::SUCCESS, validation2);
+    ASSERT_EQUAL(validation1.error == turbo::UnicodeError::SUCCESS, validation2);
 
     const auto outlen = implementation.utf16_length_from_utf8((const char*)data, data_len);
     ASSERT_EQUAL(outlen, 300);
@@ -221,7 +221,7 @@ TEST(issue_convert_valid_utf8_to_utf16le_91498ee0f0fe77dd) {
     constexpr std::size_t data_len = data_len_bytes / sizeof(char);
     const auto validation1 = implementation.validate_utf8_with_errors((const char*)data, data_len);
     ASSERT_EQUAL(validation1.count, 46);
-    ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_SHORT);
+    ASSERT_EQUAL(validation1.error, turbo::UnicodeError::TOO_SHORT);
     // strictly speaking, utf16_length_from_utf8 is not defined for invalid UTF-8
     const auto outlen = implementation.utf16_length_from_utf8((const char*)data, data_len);
     ASSERT_EQUAL(outlen, 64);

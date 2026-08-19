@@ -1,5 +1,5 @@
 template <simdutf_ByteFlip bflip>
-simdutf_really_inline static size_t
+KUMO_FORCE_INLINE static size_t
 rvv_utf32_store_utf16_m4(uint16_t* dst, vuint32m4_t utf32, size_t vl,
     vbool4_t m4even) {
     /* convert [000000000000aaaa|aaaaaabbbbbbbbbb]

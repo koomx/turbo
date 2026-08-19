@@ -15,152 +15,97 @@ namespace turbo {
 #endif
             using namespace simd;
 
-#if SIMDUTF_FEATURE_ASCII || SIMDUTF_FEATURE_DETECT_ENCODING || SIMDUTF_FEATURE_UTF8
-            simdutf_really_inline bool is_ascii(const simd8x64<uint8_t>& input) {
+            KUMO_FORCE_INLINE bool is_ascii(const simd8x64<uint8_t>& input) {
                 return input.reduce_or().is_ascii();
             }
-#endif // SIMDUTF_FEATURE_ASCII || SIMDUTF_FEATURE_DETECT_ENCODING ||
-       // SIMDUTF_FEATURE_UTF8
 
-#if SIMDUTF_FEATURE_UTF8 || SIMDUTF_FEATURE_DETECT_ENCODING
-            simdutf_really_inline simd8<bool>
+
+            KUMO_FORCE_INLINE simd8<bool>
             must_be_2_3_continuation(const simd8<uint8_t> prev2,
                 const simd8<uint8_t> prev3) {
                 simd8<uint8_t> is_third_byte = prev2.saturating_sub(0xe0u - 0x80); // Only 111_____ will be > 0x80
                 simd8<uint8_t> is_fourth_byte = prev3.saturating_sub(0xf0u - 0x80); // Only 1111____ will be > 0x80
                 return simd8<bool>(is_third_byte | is_fourth_byte);
             }
-#endif // SIMDUTF_FEATURE_UTF8 || SIMDUTF_FEATURE_DETECT_ENCODING
 
-#if SIMDUTF_FEATURE_UTF16 || SIMDUTF_FEATURE_DETECT_ENCODING
             namespace utf16 {
 #include <turbo/unicode/engine/haswell/avx2_validate_utf16.cpp>
             }
-#endif // SIMDUTF_FEATURE_UTF16 || SIMDUTF_FEATURE_DETECT_ENCODING
 
-#if SIMDUTF_FEATURE_UTF16
 #include <turbo/unicode/engine/haswell/avx2_utf16fix.cpp>
-#endif // SIMDUTF_FEATURE_UTF16
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
 #include <turbo/unicode/engine/haswell/avx2_convert_latin1_to_utf8.cpp>
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
 
-#if SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_LATIN1
 #include <turbo/unicode/engine/haswell/avx2_convert_latin1_to_utf16.cpp>
-#endif // SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_LATIN1
 
-#if SIMDUTF_FEATURE_UTF32 && SIMDUTF_FEATURE_LATIN1
 #include <turbo/unicode/engine/haswell/avx2_convert_latin1_to_utf32.cpp>
-#endif // SIMDUTF_FEATURE_UTF32 && SIMDUTF_FEATURE_LATIN1
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
 #include <turbo/unicode/engine/haswell/avx2_convert_utf8_to_utf16.cpp>
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
 #include <turbo/unicode/engine/haswell/avx2_convert_utf8_to_utf32.cpp>
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_LATIN1
 #include <turbo/unicode/engine/haswell/avx2_convert_utf16_to_latin1.cpp>
-#endif // SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_LATIN1
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
 #include <turbo/unicode/engine/haswell/avx2_convert_utf16_to_utf8.cpp>
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
 
-#if SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32
 #include <turbo/unicode/engine/haswell/avx2_convert_utf16_to_utf32.cpp>
-#endif // SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_UTF32 && SIMDUTF_FEATURE_LATIN1
 #include <turbo/unicode/engine/haswell/avx2_convert_utf32_to_latin1.cpp>
-#endif // SIMDUTF_FEATURE_UTF32 && SIMDUTF_FEATURE_LATIN1
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
 #include <turbo/unicode/engine/haswell/avx2_convert_utf32_to_utf8.cpp>
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32
 #include <turbo/unicode/engine/haswell/avx2_convert_utf32_to_utf16.cpp>
-#endif // SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
 #include <turbo/unicode/engine/haswell/avx2_convert_utf8_to_latin1.cpp>
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
 
-#if SIMDUTF_FEATURE_BASE64
 #include <turbo/unicode/engine/haswell/avx2_base64.cpp>
-#endif // SIMDUTF_FEATURE_BASE64
 
         } // unnamed namespace
     } // namespace SIMDUTF_IMPLEMENTATION
 } // namespace turbo
 
 #include <turbo/unicode/generic/buf_block_reader.h>
-#if SIMDUTF_FEATURE_UTF8 || SIMDUTF_FEATURE_DETECT_ENCODING
 #include <turbo/unicode/generic/utf8_validation/utf8_lookup4_algorithm.h>
 #include <turbo/unicode/generic/utf8_validation/utf8_validator.h>
-#endif // SIMDUTF_FEATURE_UTF8 || SIMDUTF_FEATURE_DETECT_ENCODING
 
-#if SIMDUTF_FEATURE_ASCII
 #include <turbo/unicode/generic/ascii_validation.h>
-#endif // SIMDUTF_FEATURE_ASCII
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
   // transcoding from UTF-8 to UTF-16
 #include <turbo/unicode/generic/utf8_to_utf16/valid_utf8_to_utf16.h>
 #include <turbo/unicode/generic/utf8_to_utf16/utf8_to_utf16.h>
 #include <turbo/unicode/generic/utf8/utf16_length_from_utf8_bytemask.h>
   // transcoding from UTF-16 to UTF-8
 #include <turbo/unicode/generic/utf16_to_utf8/utf16_to_utf8_with_replacement.h>
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
   // transcoding from UTF-8 to UTF-32
 #include <turbo/unicode/generic/utf8_to_utf32/valid_utf8_to_utf32.h>
 #include <turbo/unicode/generic/utf8_to_utf32/utf8_to_utf32.h>
 #include <turbo/unicode/generic/utf32.h>
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
 
 // other functions
-#if SIMDUTF_FEATURE_UTF8
 #include <turbo/unicode/generic/utf8.h>
-#endif // SIMDUTF_FEATURE_UTF8
 
-#if SIMDUTF_FEATURE_UTF16
 #include <turbo/unicode/generic/utf16.h>
 #include <turbo/unicode/generic/utf16/utf8_length_from_utf16_bytemask.h>
-#endif // SIMDUTF_FEATURE_UTF16
-#if SIMDUTF_FEATURE_UTF16 || SIMDUTF_FEATURE_DETECT_ENCODING
 #include <turbo/unicode/generic/validate_utf16.h>
-#endif // SIMDUTF_FEATURE_UTF16 || SIMDUTF_FEATURE_DETECT_ENCODING
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
   // transcoding from UTF-8 to Latin 1
 #include <turbo/unicode/generic/utf8_to_latin1/utf8_to_latin1.h>
 #include <turbo/unicode/generic/utf8_to_latin1/valid_utf8_to_latin1.h>
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
 
-#if SIMDUTF_FEATURE_UTF32 || SIMDUTF_FEATURE_DETECT_ENCODING
 #include <turbo/unicode/generic/validate_utf32.h>
-#endif // SIMDUTF_FEATURE_UTF32 || SIMDUTF_FEATURE_DETECT_ENCODING
 
-#if SIMDUTF_FEATURE_BASE64
 #include <turbo/unicode/generic/base64.h>
 #include <turbo/unicode/generic/find.h>
-#endif // SIMDUTF_FEATURE_BASE64
 
 namespace turbo {
     namespace SIMDUTF_IMPLEMENTATION {
 
-#if SIMDUTF_FEATURE_DETECT_ENCODING
-        simdutf_warn_unused int
+         [[nodiscard]] int
         implementation::detect_encodings(const char* input,
             size_t length) const noexcept {
             // If there is a BOM, then we trust it.
             auto bom_encoding = turbo::BOM::check_bom(input, length);
-            if (bom_encoding != encoding_type::unspecified) {
+            if (bom_encoding != TextEncoding::unspecified) {
                 return bom_encoding;
             }
 
@@ -252,47 +197,39 @@ namespace turbo {
                 _mm256_max_epu32(currentoffsetmax, standardoffsetmax), standardoffsetmax);
             utf32_err |= (_mm256_testz_si256(is_zero, is_zero) == 0);
             if (is_valid_utf8) {
-                out |= encoding_type::UTF8;
+                out |= TextEncoding::UTF8;
             }
             if (utf16_err == 0) {
-                out |= encoding_type::UTF16_LE;
+                out |= TextEncoding::UTF16_LE;
             }
             if (utf32_err == 0) {
-                out |= encoding_type::UTF32_LE;
+                out |= TextEncoding::UTF32_LE;
             }
             return out;
         }
-#endif // SIMDUTF_FEATURE_DETECT_ENCODING
 
-#if SIMDUTF_FEATURE_UTF8 || SIMDUTF_FEATURE_DETECT_ENCODING
-        simdutf_warn_unused bool
+         [[nodiscard]] bool
         implementation::validate_utf8(const char* buf, size_t len) const noexcept {
             return haswell::utf8_validation::generic_validate_utf8(buf, len);
         }
-#endif // SIMDUTF_FEATURE_UTF8 || SIMDUTF_FEATURE_DETECT_ENCODING
 
-#if SIMDUTF_FEATURE_UTF8
-        simdutf_warn_unused result implementation::validate_utf8_with_errors(
+         [[nodiscard]] UnicodeResult implementation::validate_utf8_with_errors(
             const char* buf, size_t len) const noexcept {
             return haswell::utf8_validation::generic_validate_utf8_with_errors(buf, len);
         }
-#endif // SIMDUTF_FEATURE_UTF8
 
-#if SIMDUTF_FEATURE_ASCII
-        simdutf_warn_unused bool
+         [[nodiscard]] bool
         implementation::validate_ascii(const char* buf, size_t len) const noexcept {
             return haswell::ascii_validation::generic_validate_ascii(buf, len);
         }
 
-        simdutf_warn_unused result implementation::validate_ascii_with_errors(
+         [[nodiscard]] UnicodeResult implementation::validate_ascii_with_errors(
             const char* buf, size_t len) const noexcept {
             return haswell::ascii_validation::generic_validate_ascii_with_errors(buf,
                 len);
         }
-#endif // SIMDUTF_FEATURE_ASCII
 
-#if SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_ASCII
-        simdutf_warn_unused bool
+         [[nodiscard]] bool
         implementation::validate_utf16le_as_ascii(const char16_t* buf,
             size_t len) const noexcept {
             return haswell::utf16::validate_utf16_as_ascii_with_errors<
@@ -301,7 +238,7 @@ namespace turbo {
                 == SUCCESS;
         }
 
-        simdutf_warn_unused bool
+         [[nodiscard]] bool
         implementation::validate_utf16be_as_ascii(const char16_t* buf,
             size_t len) const noexcept {
             return haswell::utf16::validate_utf16_as_ascii_with_errors<endianness::BIG>(
@@ -309,13 +246,11 @@ namespace turbo {
                        .error
                 == SUCCESS;
         }
-#endif // SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_ASCII
 
-#if SIMDUTF_FEATURE_UTF16 || SIMDUTF_FEATURE_DETECT_ENCODING
-        simdutf_warn_unused bool
+         [[nodiscard]] bool
         implementation::validate_utf16le(const char16_t* buf,
             size_t len) const noexcept {
-            if (simdutf_unlikely(len == 0)) {
+            if (KUMO_UNLIKELY(len == 0)) {
                 // empty input is valid UTF-16. protect the implementation from
                 // handling nullptr
                 return true;
@@ -332,13 +267,11 @@ namespace turbo {
             return scalar::utf16::validate<endianness::LITTLE>(buf + res.count,
                 len - res.count);
         }
-#endif // SIMDUTF_FEATURE_UTF16 || SIMDUTF_FEATURE_DETECT_ENCODING
 
-#if SIMDUTF_FEATURE_UTF16
-        simdutf_warn_unused bool
+         [[nodiscard]] bool
         implementation::validate_utf16be(const char16_t* buf,
             size_t len) const noexcept {
-            if (simdutf_unlikely(len == 0)) {
+            if (KUMO_UNLIKELY(len == 0)) {
                 // empty input is valid UTF-16. protect the implementation from
                 // handling nullptr
                 return true;
@@ -356,26 +289,26 @@ namespace turbo {
                 len - res.count);
         }
 
-        simdutf_warn_unused result implementation::validate_utf16le_with_errors(
+         [[nodiscard]] UnicodeResult implementation::validate_utf16le_with_errors(
             const char16_t* buf, size_t len) const noexcept {
 
-            const result res = haswell::utf16::validate_utf16_with_errors<endianness::LITTLE>(buf, len);
+            const UnicodeResult res = haswell::utf16::validate_utf16_with_errors<endianness::LITTLE>(buf, len);
             if (res.count != len) {
-                const result scalar_res = scalar::utf16::validate_with_errors<endianness::LITTLE>(
+                const UnicodeResult scalar_res = scalar::utf16::validate_with_errors<endianness::LITTLE>(
                     buf + res.count, len - res.count);
-                return result(scalar_res.error, res.count + scalar_res.count);
+                return UnicodeResult(scalar_res.error, res.count + scalar_res.count);
             } else {
                 return res;
             }
         }
 
-        simdutf_warn_unused result implementation::validate_utf16be_with_errors(
+         [[nodiscard]] UnicodeResult implementation::validate_utf16be_with_errors(
             const char16_t* buf, size_t len) const noexcept {
-            const result res = haswell::utf16::validate_utf16_with_errors<endianness::BIG>(buf, len);
+            const UnicodeResult res = haswell::utf16::validate_utf16_with_errors<endianness::BIG>(buf, len);
             if (res.count != len) {
-                const result scalar_res = scalar::utf16::validate_with_errors<endianness::BIG>(buf + res.count,
+                const UnicodeResult scalar_res = scalar::utf16::validate_with_errors<endianness::BIG>(buf + res.count,
                     len - res.count);
-                return result(scalar_res.error, res.count + scalar_res.count);
+                return UnicodeResult(scalar_res.error, res.count + scalar_res.count);
             } else {
                 return res;
             }
@@ -390,24 +323,18 @@ namespace turbo {
             char16_t* output) const noexcept {
             return utf16fix_avx<endianness::BIG>(input, len, output);
         }
-#endif // SIMDUTF_FEATURE_UTF16
 
-#if SIMDUTF_FEATURE_UTF32 || SIMDUTF_FEATURE_DETECT_ENCODING
-        simdutf_warn_unused bool
+         [[nodiscard]] bool
         implementation::validate_utf32(const char32_t* buf, size_t len) const noexcept {
             return utf32::validate(buf, len);
         }
-#endif // SIMDUTF_FEATURE_UTF32 || SIMDUTF_FEATURE_DETECT_ENCODING
 
-#if SIMDUTF_FEATURE_UTF32
-        simdutf_warn_unused result implementation::validate_utf32_with_errors(
+         [[nodiscard]] UnicodeResult implementation::validate_utf32_with_errors(
             const char32_t* buf, size_t len) const noexcept {
             return utf32::validate_with_errors(buf, len);
         }
-#endif // SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
-        simdutf_warn_unused size_t implementation::convert_latin1_to_utf8(
+         [[nodiscard]] size_t implementation::convert_latin1_to_utf8(
             const char* buf, size_t len, char* utf8_output) const noexcept {
             std::pair<const char*, char*> ret = avx2_convert_latin1_to_utf8(buf, len, utf8_output);
             size_t converted_chars = ret.second - utf8_output;
@@ -420,10 +347,8 @@ namespace turbo {
 
             return converted_chars;
         }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
 
-#if SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_LATIN1
-        simdutf_warn_unused size_t implementation::convert_latin1_to_utf16le(
+         [[nodiscard]] size_t implementation::convert_latin1_to_utf16le(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
             std::pair<const char*, char16_t*> ret = avx2_convert_latin1_to_utf16<endianness::LITTLE>(buf, len, utf16_output);
             if (ret.first == nullptr) {
@@ -441,7 +366,7 @@ namespace turbo {
             return converted_chars;
         }
 
-        simdutf_warn_unused size_t implementation::convert_latin1_to_utf16be(
+         [[nodiscard]] size_t implementation::convert_latin1_to_utf16be(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
             std::pair<const char*, char16_t*> ret = avx2_convert_latin1_to_utf16<endianness::BIG>(buf, len, utf16_output);
             if (ret.first == nullptr) {
@@ -458,10 +383,8 @@ namespace turbo {
             }
             return converted_chars;
         }
-#endif // SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_LATIN1
 
-#if SIMDUTF_FEATURE_UTF32 && SIMDUTF_FEATURE_LATIN1
-        simdutf_warn_unused size_t implementation::convert_latin1_to_utf32(
+         [[nodiscard]] size_t implementation::convert_latin1_to_utf32(
             const char* buf, size_t len, char32_t* utf32_output) const noexcept {
             std::pair<const char*, char32_t*> ret = avx2_convert_latin1_to_utf32(buf, len, utf32_output);
             if (ret.first == nullptr) {
@@ -478,87 +401,79 @@ namespace turbo {
             }
             return converted_chars;
         }
-#endif // SIMDUTF_FEATURE_UTF32 && SIMDUTF_FEATURE_LATIN1
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
-        simdutf_warn_unused size_t implementation::convert_utf8_to_latin1(
+         [[nodiscard]] size_t implementation::convert_utf8_to_latin1(
             const char* buf, size_t len, char* latin1_output) const noexcept {
             utf8_to_latin1::validating_transcoder converter;
             return converter.convert(buf, len, latin1_output);
         }
 
-        simdutf_warn_unused result implementation::convert_utf8_to_latin1_with_errors(
+         [[nodiscard]] UnicodeResult implementation::convert_utf8_to_latin1_with_errors(
             const char* buf, size_t len, char* latin1_output) const noexcept {
             utf8_to_latin1::validating_transcoder converter;
             return converter.convert_with_errors(buf, len, latin1_output);
         }
 
-        simdutf_warn_unused size_t implementation::convert_valid_utf8_to_latin1(
+         [[nodiscard]] size_t implementation::convert_valid_utf8_to_latin1(
             const char* input, size_t size, char* latin1_output) const noexcept {
             return utf8_to_latin1::convert_valid(input, size, latin1_output);
         }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
-        simdutf_warn_unused size_t implementation::convert_utf8_to_utf16le(
+         [[nodiscard]] size_t implementation::convert_utf8_to_utf16le(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
             utf8_to_utf16::validating_transcoder converter;
             return converter.convert<endianness::LITTLE>(buf, len, utf16_output);
         }
 
-        simdutf_warn_unused size_t implementation::convert_utf8_to_utf16be(
+         [[nodiscard]] size_t implementation::convert_utf8_to_utf16be(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
             utf8_to_utf16::validating_transcoder converter;
             return converter.convert<endianness::BIG>(buf, len, utf16_output);
         }
 
-        simdutf_warn_unused result implementation::convert_utf8_to_utf16le_with_errors(
+         [[nodiscard]] UnicodeResult implementation::convert_utf8_to_utf16le_with_errors(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
             utf8_to_utf16::validating_transcoder converter;
             return converter.convert_with_errors<endianness::LITTLE>(buf, len,
                 utf16_output);
         }
 
-        simdutf_warn_unused result implementation::convert_utf8_to_utf16be_with_errors(
+         [[nodiscard]] UnicodeResult implementation::convert_utf8_to_utf16be_with_errors(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
             utf8_to_utf16::validating_transcoder converter;
             return converter.convert_with_errors<endianness::BIG>(buf, len, utf16_output);
         }
 
-        simdutf_warn_unused size_t implementation::convert_valid_utf8_to_utf16le(
+         [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf16le(
             const char* input, size_t size, char16_t* utf16_output) const noexcept {
             return utf8_to_utf16::convert_valid<endianness::LITTLE>(input, size,
                 utf16_output);
         }
 
-        simdutf_warn_unused size_t implementation::convert_valid_utf8_to_utf16be(
+         [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf16be(
             const char* input, size_t size, char16_t* utf16_output) const noexcept {
             return utf8_to_utf16::convert_valid<endianness::BIG>(input, size,
                 utf16_output);
         }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
-        simdutf_warn_unused size_t implementation::convert_utf8_to_utf32(
+         [[nodiscard]] size_t implementation::convert_utf8_to_utf32(
             const char* buf, size_t len, char32_t* utf32_output) const noexcept {
             utf8_to_utf32::validating_transcoder converter;
             return converter.convert(buf, len, utf32_output);
         }
 
-        simdutf_warn_unused result implementation::convert_utf8_to_utf32_with_errors(
+         [[nodiscard]] UnicodeResult implementation::convert_utf8_to_utf32_with_errors(
             const char* buf, size_t len, char32_t* utf32_output) const noexcept {
             utf8_to_utf32::validating_transcoder converter;
             return converter.convert_with_errors(buf, len, utf32_output);
         }
 
-        simdutf_warn_unused size_t implementation::convert_valid_utf8_to_utf32(
+         [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf32(
             const char* input, size_t size, char32_t* utf32_output) const noexcept {
             return utf8_to_utf32::convert_valid(input, size, utf32_output);
         }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_LATIN1
-        simdutf_warn_unused size_t implementation::convert_utf16le_to_latin1(
+         [[nodiscard]] size_t implementation::convert_utf16le_to_latin1(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
             std::pair<const char16_t*, char*> ret = haswell::avx2_convert_utf16_to_latin1<endianness::LITTLE>(buf, len,
                 latin1_output);
@@ -577,7 +492,7 @@ namespace turbo {
             return saved_bytes;
         }
 
-        simdutf_warn_unused size_t implementation::convert_utf16be_to_latin1(
+         [[nodiscard]] size_t implementation::convert_utf16be_to_latin1(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
             std::pair<const char16_t*, char*> ret = haswell::avx2_convert_utf16_to_latin1<endianness::BIG>(buf, len,
                 latin1_output);
@@ -596,17 +511,17 @@ namespace turbo {
             return saved_bytes;
         }
 
-        simdutf_warn_unused result
+         [[nodiscard]] UnicodeResult
         implementation::convert_utf16le_to_latin1_with_errors(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
-            std::pair<result, char*> ret = avx2_convert_utf16_to_latin1_with_errors<endianness::LITTLE>(
+            std::pair<UnicodeResult, char*> ret = avx2_convert_utf16_to_latin1_with_errors<endianness::LITTLE>(
                 buf, len, latin1_output);
             if (ret.first.error) {
                 return ret.first;
             } // Can return directly since scalar fallback already found correct
               // ret.first.count
             if (ret.first.count != len) { // All good so far, but not finished
-                result scalar_res = scalar::utf16_to_latin1::convert_with_errors<endianness::LITTLE>(
+                UnicodeResult scalar_res = scalar::utf16_to_latin1::convert_with_errors<endianness::LITTLE>(
                     buf + ret.first.count, len - ret.first.count, ret.second);
                 if (scalar_res.error) {
                     scalar_res.count += ret.first.count;
@@ -619,17 +534,17 @@ namespace turbo {
             return ret.first;
         }
 
-        simdutf_warn_unused result
+         [[nodiscard]] UnicodeResult
         implementation::convert_utf16be_to_latin1_with_errors(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
-            std::pair<result, char*> ret = avx2_convert_utf16_to_latin1_with_errors<endianness::BIG>(buf, len,
+            std::pair<UnicodeResult, char*> ret = avx2_convert_utf16_to_latin1_with_errors<endianness::BIG>(buf, len,
                 latin1_output);
             if (ret.first.error) {
                 return ret.first;
             } // Can return directly since scalar fallback already found correct
               // ret.first.count
             if (ret.first.count != len) { // All good so far, but not finished
-                result scalar_res = scalar::utf16_to_latin1::convert_with_errors<endianness::BIG>(
+                UnicodeResult scalar_res = scalar::utf16_to_latin1::convert_with_errors<endianness::BIG>(
                     buf + ret.first.count, len - ret.first.count, ret.second);
                 if (scalar_res.error) {
                     scalar_res.count += ret.first.count;
@@ -642,21 +557,19 @@ namespace turbo {
             return ret.first;
         }
 
-        simdutf_warn_unused size_t implementation::convert_valid_utf16be_to_latin1(
+         [[nodiscard]] size_t implementation::convert_valid_utf16be_to_latin1(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
             // optimization opportunity: implement a custom function
             return convert_utf16be_to_latin1(buf, len, latin1_output);
         }
 
-        simdutf_warn_unused size_t implementation::convert_valid_utf16le_to_latin1(
+         [[nodiscard]] size_t implementation::convert_valid_utf16le_to_latin1(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
             // optimization opportunity: implement a custom function
             return convert_utf16le_to_latin1(buf, len, latin1_output);
         }
-#endif // SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_LATIN1
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
-        simdutf_warn_unused size_t implementation::convert_utf16le_to_utf8(
+         [[nodiscard]] size_t implementation::convert_utf16le_to_utf8(
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
             std::pair<const char16_t*, char*> ret = haswell::avx2_convert_utf16_to_utf8<endianness::LITTLE>(buf, len,
                 utf8_output);
@@ -675,7 +588,7 @@ namespace turbo {
             return saved_bytes;
         }
 
-        simdutf_warn_unused size_t implementation::convert_utf16be_to_utf8(
+         [[nodiscard]] size_t implementation::convert_utf16be_to_utf8(
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
             std::pair<const char16_t*, char*> ret = haswell::avx2_convert_utf16_to_utf8<endianness::BIG>(buf, len,
                 utf8_output);
@@ -694,18 +607,18 @@ namespace turbo {
             return saved_bytes;
         }
 
-        simdutf_warn_unused result implementation::convert_utf16le_to_utf8_with_errors(
+         [[nodiscard]] UnicodeResult implementation::convert_utf16le_to_utf8_with_errors(
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
-            std::pair<result, char*> ret = haswell::avx2_convert_utf16_to_utf8_with_errors<endianness::LITTLE>(
+            std::pair<UnicodeResult, char*> ret = haswell::avx2_convert_utf16_to_utf8_with_errors<endianness::LITTLE>(
                 buf, len, utf8_output);
             if (ret.first.error) {
                 return ret.first;
             } // Can return directly since scalar fallback already found correct
               // ret.first.count
             if (ret.first.count != len) { // All good so far, but not finished
-                result scalar_res = scalar::utf16_to_utf8::convert_with_errors<endianness::LITTLE>(
+                UnicodeResult scalar_res = scalar::utf16_to_utf8::convert_with_errors<endianness::LITTLE>(
                     buf + ret.first.count, len - ret.first.count, ret.second);
                 if (scalar_res.error) {
                     scalar_res.count += ret.first.count;
@@ -718,18 +631,18 @@ namespace turbo {
             return ret.first;
         }
 
-        simdutf_warn_unused result implementation::convert_utf16be_to_utf8_with_errors(
+         [[nodiscard]] UnicodeResult implementation::convert_utf16be_to_utf8_with_errors(
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
-            std::pair<result, char*> ret = haswell::avx2_convert_utf16_to_utf8_with_errors<endianness::BIG>(
+            std::pair<UnicodeResult, char*> ret = haswell::avx2_convert_utf16_to_utf8_with_errors<endianness::BIG>(
                 buf, len, utf8_output);
             if (ret.first.error) {
                 return ret.first;
             } // Can return directly since scalar fallback already found correct
               // ret.first.count
             if (ret.first.count != len) { // All good so far, but not finished
-                result scalar_res = scalar::utf16_to_utf8::convert_with_errors<endianness::BIG>(
+                UnicodeResult scalar_res = scalar::utf16_to_utf8::convert_with_errors<endianness::BIG>(
                     buf + ret.first.count, len - ret.first.count, ret.second);
                 if (scalar_res.error) {
                     scalar_res.count += ret.first.count;
@@ -742,19 +655,17 @@ namespace turbo {
             return ret.first;
         }
 
-        simdutf_warn_unused size_t implementation::convert_valid_utf16le_to_utf8(
+         [[nodiscard]] size_t implementation::convert_valid_utf16le_to_utf8(
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
             return convert_utf16le_to_utf8(buf, len, utf8_output);
         }
 
-        simdutf_warn_unused size_t implementation::convert_valid_utf16be_to_utf8(
+         [[nodiscard]] size_t implementation::convert_valid_utf16be_to_utf8(
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
             return convert_utf16be_to_utf8(buf, len, utf8_output);
         }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
-        simdutf_warn_unused size_t implementation::convert_utf32_to_utf8(
+         [[nodiscard]] size_t implementation::convert_utf32_to_utf8(
             const char32_t* buf, size_t len, char* utf8_output) const noexcept {
             std::pair<const char32_t*, char*> ret = avx2_convert_utf32_to_utf8(buf, len, utf8_output);
             if (ret.first == nullptr) {
@@ -771,10 +682,8 @@ namespace turbo {
             }
             return saved_bytes;
         }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_UTF32 && SIMDUTF_FEATURE_LATIN1
-        simdutf_warn_unused size_t implementation::convert_utf32_to_latin1(
+         [[nodiscard]] size_t implementation::convert_utf32_to_latin1(
             const char32_t* buf, size_t len, char* latin1_output) const noexcept {
             std::pair<const char32_t*, char*> ret = avx2_convert_utf32_to_latin1(buf, len, latin1_output);
             if (ret.first == nullptr) {
@@ -792,13 +701,13 @@ namespace turbo {
             return saved_bytes;
         }
 
-        simdutf_warn_unused result implementation::convert_utf32_to_latin1_with_errors(
+         [[nodiscard]] UnicodeResult implementation::convert_utf32_to_latin1_with_errors(
             const char32_t* buf, size_t len, char* latin1_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
-            std::pair<result, char*> ret = avx2_convert_utf32_to_latin1_with_errors(buf, len, latin1_output);
+            std::pair<UnicodeResult, char*> ret = avx2_convert_utf32_to_latin1_with_errors(buf, len, latin1_output);
             if (ret.first.count != len) {
-                result scalar_res = scalar::utf32_to_latin1::convert_with_errors(
+                UnicodeResult scalar_res = scalar::utf32_to_latin1::convert_with_errors(
                     buf + ret.first.count, len - ret.first.count, ret.second);
                 if (scalar_res.error) {
                     scalar_res.count += ret.first.count;
@@ -811,20 +720,18 @@ namespace turbo {
             return ret.first;
         }
 
-        simdutf_warn_unused size_t implementation::convert_valid_utf32_to_latin1(
+         [[nodiscard]] size_t implementation::convert_valid_utf32_to_latin1(
             const char32_t* buf, size_t len, char* latin1_output) const noexcept {
             return convert_utf32_to_latin1(buf, len, latin1_output);
         }
-#endif // SIMDUTF_FEATURE_UTF32 && SIMDUTF_FEATURE_LATIN1
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
-        simdutf_warn_unused result implementation::convert_utf32_to_utf8_with_errors(
+         [[nodiscard]] UnicodeResult implementation::convert_utf32_to_utf8_with_errors(
             const char32_t* buf, size_t len, char* utf8_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
-            std::pair<result, char*> ret = haswell::avx2_convert_utf32_to_utf8_with_errors(buf, len, utf8_output);
+            std::pair<UnicodeResult, char*> ret = haswell::avx2_convert_utf32_to_utf8_with_errors(buf, len, utf8_output);
             if (ret.first.count != len) {
-                result scalar_res = scalar::utf32_to_utf8::convert_with_errors(
+                UnicodeResult scalar_res = scalar::utf32_to_utf8::convert_with_errors(
                     buf + ret.first.count, len - ret.first.count, ret.second);
                 if (scalar_res.error) {
                     scalar_res.count += ret.first.count;
@@ -836,10 +743,8 @@ namespace turbo {
             ret.first.count = ret.second - utf8_output; // Set count to the number of 8-bit code units written
             return ret.first;
         }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32
-        simdutf_warn_unused size_t implementation::convert_utf16le_to_utf32(
+         [[nodiscard]] size_t implementation::convert_utf16le_to_utf32(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
             std::pair<const char16_t*, char32_t*> ret = haswell::avx2_convert_utf16_to_utf32<endianness::LITTLE>(buf, len,
                 utf32_output);
@@ -858,7 +763,7 @@ namespace turbo {
             return saved_bytes;
         }
 
-        simdutf_warn_unused size_t implementation::convert_utf16be_to_utf32(
+         [[nodiscard]] size_t implementation::convert_utf16be_to_utf32(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
             std::pair<const char16_t*, char32_t*> ret = haswell::avx2_convert_utf16_to_utf32<endianness::BIG>(buf, len,
                 utf32_output);
@@ -877,18 +782,18 @@ namespace turbo {
             return saved_bytes;
         }
 
-        simdutf_warn_unused result implementation::convert_utf16le_to_utf32_with_errors(
+         [[nodiscard]] UnicodeResult implementation::convert_utf16le_to_utf32_with_errors(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
-            std::pair<result, char32_t*> ret = haswell::avx2_convert_utf16_to_utf32_with_errors<endianness::LITTLE>(
+            std::pair<UnicodeResult, char32_t*> ret = haswell::avx2_convert_utf16_to_utf32_with_errors<endianness::LITTLE>(
                 buf, len, utf32_output);
             if (ret.first.error) {
                 return ret.first;
             } // Can return directly since scalar fallback already found correct
               // ret.first.count
             if (ret.first.count != len) { // All good so far, but not finished
-                result scalar_res = scalar::utf16_to_utf32::convert_with_errors<endianness::LITTLE>(
+                UnicodeResult scalar_res = scalar::utf16_to_utf32::convert_with_errors<endianness::LITTLE>(
                     buf + ret.first.count, len - ret.first.count, ret.second);
                 if (scalar_res.error) {
                     scalar_res.count += ret.first.count;
@@ -901,18 +806,18 @@ namespace turbo {
             return ret.first;
         }
 
-        simdutf_warn_unused result implementation::convert_utf16be_to_utf32_with_errors(
+         [[nodiscard]] UnicodeResult implementation::convert_utf16be_to_utf32_with_errors(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
-            std::pair<result, char32_t*> ret = haswell::avx2_convert_utf16_to_utf32_with_errors<endianness::BIG>(
+            std::pair<UnicodeResult, char32_t*> ret = haswell::avx2_convert_utf16_to_utf32_with_errors<endianness::BIG>(
                 buf, len, utf32_output);
             if (ret.first.error) {
                 return ret.first;
             } // Can return directly since scalar fallback already found correct
               // ret.first.count
             if (ret.first.count != len) { // All good so far, but not finished
-                result scalar_res = scalar::utf16_to_utf32::convert_with_errors<endianness::BIG>(
+                UnicodeResult scalar_res = scalar::utf16_to_utf32::convert_with_errors<endianness::BIG>(
                     buf + ret.first.count, len - ret.first.count, ret.second);
                 if (scalar_res.error) {
                     scalar_res.count += ret.first.count;
@@ -924,17 +829,13 @@ namespace turbo {
             ret.first.count = ret.second - utf32_output; // Set count to the number of 8-bit code units written
             return ret.first;
         }
-#endif // SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
-        simdutf_warn_unused size_t implementation::convert_valid_utf32_to_utf8(
+         [[nodiscard]] size_t implementation::convert_valid_utf32_to_utf8(
             const char32_t* buf, size_t len, char* utf8_output) const noexcept {
             return convert_utf32_to_utf8(buf, len, utf8_output);
         }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32
-        simdutf_warn_unused size_t implementation::convert_utf32_to_utf16le(
+         [[nodiscard]] size_t implementation::convert_utf32_to_utf16le(
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
             std::pair<const char32_t*, char16_t*> ret = avx2_convert_utf32_to_utf16<endianness::LITTLE>(buf, len, utf16_output);
             if (ret.first == nullptr) {
@@ -952,7 +853,7 @@ namespace turbo {
             return saved_bytes;
         }
 
-        simdutf_warn_unused size_t implementation::convert_utf32_to_utf16be(
+         [[nodiscard]] size_t implementation::convert_utf32_to_utf16be(
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
             std::pair<const char32_t*, char16_t*> ret = avx2_convert_utf32_to_utf16<endianness::BIG>(buf, len, utf16_output);
             if (ret.first == nullptr) {
@@ -970,14 +871,14 @@ namespace turbo {
             return saved_bytes;
         }
 
-        simdutf_warn_unused result implementation::convert_utf32_to_utf16le_with_errors(
+         [[nodiscard]] UnicodeResult implementation::convert_utf32_to_utf16le_with_errors(
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
-            std::pair<result, char16_t*> ret = haswell::avx2_convert_utf32_to_utf16_with_errors<endianness::LITTLE>(
+            std::pair<UnicodeResult, char16_t*> ret = haswell::avx2_convert_utf32_to_utf16_with_errors<endianness::LITTLE>(
                 buf, len, utf16_output);
             if (ret.first.count != len) {
-                result scalar_res = scalar::utf32_to_utf16::convert_with_errors<endianness::LITTLE>(
+                UnicodeResult scalar_res = scalar::utf32_to_utf16::convert_with_errors<endianness::LITTLE>(
                     buf + ret.first.count, len - ret.first.count, ret.second);
                 if (scalar_res.error) {
                     scalar_res.count += ret.first.count;
@@ -990,14 +891,14 @@ namespace turbo {
             return ret.first;
         }
 
-        simdutf_warn_unused result implementation::convert_utf32_to_utf16be_with_errors(
+         [[nodiscard]] UnicodeResult implementation::convert_utf32_to_utf16be_with_errors(
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
-            std::pair<result, char16_t*> ret = haswell::avx2_convert_utf32_to_utf16_with_errors<endianness::BIG>(
+            std::pair<UnicodeResult, char16_t*> ret = haswell::avx2_convert_utf32_to_utf16_with_errors<endianness::BIG>(
                 buf, len, utf16_output);
             if (ret.first.count != len) {
-                result scalar_res = scalar::utf32_to_utf16::convert_with_errors<endianness::BIG>(
+                UnicodeResult scalar_res = scalar::utf32_to_utf16::convert_with_errors<endianness::BIG>(
                     buf + ret.first.count, len - ret.first.count, ret.second);
                 if (scalar_res.error) {
                     scalar_res.count += ret.first.count;
@@ -1010,104 +911,92 @@ namespace turbo {
             return ret.first;
         }
 
-        simdutf_warn_unused size_t implementation::convert_valid_utf32_to_utf16le(
+         [[nodiscard]] size_t implementation::convert_valid_utf32_to_utf16le(
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
             return convert_utf32_to_utf16le(buf, len, utf16_output);
         }
 
-        simdutf_warn_unused size_t implementation::convert_valid_utf32_to_utf16be(
+         [[nodiscard]] size_t implementation::convert_valid_utf32_to_utf16be(
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
             return convert_utf32_to_utf16be(buf, len, utf16_output);
         }
 
-        simdutf_warn_unused size_t implementation::convert_valid_utf16le_to_utf32(
+         [[nodiscard]] size_t implementation::convert_valid_utf16le_to_utf32(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
             return convert_utf16le_to_utf32(buf, len, utf32_output);
         }
 
-        simdutf_warn_unused size_t implementation::convert_valid_utf16be_to_utf32(
+         [[nodiscard]] size_t implementation::convert_valid_utf16be_to_utf32(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
             return convert_utf16be_to_utf32(buf, len, utf32_output);
         }
-#endif // SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_UTF16
         void implementation::change_endianness_utf16(const char16_t* input,
             size_t length,
             char16_t* output) const noexcept {
             utf16::change_endianness_utf16(input, length, output);
         }
 
-        simdutf_warn_unused size_t implementation::count_utf16le(
+         [[nodiscard]] size_t implementation::count_utf16le(
             const char16_t* input, size_t length) const noexcept {
             return utf16::count_code_points<endianness::LITTLE>(input, length);
         }
 
-        simdutf_warn_unused size_t implementation::count_utf16be(
+         [[nodiscard]] size_t implementation::count_utf16be(
             const char16_t* input, size_t length) const noexcept {
             return utf16::count_code_points<endianness::BIG>(input, length);
         }
-#endif // SIMDUTF_FEATURE_UTF16
 
-#if SIMDUTF_FEATURE_UTF8
-        simdutf_warn_unused size_t
+         [[nodiscard]] size_t
         implementation::count_utf8(const char* in, size_t size) const noexcept {
             return utf8::count_code_points_bytemask(in, size);
         }
-#endif // SIMDUTF_FEATURE_UTF8
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
-        simdutf_warn_unused size_t implementation::latin1_length_from_utf8(
+         [[nodiscard]] size_t implementation::latin1_length_from_utf8(
             const char* buf, size_t len) const noexcept {
             return count_utf8(buf, len);
         }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
-        simdutf_warn_unused size_t implementation::utf8_length_from_utf16le(
+         [[nodiscard]] size_t implementation::utf8_length_from_utf16le(
             const char16_t* input, size_t length) const noexcept {
             return utf16::utf8_length_from_utf16_bytemask<endianness::LITTLE>(input,
                 length);
         }
 
-        simdutf_warn_unused size_t implementation::utf8_length_from_utf16be(
+         [[nodiscard]] size_t implementation::utf8_length_from_utf16be(
             const char16_t* input, size_t length) const noexcept {
             return utf16::utf8_length_from_utf16_bytemask<endianness::BIG>(input, length);
         }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
 
-#if SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32
-        simdutf_warn_unused size_t implementation::utf32_length_from_utf16le(
+         [[nodiscard]] size_t implementation::utf32_length_from_utf16le(
             const char16_t* input, size_t length) const noexcept {
             return utf16::utf32_length_from_utf16<endianness::LITTLE>(input, length);
         }
 
-        simdutf_warn_unused size_t implementation::utf32_length_from_utf16be(
+         [[nodiscard]] size_t implementation::utf32_length_from_utf16be(
             const char16_t* input, size_t length) const noexcept {
             return utf16::utf32_length_from_utf16<endianness::BIG>(input, length);
         }
-#endif // SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
-        simdutf_warn_unused size_t implementation::utf16_length_from_utf8(
+         [[nodiscard]] size_t implementation::utf16_length_from_utf8(
             const char* input, size_t length) const noexcept {
             return utf8::utf16_length_from_utf8_bytemask(input, length);
         }
-        simdutf_warn_unused result
+         [[nodiscard]] UnicodeResult
         implementation::utf8_length_from_utf16le_with_replacement(
             const char16_t* input, size_t length) const noexcept {
             return utf16::utf8_length_from_utf16_with_replacement<endianness::LITTLE>(
                 input, length);
         }
 
-        simdutf_warn_unused result
+         [[nodiscard]] UnicodeResult
         implementation::utf8_length_from_utf16be_with_replacement(
             const char16_t* input, size_t length) const noexcept {
             return utf16::utf8_length_from_utf16_with_replacement<endianness::BIG>(
                 input, length);
         }
 
-        simdutf_warn_unused size_t
+         [[nodiscard]] size_t
         implementation::convert_utf16le_to_utf8_with_replacement(
             const char16_t* input, size_t length, char* utf8_buffer) const noexcept {
             return utf16_to_utf8::convert_with_replacement_via(
@@ -1120,7 +1009,7 @@ namespace turbo {
                 input, length, utf8_buffer);
         }
 
-        simdutf_warn_unused size_t
+         [[nodiscard]] size_t
         implementation::convert_utf16be_to_utf8_with_replacement(
             const char16_t* input, size_t length, char* utf8_buffer) const noexcept {
             return utf16_to_utf8::convert_with_replacement_via(
@@ -1133,10 +1022,8 @@ namespace turbo {
                 input, length, utf8_buffer);
         }
 
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
-        simdutf_warn_unused size_t implementation::utf8_length_from_latin1(
+         [[nodiscard]] size_t implementation::utf8_length_from_latin1(
             const char* input, size_t len) const noexcept {
             const uint8_t* data = reinterpret_cast<const uint8_t*>(input);
             size_t answer = len / sizeof(__m256i) * sizeof(__m256i);
@@ -1183,17 +1070,13 @@ namespace turbo {
             }
             return answer + scalar::latin1::utf8_length_from_latin1(reinterpret_cast<const char*>(data + i), len - i);
         }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
-        simdutf_warn_unused size_t implementation::utf8_length_from_utf32(
+         [[nodiscard]] size_t implementation::utf8_length_from_utf32(
             const char32_t* input, size_t length) const noexcept {
             return utf32::utf8_length_from_utf32(input, length);
         }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32
-        simdutf_warn_unused size_t implementation::utf16_length_from_utf32(
+         [[nodiscard]] size_t implementation::utf16_length_from_utf32(
             const char32_t* input, size_t length) const noexcept {
             const __m256i v_00000000 = _mm256_setzero_si256();
             const __m256i v_ffff0000 = _mm256_set1_epi32((uint32_t)0xffff0000);
@@ -1208,21 +1091,17 @@ namespace turbo {
             }
             return count + scalar::utf32::utf16_length_from_utf32(input + pos, length - pos);
         }
-#endif // SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
-        simdutf_warn_unused size_t implementation::utf32_length_from_utf8(
+         [[nodiscard]] size_t implementation::utf32_length_from_utf8(
             const char* input, size_t length) const noexcept {
             return utf8::count_code_points(input, length);
         }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_BASE64
-        simdutf_warn_unused result implementation::base64_to_binary(
-            const char* input, size_t length, char* output, base64_options options,
+         [[nodiscard]] UnicodeResult implementation::base64_to_binary(
+            const char* input, size_t length, char* output, Base64Options options,
             last_chunk_handling_options last_chunk_options) const noexcept {
             if (options & base64_default_or_url) {
-                if (options == base64_options::base64_default_or_url_accept_garbage) {
+                if (options == Base64Options::base64_default_or_url_accept_garbage) {
                     return base64::compress_decode_base64<false, true, true>(
                         output, input, length, options, last_chunk_options);
                 } else {
@@ -1230,7 +1109,7 @@ namespace turbo {
                         output, input, length, options, last_chunk_options);
                 }
             } else if (options & base64_url) {
-                if (options == base64_options::base64_url_accept_garbage) {
+                if (options == Base64Options::base64_url_accept_garbage) {
                     return base64::compress_decode_base64<true, true, false>(
                         output, input, length, options, last_chunk_options);
                 } else {
@@ -1238,7 +1117,7 @@ namespace turbo {
                         output, input, length, options, last_chunk_options);
                 }
             } else {
-                if (options == base64_options::base64_default_accept_garbage) {
+                if (options == Base64Options::base64_default_accept_garbage) {
                     return base64::compress_decode_base64<false, true, false>(
                         output, input, length, options, last_chunk_options);
                 } else {
@@ -1248,11 +1127,11 @@ namespace turbo {
             }
         }
 
-        simdutf_warn_unused full_result implementation::base64_to_binary_details(
-            const char* input, size_t length, char* output, base64_options options,
+         [[nodiscard]] full_result implementation::base64_to_binary_details(
+            const char* input, size_t length, char* output, Base64Options options,
             last_chunk_handling_options last_chunk_options) const noexcept {
             if (options & base64_default_or_url) {
-                if (options == base64_options::base64_default_or_url_accept_garbage) {
+                if (options == Base64Options::base64_default_or_url_accept_garbage) {
                     return base64::compress_decode_base64<false, true, true>(
                         output, input, length, options, last_chunk_options);
                 } else {
@@ -1260,7 +1139,7 @@ namespace turbo {
                         output, input, length, options, last_chunk_options);
                 }
             } else if (options & base64_url) {
-                if (options == base64_options::base64_url_accept_garbage) {
+                if (options == Base64Options::base64_url_accept_garbage) {
                     return base64::compress_decode_base64<true, true, false>(
                         output, input, length, options, last_chunk_options);
                 } else {
@@ -1268,7 +1147,7 @@ namespace turbo {
                         output, input, length, options, last_chunk_options);
                 }
             } else {
-                if (options == base64_options::base64_default_accept_garbage) {
+                if (options == Base64Options::base64_default_accept_garbage) {
                     return base64::compress_decode_base64<false, true, false>(
                         output, input, length, options, last_chunk_options);
                 } else {
@@ -1278,11 +1157,11 @@ namespace turbo {
             }
         }
 
-        simdutf_warn_unused result implementation::base64_to_binary(
-            const char16_t* input, size_t length, char* output, base64_options options,
+         [[nodiscard]] UnicodeResult implementation::base64_to_binary(
+            const char16_t* input, size_t length, char* output, Base64Options options,
             last_chunk_handling_options last_chunk_options) const noexcept {
             if (options & base64_default_or_url) {
-                if (options == base64_options::base64_default_or_url_accept_garbage) {
+                if (options == Base64Options::base64_default_or_url_accept_garbage) {
                     return base64::compress_decode_base64<false, true, true>(
                         output, input, length, options, last_chunk_options);
                 } else {
@@ -1290,7 +1169,7 @@ namespace turbo {
                         output, input, length, options, last_chunk_options);
                 }
             } else if (options & base64_url) {
-                if (options == base64_options::base64_url_accept_garbage) {
+                if (options == Base64Options::base64_url_accept_garbage) {
                     return base64::compress_decode_base64<true, true, false>(
                         output, input, length, options, last_chunk_options);
                 } else {
@@ -1298,7 +1177,7 @@ namespace turbo {
                         output, input, length, options, last_chunk_options);
                 }
             } else {
-                if (options == base64_options::base64_default_accept_garbage) {
+                if (options == Base64Options::base64_default_accept_garbage) {
                     return base64::compress_decode_base64<false, true, false>(
                         output, input, length, options, last_chunk_options);
                 } else {
@@ -1308,11 +1187,11 @@ namespace turbo {
             }
         }
 
-        simdutf_warn_unused full_result implementation::base64_to_binary_details(
-            const char16_t* input, size_t length, char* output, base64_options options,
+         [[nodiscard]] full_result implementation::base64_to_binary_details(
+            const char16_t* input, size_t length, char* output, Base64Options options,
             last_chunk_handling_options last_chunk_options) const noexcept {
             if (options & base64_default_or_url) {
-                if (options == base64_options::base64_default_or_url_accept_garbage) {
+                if (options == Base64Options::base64_default_or_url_accept_garbage) {
                     return base64::compress_decode_base64<false, true, true>(
                         output, input, length, options, last_chunk_options);
                 } else {
@@ -1320,7 +1199,7 @@ namespace turbo {
                         output, input, length, options, last_chunk_options);
                 }
             } else if (options & base64_url) {
-                if (options == base64_options::base64_url_accept_garbage) {
+                if (options == Base64Options::base64_url_accept_garbage) {
                     return base64::compress_decode_base64<true, true, false>(
                         output, input, length, options, last_chunk_options);
                 } else {
@@ -1328,7 +1207,7 @@ namespace turbo {
                         output, input, length, options, last_chunk_options);
                 }
             } else {
-                if (options == base64_options::base64_default_accept_garbage) {
+                if (options == Base64Options::base64_default_accept_garbage) {
                     return base64::compress_decode_base64<false, true, false>(
                         output, input, length, options, last_chunk_options);
                 } else {
@@ -1340,7 +1219,7 @@ namespace turbo {
 
         size_t implementation::binary_to_base64(const char* input, size_t length,
             char* output,
-            base64_options options) const noexcept {
+            Base64Options options) const noexcept {
             if (options & base64_url) {
                 return encode_base64<true>(output, input, length, options);
             } else {
@@ -1350,7 +1229,7 @@ namespace turbo {
 
         size_t implementation::binary_to_base64_with_lines(
             const char* input, size_t length, char* output, size_t line_length,
-            base64_options options) const noexcept {
+            Base64Options options) const noexcept {
             if (options & base64_url) {
                 return avx2_encode_base64_impl<true, true>(output, input, length, options,
                     line_length);
@@ -1370,16 +1249,15 @@ namespace turbo {
             return util::find(start, end, character);
         }
 
-        simdutf_warn_unused size_t implementation::binary_length_from_base64(
+         [[nodiscard]] size_t implementation::binary_length_from_base64(
             const char* input, size_t length) const noexcept {
             return avx2_binary_length_from_base64(input, length);
         }
 
-        simdutf_warn_unused size_t implementation::binary_length_from_base64(
+         [[nodiscard]] size_t implementation::binary_length_from_base64(
             const char16_t* input, size_t length) const noexcept {
             return avx2_binary_length_from_base64(input, length);
         }
-#endif // SIMDUTF_FEATURE_BASE64
 
     } // namespace SIMDUTF_IMPLEMENTATION
 } // namespace turbo

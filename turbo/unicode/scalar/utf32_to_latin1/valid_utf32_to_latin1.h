@@ -45,7 +45,7 @@ namespace turbo {
                     return latin1_output - start;
                 }
 
-                simdutf_really_inline size_t convert_valid(const char32_t* buf, size_t len,
+                KUMO_FORCE_INLINE size_t convert_valid(const char32_t* buf, size_t len,
                     char* latin1_output) {
                     return convert_valid(reinterpret_cast<const uint32_t*>(buf), len,
                         latin1_output);

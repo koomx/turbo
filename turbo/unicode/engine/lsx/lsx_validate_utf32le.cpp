@@ -48,17 +48,17 @@ const result lsx_validate_utf32le_with_errors(const char32_t* input,
 
         __m128i is_zero = __lsx_vxor_v(__lsx_vmax_wu(currentmax, standardmax), standardmax);
         if (__lsx_bnz_v(is_zero)) {
-            return result(error_code::TOO_LARGE, input - start);
+            return UnicodeResult(UnicodeError::TOO_LARGE, input - start);
         }
 
         is_zero = __lsx_vxor_v(__lsx_vmax_wu(currentoffsetmax, standardoffsetmax),
             standardoffsetmax);
         if (__lsx_bnz_v(is_zero)) {
-            return result(error_code::SURROGATE, input - start);
+            return UnicodeResult(UnicodeError::SURROGATE, input - start);
         }
 
         input += 4;
     }
 
-    return result(error_code::SUCCESS, input - start);
+    return UnicodeResult(UnicodeError::SUCCESS, input - start);
 }

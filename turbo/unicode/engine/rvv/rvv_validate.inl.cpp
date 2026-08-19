@@ -1,5 +1,4 @@
-#if SIMDUTF_FEATURE_ASCII
-simdutf_warn_unused bool
+ [[nodiscard]] bool
 implementation::validate_ascii(const char* src, size_t len) const noexcept {
     size_t vlmax = __riscv_vsetvlmax_e8m8();
     vint8m8_t mask = __riscv_vmv_v_x_i8m8(0, vlmax);
@@ -11,7 +10,7 @@ implementation::validate_ascii(const char* src, size_t len) const noexcept {
     return __riscv_vfirst_m_b1(__riscv_vmslt_vx_i8m8_b1(mask, 0, vlmax), vlmax) < 0;
 }
 
-simdutf_warn_unused result implementation::validate_ascii_with_errors(
+ [[nodiscard]] UnicodeResult implementation::validate_ascii_with_errors(
     const char* src, size_t len) const noexcept {
     const char* beg = src;
     for (size_t vl; len > 0; len -= vl, src += vl) {
@@ -19,14 +18,12 @@ simdutf_warn_unused result implementation::validate_ascii_with_errors(
         vint8m8_t v = __riscv_vle8_v_i8m8((int8_t*)src, vl);
         long idx = __riscv_vfirst_m_b1(__riscv_vmslt_vx_i8m8_b1(v, 0, vl), vl);
         if (idx >= 0)
-            return result(error_code::TOO_LARGE, src - beg + idx);
+            return UnicodeResult(UnicodeError::TOO_LARGE, src - beg + idx);
     }
-    return result(error_code::SUCCESS, src - beg);
+    return UnicodeResult(UnicodeError::SUCCESS, src - beg);
 }
-#endif // SIMDUTF_FEATURE_ASCII
-#if SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_ASCII
 template <simdutf_ByteFlip bflip>
-simdutf_really_inline bool rvv_validate_utf16_as_ascii(const char16_t* buf,
+KUMO_FORCE_INLINE bool rvv_validate_utf16_as_ascii(const char16_t* buf,
     size_t len) noexcept {
     const char16_t* src = buf;
     for (size_t vl; len > 0; len -= vl, src += vl) {
@@ -39,13 +36,13 @@ simdutf_really_inline bool rvv_validate_utf16_as_ascii(const char16_t* buf,
     }
     return true;
 }
-simdutf_warn_unused bool
+ [[nodiscard]] bool
 implementation::validate_utf16le_as_ascii(const char16_t* buf,
     size_t len) const noexcept {
     return rvv_validate_utf16_as_ascii<simdutf_ByteFlip::NONE>(buf, len);
 }
 
-simdutf_warn_unused bool
+ [[nodiscard]] bool
 implementation::validate_utf16be_as_ascii(const char16_t* buf,
     size_t len) const noexcept {
     if (supports_zvbb())
@@ -53,11 +50,9 @@ implementation::validate_utf16be_as_ascii(const char16_t* buf,
     else
         return rvv_validate_utf16_as_ascii<simdutf_ByteFlip::V>(buf, len);
 }
-#endif // SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_ASCII
-#if SIMDUTF_FEATURE_UTF8 || SIMDUTF_FEATURE_DETECT_ENCODING
 /* Returns a close estimation of the number of valid UTF-8 bytes up to the
  * first invalid one, but never overestimating. */
-simdutf_really_inline static size_t rvv_count_valid_utf8(const char* src,
+KUMO_FORCE_INLINE static size_t rvv_count_valid_utf8(const char* src,
     size_t len) {
     const char* beg = src;
     if (len < 32)
@@ -128,25 +123,21 @@ simdutf_really_inline static size_t rvv_count_valid_utf8(const char* src,
     return src - beg;
 }
 
-simdutf_warn_unused bool
+ [[nodiscard]] bool
 implementation::validate_utf8(const char* src, size_t len) const noexcept {
     size_t count = rvv_count_valid_utf8(src, len);
     return scalar::utf8::validate(src + count, len - count);
 }
-#endif // SIMDUTF_FEATURE_UTF8 || SIMDUTF_FEATURE_DETECT_ENCODING
 
-#if SIMDUTF_FEATURE_UTF8
-simdutf_warn_unused result implementation::validate_utf8_with_errors(
+ [[nodiscard]] UnicodeResult implementation::validate_utf8_with_errors(
     const char* src, size_t len) const noexcept {
     size_t count = rvv_count_valid_utf8(src, len);
-    result res = scalar::utf8::validate_with_errors(src + count, len - count);
-    return result(res.error, count + res.count);
+    UnicodeResult res = scalar::utf8::validate_with_errors(src + count, len - count);
+    return UnicodeResult(res.error, count + res.count);
 }
-#endif // SIMDUTF_FEATURE_UTF8
 
-#if SIMDUTF_FEATURE_UTF16 || SIMDUTF_FEATURE_DETECT_ENCODING
 template <simdutf_ByteFlip bflip>
-simdutf_really_inline static result
+KUMO_FORCE_INLINE static UnicodeResult
 rvv_validate_utf16_with_errors(const char16_t* src, size_t len) {
     const char16_t* beg = src;
 
@@ -168,55 +159,47 @@ rvv_validate_utf16_with_errors(const char16_t* src, size_t len) {
         long idx = __riscv_vfirst_m_b2(__riscv_vmxor_mm_b2(surhi, surlo, vl), vl);
         if (idx >= 0) {
             last = simdutf_byteflip<bflip>(idx > 0 ? src[idx - 1] : last);
-            return result(error_code::SURROGATE,
+            return UnicodeResult(UnicodeError::SURROGATE,
                 src - beg + idx - (last - 0xD800u < 0x400u));
             break;
         }
     }
     if (simdutf_byteflip<bflip>(last) - 0xD800u < 0x400u) {
-        return result(error_code::SURROGATE,
+        return UnicodeResult(UnicodeError::SURROGATE,
             src - beg - 1); /* end on high surrogate */
     } else {
-        return result(error_code::SUCCESS, src - beg);
+        return UnicodeResult(UnicodeError::SUCCESS, src - beg);
     }
 }
-#endif // SIMDUTF_FEATURE_UTF16 || SIMDUTF_FEATURE_DETECT_ENCODING
 
-#if SIMDUTF_FEATURE_UTF16 || SIMDUTF_FEATURE_DETECT_ENCODING
-simdutf_warn_unused bool
+ [[nodiscard]] bool
 implementation::validate_utf16le(const char16_t* src,
     size_t len) const noexcept {
     return rvv_validate_utf16_with_errors<simdutf_ByteFlip::NONE>(src, len)
                .error
-        == error_code::SUCCESS;
+        == UnicodeError::SUCCESS;
 }
-#endif // SIMDUTF_FEATURE_UTF16 || SIMDUTF_FEATURE_DETECT_ENCODING
 
-#if SIMDUTF_FEATURE_UTF16
-simdutf_warn_unused bool
+ [[nodiscard]] bool
 implementation::validate_utf16be(const char16_t* src,
     size_t len) const noexcept {
-    return validate_utf16be_with_errors(src, len).error == error_code::SUCCESS;
+    return validate_utf16be_with_errors(src, len).error == UnicodeError::SUCCESS;
 }
-#endif // SIMDUTF_FEATURE_UTF16
 
-#if SIMDUTF_FEATURE_UTF16
-simdutf_warn_unused result implementation::validate_utf16le_with_errors(
+ [[nodiscard]] UnicodeResult implementation::validate_utf16le_with_errors(
     const char16_t* src, size_t len) const noexcept {
     return rvv_validate_utf16_with_errors<simdutf_ByteFlip::NONE>(src, len);
 }
 
-simdutf_warn_unused result implementation::validate_utf16be_with_errors(
+ [[nodiscard]] UnicodeResult implementation::validate_utf16be_with_errors(
     const char16_t* src, size_t len) const noexcept {
     if (supports_zvbb())
         return rvv_validate_utf16_with_errors<simdutf_ByteFlip::ZVBB>(src, len);
     else
         return rvv_validate_utf16_with_errors<simdutf_ByteFlip::V>(src, len);
 }
-#endif // SIMDUTF_FEATURE_UTF16
 
-#if SIMDUTF_FEATURE_UTF32 || SIMDUTF_FEATURE_DETECT_ENCODING
-simdutf_warn_unused bool
+ [[nodiscard]] bool
 implementation::validate_utf32(const char32_t* src, size_t len) const noexcept {
     size_t vlmax = __riscv_vsetvlmax_e32m8();
     vuint32m8_t max = __riscv_vmv_v_x_u32m8(0x10FFFF, vlmax);
@@ -235,10 +218,8 @@ implementation::validate_utf32(const char32_t* src, size_t len) const noexcept {
                vlmax)
         < 0;
 }
-#endif // SIMDUTF_FEATURE_UTF32 || SIMDUTF_FEATURE_DETECT_ENCODING
 
-#if SIMDUTF_FEATURE_UTF32
-simdutf_warn_unused result implementation::validate_utf32_with_errors(
+ [[nodiscard]] UnicodeResult implementation::validate_utf32_with_errors(
     const char32_t* src, size_t len) const noexcept {
     const char32_t* beg = src;
     for (size_t vl; len > 0; len -= vl, src += vl) {
@@ -250,18 +231,17 @@ simdutf_warn_unused result implementation::validate_utf32_with_errors(
             __riscv_vmsgtu_vx_u32m8_b4(off, 0xFFFFF7FF, vl), vl);
         if (idx1 >= 0 && idx2 >= 0) {
             if (idx1 <= idx2) {
-                return result(error_code::TOO_LARGE, src - beg + idx1);
+                return UnicodeResult(UnicodeError::TOO_LARGE, src - beg + idx1);
             } else {
-                return result(error_code::SURROGATE, src - beg + idx2);
+                return UnicodeResult(UnicodeError::SURROGATE, src - beg + idx2);
             }
         }
         if (idx1 >= 0) {
-            return result(error_code::TOO_LARGE, src - beg + idx1);
+            return UnicodeResult(UnicodeError::TOO_LARGE, src - beg + idx1);
         }
         if (idx2 >= 0) {
-            return result(error_code::SURROGATE, src - beg + idx2);
+            return UnicodeResult(UnicodeError::SURROGATE, src - beg + idx2);
         }
     }
-    return result(error_code::SUCCESS, src - beg);
+    return UnicodeResult(UnicodeError::SUCCESS, src - beg);
 }
-#endif // SIMDUTF_FEATURE_UTF32

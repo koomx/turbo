@@ -196,10 +196,10 @@ TEST(ossfuzz_385406635) {
     constexpr std::size_t data_len = data_len_bytes / sizeof(char);
     const auto validation1 = implementation.validate_utf8_with_errors((const char*)data, data_len);
     ASSERT_EQUAL(validation1.count, 0);
-    ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
+    ASSERT_EQUAL(validation1.error, turbo::UnicodeError::TOO_LONG);
 
     const bool validation2 = implementation.validate_utf8((const char*)data, data_len);
-    ASSERT_EQUAL(validation1.error == turbo::error_code::SUCCESS, validation2);
+    ASSERT_EQUAL(validation1.error == turbo::UnicodeError::SUCCESS, validation2);
 
     const auto outlen = implementation.latin1_length_from_utf8((const char*)data, data_len);
     ASSERT_EQUAL(outlen, 2005);
@@ -274,10 +274,10 @@ TEST(ossfuzz_372067232) {
     constexpr std::size_t data_len = data_len_bytes / sizeof(char);
     const auto validation1 = implementation.validate_utf8_with_errors((const char*)data, data_len);
     ASSERT_EQUAL(validation1.count, 0);
-    ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
+    ASSERT_EQUAL(validation1.error, turbo::UnicodeError::TOO_LONG);
 
     const bool validation2 = implementation.validate_utf8((const char*)data, data_len);
-    ASSERT_EQUAL(validation1.error == turbo::error_code::SUCCESS, validation2);
+    ASSERT_EQUAL(validation1.error == turbo::UnicodeError::SUCCESS, validation2);
 
     const auto outlen = implementation.latin1_length_from_utf8((const char*)data, data_len);
     ASSERT_EQUAL(outlen, 647);
@@ -384,10 +384,10 @@ TEST(issue_539) {
     constexpr std::size_t data_len = data_len_bytes / sizeof(char);
     const auto validation1 = implementation.validate_utf8_with_errors((const char*)data, data_len);
     ASSERT_EQUAL(validation1.count, 0);
-    ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
+    ASSERT_EQUAL(validation1.error, turbo::UnicodeError::TOO_LONG);
 
     const bool validation2 = implementation.validate_utf8((const char*)data, data_len);
-    ASSERT_EQUAL(validation1.error == turbo::error_code::SUCCESS, validation2);
+    ASSERT_EQUAL(validation1.error == turbo::UnicodeError::SUCCESS, validation2);
 
     const auto outlen = implementation.latin1_length_from_utf8((const char*)data, data_len);
     ASSERT_EQUAL(outlen, 1057);

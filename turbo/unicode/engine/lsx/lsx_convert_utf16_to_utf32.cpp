@@ -67,7 +67,7 @@ lsx_convert_utf16_to_utf32(const char16_t* buf, size_t len,
   tail if needed.
 */
 template <endianness big_endian>
-std::pair<result, char32_t*>
+std::pair<UnicodeResult, char32_t*>
 lsx_convert_utf16_to_utf32_with_errors(const char16_t* buf, size_t len,
     char32_t* utf32_out) {
     uint32_t* utf32_output = reinterpret_cast<uint32_t*>(utf32_out);
@@ -114,7 +114,7 @@ lsx_convert_utf16_to_utf32_with_errors(const char16_t* buf, size_t len,
                     uint16_t diff2 = uint16_t(next_word - 0xDC00);
                     if ((diff | diff2) > 0x3FF) {
                         return std::make_pair(
-                            result(error_code::SURROGATE, buf - start + k - 1),
+                            UnicodeResult(UnicodeError::SURROGATE, buf - start + k - 1),
                             reinterpret_cast<char32_t*>(utf32_output));
                     }
                     uint32_t value = (diff << 10) + diff2 + 0x10000;
@@ -124,6 +124,6 @@ lsx_convert_utf16_to_utf32_with_errors(const char16_t* buf, size_t len,
             buf += k;
         }
     } // while
-    return std::make_pair(result(error_code::SUCCESS, buf - start),
+    return std::make_pair(UnicodeResult(UnicodeError::SUCCESS, buf - start),
         reinterpret_cast<char32_t*>(utf32_output));
 }

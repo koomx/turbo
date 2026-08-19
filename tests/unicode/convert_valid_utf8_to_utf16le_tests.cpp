@@ -28,12 +28,12 @@ TEST(issue_641) {
     constexpr std::size_t data_len = data_len_bytes / sizeof(char);
     const auto validation1 = implementation.validate_utf8_with_errors((const char*)data, data_len);
     ASSERT_EQUAL(validation1.count, 32);
-    ASSERT_EQUAL(validation1.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(validation1.error, turbo::UnicodeError::SUCCESS);
 
     const bool validation2 = implementation.validate_utf8((const char*)data, data_len);
-    ASSERT_EQUAL(validation1.error == turbo::error_code::SUCCESS, validation2);
+    ASSERT_EQUAL(validation1.error == turbo::UnicodeError::SUCCESS, validation2);
 
-    if (validation1.error != turbo::error_code::SUCCESS) {
+    if (validation1.error != turbo::UnicodeError::SUCCESS) {
         return;
     }
     const auto outlen = implementation.utf16_length_from_utf8((const char*)data, data_len);

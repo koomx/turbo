@@ -55,7 +55,7 @@ public:
 
   static Benchmark create(const CommandLine &cmdline);
   virtual const std::set<std::string> all_procedures() const override;
-  virtual std::set<turbo::encoding_type>
+  virtual std::set<turbo::TextEncoding>
   expected_encodings(const std::string &procedure) override;
 
   void list_procedures(ListingMode) const;
@@ -70,24 +70,24 @@ private:
   using thirdparty_fn = void (Benchmark::*)(size_t);
 
   std::map<std::string, std::pair<std::variant<simdutf_fn, thirdparty_fn>,
-                                  std::set<turbo::encoding_type>>>
+                                  std::set<turbo::TextEncoding>>>
       benchmarks;
 
   template <typename Fn>
   void register_function(std::string name, Fn function,
-                         std::set<turbo::encoding_type> set);
+                         std::set<turbo::TextEncoding> set);
 
   template <typename Fn>
   void register_function(std::string name, Fn function,
-                         turbo::encoding_type enc1);
+                         turbo::TextEncoding enc1);
   template <typename Fn>
   void register_function(std::string name, Fn function,
-                         turbo::encoding_type enc1,
-                         turbo::encoding_type enc2);
+                         turbo::TextEncoding enc1,
+                         turbo::TextEncoding enc2);
   template <typename Fn>
   void
-  register_function(std::string name, Fn function, turbo::encoding_type enc1,
-                    turbo::encoding_type enc2, turbo::encoding_type enc3);
+  register_function(std::string name, Fn function, turbo::TextEncoding enc1,
+                    turbo::TextEncoding enc2, turbo::TextEncoding enc3);
 
 private:
   void run_naive_validate_ascii(const turbo::implementation &implementation,

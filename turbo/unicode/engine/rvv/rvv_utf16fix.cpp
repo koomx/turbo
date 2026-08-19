@@ -1,5 +1,5 @@
 template <endianness big_endian, bool in_place, bool vlmax>
-simdutf_really_inline void utf16fix_block_rvv(char16_t* out, const char16_t* in,
+KUMO_FORCE_INLINE void utf16fix_block_rvv(char16_t* out, const char16_t* in,
     size_t vl) {
     const char16_t replacement = scalar::utf16::replacement<big_endian>();
     vuint16m8_t block = __riscv_vle16_v_u16m8((const uint16_t*)in, vl);
@@ -88,7 +88,7 @@ void implementation::to_well_formed_utf16be(const char16_t* input, size_t len,
 }
 
 template <simdutf_ByteFlip bflip>
-simdutf_really_inline static void
+KUMO_FORCE_INLINE static void
 rvv_change_endianness_utf16(const char16_t* src, size_t len, char16_t* dst) {
     for (size_t vl; len > 0; len -= vl, src += vl, dst += vl) {
         vl = __riscv_vsetvl_e16m8(len);

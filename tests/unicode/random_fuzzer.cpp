@@ -68,7 +68,7 @@ int validate_tests(const char *databytes, size_t size_in_bytes) {
   const T *data = reinterpret_cast<const T *>(databytes);
   const auto size = size_in_bytes / sizeof(T);
 
-  turbo::result reference_result{};
+  turbo::UnicodeResult reference_result{};
   const turbo::implementation *reference_impl{};
 
   for (auto &e : turbo::get_available_implementations()) {
@@ -76,7 +76,7 @@ int validate_tests(const char *databytes, size_t size_in_bytes) {
       continue;
     }
     const char *message = "unknown";
-    turbo::result result{};
+    turbo::UnicodeResult result{};
     if (std::is_same<T, char>::value == true) {
       message = "utf8";
       result = e->validate_utf8_with_errors(
@@ -167,7 +167,7 @@ bool fuzz_this(const char *data, size_t size) {
       // We need a buffer where to write the UTF-8 code units.
       size_t expected_utf8words =
           e->utf8_length_from_utf16le(utf16_output.get(), utf16words);
-      turbo::result expected_utf8words_with_replacement =
+      turbo::UnicodeResult expected_utf8words_with_replacement =
           e->utf8_length_from_utf16le_with_replacement(utf16_output.get(),
                                                        utf16words);
       if (expected_utf8words != expected_utf8words_with_replacement.count) {
@@ -569,9 +569,9 @@ bool fuzz_this(const char *data, size_t size) {
       size_t max_length_needed =
           e->maximal_binary_length_from_base64(source.data(), source.size());
       std::vector<char> back(max_length_needed);
-      turbo::result r =
+      turbo::UnicodeResult r =
           e->base64_to_binary(source.data(), source.size(), back.data());
-      if (r.error == turbo::error_code::SUCCESS) {
+      if (r.error == turbo::UnicodeError::SUCCESS) {
         valid_base64++;
         // We expect failure but if we succeed, then we should have a roundtrip.
         back.resize(r.count);
@@ -582,9 +582,9 @@ bool fuzz_this(const char *data, size_t size) {
         back2.resize(base64size);
         std::vector<char> back3(
             e->maximal_binary_length_from_base64(back2.data(), back2.size()));
-        turbo::result r2 =
+        turbo::UnicodeResult r2 =
             e->base64_to_binary(back2.data(), back2.size(), back3.data());
-        if (r2.error != turbo::error_code::SUCCESS) {
+        if (r2.error != turbo::UnicodeError::SUCCESS) {
           print_input(source, e);
           return false;
         }
@@ -603,9 +603,9 @@ bool fuzz_this(const char *data, size_t size) {
       size_t max_length_needed =
           e->maximal_binary_length_from_base64(source.data(), source.size());
       std::vector<char> back(max_length_needed);
-      turbo::result r = turbo::base64_to_binary_safe(
+      turbo::UnicodeResult r = turbo::base64_to_binary_safe(
           source.data(), source.size(), back.data(), max_length_needed);
-      if (r.error == turbo::error_code::SUCCESS) {
+      if (r.error == turbo::UnicodeError::SUCCESS) {
         // We expect failure but if we succeed, then we should have a roundtrip.
         back.resize(max_length_needed);
         std::vector<char> back2(
@@ -616,9 +616,9 @@ bool fuzz_this(const char *data, size_t size) {
         size_t max_length_needed2 =
             e->maximal_binary_length_from_base64(back2.data(), back2.size());
         std::vector<char> back3(max_length_needed2);
-        turbo::result r2 = turbo::base64_to_binary_safe(
+        turbo::UnicodeResult r2 = turbo::base64_to_binary_safe(
             back2.data(), back2.size(), back3.data(), max_length_needed2);
-        if (r2.error != turbo::error_code::SUCCESS) {
+        if (r2.error != turbo::UnicodeError::SUCCESS) {
           print_input(source, e);
           return false;
         }
@@ -647,9 +647,9 @@ bool fuzz_this(const char *data, size_t size) {
       }
       std::vector<char> back(e->maximal_binary_length_from_base64(
           base64buffer.data(), base64buffer.size()));
-      turbo::result r = e->base64_to_binary(base64buffer.data(),
+      turbo::UnicodeResult r = e->base64_to_binary(base64buffer.data(),
                                               base64buffer.size(), back.data());
-      if (r.error != turbo::error_code::SUCCESS) {
+      if (r.error != turbo::UnicodeError::SUCCESS) {
         printf("base64 round trip failed, error code %d\n", r.error);
         print_input(source, e);
         return false;
@@ -670,7 +670,7 @@ bool fuzz_this(const char *data, size_t size) {
       size_t max_length = back.size();
       r = turbo::base64_to_binary_safe(
           base64buffer.data(), base64buffer.size(), back.data(), max_length);
-      if (r.error != turbo::error_code::SUCCESS) {
+      if (r.error != turbo::UnicodeError::SUCCESS) {
         printf("base64 round trip failed, error code %d\n", r.error);
         print_input(source, e);
         return false;

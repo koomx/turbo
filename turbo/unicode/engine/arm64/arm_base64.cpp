@@ -74,7 +74,7 @@ size_t write_output_with_line_feeds(uint8_t* dst, uint8x16_t src,
 
     // We have that offset + 16 >= line_length
     // the common case is that line_length is greater than 16
-    if (simdutf_likely(line_length >= 16)) {
+    if (KUMO_LIKELY(line_length >= 16)) {
         // offset <= line_length.
         // offset + 16 > line_length
         // So line_length - offset < 16
@@ -109,7 +109,7 @@ size_t write_output_with_line_feeds(uint8_t* dst, uint8x16_t src,
 
 template <bool insert_line_feeds>
 size_t encode_base64_impl(char* dst, const char* src, size_t srclen,
-    base64_options options,
+    Base64Options options,
     size_t line_length = turbo::default_line_length) {
     size_t offset = 0;
     if (line_length < 4) {
@@ -232,7 +232,7 @@ size_t encode_base64_impl(char* dst, const char* src, size_t srclen,
 }
 
 size_t encode_base64(char* dst, const char* src, size_t srclen,
-    base64_options options) {
+    Base64Options options) {
     return encode_base64_impl<false>(dst, src, srclen, options);
 }
 
@@ -565,7 +565,7 @@ template <bool base64_url, bool ignore_garbage, bool default_or_url,
     typename char_type>
 full_result
 compress_decode_base64(char* dst, const char_type* src, size_t srclen,
-    base64_options options,
+    Base64Options options,
     last_chunk_handling_options last_chunk_options) {
     const uint8_t* to_base64 = default_or_url ? tables::base64::to_base64_default_or_url_value
                                               : (base64_url ? tables::base64::to_base64_url_value
@@ -605,7 +605,7 @@ compress_decode_base64(char* dst, const char_type* src, size_t srclen,
                     if (src < srcend) {
                         // should never happen
                     }
-                    return { error_code::INVALID_BASE64_CHARACTER, size_t(src - srcinit),
+                    return { UnicodeError::INVALID_BASE64_CHARACTER, size_t(src - srcinit),
                         size_t(dst - dstinit) };
                 }
             }
@@ -645,7 +645,7 @@ compress_decode_base64(char* dst, const char_type* src, size_t srclen,
             uint8_t val = to_base64[uint8_t(*src)];
             *bufferptr = char(val);
             if ((!scalar::base64::is_eight_byte(*src) || val > 64) && !ignore_garbage) {
-                return { error_code::INVALID_BASE64_CHARACTER, size_t(src - srcinit),
+                return { UnicodeError::INVALID_BASE64_CHARACTER, size_t(src - srcinit),
                     size_t(dst - dstinit) };
             }
             bufferptr += (val <= 63);
@@ -707,7 +707,7 @@ compress_decode_base64(char* dst, const char_type* src, size_t srclen,
         // the end of the stream (beyond whitespace) or right after a non-ignorable
         // character or at the very beginning of the stream.
         // See https://tc39.es/proposal-arraybuffer-base64/spec/#sec-frombase64
-        if (is_partial(last_chunk_options) && r.error == error_code::SUCCESS && r.input_count < full_input_length) {
+        if (is_partial(last_chunk_options) && r.error == UnicodeError::SUCCESS && r.input_count < full_input_length) {
             // First check if we can extend the input to the end of the stream
             while (r.input_count < full_input_length && base64_ignorable(*(srcinit + r.input_count), options)) {
                 r.input_count++;

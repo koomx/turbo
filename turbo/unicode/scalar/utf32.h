@@ -1,15 +1,27 @@
-#ifndef SIMDUTF_UTF32_H
-#define SIMDUTF_UTF32_H
+// Copyright (C) 2026 Kumo inc. and its affiliates. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+#pragma once
+
 
 namespace turbo {
     namespace scalar {
         namespace utf32 {
 
             template <typename InputPtr>
-#if SIMDUTF_CPLUSPLUS20
-                requires turbo::detail::indexes_into_uint32<InputPtr>
-#endif
-            simdutf_warn_unused  bool validate(InputPtr data,
+             [[nodiscard]]  bool validate(InputPtr data,
                 size_t len) noexcept {
                 uint64_t pos = 0;
                 for (; pos < len; pos++) {
@@ -21,31 +33,28 @@ namespace turbo {
                 return true;
             }
 
-            simdutf_warn_unused simdutf_really_inline bool validate(const char32_t* buf,
+             [[nodiscard]] KUMO_FORCE_INLINE bool validate(const char32_t* buf,
                 size_t len) noexcept {
                 return validate(reinterpret_cast<const uint32_t*>(buf), len);
             }
 
             template <typename InputPtr>
-#if SIMDUTF_CPLUSPLUS20
-                requires turbo::detail::indexes_into_uint32<InputPtr>
-#endif
-            simdutf_warn_unused  result
+             [[nodiscard]]  UnicodeResult
             validate_with_errors(InputPtr data, size_t len) noexcept {
                 size_t pos = 0;
                 for (; pos < len; pos++) {
                     uint32_t word = data[pos];
                     if (word > 0x10FFFF) {
-                        return result(error_code::TOO_LARGE, pos);
+                        return UnicodeResult(UnicodeError::TOO_LARGE, pos);
                     }
                     if (word >= 0xD800 && word <= 0xDFFF) {
-                        return result(error_code::SURROGATE, pos);
+                        return UnicodeResult(UnicodeError::SURROGATE, pos);
                     }
                 }
-                return result(error_code::SUCCESS, pos);
+                return UnicodeResult(UnicodeError::SUCCESS, pos);
             }
 
-            simdutf_warn_unused simdutf_really_inline result
+             [[nodiscard]] KUMO_FORCE_INLINE UnicodeResult
             validate_with_errors(const char32_t* buf, size_t len) noexcept {
                 return validate_with_errors(reinterpret_cast<const uint32_t*>(buf), len);
             }
@@ -64,7 +73,7 @@ namespace turbo {
                 return counter;
             }
 
-            inline simdutf_warn_unused  size_t
+            [[nodiscard]] inline  size_t
             utf16_length_from_utf32(const char32_t* p, size_t len) {
                 // We are not BOM aware.
                 size_t counter { 0 };
@@ -79,4 +88,3 @@ namespace turbo {
     } // namespace scalar
 } // namespace turbo
 
-#endif

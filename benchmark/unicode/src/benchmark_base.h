@@ -43,7 +43,7 @@ public:
   BenchmarkBase(std::vector<input::Testcase> &&testcases);
   bool run();
   virtual const std::set<std::string> all_procedures() const = 0;
-  virtual std::set<turbo::encoding_type>
+  virtual std::set<turbo::TextEncoding>
   expected_encodings(const std::string &procedure) = 0;
 
 protected:

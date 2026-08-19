@@ -9,9 +9,6 @@ namespace turbo {
             namespace utf32_to_utf8 {
 
                 template <typename InputPtr, typename OutputPtr>
-#if SIMDUTF_CPLUSPLUS20
-                    requires(turbo::detail::indexes_into_utf32<InputPtr> && turbo::detail::index_assignable_from_char<OutputPtr>)
-#endif
                  size_t convert(InputPtr data, size_t len,
                     OutputPtr utf8_output) {
                     size_t pos = 0;
@@ -69,10 +66,7 @@ namespace turbo {
                 }
 
                 template <typename InputPtr, typename OutputPtr>
-#if SIMDUTF_CPLUSPLUS20
-                    requires(turbo::detail::indexes_into_utf32<InputPtr> && turbo::detail::index_assignable_from_char<OutputPtr>)
-#endif
-                 result convert_with_errors(InputPtr data, size_t len,
+                 UnicodeResult convert_with_errors(InputPtr data, size_t len,
                     OutputPtr utf8_output) {
                     size_t pos = 0;
                     auto start = utf8_output;
@@ -106,7 +100,7 @@ namespace turbo {
                             // will generate three UTF-8 bytes
                             // we have 0b1110XXXX 0b10XXXXXX 0b10XXXXXX
                             if (word >= 0xD800 && word <= 0xDFFF) {
-                                return result(error_code::SURROGATE, pos);
+                                return UnicodeResult(UnicodeError::SURROGATE, pos);
                             }
                             *utf8_output++ = char((word >> 12) | 0b11100000);
                             *utf8_output++ = char(((word >> 6) & 0b111111) | 0b10000000);
@@ -116,7 +110,7 @@ namespace turbo {
                             // will generate four UTF-8 bytes
                             // we have 0b11110XXX 0b10XXXXXX 0b10XXXXXX 0b10XXXXXX
                             if (word > 0x10FFFF) {
-                                return result(error_code::TOO_LARGE, pos);
+                                return UnicodeResult(UnicodeError::TOO_LARGE, pos);
                             }
                             *utf8_output++ = char((word >> 18) | 0b11110000);
                             *utf8_output++ = char(((word >> 12) & 0b111111) | 0b10000000);
@@ -125,7 +119,7 @@ namespace turbo {
                             pos++;
                         }
                     }
-                    return result(error_code::SUCCESS, utf8_output - start);
+                    return UnicodeResult(UnicodeError::SUCCESS, utf8_output - start);
                 }
 
             } // namespace utf32_to_utf8

@@ -9,9 +9,6 @@ namespace turbo {
             namespace utf16_to_latin1 {
 
                 template <endianness big_endian, typename InputPtr, typename OutputPtr>
-#if SIMDUTF_CPLUSPLUS20
-                    requires(turbo::detail::indexes_into_utf16<InputPtr> && turbo::detail::index_assignable_from_char<OutputPtr>)
-#endif
                  size_t convert(InputPtr data, size_t len,
                     OutputPtr latin_output) {
                     if (len == 0) {
@@ -36,13 +33,10 @@ namespace turbo {
                 }
 
                 template <endianness big_endian, typename InputPtr, typename OutputPtr>
-#if SIMDUTF_CPLUSPLUS20
-                    requires(turbo::detail::indexes_into_utf16<InputPtr> && turbo::detail::index_assignable_from_char<OutputPtr>)
-#endif
-                 result convert_with_errors(InputPtr data, size_t len,
+                 UnicodeResult convert_with_errors(InputPtr data, size_t len,
                     OutputPtr latin_output) {
                     if (len == 0) {
-                        return result(error_code::SUCCESS, 0);
+                        return UnicodeResult(UnicodeError::SUCCESS, 0);
                     }
                     size_t pos = 0;
                     auto start = latin_output;
@@ -89,10 +83,10 @@ namespace turbo {
                             *latin_output++ = char(word & 0xFF);
                             pos++;
                         } else {
-                            return result(error_code::TOO_LARGE, pos);
+                            return UnicodeResult(UnicodeError::TOO_LARGE, pos);
                         }
                     }
-                    return result(error_code::SUCCESS, latin_output - start);
+                    return UnicodeResult(UnicodeError::SUCCESS, latin_output - start);
                 }
 
             } // namespace utf16_to_latin1

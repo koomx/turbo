@@ -30,14 +30,14 @@ TEST(issue_483) {
     constexpr std::size_t data_len = data_len_bytes / sizeof(char);
     const auto validation1 = implementation.validate_utf8_with_errors((const char*)data, data_len);
     ASSERT_EQUAL(validation1.count, 64);
-    ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
+    ASSERT_EQUAL(validation1.error, turbo::UnicodeError::TOO_LONG);
 
     const auto outlen = implementation.utf32_length_from_utf8((const char*)data, data_len);
     ASSERT_EQUAL(outlen, 64);
     std::vector<char32_t> output(outlen);
     const auto r = implementation.convert_utf8_to_utf32_with_errors(
         (const char*)data, data_len, output.data());
-    ASSERT_EQUAL(r.error, turbo::error_code::TOO_LONG);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::TOO_LONG);
     ASSERT_EQUAL(r.count, 64);
 }
 
@@ -54,14 +54,14 @@ TEST(issue_478) {
     constexpr std::size_t data_len = data_len_bytes / sizeof(char);
     const auto validation1 = implementation.validate_utf8_with_errors((const char*)data, data_len);
     ASSERT_EQUAL(validation1.count, 64);
-    ASSERT_EQUAL(validation1.error, turbo::error_code::TOO_LONG);
+    ASSERT_EQUAL(validation1.error, turbo::UnicodeError::TOO_LONG);
 
     const auto outlen = implementation.utf32_length_from_utf8((const char*)data, data_len);
     ASSERT_EQUAL(outlen, 38);
     std::vector<char32_t> output(outlen);
     const auto r = implementation.convert_utf8_to_utf32_with_errors(
         (const char*)data, data_len, output.data());
-    ASSERT_EQUAL(r.error, turbo::error_code::TOO_LONG);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::TOO_LONG);
     ASSERT_EQUAL(r.count, 64);
 }
 
@@ -71,7 +71,7 @@ TEST(issue_convert_utf8_to_utf32_with_errors_3fa5955f57c6b0a0) {
     const auto r = implementation.convert_utf8_to_utf32_with_errors(
         input.data(), input.size(), output.data());
     ASSERT_EQUAL(r.count, 0);
-    ASSERT_EQUAL(r.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::SUCCESS);
 }
 
 TEST(issue_convert_utf8_to_utf32_with_errors_a8ec246845d4878e) {
@@ -100,7 +100,7 @@ TEST(issue_convert_utf8_to_utf32_with_errors_a8ec246845d4878e) {
     got return [count=64, error=TOO_LONG] from implementation fallback
     */
     ASSERT_EQUAL(r.count, 64);
-    ASSERT_EQUAL(r.error, turbo::error_code::TOO_LONG);
+    ASSERT_EQUAL(r.error, turbo::UnicodeError::TOO_LONG);
 }
 
 TEST(issue_448) {
@@ -131,7 +131,7 @@ TEST(issue_213) {
     // that the predicted output might be zero.
     size_t expected_size = implementation.utf32_length_from_utf8(buf + 2, 1);
     std::unique_ptr<char32_t[]> buffer(new char32_t[expected_size]);
-    turbo::result r = turbo::convert_utf8_to_utf32_with_errors(buf + 2, 1, buffer.get());
+    turbo::UnicodeResult r = turbo::convert_utf8_to_utf32_with_errors(buf + 2, 1, buffer.get());
     ASSERT_TRUE(r.error != turbo::SUCCESS);
     // r.count: In case of error, indicates the position of the error in the
     // input.
@@ -163,8 +163,8 @@ TEST_LOOP(convert_pure_ASCII) {
 
     auto procedure = [&implementation](const char* utf8, size_t size,
                          char32_t* utf32) -> size_t {
-        turbo::result res = implementation.convert_utf8_to_utf32_with_errors(utf8, size, utf32);
-        ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+        turbo::UnicodeResult res = implementation.convert_utf8_to_utf32_with_errors(utf8, size, utf32);
+        ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
         return res.count;
     };
     auto size_procedure = [&implementation](const char* utf8,
@@ -185,8 +185,8 @@ TEST_LOOP(convert_1_or_2_UTF8_bytes) {
 
     auto procedure = [&implementation](const char* utf8, size_t size,
                          char32_t* utf32) -> size_t {
-        turbo::result res = implementation.convert_utf8_to_utf32_with_errors(utf8, size, utf32);
-        ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+        turbo::UnicodeResult res = implementation.convert_utf8_to_utf32_with_errors(utf8, size, utf32);
+        ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
         return res.count;
     };
     auto size_procedure = [&implementation](const char* utf8,
@@ -207,8 +207,8 @@ TEST_LOOP(convert_1_or_2_or_3_UTF8_bytes) {
 
     auto procedure = [&implementation](const char* utf8, size_t size,
                          char32_t* utf32) -> size_t {
-        turbo::result res = implementation.convert_utf8_to_utf32_with_errors(utf8, size, utf32);
-        ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+        turbo::UnicodeResult res = implementation.convert_utf8_to_utf32_with_errors(utf8, size, utf32);
+        ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
         return res.count;
     };
     auto size_procedure = [&implementation](const char* utf8,
@@ -229,8 +229,8 @@ TEST_LOOP(convert_3_or_4_UTF8_bytes) {
 
     auto procedure = [&implementation](const char* utf8, size_t size,
                          char32_t* utf32) -> size_t {
-        turbo::result res = implementation.convert_utf8_to_utf32_with_errors(utf8, size, utf32);
-        ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+        turbo::UnicodeResult res = implementation.convert_utf8_to_utf32_with_errors(utf8, size, utf32);
+        ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
         return res.count;
     };
     auto size_procedure = [&implementation](const char* utf8,
@@ -252,8 +252,8 @@ TEST_LOOP(too_large_error) {
         if ((test.input_utf8[i] & 0b11111000) == 0b11110000) { // Can only have too large error in 4-bytes case
             auto procedure = [&implementation, &i](const char* utf8, size_t size,
                                  char32_t* utf32) -> size_t {
-                turbo::result res = implementation.convert_utf8_to_utf32_with_errors(utf8, size, utf32);
-                ASSERT_EQUAL(res.error, turbo::error_code::TOO_LARGE);
+                turbo::UnicodeResult res = implementation.convert_utf8_to_utf32_with_errors(utf8, size, utf32);
+                ASSERT_EQUAL(res.error, turbo::UnicodeError::TOO_LARGE);
                 ASSERT_EQUAL(res.count, i);
                 return 0;
             };
@@ -275,8 +275,8 @@ TEST_LOOP(surrogate_error) {
         if ((test.input_utf8[i] & 0b11110000) == 0b11100000) { // Can only have surrogate error in 3-bytes case
             auto procedure = [&implementation, &i](const char* utf8, size_t size,
                                  char32_t* utf32) -> size_t {
-                turbo::result res = implementation.convert_utf8_to_utf32_with_errors(utf8, size, utf32);
-                ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
+                turbo::UnicodeResult res = implementation.convert_utf8_to_utf32_with_errors(utf8, size, utf32);
+                ASSERT_EQUAL(res.error, turbo::UnicodeError::SURROGATE);
                 ASSERT_EQUAL(res.count, i);
                 return 0;
             };

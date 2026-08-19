@@ -9,9 +9,6 @@ namespace turbo {
             namespace utf16_to_utf8 {
 
                 template <endianness big_endian, typename InputPtr, typename OutputPtr>
-#if SIMDUTF_CPLUSPLUS20
-                    requires(turbo::detail::indexes_into_utf16<InputPtr> && turbo::detail::index_assignable_from_char<OutputPtr>)
-#endif
                  size_t convert_valid(InputPtr data, size_t len,
                     OutputPtr utf8_output) {
                     size_t pos = 0;

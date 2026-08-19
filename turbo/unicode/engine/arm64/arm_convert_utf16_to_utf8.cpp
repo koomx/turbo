@@ -298,14 +298,14 @@ arm_convert_utf16_to_utf8(const char16_t* buf, size_t len, char* utf8_out) {
 }
 
 /*
-  Returns a pair: a result struct and utf8_output.
-  If there is an error, the count field of the result is the position of the
+  Returns a pair: a UnicodeResult struct and utf8_output.
+  If there is an error, the count field of the UnicodeResult is the position of the
   error. Otherwise, it is the position of the first unprocessed byte in buf
   (even if finished). A scalar routing should carry on the conversion of the
   tail if needed.
 */
 template <endianness big_endian>
-std::pair<result, char*>
+std::pair<UnicodeResult, char*>
 arm_convert_utf16_to_utf8_with_errors(const char16_t* buf, size_t len,
     char* utf8_out) {
     uint8_t* utf8_output = reinterpret_cast<uint8_t*>(utf8_out);
@@ -538,7 +538,7 @@ arm_convert_utf16_to_utf8_with_errors(const char16_t* buf, size_t len,
                     uint16_t diff2 = uint16_t(next_word - 0xDC00);
                     if ((diff | diff2) > 0x3FF) {
                         return std::make_pair(
-                            result(error_code::SURROGATE, buf - start + k - 1),
+                            UnicodeResult(UnicodeError::SURROGATE, buf - start + k - 1),
                             reinterpret_cast<char*>(utf8_output));
                     }
                     uint32_t value = (diff << 10) + diff2 + 0x10000;
@@ -552,12 +552,12 @@ arm_convert_utf16_to_utf8_with_errors(const char16_t* buf, size_t len,
         }
     } // while
 
-    return std::make_pair(result(error_code::SUCCESS, buf - start),
+    return std::make_pair(UnicodeResult(UnicodeError::SUCCESS, buf - start),
         reinterpret_cast<char*>(utf8_output));
 }
 
 template <endianness big_endian>
-simdutf_really_inline size_t
+KUMO_FORCE_INLINE size_t
 arm64_utf8_length_from_utf16_bytemask(const char16_t* in, size_t size) {
     constexpr size_t N = 16; // we process 16 char16_t at a time, this is NEON specific
 
@@ -618,7 +618,7 @@ arm64_utf8_length_from_utf16_bytemask(const char16_t* in, size_t size) {
 }
 
 template <endianness big_endian>
-simdutf_really_inline result
+KUMO_FORCE_INLINE UnicodeResult
 arm64_utf8_length_from_utf16_with_replacement(const char16_t* in, size_t size) {
     constexpr size_t N = 16; // we process 16 char16_t at a time, this is NEON specific
 
@@ -740,7 +740,7 @@ arm64_utf8_length_from_utf16_with_replacement(const char16_t* in, size_t size) {
             count += 2;
         }
     }
-    result scalar_result = scalar::utf16::utf8_length_from_utf16_with_replacement<big_endian>(
+    UnicodeResult scalar_result = scalar::utf16::utf8_length_from_utf16_with_replacement<big_endian>(
         in + pos, size - pos);
     return { any_surrogates ? SURROGATE : scalar_result.error,
         count + scalar_result.count };

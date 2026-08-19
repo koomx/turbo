@@ -25,28 +25,7 @@
 #define simdutf_log_assert(cond, msg)
 #endif
 
-#if SIMDUTF_CPLUSPLUS17
-#define simdutf_unused [[maybe_unused]]
-#endif // SIMDUTF_CPLUSPLUS17
-
 #if defined(SIMDUTF_REGULAR_VISUAL_STUDIO)
-#define SIMDUTF_DEPRECATED __declspec(deprecated)
-
-#define simdutf_really_inline __forceinline // really inline in release mode
-#define simdutf_always_inline __forceinline // always inline, no matter what
-#define simdutf_never_inline __declspec(noinline)
-
-#ifndef simdutf_unused
-#define simdutf_unused
-#endif // simdutf_unused
-#define simdutf_warn_unused
-
-#ifndef simdutf_likely
-#define simdutf_likely(x) x
-#endif
-#ifndef simdutf_unlikely
-#define simdutf_unlikely(x) x
-#endif
 
 #define SIMDUTF_PUSH_DISABLE_WARNINGS __pragma(warning(push))
 #define SIMDUTF_PUSH_DISABLE_ALL_WARNINGS __pragma(warning(push, 0))
@@ -72,26 +51,7 @@
 #define SIMDUTF_POP_DISABLE_WARNINGS __pragma(warning(pop))
 #define SIMDUTF_DISABLE_UNUSED_WARNING
 #else // SIMDUTF_REGULAR_VISUAL_STUDIO
-#if defined(__OPTIMIZE__) || defined(NDEBUG)
-#define simdutf_really_inline inline __attribute__((always_inline))
-#else
-#define simdutf_really_inline inline
-#endif
-#define simdutf_always_inline \
-    inline __attribute__((always_inline)) // always inline, no matter what
-#define SIMDUTF_DEPRECATED __attribute__((deprecated))
-#define simdutf_never_inline inline __attribute__((noinline))
-#ifndef simdutf_unused
-#define simdutf_unused __attribute__((unused))
-#endif // simdutf_unused
-#define simdutf_warn_unused __attribute__((warn_unused_result))
 
-#ifndef simdutf_likely
-#define simdutf_likely(x) __builtin_expect(!!(x), 1)
-#endif
-#ifndef simdutf_unlikely
-#define simdutf_unlikely(x) __builtin_expect(!!(x), 0)
-#endif
 // clang-format off
   #define SIMDUTF_PUSH_DISABLE_WARNINGS _Pragma("GCC diagnostic push")
   // gcc doesn't seem to disable all warnings with all and extra, add warnings
@@ -130,42 +90,5 @@
 // clang-format on
 
 #endif // MSC_VER
-
-#ifndef SIMDUTF_DLLIMPORTEXPORT
-#if defined(SIMDUTF_VISUAL_STUDIO) // Visual Studio
-                                   /// Windows users need to do some extra work when building
-/// or using a dynamic library (DLL). When building, we need
-/// to set SIMDUTF_DLLIMPORTEXPORT to __declspec(dllexport).
-/// When *using* the DLL, the user needs to set
-/// SIMDUTF_DLLIMPORTEXPORT __declspec(dllimport).
-///
-/// Static libraries not need require such work.
-///
-/// It does not matter here whether you are using
-/// the regular visual studio or clang under visual
-/// studio, you still need to handle these issues.
-///
-/// Non-Windows systems do not have this complexity.
-#if SIMDUTF_BUILDING_WINDOWS_DYNAMIC_LIBRARY
-
-// We set SIMDUTF_BUILDING_WINDOWS_DYNAMIC_LIBRARY when we build a DLL
-// under Windows. It should never happen that both
-// SIMDUTF_BUILDING_WINDOWS_DYNAMIC_LIBRARY and
-// SIMDUTF_USING_WINDOWS_DYNAMIC_LIBRARY are set.
-#define SIMDUTF_DLLIMPORTEXPORT __declspec(dllexport)
-#elif SIMDUTF_USING_WINDOWS_DYNAMIC_LIBRARY
-// Windows user who call a dynamic library should set
-// SIMDUTF_USING_WINDOWS_DYNAMIC_LIBRARY to 1.
-
-#define SIMDUTF_DLLIMPORTEXPORT __declspec(dllimport)
-#else
-// We assume by default static linkage
-#define SIMDUTF_DLLIMPORTEXPORT
-#endif
-#else // defined(SIMDUTF_VISUAL_STUDIO)
-// Non-Windows systems do not have this complexity.
-#define SIMDUTF_DLLIMPORTEXPORT
-#endif // defined(SIMDUTF_VISUAL_STUDIO)
-#endif
 
 #endif // SIMDUTF_COMMON_DEFS_H

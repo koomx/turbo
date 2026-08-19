@@ -18,12 +18,12 @@
 
 namespace turbo {
 
-    simdutf_warn_unused turbo::encoding_type
+     [[nodiscard]] turbo::TextEncoding
     autodetect_encoding(const char* buf, size_t length) noexcept {
         return get_default_implementation()->autodetect_encoding(buf, length);
     }
 
-    simdutf_warn_unused int detect_encodings(const char* buf,
+     [[nodiscard]] int detect_encodings(const char* buf,
         size_t length) noexcept {
         return get_default_implementation()->detect_encodings(buf, length);
     }

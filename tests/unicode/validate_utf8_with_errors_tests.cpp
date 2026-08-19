@@ -24,7 +24,7 @@ TEST(too_short_at_end_of_chunk) {
         const auto res = implementation.validate_utf8_with_errors(
             (const char*)data + i, data_len - i);
         ASSERT_EQUAL(res.count, 64 - i);
-        ASSERT_EQUAL(res.error, turbo::error_code::TOO_SHORT);
+        ASSERT_EQUAL(res.error, turbo::UnicodeError::TOO_SHORT);
     }
 }
 
@@ -47,30 +47,30 @@ TEST(validate_utf8_with_errors_cbf29ce4842223f0) {
     got return [count=63, error=HEADER_BITS] from implementation fallback
     */
     ASSERT_EQUAL(validation1.count, 63);
-    ASSERT_EQUAL(validation1.error, turbo::error_code::HEADER_BITS);
+    ASSERT_EQUAL(validation1.error, turbo::UnicodeError::HEADER_BITS);
 }
 
 // https://github.com/nodejs/node/issues/48995
 TEST(node48995) {
     const char bad[1] = { (char)0x80 };
     size_t length = 1;
-    turbo::result res = implementation.validate_utf8_with_errors(bad, length);
+    turbo::UnicodeResult res = implementation.validate_utf8_with_errors(bad, length);
     ASSERT_TRUE(res.error);
 }
 
 TEST(copyright) {
     const char good[2] = { '\xC2', '\xA9' };
     size_t length = 2;
-    turbo::result res = implementation.validate_utf8_with_errors(good, length);
-    ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+    turbo::UnicodeResult res = implementation.validate_utf8_with_errors(good, length);
+    ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
 }
 
 TEST_LOOP(no_error) {
     turbo::tests::helpers::random_utf8 generator { seed, 1, 1, 1, 1 };
     const auto utf8 { generator.generate(512, seed) };
-    turbo::result res = implementation.validate_utf8_with_errors(
+    turbo::UnicodeResult res = implementation.validate_utf8_with_errors(
         reinterpret_cast<const char*>(utf8.data()), utf8.size());
-    ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(res.count, utf8.size());
 }
 
@@ -82,9 +82,9 @@ TEST_LOOP(header_bits_error) {
         if ((utf8[i] & 0b11000000) != 0b10000000) { // Only process leading bytes
             const unsigned char old = utf8[i];
             utf8[i] = uint8_t(0b11111000);
-            turbo::result res = implementation.validate_utf8_with_errors(
+            turbo::UnicodeResult res = implementation.validate_utf8_with_errors(
                 reinterpret_cast<const char*>(utf8.data()), utf8.size());
-            ASSERT_EQUAL(res.error, turbo::error_code::HEADER_BITS);
+            ASSERT_EQUAL(res.error, turbo::UnicodeError::HEADER_BITS);
             ASSERT_EQUAL(res.count, i);
             utf8[i] = old;
         }
@@ -100,9 +100,9 @@ TEST_LOOP(too_short_error) {
                                                     // bytes
             const unsigned char old = utf8[i];
             utf8[i] = uint8_t(0b11100000);
-            turbo::result res = implementation.validate_utf8_with_errors(
+            turbo::UnicodeResult res = implementation.validate_utf8_with_errors(
                 reinterpret_cast<const char*>(utf8.data()), utf8.size());
-            ASSERT_EQUAL(res.error, turbo::error_code::TOO_SHORT);
+            ASSERT_EQUAL(res.error, turbo::UnicodeError::TOO_SHORT);
             ASSERT_EQUAL(res.count, static_cast<unsigned>(leading_byte_pos));
             utf8[i] = old;
         } else {
@@ -119,9 +119,9 @@ TEST_LOOP(too_long_error) {
                                                       // continuation bytes
             const unsigned char old = utf8[i];
             utf8[i] = uint8_t(0b10000000);
-            turbo::result res = implementation.validate_utf8_with_errors(
+            turbo::UnicodeResult res = implementation.validate_utf8_with_errors(
                 reinterpret_cast<const char*>(utf8.data()), utf8.size());
-            ASSERT_EQUAL(res.error, turbo::error_code::TOO_LONG);
+            ASSERT_EQUAL(res.error, turbo::UnicodeError::TOO_LONG);
             ASSERT_EQUAL(res.count, i);
             utf8[i] = old;
         }
@@ -146,9 +146,9 @@ TEST_LOOP(overlong_error) {
                 utf8[i] = 0b11110000;
                 utf8[i + 1] = utf8[i + 1] & 0b11001111;
             }
-            turbo::result res = implementation.validate_utf8_with_errors(
+            turbo::UnicodeResult res = implementation.validate_utf8_with_errors(
                 reinterpret_cast<const char*>(utf8.data()), utf8.size());
-            ASSERT_EQUAL(res.error, turbo::error_code::OVERLONG);
+            ASSERT_EQUAL(res.error, turbo::UnicodeError::OVERLONG);
             ASSERT_EQUAL(res.count, i);
             utf8[i] = old;
             utf8[i + 1] = second_old;
@@ -165,9 +165,9 @@ TEST_LOOP(too_large_error) {
                 ? 0b10
                 : 0b100; // Make sure we get too large error and not header
                          // bits error
-            turbo::result res = implementation.validate_utf8_with_errors(
+            turbo::UnicodeResult res = implementation.validate_utf8_with_errors(
                 reinterpret_cast<const char*>(utf8.data()), utf8.size());
-            ASSERT_EQUAL(res.error, turbo::error_code::TOO_LARGE);
+            ASSERT_EQUAL(res.error, turbo::UnicodeError::TOO_LARGE);
             ASSERT_EQUAL(res.count, i);
             utf8[i] -= 0b100;
         }
@@ -185,9 +185,9 @@ TEST_LOOP(surrogate_error) {
             for (int s = 0x8; s < 0xf;
                 s++) { // Modify second byte to create a surrogate codepoint
                 utf8[i + 1] = (utf8[i + 1] & 0b11000011) | (s << 2);
-                turbo::result res = implementation.validate_utf8_with_errors(
+                turbo::UnicodeResult res = implementation.validate_utf8_with_errors(
                     reinterpret_cast<const char*>(utf8.data()), utf8.size());
-                ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
+                ASSERT_EQUAL(res.error, turbo::UnicodeError::SURROGATE);
                 ASSERT_EQUAL(res.count, i);
             }
             utf8[i] = old;

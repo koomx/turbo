@@ -9,9 +9,6 @@ namespace turbo {
             namespace latin1_to_utf8 {
 
                 template <typename InputPtr, typename OutputPtr>
-#if SIMDUTF_CPLUSPLUS20
-                    requires(turbo::detail::indexes_into_byte_like<InputPtr> && turbo::detail::index_assignable_from_char<OutputPtr>)
-#endif
                  size_t convert(InputPtr data, size_t len,
                     OutputPtr utf8_output) {
                     // const unsigned char *data = reinterpret_cast<const unsigned char *>(buf);
@@ -56,7 +53,7 @@ namespace turbo {
                     return utf8_pos;
                 }
 
-                simdutf_really_inline size_t convert(const char* buf, size_t len,
+                KUMO_FORCE_INLINE size_t convert(const char* buf, size_t len,
                     char* utf8_output) {
                     return convert(reinterpret_cast<const unsigned char*>(buf), len,
                         utf8_output);
@@ -108,9 +105,7 @@ namespace turbo {
                 }
 
                 template <typename InputPtr, typename OutputPtr>
-#if SIMDUTF_CPLUSPLUS20
-                    requires(turbo::detail::indexes_into_byte_like<InputPtr> && turbo::detail::index_assignable_from_char<OutputPtr>)
-#endif
+
                  size_t convert_safe_constexpr(InputPtr data, size_t len,
                     OutputPtr utf8_output,
                     size_t utf8_len) {
@@ -135,10 +130,7 @@ namespace turbo {
                 }
 
                 template <typename InputPtr>
-#if SIMDUTF_CPLUSPLUS20
-                    requires turbo::detail::indexes_into_byte_like<InputPtr>
-#endif
-                 simdutf_warn_unused size_t
+                  [[nodiscard]] size_t
                 utf8_length_from_latin1(InputPtr input, size_t length) noexcept {
                     size_t answer = length;
                     size_t i = 0;

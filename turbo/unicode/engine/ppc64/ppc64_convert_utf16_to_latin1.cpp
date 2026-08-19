@@ -1,5 +1,5 @@
 struct utf16_to_latin1_t {
-    error_code err;
+    UnicodeError err;
     const char16_t* input;
     char* output;
 };
@@ -45,12 +45,12 @@ utf16_to_latin1_t ppc64_convert_utf16_to_latin1(const char16_t* buf, size_t len,
 #endif // defined(__clang__)
         // AltiVec
 
-        if (simdutf_unlikely(upper)) {
+        if (KUMO_UNLIKELY(upper)) {
             uint8_t bytes[8];
             memcpy(bytes, &upper, 8);
             for (size_t k = 0; k < 8; k++) {
                 if (bytes[k] != 0) {
-                    return utf16_to_latin1_t { error_code::TOO_LARGE, buf + k,
+                    return utf16_to_latin1_t { UnicodeError::TOO_LARGE, buf + k,
                         latin1_output };
                 }
             }
@@ -61,5 +61,5 @@ utf16_to_latin1_t ppc64_convert_utf16_to_latin1(const char16_t* buf, size_t len,
         }
     } // while
 
-    return utf16_to_latin1_t { error_code::SUCCESS, buf, latin1_output };
+    return utf16_to_latin1_t { UnicodeError::SUCCESS, buf, latin1_output };
 }

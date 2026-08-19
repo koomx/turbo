@@ -15,7 +15,7 @@ avx2_convert_utf32_to_utf16(const char32_t* buf, size_t len,
     while (end - buf >= std::ptrdiff_t(8 + safety_margin)) {
         const __m256i in = _mm256_loadu_si256((__m256i*)buf);
 
-        if (simdutf_likely(_mm256_testz_si256(in, v_ffff0000))) {
+        if (KUMO_LIKELY(_mm256_testz_si256(in, v_ffff0000))) {
             // no bits set above 16th bit <=> can pack to UTF16
             // without surrogate pairs
             forbidden_bytemask = _mm256_or_si256(
@@ -76,7 +76,7 @@ avx2_convert_utf32_to_utf16(const char32_t* buf, size_t len,
 }
 
 template <endianness big_endian>
-std::pair<result, char16_t*>
+std::pair<UnicodeResult, char16_t*>
 avx2_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
     char16_t* utf16_output) {
     const char32_t* start = buf;
@@ -92,12 +92,12 @@ avx2_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
     while (end - buf >= std::ptrdiff_t(8 + safety_margin)) {
         const __m256i in = _mm256_loadu_si256((__m256i*)buf);
 
-        if (simdutf_likely(_mm256_testz_si256(in, v_ffff0000))) {
+        if (KUMO_LIKELY(_mm256_testz_si256(in, v_ffff0000))) {
             // no bits set above 16th bit <=> can pack to UTF16 without surrogate
             // pairs
             const __m256i forbidden_bytemask = _mm256_cmpeq_epi32(_mm256_and_si256(in, v_f800), v_d800);
             if (static_cast<uint32_t>(_mm256_movemask_epi8(forbidden_bytemask)) != 0x0) {
-                return std::make_pair(result(error_code::SURROGATE, buf - start),
+                return std::make_pair(UnicodeResult(UnicodeError::SURROGATE, buf - start),
                     utf16_output);
             }
 
@@ -122,7 +122,7 @@ avx2_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
                     // will not generate a surrogate pair
                     if (word >= 0xD800 && word <= 0xDFFF) {
                         return std::make_pair(
-                            result(error_code::SURROGATE, buf - start + k), utf16_output);
+                            UnicodeResult(UnicodeError::SURROGATE, buf - start + k), utf16_output);
                     }
                     *utf16_output++ = big_endian
                         ? char16_t((uint16_t(word) >> 8) | (uint16_t(word) << 8))
@@ -131,7 +131,7 @@ avx2_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
                     // will generate a surrogate pair
                     if (word > 0x10FFFF) {
                         return std::make_pair(
-                            result(error_code::TOO_LARGE, buf - start + k), utf16_output);
+                            UnicodeResult(UnicodeError::TOO_LARGE, buf - start + k), utf16_output);
                     }
                     word -= 0x10000;
                     uint16_t high_surrogate = uint16_t(0xD800 + (word >> 10));
@@ -148,5 +148,5 @@ avx2_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
         }
     }
 
-    return std::make_pair(result(error_code::SUCCESS, buf - start), utf16_output);
+    return std::make_pair(UnicodeResult(UnicodeError::SUCCESS, buf - start), utf16_output);
 }

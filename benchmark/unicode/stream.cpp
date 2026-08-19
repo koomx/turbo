@@ -202,9 +202,9 @@ int main(int argc, char **argv) {
   printf("# input detected as %.*s.\n",
          int(turbo::to_string(detected_encoding).size()),
          turbo::to_string(detected_encoding).data());
-  if (detected_encoding == turbo::encoding_type::UTF16_LE) {
+  if (detected_encoding == turbo::TextEncoding::UTF16_LE) {
     run_from_utf16(input_data);
-  } else if (detected_encoding == turbo::encoding_type::UTF8) {
+  } else if (detected_encoding == turbo::TextEncoding::UTF8) {
     run_from_utf8(input_data);
   }
   return EXIT_SUCCESS;

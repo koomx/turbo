@@ -35,7 +35,7 @@ avx2_convert_utf16_to_latin1(const char16_t* buf, size_t len,
 }
 
 template <endianness big_endian>
-std::pair<result, char*>
+std::pair<UnicodeResult, char*>
 avx2_convert_utf16_to_latin1_with_errors(const char16_t* buf, size_t len,
     char* latin1_output) {
     const char16_t* start = buf;
@@ -70,13 +70,13 @@ avx2_convert_utf16_to_latin1_with_errors(const char16_t* buf, size_t len,
                     *latin1_output++ = char(word);
                 } else {
                     return std::make_pair(
-                        result { error_code::TOO_LARGE, (size_t)(buf - start + k) },
+                        UnicodeResult { UnicodeError::TOO_LARGE, (size_t)(buf - start + k) },
                         latin1_output);
                 }
             }
             buf += 16;
         }
     } // while
-    return std::make_pair(result { error_code::SUCCESS, (size_t)(buf - start) },
+    return std::make_pair(UnicodeResult { UnicodeError::SUCCESS, (size_t)(buf - start) },
         latin1_output);
 }

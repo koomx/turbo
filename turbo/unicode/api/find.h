@@ -17,7 +17,7 @@
 
 #include <turbo/unicode/api/base64_tables.h>
 #include <turbo/unicode/engine/common_defs.h>
-#include <turbo/unicode/engine/compiler_check.h>
+
 #include <turbo/unicode/error.h>
 #include <turbo/unicode/scalar/base64.h>
 #include <turbo/unicode/text_encoding.h>
@@ -40,9 +40,9 @@
 namespace turbo {
 
     namespace detail {
-        simdutf_warn_unused const char* find(const char* start, const char* end,
+         [[nodiscard]] const char* find(const char* start, const char* end,
             char character) noexcept;
-        simdutf_warn_unused const char16_t*
+         [[nodiscard]] const char16_t*
         find(const char16_t* start, const char16_t* end, char16_t character) noexcept;
     } // namespace detail
 
@@ -53,13 +53,13 @@ namespace turbo {
     /// @param character    the character to find
     /// @return a pointer to the first occurrence of the character in the string,
     /// or a pointer to the end of the string if the character is not found.
-    simdutf_warn_unused simdutf_really_inline const char*
+     [[nodiscard]] KUMO_FORCE_INLINE const char*
     find_token(const char* start, const char* end, char character) noexcept {
         {
             return detail::find(start, end, character);
         }
     }
-    simdutf_warn_unused simdutf_really_inline const char16_t*
+     [[nodiscard]] KUMO_FORCE_INLINE const char16_t*
     find_token(const char16_t* start, const char16_t* end, char16_t character) noexcept {
         // implementation note: this is repeated instead of a template, to ensure
         // the api is still a function and compiles without concepts

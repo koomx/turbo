@@ -1,5 +1,20 @@
-#ifndef SIMDUTF_UTF16_H
-#define SIMDUTF_UTF16_H
+// Copyright (C) 2026 Kumo inc. and its affiliates. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+#pragma once
+
 
 #include <turbo/unicode/scalar/swap_bytes.h>
 
@@ -8,7 +23,7 @@ namespace turbo {
         namespace utf16 {
 
             template <endianness big_endian>
-            simdutf_warn_unused  bool
+             [[nodiscard]]  bool
             validate_as_ascii(const char16_t* data, size_t len) noexcept {
                 for (size_t pos = 0; pos < len; pos++) {
                     char16_t word = scalar::utf16::swap_if_needed<big_endian>(data[pos]);
@@ -20,7 +35,7 @@ namespace turbo {
             }
 
             template <endianness big_endian>
-            inline simdutf_warn_unused  bool
+            [[nodiscard]] inline  bool
             validate(const char16_t* data, size_t len) noexcept {
                 uint64_t pos = 0;
                 while (pos < len) {
@@ -49,32 +64,32 @@ namespace turbo {
             }
 
             template <endianness big_endian>
-            inline simdutf_warn_unused  result
+            [[nodiscard]] inline  UnicodeResult
             validate_with_errors(const char16_t* data, size_t len) noexcept {
                 size_t pos = 0;
                 while (pos < len) {
                     char16_t word = scalar::utf16::swap_if_needed<big_endian>(data[pos]);
                     if ((word & 0xF800) == 0xD800) {
                         if (pos + 1 >= len) {
-                            return result(error_code::SURROGATE, pos);
+                            return UnicodeResult(UnicodeError::SURROGATE, pos);
                         }
                         char16_t diff = char16_t(word - 0xD800);
                         if (diff > 0x3FF) {
-                            return result(error_code::SURROGATE, pos);
+                            return UnicodeResult(UnicodeError::SURROGATE, pos);
                         }
                         char16_t next_word = !match_system(big_endian)
                             ? u16_swap_bytes(data[pos + 1])
                             : data[pos + 1];
                         char16_t diff2 = uint16_t(next_word - 0xDC00);
                         if (diff2 > 0x3FF) {
-                            return result(error_code::SURROGATE, pos);
+                            return UnicodeResult(UnicodeError::SURROGATE, pos);
                         }
                         pos += 2;
                     } else {
                         pos++;
                     }
                 }
-                return result(error_code::SUCCESS, pos);
+                return UnicodeResult(UnicodeError::SUCCESS, pos);
             }
 
             template <endianness big_endian>
@@ -115,7 +130,7 @@ namespace turbo {
                 return counter;
             }
 
-            simdutf_really_inline  void
+            KUMO_FORCE_INLINE  void
             change_endianness_utf16(const char16_t* input, size_t size, char16_t* output) {
                 for (size_t i = 0; i < size; i++) {
                     *output++ = char16_t(input[i] >> 8 | input[i] << 8);
@@ -123,7 +138,7 @@ namespace turbo {
             }
 
             template <endianness big_endian>
-            simdutf_warn_unused  size_t
+             [[nodiscard]]  size_t
             trim_partial_utf16(const char16_t* input, size_t length) {
                 if (length == 0) {
                     return 0;
@@ -146,12 +161,12 @@ namespace turbo {
                 return (0xdc00 <= c && c <= 0xdfff);
             }
 
-            simdutf_unused simdutf_really_inline constexpr bool high_surrogate(char16_t c) {
+            [[maybe_unused]] KUMO_FORCE_INLINE constexpr bool high_surrogate(char16_t c) {
                 return (0xd800 <= c && c <= 0xdbff);
             }
 
             template <endianness big_endian>
-             result
+             UnicodeResult
             utf8_length_from_utf16_with_replacement(const char16_t* p, size_t len) {
                 bool any_surrogates = false;
                 // We are not BOM aware.
@@ -177,7 +192,7 @@ namespace turbo {
                     counter += static_cast<size_t>(word > 0x7F); // non-ASCII is at least 2 bytes
                     counter += static_cast<size_t>(word > 0x7FF); // three-byte
                 }
-                return { any_surrogates ? error_code::SURROGATE : error_code::SUCCESS,
+                return { any_surrogates ? UnicodeError::SURROGATE : UnicodeError::SUCCESS,
                     counter };
             }
 
@@ -218,5 +233,3 @@ namespace turbo {
         } // namespace utf16
     } // namespace scalar
 } // namespace turbo
-
-#endif

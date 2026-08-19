@@ -62,7 +62,7 @@ enum class simdutf_ByteFlip { NONE,
     ZVBB };
 
 template <simdutf_ByteFlip method>
-simdutf_really_inline static uint16_t simdutf_byteflip(uint16_t v) {
+KUMO_FORCE_INLINE static uint16_t simdutf_byteflip(uint16_t v) {
     if (method != simdutf_ByteFlip::NONE)
         return (uint16_t)((v * 1u) << 8 | (v * 1u) >> 8);
     return v;
@@ -74,7 +74,7 @@ SIMDUTF_TARGET_ZVBB
 #endif
 
 template <simdutf_ByteFlip method>
-simdutf_really_inline static vuint16m1_t simdutf_byteflip(vuint16m1_t v,
+KUMO_FORCE_INLINE static vuint16m1_t simdutf_byteflip(vuint16m1_t v,
     size_t vl) {
 #if SIMDUTF_HAS_ZVBB_INTRINSICS
     if (method == simdutf_ByteFlip::ZVBB)
@@ -87,7 +87,7 @@ simdutf_really_inline static vuint16m1_t simdutf_byteflip(vuint16m1_t v,
 }
 
 template <simdutf_ByteFlip method>
-simdutf_really_inline static vuint16m2_t simdutf_byteflip(vuint16m2_t v,
+KUMO_FORCE_INLINE static vuint16m2_t simdutf_byteflip(vuint16m2_t v,
     size_t vl) {
 #if SIMDUTF_HAS_ZVBB_INTRINSICS
     if (method == simdutf_ByteFlip::ZVBB)
@@ -100,7 +100,7 @@ simdutf_really_inline static vuint16m2_t simdutf_byteflip(vuint16m2_t v,
 }
 
 template <simdutf_ByteFlip method>
-simdutf_really_inline static vuint16m4_t simdutf_byteflip(vuint16m4_t v,
+KUMO_FORCE_INLINE static vuint16m4_t simdutf_byteflip(vuint16m4_t v,
     size_t vl) {
 #if SIMDUTF_HAS_ZVBB_INTRINSICS
     if (method == simdutf_ByteFlip::ZVBB)
@@ -113,7 +113,7 @@ simdutf_really_inline static vuint16m4_t simdutf_byteflip(vuint16m4_t v,
 }
 
 template <simdutf_ByteFlip method>
-simdutf_really_inline static vuint16m8_t simdutf_byteflip(vuint16m8_t v,
+KUMO_FORCE_INLINE static vuint16m8_t simdutf_byteflip(vuint16m8_t v,
     size_t vl) {
 #if SIMDUTF_HAS_ZVBB_INTRINSICS
     if (method == simdutf_ByteFlip::ZVBB)

@@ -7,9 +7,6 @@ namespace turbo {
             namespace latin1_to_utf16 {
 
                 template <endianness big_endian, typename InputPtr>
-#if SIMDUTF_CPLUSPLUS20
-                    requires turbo::detail::indexes_into_byte_like<InputPtr>
-#endif
                  size_t convert(InputPtr data, size_t len,
                     char16_t* utf16_output) {
                     size_t pos = 0;
@@ -25,7 +22,7 @@ namespace turbo {
                 }
 
                 template <endianness big_endian>
-                inline result convert_with_errors(const char* buf, size_t len,
+                inline UnicodeResult convert_with_errors(const char* buf, size_t len,
                     char16_t* utf16_output) {
                     const uint8_t* data = reinterpret_cast<const uint8_t*>(buf);
                     size_t pos = 0;
@@ -37,7 +34,7 @@ namespace turbo {
                         pos++;
                     }
 
-                    return result(error_code::SUCCESS, utf16_output - start);
+                    return UnicodeResult(UnicodeError::SUCCESS, utf16_output - start);
                 }
 
             } // namespace latin1_to_utf16

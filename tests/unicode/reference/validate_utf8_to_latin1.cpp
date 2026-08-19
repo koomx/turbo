@@ -5,7 +5,7 @@ namespace turbo {
         namespace reference {
 
             // credit: based on code from Google Fuchsia (Apache Licensed)
-            simdutf_warn_unused bool validate_utf8_to_latin1(const char* buf,
+             [[nodiscard]] bool validate_utf8_to_latin1(const char* buf,
                 size_t len) noexcept {
                 const uint8_t* data = (const uint8_t*)buf;
                 uint64_t pos = 0;

@@ -9,9 +9,6 @@ namespace turbo {
             namespace utf8_to_latin1 {
 
                 template <typename InputPtr, typename OutputPtr>
-#if SIMDUTF_CPLUSPLUS20
-                    requires(turbo::detail::indexes_into_byte_like<InputPtr> && turbo::detail::indexes_into_byte_like<OutputPtr>)
-#endif
                  size_t convert(InputPtr data, size_t len,
                     OutputPtr latin_output) {
                     size_t pos = 0;
@@ -76,10 +73,7 @@ namespace turbo {
                 }
 
                 template <typename InputPtr>
-#if SIMDUTF_CPLUSPLUS20
-                    requires turbo::detail::indexes_into_byte_like<InputPtr>
-#endif
-                 result convert_with_errors(InputPtr data, size_t len,
+                 UnicodeResult convert_with_errors(InputPtr data, size_t len,
                     char* latin_output) {
                     size_t pos = 0;
                     char* start { latin_output };
@@ -115,10 +109,10 @@ namespace turbo {
                         } else if ((leading_byte & 0b11100000) == 0b11000000) { // the first three bits indicate:
                             // We have a two-byte UTF-8
                             if (pos + 1 >= len) {
-                                return result(error_code::TOO_SHORT, pos);
+                                return UnicodeResult(UnicodeError::TOO_SHORT, pos);
                             } // minimal bound checking
                             if ((data[pos + 1] & 0b11000000) != 0b10000000) {
-                                return result(error_code::TOO_SHORT, pos);
+                                return UnicodeResult(UnicodeError::TOO_SHORT, pos);
                             } // checks if the next byte is a valid continuation byte in UTF-8. A
                               // valid continuation byte starts with 10.
                             // range check -
@@ -128,33 +122,33 @@ namespace turbo {
                                                                                                                    // of the first byte, and then combining the results
                                                                                                                    // with a bitwise OR operation.
                             if (code_point < 0x80) {
-                                return result(error_code::OVERLONG, pos);
+                                return UnicodeResult(UnicodeError::OVERLONG, pos);
                             }
                             if (0xFF < code_point) {
-                                return result(error_code::TOO_LARGE, pos);
+                                return UnicodeResult(UnicodeError::TOO_LARGE, pos);
                             } // We only care about the range 129-255 which is Non-ASCII latin1
                               // characters
                             *latin_output++ = char(code_point);
                             pos += 2;
                         } else if ((leading_byte & 0b11110000) == 0b11100000) {
                             // We have a three-byte UTF-8
-                            return result(error_code::TOO_LARGE, pos);
+                            return UnicodeResult(UnicodeError::TOO_LARGE, pos);
                         } else if ((leading_byte & 0b11111000) == 0b11110000) { // 0b11110000
                             // we have a 4-byte UTF-8 word.
-                            return result(error_code::TOO_LARGE, pos);
+                            return UnicodeResult(UnicodeError::TOO_LARGE, pos);
                         } else {
                             // we either have too many continuation bytes or an invalid leading byte
                             if ((leading_byte & 0b11000000) == 0b10000000) {
-                                return result(error_code::TOO_LONG, pos);
+                                return UnicodeResult(UnicodeError::TOO_LONG, pos);
                             }
 
-                            return result(error_code::HEADER_BITS, pos);
+                            return UnicodeResult(UnicodeError::HEADER_BITS, pos);
                         }
                     }
-                    return result(error_code::SUCCESS, latin_output - start);
+                    return UnicodeResult(UnicodeError::SUCCESS, latin_output - start);
                 }
 
-                inline result rewind_and_convert_with_errors(size_t prior_bytes,
+                inline UnicodeResult rewind_and_convert_with_errors(size_t prior_bytes,
                     const char* buf, size_t len,
                     char* latin1_output) {
                     size_t extra_len { 0 };
@@ -173,7 +167,7 @@ namespace turbo {
                             if (i > 0 && byte < 128) {
                                 // If we had to go back and the leading byte is ascii
                                 // then we can stop right away.
-                                return result(error_code::TOO_LONG, 0 - i + 1);
+                                return UnicodeResult(UnicodeError::TOO_LONG, 0 - i + 1);
                             }
                             buf -= i;
                             extra_len = i;
@@ -181,10 +175,10 @@ namespace turbo {
                         }
                     }
                     //
-                    // It is possible for this function to return a negative count in its result.
+                    // It is possible for this function to return a negative count in its UnicodeResult.
                     // C++ Standard Section 18.1 defines size_t is in <cstddef> which is described
                     // in C Standard as <stddef.h>. C Standard Section 4.1.5 defines size_t as an
-                    // unsigned integral type of the result of the sizeof operator
+                    // unsigned integral type of the UnicodeResult of the sizeof operator
                     //
                     // An unsigned type will simply wrap round arithmetically (well defined).
                     //
@@ -193,9 +187,9 @@ namespace turbo {
                         // [....] [continuation] [continuation] [continuation] | [buf is
                         // continuation] Or we possibly have a stream that does not start with a
                         // leading byte.
-                        return result(error_code::TOO_LONG, 0 - how_far_back);
+                        return UnicodeResult(UnicodeError::TOO_LONG, 0 - how_far_back);
                     }
-                    result res = convert_with_errors(buf, len + extra_len, latin1_output);
+                    UnicodeResult res = convert_with_errors(buf, len + extra_len, latin1_output);
                     if (res.error) {
                         res.count -= extra_len;
                     }

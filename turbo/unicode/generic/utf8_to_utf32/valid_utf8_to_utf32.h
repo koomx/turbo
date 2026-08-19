@@ -5,7 +5,7 @@ namespace turbo {
 
                 using namespace simd;
 
-                simdutf_warn_unused size_t convert_valid(const char* input, size_t size,
+                 [[nodiscard]] size_t convert_valid(const char* input, size_t size,
                     char32_t* utf32_output) noexcept {
                     size_t pos = 0;
                     char32_t* start { utf32_output };

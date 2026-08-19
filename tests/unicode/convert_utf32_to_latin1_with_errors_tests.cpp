@@ -20,8 +20,8 @@ TEST(convert_latin1_only) {
 
     auto procedure = [&implementation](const char32_t* utf32, size_t size,
                          char* latin1) -> size_t {
-        turbo::result res = implementation.convert_utf32_to_latin1_with_errors(utf32, size, latin1);
-        ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+        turbo::UnicodeResult res = implementation.convert_utf32_to_latin1_with_errors(utf32, size, latin1);
+        ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
         return res.count;
     };
 
@@ -48,9 +48,9 @@ TEST_LOOP(convert_fails_if_input_too_large) {
 
             auto procedure = [&implementation, &i](const char32_t* utf32, size_t size,
                                  char* latin1) -> size_t {
-                turbo::result res = implementation.convert_utf32_to_latin1_with_errors(utf32, size,
+                turbo::UnicodeResult res = implementation.convert_utf32_to_latin1_with_errors(utf32, size,
                     latin1);
-                ASSERT_EQUAL(res.error, turbo::error_code::TOO_LARGE);
+                ASSERT_EQUAL(res.error, turbo::UnicodeError::TOO_LARGE);
                 ASSERT_EQUAL(res.count, i);
                 return 0;
             };

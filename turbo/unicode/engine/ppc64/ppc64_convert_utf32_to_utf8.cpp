@@ -1,5 +1,5 @@
 struct utf32_to_utf8_t {
-    error_code err;
+    UnicodeError err;
     const char32_t* input;
     char* output;
 };
@@ -96,7 +96,7 @@ utf32_to_utf8_t ppc64_convert_utf32_to_utf8(const char32_t* buf, size_t len,
                 if (forbidden.any()) {
                     // We return no error code, instead we force the scalar procedure
                     // to rescan the portion of input where we've just found an error.
-                    return utf32_to_utf8_t { error_code::SUCCESS, buf, utf8_output };
+                    return utf32_to_utf8_t { UnicodeError::SUCCESS, buf, utf8_output };
                 }
             } break;
             case ErrorReporting::at_the_end:
@@ -129,14 +129,14 @@ utf32_to_utf8_t ppc64_convert_utf32_to_utf8(const char32_t* buf, size_t len,
                     *utf8_output++ = char((word & 0b111111) | 0b10000000);
                 } else if ((word & 0xFFFF0000) == 0) {
                     if (er != ErrorReporting::none and (word >= 0xD800 && word <= 0xDFFF)) {
-                        return utf32_to_utf8_t { error_code::SURROGATE, buf + k, utf8_output };
+                        return utf32_to_utf8_t { UnicodeError::SURROGATE, buf + k, utf8_output };
                     }
                     *utf8_output++ = char((word >> 12) | 0b11100000);
                     *utf8_output++ = char(((word >> 6) & 0b111111) | 0b10000000);
                     *utf8_output++ = char((word & 0b111111) | 0b10000000);
                 } else {
                     if (er != ErrorReporting::none and (word > 0x10FFFF)) {
-                        return utf32_to_utf8_t { error_code::TOO_LARGE, buf + k, utf8_output };
+                        return utf32_to_utf8_t { UnicodeError::TOO_LARGE, buf + k, utf8_output };
                     }
                     *utf8_output++ = char((word >> 18) | 0b11110000);
                     *utf8_output++ = char(((word >> 12) & 0b111111) | 0b10000000);
@@ -150,12 +150,12 @@ utf32_to_utf8_t ppc64_convert_utf32_to_utf8(const char32_t* buf, size_t len,
 
     if (er == ErrorReporting::at_the_end) {
         if (forbidden_bytemask.any()) {
-            return utf32_to_utf8_t { error_code::SURROGATE, buf, utf8_output };
+            return utf32_to_utf8_t { UnicodeError::SURROGATE, buf, utf8_output };
         }
     }
 
     return utf32_to_utf8_t {
-        error_code::SUCCESS,
+        UnicodeError::SUCCESS,
         buf,
         utf8_output,
     };

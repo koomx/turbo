@@ -1,31 +1,24 @@
-#if SIMDUTF_FEATURE_UTF16
-simdutf_warn_unused size_t
+ [[nodiscard]] size_t
 implementation::count_utf16le(const char16_t* src, size_t len) const noexcept {
     return utf32_length_from_utf16le(src, len);
 }
 
-simdutf_warn_unused size_t
+ [[nodiscard]] size_t
 implementation::count_utf16be(const char16_t* src, size_t len) const noexcept {
     return utf32_length_from_utf16be(src, len);
 }
-#endif // SIMDUTF_FEATURE_UTF16
 
-#if SIMDUTF_FEATURE_UTF8
-simdutf_warn_unused size_t
+ [[nodiscard]] size_t
 implementation::count_utf8(const char* src, size_t len) const noexcept {
     return utf32_length_from_utf8(src, len);
 }
-#endif // SIMDUTF_FEATURE_UTF8
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
-simdutf_warn_unused size_t implementation::latin1_length_from_utf8(
+ [[nodiscard]] size_t implementation::latin1_length_from_utf8(
     const char* src, size_t len) const noexcept {
     return utf32_length_from_utf8(src, len);
 }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
 
-#if SIMDUTF_FEATURE_UTF8 || SIMDUTF_FEATURE_UTF32
-simdutf_warn_unused size_t implementation::utf32_length_from_utf8(
+ [[nodiscard]] size_t implementation::utf32_length_from_utf8(
     const char* src, size_t len) const noexcept {
     size_t count = 0;
     for (size_t vl; len > 0; len -= vl, src += vl) {
@@ -36,11 +29,9 @@ simdutf_warn_unused size_t implementation::utf32_length_from_utf8(
     }
     return count;
 }
-#endif // SIMDUTF_FEATURE_UTF8 || SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_UTF16 || SIMDUTF_FEATURE_UTF32
 template <simdutf_ByteFlip bflip>
-simdutf_really_inline static size_t
+KUMO_FORCE_INLINE static size_t
 rvv_utf32_length_from_utf16(const char16_t* src, size_t len) {
     size_t count = 0;
     for (size_t vl; len > 0; len -= vl, src += vl) {
@@ -54,22 +45,20 @@ rvv_utf32_length_from_utf16(const char16_t* src, size_t len) {
     return count;
 }
 
-simdutf_warn_unused size_t implementation::utf32_length_from_utf16le(
+ [[nodiscard]] size_t implementation::utf32_length_from_utf16le(
     const char16_t* src, size_t len) const noexcept {
     return rvv_utf32_length_from_utf16<simdutf_ByteFlip::NONE>(src, len);
 }
 
-simdutf_warn_unused size_t implementation::utf32_length_from_utf16be(
+ [[nodiscard]] size_t implementation::utf32_length_from_utf16be(
     const char16_t* src, size_t len) const noexcept {
     if (supports_zvbb())
         return rvv_utf32_length_from_utf16<simdutf_ByteFlip::ZVBB>(src, len);
     else
         return rvv_utf32_length_from_utf16<simdutf_ByteFlip::V>(src, len);
 }
-#endif // SIMDUTF_FEATURE_UTF16 || SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
-simdutf_warn_unused size_t implementation::utf8_length_from_latin1(
+ [[nodiscard]] size_t implementation::utf8_length_from_latin1(
     const char* src, size_t len) const noexcept {
     size_t count = len;
     for (size_t vl; len > 0; len -= vl, src += vl) {
@@ -79,11 +68,9 @@ simdutf_warn_unused size_t implementation::utf8_length_from_latin1(
     }
     return count;
 }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_LATIN1
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
 template <simdutf_ByteFlip bflip>
-simdutf_really_inline static size_t
+KUMO_FORCE_INLINE static size_t
 rvv_utf8_length_from_utf16(const char16_t* src, size_t len) {
     size_t count = 0;
     for (size_t vl; len > 0; len -= vl, src += vl) {
@@ -100,22 +87,20 @@ rvv_utf8_length_from_utf16(const char16_t* src, size_t len) {
     return count;
 }
 
-simdutf_warn_unused size_t implementation::utf8_length_from_utf16le(
+ [[nodiscard]] size_t implementation::utf8_length_from_utf16le(
     const char16_t* src, size_t len) const noexcept {
     return rvv_utf8_length_from_utf16<simdutf_ByteFlip::NONE>(src, len);
 }
 
-simdutf_warn_unused size_t implementation::utf8_length_from_utf16be(
+ [[nodiscard]] size_t implementation::utf8_length_from_utf16be(
     const char16_t* src, size_t len) const noexcept {
     if (supports_zvbb())
         return rvv_utf8_length_from_utf16<simdutf_ByteFlip::ZVBB>(src, len);
     else
         return rvv_utf8_length_from_utf16<simdutf_ByteFlip::V>(src, len);
 }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
-simdutf_warn_unused size_t implementation::utf8_length_from_utf32(
+ [[nodiscard]] size_t implementation::utf8_length_from_utf32(
     const char32_t* src, size_t len) const noexcept {
     size_t count = 0;
     for (size_t vl; len > 0; len -= vl, src += vl) {
@@ -128,10 +113,8 @@ simdutf_warn_unused size_t implementation::utf8_length_from_utf32(
     }
     return count;
 }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF32
 
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
-simdutf_warn_unused size_t implementation::utf16_length_from_utf8(
+ [[nodiscard]] size_t implementation::utf16_length_from_utf8(
     const char* src, size_t len) const noexcept {
     size_t count = 0;
     for (size_t vl; len > 0; len -= vl, src += vl) {
@@ -144,10 +127,8 @@ simdutf_warn_unused size_t implementation::utf16_length_from_utf8(
     }
     return count;
 }
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16
 
-#if SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32
-simdutf_warn_unused size_t implementation::utf16_length_from_utf32(
+ [[nodiscard]] size_t implementation::utf16_length_from_utf32(
     const char32_t* src, size_t len) const noexcept {
     size_t count = 0;
     for (size_t vl; len > 0; len -= vl, src += vl) {
@@ -158,4 +139,3 @@ simdutf_warn_unused size_t implementation::utf16_length_from_utf32(
     }
     return count;
 }
-#endif // SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32

@@ -1,7 +1,7 @@
 #ifndef SIMDUTF_PORTABILITY_H
 #define SIMDUTF_PORTABILITY_H
 
-#include <turbo/unicode/engine/compiler_check.h>
+#include <turbo/macros/macros.h>
 
 #include <cfloat>
 #include <cstddef>
@@ -18,13 +18,6 @@
 #define SIMDUTF_SPAN_DISABLED \
     1 // apple-clang/13 doesn't support std::convertible_to
 #endif
-#endif
-
-#if SIMDUTF_CPLUSPLUS20
-#include <version>
-#if __cpp_lib_atomic_ref >= 201806L
-#define SIMDUTF_ATOMIC_REF 1
-#endif // __cpp_lib_atomic_ref
 #endif
 
 /// We want to check that it is actually a little endian system at
@@ -176,20 +169,6 @@
 #define SIMDUTF_STRINGIFY_IMPLEMENTATION_(a) #a
 #define SIMDUTF_STRINGIFY(a) SIMDUTF_STRINGIFY_IMPLEMENTATION_(a)
 
-// Our fast kernels require 64-bit systems.
-//
-// On 32-bit x86, we lack 64-bit popcnt, lzcnt, blsr instructions.
-// Furthermore, the number of SIMD registers is reduced.
-//
-// On 32-bit ARM, we would have smaller registers.
-//
-// The simdutf users should still have the fallback kernel. It is
-// slower, but it should run everywhere.
-
-//
-// Enable valid runtime implementations, and select
-// SIMDUTF_BUILTIN_IMPLEMENTATION
-//
 
 // We are going to use runtime dispatch.
 #if defined(SIMDUTF_IS_X86_64) || defined(SIMDUTF_IS_LSX)

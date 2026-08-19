@@ -20,35 +20,35 @@
 
 namespace turbo {
 
-    simdutf_warn_unused size_t convert_latin1_to_utf8(const char* buf, size_t len,
+     [[nodiscard]] size_t convert_latin1_to_utf8(const char* buf, size_t len,
     char* utf8_output) noexcept {
         return get_default_implementation()->convert_latin1_to_utf8(buf, len,
             utf8_output);
     }
 
-    simdutf_warn_unused size_t convert_latin1_to_utf16le(
+     [[nodiscard]] size_t convert_latin1_to_utf16le(
         const char* buf, size_t len, char16_t* utf16_output) noexcept {
         return get_default_implementation()->convert_latin1_to_utf16le(buf, len,
             utf16_output);
     }
-    simdutf_warn_unused size_t convert_latin1_to_utf16be(
+     [[nodiscard]] size_t convert_latin1_to_utf16be(
         const char* buf, size_t len, char16_t* utf16_output) noexcept {
         return get_default_implementation()->convert_latin1_to_utf16be(buf, len,
             utf16_output);
     }
 
-    simdutf_warn_unused size_t convert_latin1_to_utf32(
+     [[nodiscard]] size_t convert_latin1_to_utf32(
      const char* buf, size_t len, char32_t* latin1_output) noexcept {
         return get_default_implementation()->convert_latin1_to_utf32(buf, len,
             latin1_output);
     }
 
-    simdutf_warn_unused size_t utf8_length_from_latin1(const char* buf,
+     [[nodiscard]] size_t utf8_length_from_latin1(const char* buf,
         size_t len) noexcept {
         return get_default_implementation()->utf8_length_from_latin1(buf, len);
     }
 
-    simdutf_warn_unused size_t convert_latin1_to_utf8_safe(
+     [[nodiscard]] size_t convert_latin1_to_utf8_safe(
         const char* buf, size_t len, char* utf8_output, size_t utf8_len) noexcept {
         const auto start { utf8_output };
 
@@ -72,7 +72,7 @@ namespace turbo {
         return utf8_output - start;
     }
 
-    simdutf_warn_unused size_t convert_latin1_to_utf16(
+     [[nodiscard]] size_t convert_latin1_to_utf16(
        const char* buf, size_t len, char16_t* utf16_output) noexcept {
 #if SIMDUTF_IS_BIG_ENDIAN
         return convert_latin1_to_utf16be(buf, len, utf16_output);

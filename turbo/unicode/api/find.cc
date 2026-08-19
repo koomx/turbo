@@ -21,19 +21,19 @@ namespace turbo {
 
 
     // this has been moved to implementation.h
-    // simdutf_warn_unused size_t
-    // base64_length_from_binary(size_t length, base64_options option) noexcept;
+    //  [[nodiscard]] size_t
+    // base64_length_from_binary(size_t length, Base64Options option) noexcept;
 
     // this has been moved to implementation.h
-    // simdutf_warn_unused size_t base64_length_from_binary_with_lines(
-    //     size_t length, base64_options options, size_t line_length) noexcept;
+    //  [[nodiscard]] size_t base64_length_from_binary_with_lines(
+    //     size_t length, Base64Options options, size_t line_length) noexcept;
     // }
 
-    simdutf_warn_unused const char* detail::find(const char* start, const char* end,
+     [[nodiscard]] const char* detail::find(const char* start, const char* end,
         char character) noexcept {
         return get_default_implementation()->find(start, end, character);
     }
-    simdutf_warn_unused const char16_t* detail::find(const char16_t* start,
+     [[nodiscard]] const char16_t* detail::find(const char16_t* start,
         const char16_t* end,
         char16_t character) noexcept {
         return get_default_implementation()->find(start, end, character);

@@ -17,7 +17,7 @@
 
 
 #include <turbo/unicode/engine/common_defs.h>
-#include <turbo/unicode/engine/compiler_check.h>
+
 #include <turbo/unicode/text_encoding.h>
 #include <turbo/unicode/error.h>
 #include <turbo/unicode/api/base64_tables.h>
@@ -25,7 +25,7 @@
 
 namespace turbo {
 
-    inline std::string_view to_string(base64_options options) {
+    inline std::string_view to_string(Base64Options options) {
         switch (options) {
         case base64_default:
             return "base64_default";
@@ -63,7 +63,7 @@ namespace turbo {
 
     /// Provide the maximal binary length in bytes given the base64 input.
     /// As long as the input does not contain ignorable characters (e.g., ASCII
-    /// spaces or linefeed characters), the result is exact. In particular, the
+    /// spaces or linefeed characters), the UnicodeResult is exact. In particular, the
     /// function checks for padding characters.
     ///
     /// The function is fast (constant time). It checks up to two characters at
@@ -72,13 +72,13 @@ namespace turbo {
     /// @param input         the base64 input to process
     /// @param length        the length of the base64 input in bytes
     /// @return maximum number of binary bytes
-    simdutf_warn_unused size_t
+     [[nodiscard]] size_t
     maximal_binary_length_from_base64(const char* input, size_t length) noexcept;
 
 
     /// Provide the maximal binary length in bytes given the base64 input.
     /// As long as the input does not contain ignorable characters (e.g., ASCII
-    /// spaces or linefeed characters), the result is exact. In particular, the
+    /// spaces or linefeed characters), the UnicodeResult is exact. In particular, the
     /// function checks for padding characters.
     ///
     /// The function is fast (constant time). It checks up to two characters at
@@ -88,14 +88,14 @@ namespace turbo {
     /// units
     /// @param length        the length of the base64 input in 16-bit units
     /// @return maximal number of binary bytes
-    simdutf_warn_unused size_t maximal_binary_length_from_base64(
+     [[nodiscard]] size_t maximal_binary_length_from_base64(
         const char16_t* input, size_t length) noexcept;
 
 
     /// Compute the binary length from a base64 input.
     /// This function is useful for base64 inputs that may contain ASCII whitespaces
-    /// (such as line breaks). For such inputs, the result is exact, and for any
-    /// inputs the result can be used to size the output buffer passed to
+    /// (such as line breaks). For such inputs, the UnicodeResult is exact, and for any
+    /// inputs the UnicodeResult can be used to size the output buffer passed to
     /// `base64_to_binary`.
     ///
     /// The function ignores whitespace and does not require padding characters
@@ -104,13 +104,13 @@ namespace turbo {
     /// @param input         the base64 input to process
     /// @param length        the length of the base64 input in bytes
     /// @return number of binary bytes
-    simdutf_warn_unused size_t binary_length_from_base64(const char* input,
+     [[nodiscard]] size_t binary_length_from_base64(const char* input,
         size_t length) noexcept;
 
     /// Compute the binary length from a base64 input.
     /// This function is useful for base64 inputs that may contain ASCII whitespaces
-    /// (such as line breaks). For such inputs, the result is exact, and for any
-    /// inputs the result can be used to size the output buffer passed to
+    /// (such as line breaks). For such inputs, the UnicodeResult is exact, and for any
+    /// inputs the UnicodeResult can be used to size the output buffer passed to
     /// `base64_to_binary`.
     ///
     /// The function ignores whitespace and does not require padding characters
@@ -120,7 +120,7 @@ namespace turbo {
     /// units
     /// @param length        the length of the base64 input in 16-bit units
     /// @return number of binary bytes
-    simdutf_warn_unused size_t binary_length_from_base64(const char16_t* input,
+     [[nodiscard]] size_t binary_length_from_base64(const char16_t* input,
         size_t length) noexcept;
 
     /// Convert a base64 input to a binary output.
@@ -164,7 +164,7 @@ namespace turbo {
     /// @param input         the base64 string to process
     /// @param length        the length of the string in bytes
     /// @param output        the pointer to a buffer that can hold the conversion
-    /// result (should be at least maximal_binary_length_from_base64(input, length)
+    /// UnicodeResult (should be at least maximal_binary_length_from_base64(input, length)
     /// bytes long).
     /// @param options       the base64 options to use, usually base64_default or
     /// base64_url, and base64_default by default.
@@ -172,12 +172,12 @@ namespace turbo {
     /// last_chunk_handling_options::loose by default
     /// but can also be last_chunk_handling_options::strict or
     /// last_chunk_handling_options::stop_before_partial.
-    /// @return a result pair struct (of type turbo::result containing the two
+    /// @return a UnicodeResult pair struct (of type turbo::UnicodeResult containing the two
     /// fields error and count) with an error code and either position of the error
     /// (in the input in bytes) if any, or the number of bytes written if successful.
-    simdutf_warn_unused result base64_to_binary(
+     [[nodiscard]] UnicodeResult base64_to_binary(
         const char* input, size_t length, char* output,
-        base64_options options = base64_default,
+        Base64Options options = base64_default,
         last_chunk_handling_options last_chunk_options = loose) noexcept;
 
     /// Provide the base64 length in bytes given the length of a binary input.
@@ -185,8 +185,8 @@ namespace turbo {
     /// @param length        the length of the input in bytes
     /// @param options       the base64 options to use (default: base64_default)
     /// @return number of base64 bytes
-    inline simdutf_warn_unused  size_t base64_length_from_binary(
-        size_t length, base64_options options = base64_default) noexcept {
+    [[nodiscard]] inline  size_t base64_length_from_binary(
+        size_t length, Base64Options options = base64_default) noexcept {
         return scalar::base64::base64_length_from_binary(length, options);
     }
 
@@ -198,9 +198,9 @@ namespace turbo {
     /// @param line_length   the length of lines, must be at least 4 (otherwise it is
     /// interpreted as 4),
     /// @return number of base64 bytes
-    inline simdutf_warn_unused  size_t
+    [[nodiscard]] inline  size_t
     base64_length_from_binary_with_lines(
-        size_t length, base64_options options = base64_default,
+        size_t length, Base64Options options = base64_default,
         size_t line_length = default_line_length) noexcept {
         return scalar::base64::base64_length_from_binary_with_lines(length, options,
             line_length);
@@ -220,13 +220,13 @@ namespace turbo {
     /// @param input         the binary to process
     /// @param length        the length of the input in bytes
     /// @param output        the pointer to a buffer that can hold the conversion
-    /// result (should be at least base64_length_from_binary(length) bytes long)
+    /// UnicodeResult (should be at least base64_length_from_binary(length) bytes long)
     /// @param options       the base64 options to use, can be base64_default or
     /// base64_url, is base64_default by default.
     /// @return number of written bytes, will be equal to
     /// base64_length_from_binary(length, options)
     size_t binary_to_base64(const char* input, size_t length, char* output,
-        base64_options options = base64_default) noexcept;
+        Base64Options options = base64_default) noexcept;
 
     /// Convert a binary input to a base64 output with line breaks.
     ///
@@ -242,7 +242,7 @@ namespace turbo {
     /// @param input         the binary to process
     /// @param length        the length of the input in bytes
     /// @param output        the pointer to a buffer that can hold the conversion
-    /// result (should be at least base64_length_from_binary_with_lines(length,
+    /// UnicodeResult (should be at least base64_length_from_binary_with_lines(length,
     /// options, line_length) bytes long)
     /// @param line_length   the length of lines, must be at least 4 (otherwise it is
     /// interpreted as 4),
@@ -253,52 +253,7 @@ namespace turbo {
     size_t
     binary_to_base64_with_lines(const char* input, size_t length, char* output,
         size_t line_length = turbo::default_line_length,
-        base64_options options = base64_default) noexcept;
-
-#if SIMDUTF_ATOMIC_REF
-    /// Convert a binary input to a base64 output, using atomic accesses.
-    /// This function comes with a potentially significant performance
-    /// penalty, but it may be useful in some cases where the input
-    /// buffers are shared between threads, to avoid undefined
-    /// behavior in case of data races.
-    ///
-    /// The function is for advanced users. Its main use case is when
-    /// to silence sanitizer warnings. We have no documented use case
-    /// where this function is actually necessary in terms of practical correctness.
-    ///
-    /// This function is only available when simdutf is compiled with
-    /// C++20 support and __cpp_lib_atomic_ref >= 201806L. You may check
-    /// the availability of this function by checking the macro
-    /// SIMDUTF_ATOMIC_REF.
-    ///
-    /// The default option (turbo::base64_default) uses the characters `+` and `/`
-    /// as part of its alphabet. Further, it adds padding (`=`) at the end of the
-    /// output to ensure that the output length is a multiple of four.
-    ///
-    /// The URL option (turbo::base64_url) uses the characters `-` and `_` as part
-    /// of its alphabet. No padding is added at the end of the output.
-    ///
-    /// This function always succeeds.
-    ///
-    /// This function is considered experimental. It is not tested by default
-    /// (see the CMake option SIMDUTF_ATOMIC_BASE64_TESTS) nor is it fuzz tested.
-    /// It is not documented in the public API documentation (README). It is
-    /// offered on a best effort basis. We rely on the community for further
-    /// testing and feedback.
-    ///
-    /// @brief atomic_binary_to_base64
-    /// @param input         the binary to process
-    /// @param length        the length of the input in bytes
-    /// @param output        the pointer to a buffer that can hold the conversion
-    /// result (should be at least base64_length_from_binary(length) bytes long)
-    /// @param options       the base64 options to use, can be base64_default or
-    /// base64_url, is base64_default by default.
-    /// @return number of written bytes, will be equal to
-    /// base64_length_from_binary(length, options)
-    size_t
-    atomic_binary_to_base64(const char* input, size_t length, char* output,
-        base64_options options = base64_default) noexcept;
-#endif // SIMDUTF_ATOMIC_REF
+        Base64Options options = base64_default) noexcept;
 
     /// Convert a base64 input to a binary output.
     ///
@@ -342,7 +297,7 @@ namespace turbo {
     /// units
     /// @param length        the length of the string in 16-bit units
     /// @param output        the pointer to a buffer that can hold the conversion
-    /// result (should be at least maximal_binary_length_from_base64(input, length)
+    /// UnicodeResult (should be at least maximal_binary_length_from_base64(input, length)
     /// bytes long).
     /// @param options       the base64 options to use, can be base64_default or
     /// base64_url, is base64_default by default.
@@ -350,13 +305,13 @@ namespace turbo {
     /// last_chunk_handling_options::loose by default
     /// but can also be last_chunk_handling_options::strict or
     /// last_chunk_handling_options::stop_before_partial.
-    /// @return a result pair struct (of type turbo::result containing the two
+    /// @return a UnicodeResult pair struct (of type turbo::UnicodeResult containing the two
     /// fields error and count) with an error code and position of the
     /// INVALID_BASE64_CHARACTER error (in the input in units) if any, or the number
     /// of bytes written if successful.
-    simdutf_warn_unused result
+     [[nodiscard]] UnicodeResult
     base64_to_binary(const char16_t* input, size_t length, char* output,
-        base64_options options = base64_default,
+        Base64Options options = base64_default,
         last_chunk_handling_options last_chunk_options = last_chunk_handling_options::loose) noexcept;
 
 
@@ -395,7 +350,7 @@ namespace turbo {
     /// @param input         the base64 string to process
     /// @param length        the length of the string in bytes
     /// @param output        the pointer to a buffer that can hold the conversion
-    /// result (should be at least maximal_binary_length_from_base64(input, length)
+    /// UnicodeResult (should be at least maximal_binary_length_from_base64(input, length)
     /// bytes long).
     /// @param options       the base64 options to use, can be base64_default or
     /// base64_url, is base64_default by default.
@@ -405,9 +360,9 @@ namespace turbo {
     /// last_chunk_handling_options::stop_before_partial.
     /// @return a full_result struct (of type turbo::full_result containing the
     /// three fields error, input_count and output_count).
-    simdutf_warn_unused full_result
+     [[nodiscard]] full_result
     base64_to_binary_details(const char* input, size_t length, char* output,
-        base64_options options = base64_default,
+        Base64Options options = base64_default,
         last_chunk_handling_options last_chunk_options = last_chunk_handling_options::loose) noexcept;
 
 
@@ -447,7 +402,7 @@ namespace turbo {
     /// units
     /// @param length        the length of the string in 16-bit units
     /// @param output        the pointer to a buffer that can hold the conversion
-    /// result (should be at least maximal_binary_length_from_base64(input, length)
+    /// UnicodeResult (should be at least maximal_binary_length_from_base64(input, length)
     /// bytes long).
     /// @param options       the base64 options to use, can be base64_default or
     /// base64_url, is base64_default by default.
@@ -457,9 +412,9 @@ namespace turbo {
     /// last_chunk_handling_options::stop_before_partial.
     /// @return a full_result struct (of type turbo::full_result containing the
     /// three fields error, input_count and output_count).
-    simdutf_warn_unused full_result
+     [[nodiscard]] full_result
     base64_to_binary_details(const char16_t* input, size_t length, char* output,
-        base64_options options = base64_default,
+        Base64Options options = base64_default,
         last_chunk_handling_options last_chunk_options = last_chunk_handling_options::loose) noexcept;
 
     /// Check if a character is an ignorable base64 character.
@@ -470,13 +425,13 @@ namespace turbo {
     /// @param options       the base64 options to use, is base64_default by default.
     /// @return true if the character is an ignorable base64 character, false
     /// otherwise.
-    simdutf_warn_unused simdutf_really_inline  bool
-    base64_ignorable(char input, base64_options options = base64_default) noexcept {
+     [[nodiscard]] KUMO_FORCE_INLINE  bool
+    base64_ignorable(char input, Base64Options options = base64_default) noexcept {
         return scalar::base64::is_ignorable(input, options);
     }
-    simdutf_warn_unused simdutf_really_inline  bool
+     [[nodiscard]] KUMO_FORCE_INLINE  bool
     base64_ignorable(char16_t input,
-        base64_options options = base64_default) noexcept {
+        Base64Options options = base64_default) noexcept {
         return scalar::base64::is_ignorable(input, options);
     }
 
@@ -489,12 +444,12 @@ namespace turbo {
     /// @param input         the character to check
     /// @param options       the base64 options to use, is base64_default by default.
     /// @return true if the character is a base64 character, false otherwise.
-    simdutf_warn_unused simdutf_really_inline  bool
-    base64_valid(char input, base64_options options = base64_default) noexcept {
+     [[nodiscard]] KUMO_FORCE_INLINE  bool
+    base64_valid(char input, Base64Options options = base64_default) noexcept {
         return scalar::base64::is_base64(input, options);
     }
-    simdutf_warn_unused simdutf_really_inline  bool
-    base64_valid(char16_t input, base64_options options = base64_default) noexcept {
+     [[nodiscard]] KUMO_FORCE_INLINE  bool
+    base64_valid(char16_t input, Base64Options options = base64_default) noexcept {
         return scalar::base64::is_base64(input, options);
     }
 
@@ -505,14 +460,14 @@ namespace turbo {
     /// @param input         the character to check
     /// @param options       the base64 options to use, is base64_default by default.
     /// @return true if the character is a base64 character, false otherwise.
-    simdutf_warn_unused simdutf_really_inline  bool
+     [[nodiscard]] KUMO_FORCE_INLINE  bool
     base64_valid_or_padding(char input,
-        base64_options options = base64_default) noexcept {
+        Base64Options options = base64_default) noexcept {
         return scalar::base64::is_base64_or_padding(input, options);
     }
-    simdutf_warn_unused simdutf_really_inline  bool
+     [[nodiscard]] KUMO_FORCE_INLINE  bool
     base64_valid_or_padding(char16_t input,
-        base64_options options = base64_default) noexcept {
+        Base64Options options = base64_default) noexcept {
         return scalar::base64::is_base64_or_padding(input, options);
     }
 
@@ -568,7 +523,7 @@ namespace turbo {
     /// or 16-bit units
     /// @param length        the length of the string in 8-bit or 16-bit units.
     /// @param output        the pointer to a buffer that can hold the conversion
-    /// result.
+    /// UnicodeResult.
     /// @param outlen        the number of bytes that can be written in the output
     /// buffer. Upon return, it is modified to reflect how many bytes were written.
     /// @param options       the base64 options to use, can be base64_default or
@@ -581,73 +536,22 @@ namespace turbo {
     /// first invalid character. By default (false), it is assumed that the output
     /// buffer is to be discarded. When there are multiple errors in the input,
     /// using decode_up_to_bad_char might trigger a different error.
-    /// @return a result pair struct (of type turbo::result containing the two
+    /// @return a UnicodeResult pair struct (of type turbo::UnicodeResult containing the two
     /// fields error and count) with an error code and position of the
     /// INVALID_BASE64_CHARACTER error (in the input in units) if any, or the number
     /// of units processed if successful.
-    simdutf_warn_unused result
+     [[nodiscard]] UnicodeResult
     base64_to_binary_safe(const char* input, size_t length, char* output,
-        size_t& outlen, base64_options options = base64_default,
+        size_t& outlen, Base64Options options = base64_default,
         last_chunk_handling_options last_chunk_options = last_chunk_handling_options::loose,
         bool decode_up_to_bad_char = false) noexcept;
     // the span overload has moved to the bottom of the file
 
-    simdutf_warn_unused result
+     [[nodiscard]] UnicodeResult
     base64_to_binary_safe(const char16_t* input, size_t length, char* output,
-        size_t& outlen, base64_options options = base64_default,
+        size_t& outlen, Base64Options options = base64_default,
         last_chunk_handling_options last_chunk_options = last_chunk_handling_options::loose,
         bool decode_up_to_bad_char = false) noexcept;
     // span overload moved to bottom of file
-
-#if SIMDUTF_ATOMIC_REF
-    /// Convert a base64 input to a binary output with a size limit and using atomic
-    /// operations.
-    ///
-    /// Like `base64_to_binary_safe` but using atomic operations, this function is
-    /// thread-safe for concurrent memory access, allowing the output
-    /// buffers to be shared between threads without undefined behavior in case of
-    /// data races.
-    ///
-    /// This function comes with a potentially significant performance penalty, but
-    /// is useful when thread safety is needed during base64 decoding.
-    ///
-    /// This function is only available when simdutf is compiled with
-    /// C++20 support and __cpp_lib_atomic_ref >= 201806L. You may check
-    /// the availability of this function by checking the macro
-    /// SIMDUTF_ATOMIC_REF.
-    ///
-    /// This function is considered experimental. It is not tested by default
-    /// (see the CMake option SIMDUTF_ATOMIC_BASE64_TESTS) nor is it fuzz tested.
-    /// It is not documented in the public API documentation (README). It is
-    /// offered on a best effort basis. We rely on the community for further
-    /// testing and feedback.
-    ///
-    /// @param input         the base64 input to decode
-    /// @param length        the length of the input in bytes
-    /// @param output        the pointer to buffer that can hold the conversion
-    /// result
-    /// @param outlen        the number of bytes that can be written in the output
-    /// buffer. Upon return, it is modified to reflect how many bytes were written.
-    /// @param options       the base64 options to use (default, url, etc.)
-    /// @param last_chunk_options the last chunk handling options (loose, strict,
-    /// stop_before_partial)
-    /// @param decode_up_to_bad_char if true, the function will decode up to the
-    /// first invalid character. By default (false), it is assumed that the output
-    /// buffer is to be discarded. When there are multiple errors in the input,
-    /// using decode_up_to_bad_char might trigger a different error.
-    /// @return a result struct with an error code and count indicating error
-    /// position or success
-    simdutf_warn_unused result atomic_base64_to_binary_safe(
-        const char* input, size_t length, char* output, size_t& outlen,
-        base64_options options = base64_default,
-        last_chunk_handling_options last_chunk_options = last_chunk_handling_options::loose,
-        bool decode_up_to_bad_char = false) noexcept;
-    simdutf_warn_unused result atomic_base64_to_binary_safe(
-        const char16_t* input, size_t length, char* output, size_t& outlen,
-        base64_options options = base64_default,
-        last_chunk_handling_options last_chunk_options = loose,
-        bool decode_up_to_bad_char = false) noexcept;
-
-#endif // SIMDUTF_ATOMIC_REF
 
 }  // namespace turbo

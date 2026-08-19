@@ -1,7 +1,22 @@
+// Copyright (C) 2026 Kumo inc. and its affiliates. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 #include <turbo/unicode/utf_c.h>
 #include <turbo/unicode/engine/implementation.h>
 
-static simdutf_result to_c_result(const turbo::result& r) {
+static simdutf_result to_c_result(const turbo::UnicodeResult& r) {
     simdutf_result out;
     out.error = static_cast<simdutf_error_code>(r.error);
     out.count = r.count;
@@ -13,7 +28,6 @@ static simdutf_result to_c_result(const turbo::result& r) {
    single-header generator to omit the C wrapper when features are
    disabled. */
 // clang-format off
-#if SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32 && SIMDUTF_FEATURE_LATIN1 && SIMDUTF_FEATURE_ASCII && SIMDUTF_FEATURE_BASE64 && SIMDUTF_FEATURE_DETECT_ENCODING
 // clang-format on
 extern "C" {
 
@@ -470,7 +484,7 @@ simdutf_result simdutf_base64_to_binary(
     simdutf_base64_options options,
     simdutf_last_chunk_handling_options last_chunk_options) {
     return to_c_result(turbo::base64_to_binary(
-        input, length, output, static_cast<turbo::base64_options>(options),
+        input, length, output, static_cast<turbo::Base64Options>(options),
         static_cast<turbo::last_chunk_handling_options>(last_chunk_options)));
 }
 simdutf_result simdutf_base64_to_binary_utf16(
@@ -478,32 +492,32 @@ simdutf_result simdutf_base64_to_binary_utf16(
     simdutf_base64_options options,
     simdutf_last_chunk_handling_options last_chunk_options) {
     return to_c_result(turbo::base64_to_binary(
-        input, length, output, static_cast<turbo::base64_options>(options),
+        input, length, output, static_cast<turbo::Base64Options>(options),
         static_cast<turbo::last_chunk_handling_options>(last_chunk_options)));
 }
 
 size_t simdutf_base64_length_from_binary(size_t length,
     simdutf_base64_options options) {
     return turbo::base64_length_from_binary(
-        length, static_cast<turbo::base64_options>(options));
+        length, static_cast<turbo::Base64Options>(options));
 }
 size_t simdutf_base64_length_from_binary_with_lines(
     size_t length, simdutf_base64_options options, size_t line_length) {
     return turbo::base64_length_from_binary_with_lines(
-        length, static_cast<turbo::base64_options>(options), line_length);
+        length, static_cast<turbo::Base64Options>(options), line_length);
 }
 
 size_t simdutf_binary_to_base64(const char* input, size_t length, char* output,
     simdutf_base64_options options) {
     return turbo::binary_to_base64(
-        input, length, output, static_cast<turbo::base64_options>(options));
+        input, length, output, static_cast<turbo::Base64Options>(options));
 }
 size_t simdutf_binary_to_base64_with_lines(const char* input, size_t length,
     char* output, size_t line_length,
     simdutf_base64_options options) {
     return turbo::binary_to_base64_with_lines(
         input, length, output, line_length,
-        static_cast<turbo::base64_options>(options));
+        static_cast<turbo::Base64Options>(options));
 }
 
 simdutf_result simdutf_base64_to_binary_safe(
@@ -512,9 +526,9 @@ simdutf_result simdutf_base64_to_binary_safe(
     simdutf_last_chunk_handling_options last_chunk_options,
     bool decode_up_to_bad_char) {
     size_t local_out = outlen ? *outlen : 0;
-    turbo::result r = turbo::base64_to_binary_safe(
+    turbo::UnicodeResult r = turbo::base64_to_binary_safe(
         input, length, output, local_out,
-        static_cast<turbo::base64_options>(options),
+        static_cast<turbo::Base64Options>(options),
         static_cast<turbo::last_chunk_handling_options>(last_chunk_options),
         decode_up_to_bad_char);
     if (outlen)
@@ -527,9 +541,9 @@ simdutf_result simdutf_base64_to_binary_safe_utf16(
     simdutf_last_chunk_handling_options last_chunk_options,
     bool decode_up_to_bad_char) {
     size_t local_out = outlen ? *outlen : 0;
-    turbo::result r = turbo::base64_to_binary_safe(
+    turbo::UnicodeResult r = turbo::base64_to_binary_safe(
         input, length, output, local_out,
-        static_cast<turbo::base64_options>(options),
+        static_cast<turbo::Base64Options>(options),
         static_cast<turbo::last_chunk_handling_options>(last_chunk_options),
         decode_up_to_bad_char);
     if (outlen)
@@ -550,7 +564,7 @@ simdutf_full_result simdutf_base64_to_binary_details(
     simdutf_base64_options options,
     simdutf_last_chunk_handling_options last_chunk_options) {
     return to_c_full_result(turbo::base64_to_binary_details(
-        input, length, output, static_cast<turbo::base64_options>(options),
+        input, length, output, static_cast<turbo::Base64Options>(options),
         static_cast<turbo::last_chunk_handling_options>(last_chunk_options)));
 }
 simdutf_full_result simdutf_base64_to_binary_details_utf16(
@@ -558,21 +572,20 @@ simdutf_full_result simdutf_base64_to_binary_details_utf16(
     simdutf_base64_options options,
     simdutf_last_chunk_handling_options last_chunk_options) {
     return to_c_full_result(turbo::base64_to_binary_details(
-        input, length, output, static_cast<turbo::base64_options>(options),
+        input, length, output, static_cast<turbo::Base64Options>(options),
         static_cast<turbo::last_chunk_handling_options>(last_chunk_options)));
 }
 
 bool simdutf_base64_valid(char input, simdutf_base64_options options) {
     return turbo::base64_valid(input,
-        static_cast<turbo::base64_options>(options));
+        static_cast<turbo::Base64Options>(options));
 }
 bool simdutf_base64_valid_utf16(char16_t input,
     simdutf_base64_options options) {
     return turbo::base64_valid(input,
-        static_cast<turbo::base64_options>(options));
+        static_cast<turbo::Base64Options>(options));
 }
 
 } // extern "C"
 // clang-format off
-#endif // SIMDUTF_FEATURE_UTF8 && SIMDUTF_FEATURE_UTF16 && SIMDUTF_FEATURE_UTF32 && SIMDUTF_FEATURE_LATIN1 && SIMDUTF_FEATURE_ASCII && SIMDUTF_FEATURE_BASE64 && SIMDUTF_FEATURE_DETECT_ENCODING
 // clang-format on

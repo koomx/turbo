@@ -10,9 +10,9 @@
 namespace turbo {
 
     template <typename chartype>
-    simdutf_warn_unused  result slow_base64_to_binary_safe_impl(
+     [[nodiscard]]  UnicodeResult slow_base64_to_binary_safe_impl(
         const chartype* input, size_t length, char* output, size_t& outlen,
-        base64_options options,
+        Base64Options options,
         last_chunk_handling_options last_chunk_options) noexcept {
         const bool ignore_garbage = (options & base64_default_accept_garbage) != 0;
         auto ri = turbo::scalar::base64::find_end(input, length, options);
@@ -46,10 +46,10 @@ namespace turbo {
         r = scalar::base64::patch_tail_result(r, 0, 0, equallocation,
             full_input_length, last_chunk_options);
         outlen = r.output_count;
-        if (!is_partial(last_chunk_options) && r.error == error_code::SUCCESS && equalsigns > 0) {
+        if (!is_partial(last_chunk_options) && r.error == UnicodeError::SUCCESS && equalsigns > 0) {
             // additional checks
             if ((outlen % 3 == 0) || ((outlen % 3) + 1 + equalsigns != 4)) {
-                r.error = error_code::INVALID_BASE64_CHARACTER;
+                r.error = UnicodeError::INVALID_BASE64_CHARACTER;
             }
         }
         return { r.error, r.input_count }; // we cannot return r itself because it gets
@@ -57,9 +57,9 @@ namespace turbo {
     }
 
     template <typename chartype>
-    simdutf_warn_unused  result base64_to_binary_safe_impl(
+     [[nodiscard]]  UnicodeResult base64_to_binary_safe_impl(
         const chartype* input, size_t length, char* output, size_t& outlen,
-        base64_options options,
+        Base64Options options,
         last_chunk_handling_options last_chunk_handling_options,
         bool decode_up_to_bad_char) noexcept {
         static_assert(std::is_same<chartype, char>::value || std::is_same<chartype, char16_t>::value,
@@ -92,9 +92,9 @@ namespace turbo {
         output_position += r.output_count;
         remaining_input_length -= r.input_count;
         remaining_output_length -= r.output_count;
-        if (r.error != turbo::error_code::SUCCESS) {
+        if (r.error != turbo::UnicodeError::SUCCESS) {
             // There is an error. We return.
-            if (decode_up_to_bad_char && r.error == error_code::INVALID_BASE64_CHARACTER) {
+            if (decode_up_to_bad_char && r.error == UnicodeError::INVALID_BASE64_CHARACTER) {
                 return slow_base64_to_binary_safe_impl(
                     input, length, output, outlen, options, last_chunk_handling_options);
             }
@@ -105,7 +105,7 @@ namespace turbo {
         if (done_with_partial) {
             // We are done. We have decoded everything.
             outlen = output_position;
-            return { turbo::error_code::SUCCESS, input_position };
+            return { turbo::UnicodeError::SUCCESS, input_position };
         }
         // We have decoded some data, but we still have some data to decode.
         // We need to decode the rest of the input buffer.
@@ -117,9 +117,9 @@ namespace turbo {
         remaining_input_length -= r.input_count;
         remaining_output_length -= r.output_count;
 
-        if (r.error != turbo::error_code::SUCCESS) {
+        if (r.error != turbo::UnicodeError::SUCCESS) {
             // There is an error. We return.
-            if (decode_up_to_bad_char && r.error == error_code::INVALID_BASE64_CHARACTER) {
+            if (decode_up_to_bad_char && r.error == UnicodeError::INVALID_BASE64_CHARACTER) {
                 return slow_base64_to_binary_safe_impl(
                     input, length, output, outlen, options, last_chunk_handling_options);
             }
@@ -141,7 +141,7 @@ namespace turbo {
             }
         }
         outlen = output_position;
-        return { turbo::error_code::SUCCESS, input_position };
+        return { turbo::UnicodeError::SUCCESS, input_position };
     }
 
 } // namespace turbo

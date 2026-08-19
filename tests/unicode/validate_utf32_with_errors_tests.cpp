@@ -15,7 +15,7 @@ TEST(issue_531) {
         (const char32_t*)data, data_len);
     // got return [count=1, error=TOO_LARGE] from implementation rvv
     // got return [count=0, error=SURROGATE] from implementation fallback
-    ASSERT_EQUAL(validation1.error, turbo::error_code::SURROGATE);
+    ASSERT_EQUAL(validation1.error, turbo::UnicodeError::SURROGATE);
     ASSERT_EQUAL(validation1.count, 0);
 }
 
@@ -23,19 +23,19 @@ TEST_LOOP(validate_utf32_with_errors_returns_success_for_valid_input) {
     turbo::tests::helpers::random_utf32 generator { seed };
     const auto utf32 { generator.generate(256, seed) };
 
-    turbo::result res = implementation.validate_utf32_with_errors(
+    turbo::UnicodeResult res = implementation.validate_utf32_with_errors(
         reinterpret_cast<const char32_t*>(utf32.data()), utf32.size());
 
-    ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(res.count, utf32.size());
 }
 
 TEST(validate_utf32_with_errors_returns_success_for_empty_string) {
     const char32_t* buf = (char32_t*)"";
 
-    turbo::result res = implementation.validate_utf32_with_errors(buf, 0);
+    turbo::UnicodeResult res = implementation.validate_utf32_with_errors(buf, 0);
 
-    ASSERT_EQUAL(res.error, turbo::error_code::SUCCESS);
+    ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
     ASSERT_EQUAL(res.count, 0);
 }
 
@@ -53,9 +53,9 @@ TEST_LOOP(
             const char32_t old = utf32[i];
             utf32[i] = wrong_value;
 
-            turbo::result res = implementation.validate_utf32_with_errors(buf, len);
+            turbo::UnicodeResult res = implementation.validate_utf32_with_errors(buf, len);
 
-            ASSERT_EQUAL(res.error, turbo::error_code::SURROGATE);
+            ASSERT_EQUAL(res.error, turbo::UnicodeError::SURROGATE);
             ASSERT_EQUAL(res.count, i);
 
             utf32[i] = old;
@@ -79,9 +79,9 @@ TEST_LOOP(validate_utf32_with_errors_returns_error_when_input_too_large) {
             const char32_t old = utf32[i];
             utf32[i] = wrong_value;
 
-            turbo::result res = implementation.validate_utf32_with_errors(buf, len);
+            turbo::UnicodeResult res = implementation.validate_utf32_with_errors(buf, len);
 
-            ASSERT_EQUAL(res.error, turbo::error_code::TOO_LARGE);
+            ASSERT_EQUAL(res.error, turbo::UnicodeError::TOO_LARGE);
             ASSERT_EQUAL(res.count, i);
 
             utf32[i] = old;

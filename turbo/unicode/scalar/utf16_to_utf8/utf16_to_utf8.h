@@ -9,10 +9,6 @@ namespace turbo {
             namespace utf16_to_utf8 {
 
                 template <endianness big_endian, typename InputPtr, typename OutputPtr>
-#if SIMDUTF_CPLUSPLUS20
-                    requires turbo::detail::indexes_into_utf16<InputPtr>
-// FIXME constrain output as well
-#endif
                  size_t convert(InputPtr data, size_t len,
                     OutputPtr utf8_output) {
                     size_t pos = 0;
@@ -88,14 +84,11 @@ namespace turbo {
 
                 template <endianness big_endian, bool check_output = false, typename InputPtr,
                     typename OutputPtr>
-#if SIMDUTF_CPLUSPLUS20
-                    requires(turbo::detail::indexes_into_utf16<InputPtr> && turbo::detail::index_assignable_from_char<OutputPtr>)
-#endif
                  full_result convert_with_errors(InputPtr data, size_t len,
                     OutputPtr utf8_output,
                     size_t utf8_len = 0) {
                     if (check_output && utf8_len == 0) {
-                        return full_result(error_code::OUTPUT_BUFFER_TOO_SMALL, 0, 0);
+                        return full_result(UnicodeError::OUTPUT_BUFFER_TOO_SMALL, 0, 0);
                     }
 
                     size_t pos = 0;
@@ -115,7 +108,7 @@ namespace turbo {
                                     size_t final_pos = pos + 4;
                                     while (pos < final_pos) {
                                         if (check_output && size_t(end - utf8_output) < 1) {
-                                            return full_result(error_code::OUTPUT_BUFFER_TOO_SMALL, pos,
+                                            return full_result(UnicodeError::OUTPUT_BUFFER_TOO_SMALL, pos,
                                                 utf8_output - start);
                                         }
                                         *utf8_output++ = !match_system(big_endian)
@@ -132,7 +125,7 @@ namespace turbo {
                         if ((word & 0xFF80) == 0) {
                             // will generate one UTF-8 bytes
                             if (check_output && size_t(end - utf8_output) < 1) {
-                                return full_result(error_code::OUTPUT_BUFFER_TOO_SMALL, pos,
+                                return full_result(UnicodeError::OUTPUT_BUFFER_TOO_SMALL, pos,
                                     utf8_output - start);
                             }
                             *utf8_output++ = char(word);
@@ -141,7 +134,7 @@ namespace turbo {
                             // will generate two UTF-8 bytes
                             // we have 0b110XXXXX 0b10XXXXXX
                             if (check_output && size_t(end - utf8_output) < 2) {
-                                return full_result(error_code::OUTPUT_BUFFER_TOO_SMALL, pos,
+                                return full_result(UnicodeError::OUTPUT_BUFFER_TOO_SMALL, pos,
                                     utf8_output - start);
                             }
                             *utf8_output++ = char((word >> 6) | 0b11000000);
@@ -152,7 +145,7 @@ namespace turbo {
                             // will generate three UTF-8 bytes
                             // we have 0b1110XXXX 0b10XXXXXX 0b10XXXXXX
                             if (check_output && size_t(end - utf8_output) < 3) {
-                                return full_result(error_code::OUTPUT_BUFFER_TOO_SMALL, pos,
+                                return full_result(UnicodeError::OUTPUT_BUFFER_TOO_SMALL, pos,
                                     utf8_output - start);
                             }
                             *utf8_output++ = char((word >> 12) | 0b11100000);
@@ -162,23 +155,23 @@ namespace turbo {
                         } else {
 
                             if (check_output && size_t(end - utf8_output) < 4) {
-                                return full_result(error_code::OUTPUT_BUFFER_TOO_SMALL, pos,
+                                return full_result(UnicodeError::OUTPUT_BUFFER_TOO_SMALL, pos,
                                     utf8_output - start);
                             }
                             // must be a surrogate pair
                             if (pos + 1 >= len) {
-                                return full_result(error_code::SURROGATE, pos, utf8_output - start);
+                                return full_result(UnicodeError::SURROGATE, pos, utf8_output - start);
                             }
                             uint16_t diff = uint16_t(word - 0xD800);
                             if (diff > 0x3FF) {
-                                return full_result(error_code::SURROGATE, pos, utf8_output - start);
+                                return full_result(UnicodeError::SURROGATE, pos, utf8_output - start);
                             }
                             uint16_t next_word = !match_system(big_endian)
                                 ? u16_swap_bytes(data[pos + 1])
                                 : data[pos + 1];
                             uint16_t diff2 = uint16_t(next_word - 0xDC00);
                             if (diff2 > 0x3FF) {
-                                return full_result(error_code::SURROGATE, pos, utf8_output - start);
+                                return full_result(UnicodeError::SURROGATE, pos, utf8_output - start);
                             }
                             uint32_t value = (diff << 10) + diff2 + 0x10000;
                             // will generate four UTF-8 bytes
@@ -190,11 +183,11 @@ namespace turbo {
                             pos += 2;
                         }
                     }
-                    return full_result(error_code::SUCCESS, pos, utf8_output - start);
+                    return full_result(UnicodeError::SUCCESS, pos, utf8_output - start);
                 }
 
                 template <endianness big_endian>
-                inline result simple_convert_with_errors(const char16_t* buf, size_t len,
+                inline UnicodeResult simple_convert_with_errors(const char16_t* buf, size_t len,
                     char* utf8_output) {
                     return convert_with_errors<big_endian, false>(buf, len, utf8_output, 0);
                 }

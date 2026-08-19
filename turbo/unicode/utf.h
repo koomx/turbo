@@ -1,8 +1,22 @@
-#ifndef SIMDUTF_H
-#define SIMDUTF_H
+// Copyright (C) 2026 Kumo inc. and its affiliates. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+#pragma once
+
 #include <cstring>
 
-#include <turbo/unicode/engine/compiler_check.h>
 #include <turbo/unicode/engine/common_defs.h>
 #include <turbo/unicode/text_encoding.h>
 #include <turbo/unicode/error.h>
@@ -22,4 +36,3 @@ SIMDUTF_DISABLE_UNDESIRED_WARNINGS
 
 SIMDUTF_POP_DISABLE_WARNINGS
 
-#endif // SIMDUTF_H
