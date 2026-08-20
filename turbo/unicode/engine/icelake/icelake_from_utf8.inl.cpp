@@ -30,7 +30,7 @@ validating_utf8_to_fixed_length(const char* str, size_t len, OUTPUT* dwords) {
     while (end - ptr >= 64 + 4) {
         const __m512i utf8 = _mm512_loadu_si512((const __m512i*)ptr);
         if (checker.check_next_input(utf8)) {
-            SIMDUTF_ICELAKE_STORE_ASCII(UTF32, utf8, output)
+            UNICODE_ICELAKE_STORE_ASCII(UTF32, utf8, output)
             output += 64;
             ptr += 64;
             continue;
@@ -47,12 +47,12 @@ validating_utf8_to_fixed_length(const char* str, size_t len, OUTPUT* dwords) {
                 vec0, __mmask16(((1U << valid_count1) - 1) << valid_count0), vec1);
             valid_count0 += valid_count1;
             vec0 = expand_utf8_to_utf32(vec0);
-            SIMDUTF_ICELAKE_WRITE_UTF16_OR_UTF32(vec0, valid_count0, true)
+            UNICODE_ICELAKE_WRITE_UTF16_OR_UTF32(vec0, valid_count0, true)
         } else {
             vec0 = expand_utf8_to_utf32(vec0);
             vec1 = expand_utf8_to_utf32(vec1);
-            SIMDUTF_ICELAKE_WRITE_UTF16_OR_UTF32(vec0, valid_count0, true)
-            SIMDUTF_ICELAKE_WRITE_UTF16_OR_UTF32(vec1, valid_count1, true)
+            UNICODE_ICELAKE_WRITE_UTF16_OR_UTF32(vec0, valid_count0, true)
+            UNICODE_ICELAKE_WRITE_UTF16_OR_UTF32(vec1, valid_count1, true)
         }
         const __m512i lane3 = broadcast_epi128<3>(utf8);
         int valid_count2;
@@ -67,12 +67,12 @@ validating_utf8_to_fixed_length(const char* str, size_t len, OUTPUT* dwords) {
                 vec2, __mmask16(((1U << valid_count3) - 1) << valid_count2), vec3);
             valid_count2 += valid_count3;
             vec2 = expand_utf8_to_utf32(vec2);
-            SIMDUTF_ICELAKE_WRITE_UTF16_OR_UTF32(vec2, valid_count2, true)
+            UNICODE_ICELAKE_WRITE_UTF16_OR_UTF32(vec2, valid_count2, true)
         } else {
             vec2 = expand_utf8_to_utf32(vec2);
             vec3 = expand_utf8_to_utf32(vec3);
-            SIMDUTF_ICELAKE_WRITE_UTF16_OR_UTF32(vec2, valid_count2, true)
-            SIMDUTF_ICELAKE_WRITE_UTF16_OR_UTF32(vec3, valid_count3, true)
+            UNICODE_ICELAKE_WRITE_UTF16_OR_UTF32(vec2, valid_count2, true)
+            UNICODE_ICELAKE_WRITE_UTF16_OR_UTF32(vec3, valid_count3, true)
         }
         ptr += 4 * 16;
     }
@@ -83,7 +83,7 @@ validating_utf8_to_fixed_length(const char* str, size_t len, OUTPUT* dwords) {
     if (end - ptr >= 64) {
         const __m512i utf8 = _mm512_loadu_si512((const __m512i*)ptr);
         if (checker.check_next_input(utf8)) {
-            SIMDUTF_ICELAKE_STORE_ASCII(UTF32, utf8, output)
+            UNICODE_ICELAKE_STORE_ASCII(UTF32, utf8, output)
             output += 64;
             ptr += 64;
         } else {
@@ -99,16 +99,16 @@ validating_utf8_to_fixed_length(const char* str, size_t len, OUTPUT* dwords) {
                     vec0, __mmask16(((1U << valid_count1) - 1) << valid_count0), vec1);
                 valid_count0 += valid_count1;
                 vec0 = expand_utf8_to_utf32(vec0);
-                SIMDUTF_ICELAKE_WRITE_UTF16_OR_UTF32(vec0, valid_count0, true)
+                UNICODE_ICELAKE_WRITE_UTF16_OR_UTF32(vec0, valid_count0, true)
             } else {
                 vec0 = expand_utf8_to_utf32(vec0);
                 vec1 = expand_utf8_to_utf32(vec1);
-                SIMDUTF_ICELAKE_WRITE_UTF16_OR_UTF32(vec0, valid_count0, true)
-                SIMDUTF_ICELAKE_WRITE_UTF16_OR_UTF32(vec1, valid_count1, true)
+                UNICODE_ICELAKE_WRITE_UTF16_OR_UTF32(vec0, valid_count0, true)
+                UNICODE_ICELAKE_WRITE_UTF16_OR_UTF32(vec1, valid_count1, true)
             }
 
             const __m512i lane3 = broadcast_epi128<3>(utf8);
-            SIMDUTF_ICELAKE_TRANSCODE16(lane2, lane3, true)
+            UNICODE_ICELAKE_TRANSCODE16(lane2, lane3, true)
 
             ptr += 3 * 16;
         }
@@ -159,7 +159,7 @@ validating_utf8_to_fixed_length_with_constant_checks(const char* str,
             return { ptr, output, false }; // We found an error.
         }
         if (ascii) {
-            SIMDUTF_ICELAKE_STORE_ASCII(UTF32, utf8, output)
+            UNICODE_ICELAKE_STORE_ASCII(UTF32, utf8, output)
             output += 64;
             ptr += 64;
             continue;
@@ -176,12 +176,12 @@ validating_utf8_to_fixed_length_with_constant_checks(const char* str,
                 vec0, __mmask16(((1U << valid_count1) - 1) << valid_count0), vec1);
             valid_count0 += valid_count1;
             vec0 = expand_utf8_to_utf32(vec0);
-            SIMDUTF_ICELAKE_WRITE_UTF16_OR_UTF32(vec0, valid_count0, true)
+            UNICODE_ICELAKE_WRITE_UTF16_OR_UTF32(vec0, valid_count0, true)
         } else {
             vec0 = expand_utf8_to_utf32(vec0);
             vec1 = expand_utf8_to_utf32(vec1);
-            SIMDUTF_ICELAKE_WRITE_UTF16_OR_UTF32(vec0, valid_count0, true)
-            SIMDUTF_ICELAKE_WRITE_UTF16_OR_UTF32(vec1, valid_count1, true)
+            UNICODE_ICELAKE_WRITE_UTF16_OR_UTF32(vec0, valid_count0, true)
+            UNICODE_ICELAKE_WRITE_UTF16_OR_UTF32(vec1, valid_count1, true)
         }
         const __m512i lane3 = broadcast_epi128<3>(utf8);
         int valid_count2;
@@ -196,12 +196,12 @@ validating_utf8_to_fixed_length_with_constant_checks(const char* str,
                 vec2, __mmask16(((1U << valid_count3) - 1) << valid_count2), vec3);
             valid_count2 += valid_count3;
             vec2 = expand_utf8_to_utf32(vec2);
-            SIMDUTF_ICELAKE_WRITE_UTF16_OR_UTF32(vec2, valid_count2, true)
+            UNICODE_ICELAKE_WRITE_UTF16_OR_UTF32(vec2, valid_count2, true)
         } else {
             vec2 = expand_utf8_to_utf32(vec2);
             vec3 = expand_utf8_to_utf32(vec3);
-            SIMDUTF_ICELAKE_WRITE_UTF16_OR_UTF32(vec2, valid_count2, true)
-            SIMDUTF_ICELAKE_WRITE_UTF16_OR_UTF32(vec3, valid_count3, true)
+            UNICODE_ICELAKE_WRITE_UTF16_OR_UTF32(vec2, valid_count2, true)
+            UNICODE_ICELAKE_WRITE_UTF16_OR_UTF32(vec3, valid_count3, true)
         }
         ptr += 4 * 16;
     }
@@ -216,7 +216,7 @@ validating_utf8_to_fixed_length_with_constant_checks(const char* str,
             return { ptr, output, false }; // We found an error.
         }
         if (ascii) {
-            SIMDUTF_ICELAKE_STORE_ASCII(UTF32, utf8, output)
+            UNICODE_ICELAKE_STORE_ASCII(UTF32, utf8, output)
             output += 64;
             ptr += 64;
         } else {
@@ -232,16 +232,16 @@ validating_utf8_to_fixed_length_with_constant_checks(const char* str,
                     vec0, __mmask16(((1U << valid_count1) - 1) << valid_count0), vec1);
                 valid_count0 += valid_count1;
                 vec0 = expand_utf8_to_utf32(vec0);
-                SIMDUTF_ICELAKE_WRITE_UTF16_OR_UTF32(vec0, valid_count0, true)
+                UNICODE_ICELAKE_WRITE_UTF16_OR_UTF32(vec0, valid_count0, true)
             } else {
                 vec0 = expand_utf8_to_utf32(vec0);
                 vec1 = expand_utf8_to_utf32(vec1);
-                SIMDUTF_ICELAKE_WRITE_UTF16_OR_UTF32(vec0, valid_count0, true)
-                SIMDUTF_ICELAKE_WRITE_UTF16_OR_UTF32(vec1, valid_count1, true)
+                UNICODE_ICELAKE_WRITE_UTF16_OR_UTF32(vec0, valid_count0, true)
+                UNICODE_ICELAKE_WRITE_UTF16_OR_UTF32(vec1, valid_count1, true)
             }
 
             const __m512i lane3 = broadcast_epi128<3>(utf8);
-            SIMDUTF_ICELAKE_TRANSCODE16(lane2, lane3, true)
+            UNICODE_ICELAKE_TRANSCODE16(lane2, lane3, true)
 
             ptr += 3 * 16;
         }

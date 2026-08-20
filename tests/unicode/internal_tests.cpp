@@ -3,7 +3,7 @@
 #include <tests/unicode/helpers/test.h>
 
 int main(int argc, char* argv[]) {
-#ifdef SIMDUTF_INTERNAL_TESTS
+#ifdef UNICODE_INTERNAL_TESTS
     bool any_added = false;
     for (const auto& implementation : turbo::get_available_implementations()) {
         for (const auto& test : implementation->internal_tests()) {

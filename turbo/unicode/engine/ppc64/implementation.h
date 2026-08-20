@@ -1,8 +1,8 @@
-#ifndef SIMDUTF_PPC64_IMPLEMENTATION_H
-#define SIMDUTF_PPC64_IMPLEMENTATION_H
+#ifndef UNICODE_PPC64_IMPLEMENTATION_H
+#define UNICODE_PPC64_IMPLEMENTATION_H
 
 #include <turbo/unicode/utf.h>
-#include <turbo/unicode/internal/isadetection.h>
+#include <turbo/arch/isadetection.h>
 
 namespace turbo {
     namespace ppc64 {
@@ -266,7 +266,7 @@ namespace turbo {
             const char16_t* find(const char16_t* start, const char16_t* end,
                 char16_t character) const noexcept override;
 
-#ifdef SIMDUTF_INTERNAL_TESTS
+#ifdef UNICODE_INTERNAL_TESTS
             virtual std::vector<TestProcedure> internal_tests() const override;
 #endif
 
@@ -279,4 +279,4 @@ namespace turbo {
     } // namespace ppc64
 } // namespace turbo
 
-#endif // SIMDUTF_PPC64_IMPLEMENTATION_H
+#endif // UNICODE_PPC64_IMPLEMENTATION_H

@@ -87,20 +87,20 @@ void implementation::to_well_formed_utf16be(const char16_t* input, size_t len,
     return rvv_to_well_formed_utf16<endianness::BIG>(input, len, output);
 }
 
-template <simdutf_ByteFlip bflip>
+template <unicode_ByteFlip bflip>
 KUMO_FORCE_INLINE static void
 rvv_change_endianness_utf16(const char16_t* src, size_t len, char16_t* dst) {
     for (size_t vl; len > 0; len -= vl, src += vl, dst += vl) {
         vl = __riscv_vsetvl_e16m8(len);
         vuint16m8_t v = __riscv_vle16_v_u16m8((uint16_t*)src, vl);
-        __riscv_vse16_v_u16m8((uint16_t*)dst, simdutf_byteflip<bflip>(v, vl), vl);
+        __riscv_vse16_v_u16m8((uint16_t*)dst, unicode_byteflip<bflip>(v, vl), vl);
     }
 }
 
 void implementation::change_endianness_utf16(const char16_t* src, size_t len,
     char16_t* dst) const noexcept {
     if (supports_zvbb())
-        return rvv_change_endianness_utf16<simdutf_ByteFlip::ZVBB>(src, len, dst);
+        return rvv_change_endianness_utf16<unicode_ByteFlip::ZVBB>(src, len, dst);
     else
-        return rvv_change_endianness_utf16<simdutf_ByteFlip::V>(src, len, dst);
+        return rvv_change_endianness_utf16<unicode_ByteFlip::V>(src, len, dst);
 }

@@ -38,10 +38,10 @@ namespace turbo {
         struct register_test {
             register_test(const char* name, test_procedure proc);
         };
-#ifndef SIMDUTF_TEST_LOOP_TRIALS
-#error "SIMDUTF_TEST_LOOP_TRIALS not set."
+#ifndef UNICODE_TEST_LOOP_TRIALS
+#error "UNICODE_TEST_LOOP_TRIALS not set."
 #endif
-        constexpr std::size_t trials = SIMDUTF_TEST_LOOP_TRIALS;
+        constexpr std::size_t trials = UNICODE_TEST_LOOP_TRIALS;
 
     } // namespace test
 } // namespace turbo

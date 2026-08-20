@@ -1,5 +1,5 @@
 #include <turbo/unicode/engine/lsx.h>
-#if SIMDUTF_IMPLEMENTATION_LSX
+#if UNICODE_IMPLEMENTATION_LSX
 
 #include <turbo/unicode/tables/utf8_to_utf16_tables.h>
 #include <turbo/unicode/tables/utf16_to_utf8_tables.h>
@@ -7,9 +7,9 @@
 
 #include <turbo/unicode/engine/lsx/begin.h>
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
-#ifndef SIMDUTF_LSX_H
+#ifndef UNICODE_LSX_H
 #error "lsx.h must be included"
 #endif
             using namespace simd;
@@ -132,7 +132,7 @@ namespace turbo {
 #include <turbo/unicode/engine/lsx/lsx_find.cpp>
 
         } // namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
 #include <turbo/unicode/generic/buf_block_reader.h>
@@ -172,7 +172,7 @@ namespace turbo {
 // Implementation-specific overrides
 //
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
 
          [[nodiscard]] int
         implementation::detect_encodings(const char* input,
@@ -1232,7 +1232,7 @@ namespace turbo {
             return base64_lengths::binary_length_from_base64(input, length);
         }
 
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
 #include <turbo/unicode/engine/lsx/end.h>

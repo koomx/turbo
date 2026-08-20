@@ -197,26 +197,26 @@ sse_convert_utf32_to_utf8(const char32_t* buf, size_t len, char* utf8_output) {
             /// Given [aaaa|bbbb|bbcc|cccc] our goal is to produce:
 /// t2 => [0ccc|cccc] [10cc|cccc]
 /// s4 => [1110|aaaa] ([110b|bbbb] OR [10bb|bbbb])
-#define simdutf_vec(x) _mm_set1_epi16(static_cast<uint16_t>(x))
+#define unicode_vec(x) _mm_set1_epi16(static_cast<uint16_t>(x))
             // [aaaa|bbbb|bbcc|cccc] => [bbcc|cccc|bbcc|cccc]
             const __m128i t0 = _mm_shuffle_epi8(in_16, dup_even);
             // [bbcc|cccc|bbcc|cccc] => [00cc|cccc|0bcc|cccc]
-            const __m128i t1 = _mm_and_si128(t0, simdutf_vec(0b0011111101111111));
+            const __m128i t1 = _mm_and_si128(t0, unicode_vec(0b0011111101111111));
             // [00cc|cccc|0bcc|cccc] => [10cc|cccc|0bcc|cccc]
-            const __m128i t2 = _mm_or_si128(t1, simdutf_vec(0b1000000000000000));
+            const __m128i t2 = _mm_or_si128(t1, unicode_vec(0b1000000000000000));
 
             // [aaaa|bbbb|bbcc|cccc] =>  [0000|aaaa|bbbb|bbcc]
             const __m128i s0 = _mm_srli_epi16(in_16, 4);
             // [0000|aaaa|bbbb|bbcc] => [0000|aaaa|bbbb|bb00]
-            const __m128i s1 = _mm_and_si128(s0, simdutf_vec(0b0000111111111100));
+            const __m128i s1 = _mm_and_si128(s0, unicode_vec(0b0000111111111100));
             // [0000|aaaa|bbbb|bb00] => [00bb|bbbb|0000|aaaa]
-            const __m128i s2 = _mm_maddubs_epi16(s1, simdutf_vec(0x0140));
+            const __m128i s2 = _mm_maddubs_epi16(s1, unicode_vec(0x0140));
             // [00bb|bbbb|0000|aaaa] => [11bb|bbbb|1110|aaaa]
-            const __m128i s3 = _mm_or_si128(s2, simdutf_vec(0b1100000011100000));
+            const __m128i s3 = _mm_or_si128(s2, unicode_vec(0b1100000011100000));
             const __m128i m0 = _mm_andnot_si128(one_or_two_bytes_bytemask,
-                simdutf_vec(0b0100000000000000));
+                unicode_vec(0b0100000000000000));
             const __m128i s4 = _mm_xor_si128(s3, m0);
-#undef simdutf_vec
+#undef unicode_vec
 
             // 4. expand code units 16-bit => 32-bit
             const __m128i out0 = _mm_unpacklo_epi16(t2, s4);
@@ -453,26 +453,26 @@ sse_convert_utf32_to_utf8_with_errors(const char32_t* buf, size_t len,
             /// Given [aaaa|bbbb|bbcc|cccc] our goal is to produce:
 /// t2 => [0ccc|cccc] [10cc|cccc]
 /// s4 => [1110|aaaa] ([110b|bbbb] OR [10bb|bbbb])
-#define simdutf_vec(x) _mm_set1_epi16(static_cast<uint16_t>(x))
+#define unicode_vec(x) _mm_set1_epi16(static_cast<uint16_t>(x))
             // [aaaa|bbbb|bbcc|cccc] => [bbcc|cccc|bbcc|cccc]
             const __m128i t0 = _mm_shuffle_epi8(in_16, dup_even);
             // [bbcc|cccc|bbcc|cccc] => [00cc|cccc|0bcc|cccc]
-            const __m128i t1 = _mm_and_si128(t0, simdutf_vec(0b0011111101111111));
+            const __m128i t1 = _mm_and_si128(t0, unicode_vec(0b0011111101111111));
             // [00cc|cccc|0bcc|cccc] => [10cc|cccc|0bcc|cccc]
-            const __m128i t2 = _mm_or_si128(t1, simdutf_vec(0b1000000000000000));
+            const __m128i t2 = _mm_or_si128(t1, unicode_vec(0b1000000000000000));
 
             // [aaaa|bbbb|bbcc|cccc] =>  [0000|aaaa|bbbb|bbcc]
             const __m128i s0 = _mm_srli_epi16(in_16, 4);
             // [0000|aaaa|bbbb|bbcc] => [0000|aaaa|bbbb|bb00]
-            const __m128i s1 = _mm_and_si128(s0, simdutf_vec(0b0000111111111100));
+            const __m128i s1 = _mm_and_si128(s0, unicode_vec(0b0000111111111100));
             // [0000|aaaa|bbbb|bb00] => [00bb|bbbb|0000|aaaa]
-            const __m128i s2 = _mm_maddubs_epi16(s1, simdutf_vec(0x0140));
+            const __m128i s2 = _mm_maddubs_epi16(s1, unicode_vec(0x0140));
             // [00bb|bbbb|0000|aaaa] => [11bb|bbbb|1110|aaaa]
-            const __m128i s3 = _mm_or_si128(s2, simdutf_vec(0b1100000011100000));
+            const __m128i s3 = _mm_or_si128(s2, unicode_vec(0b1100000011100000));
             const __m128i m0 = _mm_andnot_si128(one_or_two_bytes_bytemask,
-                simdutf_vec(0b0100000000000000));
+                unicode_vec(0b0100000000000000));
             const __m128i s4 = _mm_xor_si128(s3, m0);
-#undef simdutf_vec
+#undef unicode_vec
 
             // 4. expand code units 16-bit => 32-bit
             const __m128i out0 = _mm_unpacklo_epi16(t2, s4);

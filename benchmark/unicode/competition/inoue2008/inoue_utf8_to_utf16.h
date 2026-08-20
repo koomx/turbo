@@ -52,7 +52,7 @@
 #include <turbo/unicode/utf.h>
 
 
-#ifdef SIMDUTF_CLANG_VISUAL_STUDIO
+#if KUMO_COMPILER_MSVC_CLANG
 /**
  * You are not supposed, normally, to include these
  * headers directly. Instead you should either include intrin.h
@@ -66,14 +66,14 @@
 #include <immintrin.h>
 #include <smmintrin.h>
 #include <tmmintrin.h>
-#endif // SIMDUTF_CLANG_VISUAL_STUDIO
+#endif // KUMO_COMPILER_MSVC_CLANG
 
-#define SIMDUTF_TARGET_WESTMERE SIMDUTF_TARGET_REGION("sse4.2,pclmul")
+#define UNICODE_TARGET_WESTMERE UNICODE_TARGET_REGION("sse4.2,pclmul")
 
 
 #include <x86intrin.h>
 
-SIMDUTF_TARGET_WESTMERE
+UNICODE_TARGET_WESTMERE
 #endif // __x86_64__
 
 namespace inoue2008 {
@@ -439,6 +439,6 @@ static inline void inoue_test() {
 
 
 #ifdef __x86_64__
-SIMDUTF_UNTARGET_REGION
+UNICODE_UNTARGET_REGION
 #endif // __x86_64__
 #endif // INOUE_UTF8_TO_UTF16_H

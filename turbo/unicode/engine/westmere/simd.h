@@ -1,8 +1,8 @@
-#ifndef SIMDUTF_WESTMERE_SIMD_H
-#define SIMDUTF_WESTMERE_SIMD_H
+#ifndef UNICODE_WESTMERE_SIMD_H
+#define UNICODE_WESTMERE_SIMD_H
 
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
             namespace simd {
 
@@ -390,7 +390,7 @@ namespace turbo {
 
             } // namespace simd
         } // unnamed namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
-#endif // SIMDUTF_WESTMERE_SIMD_INPUT_H
+#endif // UNICODE_WESTMERE_SIMD_INPUT_H

@@ -478,16 +478,6 @@ private:
                         source.data(), source.size(), buffer3.data());
                   }
                 });
-#if SIMDUTF_COMPILED_CXX_VERSION >= 20
-      summarize(concatenate("turbo::atomic_binary_to_base64_",
-                            turbo::get_active_implementation()->name()),
-                [this, &base64_size]() {
-                  for (const std::vector<char> &source : data) {
-                    base64_size = turbo::atomic_binary_to_base64(
-                        source.data(), source.size(), buffer1.data());
-                  }
-                });
-#endif
     }
   }
 
@@ -567,7 +557,7 @@ private:
       }
     });
 
-#if SIMDUTF_IS_ARM64
+#if KUMO_ARCH_ARM64
     // NEON: copy input into buffer2, compact whitespace in-place, then decode
     // the cleaned base64 with a whitespace-unaware decoder (libbase64).
     summarize("arm_neon_strip+libbase64", [this]() {
@@ -646,29 +636,6 @@ private:
                   }
                 });
 
-#if SIMDUTF_COMPILED_CXX_VERSION >= 20
-      summarize(concatenate("turbo::atomic_base64_to_binary_",
-                            turbo::get_active_implementation()->name()),
-                [this]() {
-                  for (const std::vector<char> &source : data) {
-                    size_t len = buffer1.size();
-                    auto err = turbo::atomic_base64_to_binary_safe(
-                        source.data(), source.size(), buffer1.data(), len);
-                    if (err.error) {
-                      std::cerr << "Error: at position " << err.count
-                                << " out of " << source.size() << std::endl;
-                      for (size_t i = err.count; i < source.size(); i++) {
-                        printf("0x%02x (%c) ", uint8_t(source[i]), source[i]);
-                      }
-                      printf("\n");
-                      throw std::runtime_error(
-                          "Error: is input valid base64? " +
-                          std::to_string(err.error) + " at position " +
-                          std::to_string(err.count));
-                    }
-                  }
-                });
-#endif
     }
   }
 

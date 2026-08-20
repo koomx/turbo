@@ -17,7 +17,6 @@
 
 #include <string_view>
 #include <turbo/unicode/engine/portability.h>
-#include <turbo/unicode/engine/common_defs.h>
 
 namespace turbo {
 
@@ -32,15 +31,12 @@ namespace turbo {
         unspecified = 0
     };
 
-#ifndef SIMDUTF_IS_BIG_ENDIAN
-#error "SIMDUTF_IS_BIG_ENDIAN needs to be defined."
-#endif
 
     enum endianness {
         LITTLE = 0,
         BIG = 1,
         NATIVE =
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
             BIG
 #else
             LITTLE

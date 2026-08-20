@@ -29,11 +29,11 @@ size_t convert_masked_utf8_to_utf32(const char* input,
     if (((utf8_end_of_code_point_mask & 0xffff) == 0xaaaa)) {
         // We want to take 8 2-byte UTF-8 code units and turn them into 8 4-byte
         // UTF-32 code units.
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
         const auto perm = as_vector_u16(in);
 #else
         const auto perm = as_vector_u16(in).swap_bytes();
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
         // in = [110aaaaa|10bbbbbb]
         // t0 = [00000000|00bbbbbb]
         const auto t0 = perm & uint16_t(0x007f);
@@ -51,11 +51,11 @@ size_t convert_masked_utf8_to_utf32(const char* input,
     if (input_utf8_end_of_code_point_mask == 0x924) {
         // We want to take 4 3-byte UTF-8 code units and turn them into 4 4-byte
         // UTF-32 code units.
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
         const auto sh = vector_u8(-1, 0, 1, 2, -1, 3, 4, 5, -1, 6, 7, 8, -1, 9, 10, 11);
 #else
         const auto sh = vector_u8(2, 1, 0, -1, 5, 4, 3, -1, 8, 7, 6, -1, 11, 10, 9, -1);
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
         const auto perm = as_vector_u32(sh.lookup_32(in, vector_u8::zero()));
 
         // in = [1110aaaa|10bbbbbb|10cccccc]
@@ -87,11 +87,11 @@ size_t convert_masked_utf8_to_utf32(const char* input,
         // processors where pdep/pext is fast, we might be able to use a small
         // lookup table.
         const auto sh = vector_u8::load(&tables::utf8_to_utf16::shufutf8[idx]);
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
         const auto perm = as_vector_u16(sh.lookup_32(in, vector_u8::zero())).swap_bytes();
 #else
         const auto perm = as_vector_u16(sh.lookup_32(in, vector_u8::zero()));
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
         const auto ascii = perm & uint16_t(0x7f);
         const auto highbyte = perm & uint16_t(0x1f00);
         const auto composed = ascii | highbyte.shr<2>();
@@ -101,11 +101,11 @@ size_t convert_masked_utf8_to_utf32(const char* input,
     } else if (idx < 145) {
         // FOUR (4) input code-code units
         const auto sh = vector_u8::load(&tables::utf8_to_utf16::shufutf8[idx]);
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
         const auto perm = as_vector_u32(sh.lookup_32(in, vector_u8::zero())).swap_bytes();
 #else
         const auto perm = as_vector_u32(sh.lookup_32(in, vector_u8::zero()));
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
         const auto ascii = perm & uint32_t(0x7f);
         const auto middlebyte = perm & uint32_t(0x3f00);
         const auto middlebyte_shifted = middlebyte.shr<2>();
@@ -118,11 +118,11 @@ size_t convert_masked_utf8_to_utf32(const char* input,
     } else if (idx < 209) {
         // TWO (2) input code-code units
         const auto sh = vector_u8::load(&tables::utf8_to_utf16::shufutf8[idx]);
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
         const auto perm = as_vector_u32(sh.lookup_32(in, vector_u8::zero())).swap_bytes();
 #else
         const auto perm = as_vector_u32(sh.lookup_32(in, vector_u8::zero()));
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
         const auto ascii = perm & uint32_t(0x0000007f);
         const auto middlebyte = perm & uint32_t(0x3f00);
         const auto middlebyte_shifted = middlebyte.shr<2>();

@@ -191,6 +191,27 @@
 #ifndef KUMO_SIMD_AVX512DQ
 #error "KUMO_SIMD_AVX512DQ is not defined"
 #endif
+#ifndef KUMO_SIMD_AVX512IFMA
+#error "KUMO_SIMD_AVX512IFMA is not defined"
+#endif
+#ifndef KUMO_SIMD_AVX512CD
+#error "KUMO_SIMD_AVX512CD is not defined"
+#endif
+#ifndef KUMO_SIMD_AVX512VBMI
+#error "KUMO_SIMD_AVX512VBMI is not defined"
+#endif
+#ifndef KUMO_SIMD_AVX512VBMI2
+#error "KUMO_SIMD_AVX512VBMI2 is not defined"
+#endif
+#ifndef KUMO_SIMD_AVX512VNNI
+#error "KUMO_SIMD_AVX512VNNI is not defined"
+#endif
+#ifndef KUMO_SIMD_AVX512BITALG
+#error "KUMO_SIMD_AVX512BITALG is not defined"
+#endif
+#ifndef KUMO_SIMD_AVX512VPOPCNTDQ
+#error "KUMO_SIMD_AVX512VPOPCNTDQ is not defined"
+#endif
 #ifndef KUMO_SIMD_FMA
 #error "KUMO_SIMD_FMA is not defined"
 #endif

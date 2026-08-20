@@ -37,13 +37,13 @@ struct base8 {
     template <int N = 1>
     vector_type prev_aux(vector_type prev_chunk) const {
         vector_type chunk = this->value;
-#if !SIMDUTF_IS_BIG_ENDIAN
+#if !KUMO_ENDIAN_BIG
         chunk = (vector_type)vec_reve(this->value);
         prev_chunk = (vector_type)vec_reve((vector_type)prev_chunk);
 #endif
         chunk = (vector_type)vec_sld((vector_type)prev_chunk, (vector_type)chunk,
             16 - N);
-#if !SIMDUTF_IS_BIG_ENDIAN
+#if !KUMO_ENDIAN_BIG
         chunk = (vector_type)vec_reve((vector_type)chunk);
 #endif
         return chunk;
@@ -104,7 +104,7 @@ struct base8 {
     KUMO_FORCE_INLINE void store_bytes_as_utf32(char32_t* p) const {
         const vector_type zero = vec_splats(T(0));
 
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
         const vec_u8_t perm0 = { 16, 16, 16, 0, 16, 16, 16, 1,
             16, 16, 16, 2, 16, 16, 16, 3 };
 
@@ -128,7 +128,7 @@ struct base8 {
 
         const vec_u8_t perm3 = { 12, 16, 16, 16, 13, 16, 16, 16,
             14, 16, 16, 16, 15, 16, 16, 16 };
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
 
         const vector_type v0 = vec_perm(value, zero, perm0);
         const vector_type v1 = vec_perm(value, zero, perm1);
@@ -153,7 +153,7 @@ struct base8 {
     KUMO_FORCE_INLINE void store_words_as_utf32(char32_t* p) const {
         const vector_type zero = vec_splats(T(0));
 
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
         const vec_u8_t perm0 = { 16, 16, 0, 1, 16, 16, 2, 3,
             16, 16, 4, 5, 16, 16, 6, 7 };
         const vec_u8_t perm1 = { 16, 16, 8, 9, 16, 16, 10, 11,
@@ -163,7 +163,7 @@ struct base8 {
             4, 5, 16, 16, 6, 7, 16, 16 };
         const vec_u8_t perm1 = { 8, 9, 16, 16, 10, 11, 16, 16,
             12, 13, 16, 16, 14, 15, 16, 16 };
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
 
         const vector_type v0 = vec_perm(value, zero, perm0);
         const vector_type v1 = vec_perm(value, zero, perm1);
@@ -396,7 +396,6 @@ struct simd8<uint8_t> : base8_numeric<uint8_t> {
             (vector_type)vec_sl(this->value, (vector_type)vec_splat_u8(N)));
     }
     void dump() const {
-#ifdef SIMDUTF_LOGGING
         uint8_t tmp[16];
         store(tmp);
         for (int i = 0; i < 16; i++) {
@@ -409,11 +408,10 @@ struct simd8<uint8_t> : base8_numeric<uint8_t> {
             }
         }
         putchar('\n');
-#endif // SIMDUTF_LOGGING
     }
 
     void dump_ascii() const {
-#ifdef SIMDUTF_LOGGING
+
         uint8_t tmp[16];
         store(tmp);
         for (int i = 0; i < 16; i++) {
@@ -426,7 +424,6 @@ struct simd8<uint8_t> : base8_numeric<uint8_t> {
             }
         }
         putchar('\n');
-#endif // SIMDUTF_LOGGING
     }
 };
 

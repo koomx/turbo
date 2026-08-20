@@ -181,8 +181,8 @@ size_t convert_masked_utf8_to_utf16(const char* input,
             } // the loop might compiler to a couple of instructions.
             // We need some validation. See
             // https://github.com/simdutf/simdutf/pull/631
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
-            uint8x16_t expected_mask = simdutf_make_uint8x16_t(
+#if KUMO_COMPILER_MSVC
+            uint8x16_t expected_mask = unicode_make_uint8x16_t(
                 0xf8, 0xc0, 0xc0, 0xc0, 0xf8, 0xc0, 0xc0, 0xc0, 0xf8, 0xc0, 0xc0,
                 0xc0, 0x0, 0x0, 0x0, 0x0);
 #else
@@ -190,8 +190,8 @@ size_t convert_masked_utf8_to_utf16(const char* input,
                 0xc0, 0xc0, 0xf8, 0xc0, 0xc0, 0xc0,
                 0x0, 0x0, 0x0, 0x0 };
 #endif
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
-            uint8x16_t expected = simdutf_make_uint8x16_t(
+#if KUMO_COMPILER_MSVC
+            uint8x16_t expected = unicode_make_uint8x16_t(
                 0xf0, 0x80, 0x80, 0x80, 0xf0, 0x80, 0x80, 0x80, 0xf0, 0x80, 0x80,
                 0x80, 0x0, 0x0, 0x0, 0x0);
 #else

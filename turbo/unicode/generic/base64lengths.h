@@ -1,5 +1,5 @@
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
             namespace base64_lengths {
 
@@ -62,5 +62,5 @@ namespace turbo {
 
             } // namespace base64_lengths
         } // unnamed namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo

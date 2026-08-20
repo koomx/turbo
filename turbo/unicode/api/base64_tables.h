@@ -1,5 +1,5 @@
-#ifndef SIMDUTF_BASE64_TABLES_H
-#define SIMDUTF_BASE64_TABLES_H
+#ifndef UNICODE_BASE64_TABLES_H
+#define UNICODE_BASE64_TABLES_H
 #include <cstdint>
 
 namespace turbo {
@@ -1208,4 +1208,4 @@ namespace turbo {
     } // unnamed namespace
 } // namespace turbo
 
-#endif // SIMDUTF_BASE64_TABLES_H
+#endif // UNICODE_BASE64_TABLES_H

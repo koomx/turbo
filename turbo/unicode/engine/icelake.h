@@ -1,5 +1,5 @@
-#ifndef SIMDUTF_ICELAKE_H
-#define SIMDUTF_ICELAKE_H
+#ifndef UNICODE_ICELAKE_H
+#define UNICODE_ICELAKE_H
 
 #include <turbo/unicode/engine/portability.h>
 
@@ -7,7 +7,7 @@
 // How do we detect that a compiler supports vbmi2?
 // For sure if the following header is found, we are ok?
 #if __has_include(<avx512vbmi2intrin.h>)
-#define SIMDUTF_COMPILER_SUPPORTS_VBMI2 1
+#define UNICODE_COMPILER_SUPPORTS_VBMI2 1
 #endif
 #endif
 
@@ -18,38 +18,38 @@
 // Visual Studio 2019 technically supports VBMI2, but the implementation
 // might be unreliable. Search for visualstudio2019icelakeissue in our
 // tests.
-#ifndef SIMDUTF_COMPILER_SUPPORTS_VBMI2
-#define SIMDUTF_COMPILER_SUPPORTS_VBMI2 1
+#ifndef UNICODE_COMPILER_SUPPORTS_VBMI2
+#define UNICODE_COMPILER_SUPPORTS_VBMI2 1
 #endif
 #endif
 #endif
 
-#if SIMDUTF_GCC9OROLDER && SIMDUTF_IS_X86_64
-#define SIMDUTF_IMPLEMENTATION_ICELAKE 0
+#if UNICODE_GCC9OROLDER && KUMO_ARCH_X86_64
+#define UNICODE_IMPLEMENTATION_ICELAKE 0
 #warning \
     "You are using a legacy GCC compiler, we are disabling AVX-512 support"
 #endif
 
 // We allow icelake on x64 as long as the compiler is known to support VBMI2.
-#ifndef SIMDUTF_IMPLEMENTATION_ICELAKE
-#define SIMDUTF_IMPLEMENTATION_ICELAKE \
-    ((SIMDUTF_IS_X86_64) && (SIMDUTF_COMPILER_SUPPORTS_VBMI2))
+#ifndef UNICODE_IMPLEMENTATION_ICELAKE
+#define UNICODE_IMPLEMENTATION_ICELAKE \
+    ((KUMO_ARCH_X86_64) && (UNICODE_COMPILER_SUPPORTS_VBMI2))
 #endif
 
 // To see why  (__BMI__) && (__LZCNT__) are not part of this next line, see
 // https://github.com/simdutf/simdutf/issues/1247
-#if ((SIMDUTF_IMPLEMENTATION_ICELAKE) && (SIMDUTF_IS_X86_64) && (__AVX2__) && (SIMDUTF_HAS_AVX512F && SIMDUTF_HAS_AVX512DQ && SIMDUTF_HAS_AVX512VL && SIMDUTF_HAS_AVX512VBMI2) && (!SIMDUTF_IS_32BITS))
-#define SIMDUTF_CAN_ALWAYS_RUN_ICELAKE 1
+#if ((UNICODE_IMPLEMENTATION_ICELAKE) && (KUMO_ARCH_X86_64) && (__AVX2__) && (KUMO_SIMD_AVX512F && KUMO_SIMD_AVX512DQ && KUMO_SIMD_AVX512VL && KUMO_SIMD_AVX512VBMI2) && (!KUMO_ARCH_32_BIT))
+#define UNICODE_CAN_ALWAYS_RUN_ICELAKE 1
 #else
-#define SIMDUTF_CAN_ALWAYS_RUN_ICELAKE 0
+#define UNICODE_CAN_ALWAYS_RUN_ICELAKE 0
 #endif
 
-#if SIMDUTF_IMPLEMENTATION_ICELAKE
-#if SIMDUTF_CAN_ALWAYS_RUN_ICELAKE
-#define SIMDUTF_TARGET_ICELAKE
+#if UNICODE_IMPLEMENTATION_ICELAKE
+#if UNICODE_CAN_ALWAYS_RUN_ICELAKE
+#define UNICODE_TARGET_ICELAKE
 #else
-#define SIMDUTF_TARGET_ICELAKE                                       \
-    SIMDUTF_TARGET_REGION(                                           \
+#define UNICODE_TARGET_ICELAKE                                       \
+    UNICODE_TARGET_REGION(                                           \
         "avx512f,avx512dq,avx512cd,avx512bw,avx512vbmi,avx512vbmi2," \
         "avx512vl,avx2,bmi,bmi2,pclmul,lzcnt,popcnt,avx512vpopcntdq")
 #endif
@@ -59,7 +59,7 @@ namespace turbo {
 } // namespace turbo
 
 //
-// These two need to be included outside SIMDUTF_TARGET_REGION
+// These two need to be included outside UNICODE_TARGET_REGION
 //
 #include <turbo/unicode/engine/icelake/intrinsics.h>
 #include <turbo/unicode/engine/icelake/implementation.h>
@@ -74,5 +74,5 @@ namespace turbo {
 
 #include <turbo/unicode/engine/icelake/end.h>
 
-#endif // SIMDUTF_IMPLEMENTATION_ICELAKE
-#endif // SIMDUTF_ICELAKE_H
+#endif // UNICODE_IMPLEMENTATION_ICELAKE
+#endif // UNICODE_ICELAKE_H

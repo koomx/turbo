@@ -1,5 +1,5 @@
-#ifndef SIMDUTF_UTF16_TO_LATIN1_H
-#define SIMDUTF_UTF16_TO_LATIN1_H
+#ifndef UNICODE_UTF16_TO_LATIN1_H
+#define UNICODE_UTF16_TO_LATIN1_H
 
 #include <cstring> // for std::memcpy
 

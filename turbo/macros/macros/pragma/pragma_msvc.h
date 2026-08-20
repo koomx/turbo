@@ -47,13 +47,14 @@
 #define KUMO_DISABLE_UNDESIRED_WARNINGS     \
     KUMO_PRAGMA_DIAG_PUSH                   \
     __pragma(warning(disable : ALL_CPPCORECHECK_WARNINGS))
-#else
-#define KUMO_DISABLE_UNDESIRED_WARNINGS     \
-    KUMO_PRAGMA_DIAG_PUSH
-#endif
-
 #define KUMO_RESTORE_UNDESIRED_WARNINGS     \
     KUMO_PRAGMA_DIAG_POP
+#else
+#define KUMO_DISABLE_UNDESIRED_WARNINGS
+#define KUMO_RESTORE_UNDESIRED_WARNINGS
+#endif
+
+
 
 // ---------------------------------------------------------------------------
 // Code region collapsing (Visual Studio editor)

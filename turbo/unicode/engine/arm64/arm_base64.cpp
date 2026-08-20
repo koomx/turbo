@@ -118,7 +118,7 @@ size_t encode_base64_impl(char* dst, const char* src, size_t srclen,
     // credit: Wojciech Muła
     uint8_t* out = (uint8_t*)dst;
     const uint8x16_t v3f = vdupq_n_u8(0x3f);
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
+#if KUMO_COMPILER_MSVC
     // When trying to load a uint8_t array, Visual Studio might
     // error with: error C2664: '__n128x4 neon_ld4m_q8(const char *)':
     // cannot convert argument 1 from 'const uint8_t [64]' to 'const char *
@@ -246,8 +246,8 @@ static inline void compress(uint8x16_t data, uint16_t mask, char* output) {
     uint64x2_t compactmasku64 = { tables::base64::thintable_epi8[mask1],
         tables::base64::thintable_epi8[mask2] };
     uint8x16_t compactmask = vreinterpretq_u8_u64(compactmasku64);
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
-    const uint8x16_t off = simdutf_make_uint8x16_t(0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8);
+#if KUMO_COMPILER_MSVC
+    const uint8x16_t off = unicode_make_uint8x16_t(0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8);
 #else
     const uint8x16_t off = { 0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8 };
 #endif
@@ -286,15 +286,15 @@ uint64_t to_base64_mask(block64* b, bool* error) {
     uint8x16_t hi_bits2 = vshrq_n_u8(b->chunks[2], 3);
     uint8x16_t hi_bits3 = vshrq_n_u8(b->chunks[3], 3);
     uint8x16_t lut_lo;
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
+#if KUMO_COMPILER_MSVC
     if (default_or_url) {
-        lut_lo = simdutf_make_uint8x16_t(0xa9, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8,
+        lut_lo = unicode_make_uint8x16_t(0xa9, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8,
             0xf8, 0xf9, 0xf1, 0xa2, 0xa1, 0xa5, 0xa0, 0xa6);
     } else if (base64_url) {
-        lut_lo = simdutf_make_uint8x16_t(0xa9, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8,
+        lut_lo = unicode_make_uint8x16_t(0xa9, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8,
             0xf8, 0xf9, 0xf1, 0xa0, 0xa1, 0xa5, 0xa0, 0xa2);
     } else {
-        lut_lo = simdutf_make_uint8x16_t(0xa9, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8,
+        lut_lo = unicode_make_uint8x16_t(0xa9, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8,
             0xf8, 0xf9, 0xf1, 0xa2, 0xa1, 0xa1, 0xa0, 0xa4);
     }
 #else
@@ -314,15 +314,15 @@ uint64_t to_base64_mask(block64* b, bool* error) {
     uint8x16_t lo2 = vqtbl1q_u8(lut_lo, lo_nibbles2);
     uint8x16_t lo3 = vqtbl1q_u8(lut_lo, lo_nibbles3);
     uint8x16_t lut_hi;
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
+#if KUMO_COMPILER_MSVC
     if (default_or_url) {
-        lut_hi = simdutf_make_uint8x16_t(0x0, 0x1, 0x0, 0x0, 0x1, 0x6, 0x8, 0x8, 0x10,
+        lut_hi = unicode_make_uint8x16_t(0x0, 0x1, 0x0, 0x0, 0x1, 0x6, 0x8, 0x8, 0x10,
             0x20, 0x20, 0x12, 0x40, 0x80, 0x80, 0x40);
     } else if (base64_url) {
-        lut_hi = simdutf_make_uint8x16_t(0x0, 0x1, 0x0, 0x0, 0x1, 0x6, 0x8, 0x8, 0x10,
+        lut_hi = unicode_make_uint8x16_t(0x0, 0x1, 0x0, 0x0, 0x1, 0x6, 0x8, 0x8, 0x10,
             0x20, 0x20, 0x12, 0x40, 0x80, 0x80, 0x40);
     } else {
-        lut_hi = simdutf_make_uint8x16_t(0x0, 0x1, 0x0, 0x0, 0x1, 0x6, 0x8, 0x8, 0x10,
+        lut_hi = unicode_make_uint8x16_t(0x0, 0x1, 0x0, 0x0, 0x1, 0x6, 0x8, 0x8, 0x10,
             0x20, 0x20, 0x10, 0x40, 0x80, 0x80, 0x40);
     }
 #else
@@ -349,8 +349,8 @@ uint64_t to_base64_mask(block64* b, bool* error) {
     uint8x16_t res3 = vandq_u8(lo3, hi3);
 
     uint8_t checks = vminvq_u8(vminq_u8(vminq_u8(res0, res1), vminq_u8(res2, res3)));
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
-    const uint8x16_t bit_mask = simdutf_make_uint8x16_t(0x01, 0x02, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80,
+#if KUMO_COMPILER_MSVC
+    const uint8x16_t bit_mask = unicode_make_uint8x16_t(0x01, 0x02, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80,
         0x01, 0x02, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80);
 #else
     const uint8x16_t bit_mask = { 0x01, 0x02, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80,
@@ -374,15 +374,15 @@ uint64_t to_base64_mask(block64* b, bool* error) {
     // This is the transformation step that can be done while we are waiting for
     // sum0
     uint8x16_t roll_lut;
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
+#if KUMO_COMPILER_MSVC
     if (default_or_url) {
-        roll_lut = simdutf_make_uint8x16_t(0xBF, 0xE0, 0xB9, 0x13, 0x04, 0xBF, 0xBF, 0xB9,
+        roll_lut = unicode_make_uint8x16_t(0xBF, 0xE0, 0xB9, 0x13, 0x04, 0xBF, 0xBF, 0xB9,
             0xB9, 0x00, 0xFF, 0x11, 0xFF, 0xBF, 0x10, 0xB9);
     } else if (base64_url) {
-        roll_lut = simdutf_make_uint8x16_t(0xB9, 0xB9, 0xBF, 0xBF, 0x04, 0x11, 0xE0, 0x00,
+        roll_lut = unicode_make_uint8x16_t(0xB9, 0xB9, 0xBF, 0xBF, 0x04, 0x11, 0xE0, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
     } else {
-        roll_lut = simdutf_make_uint8x16_t(0xB9, 0xB9, 0xBF, 0xBF, 0x04, 0x10, 0x13, 0x00,
+        roll_lut = unicode_make_uint8x16_t(0xB9, 0xB9, 0xBF, 0xBF, 0x04, 0x10, 0x13, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
     }
 #else
@@ -399,8 +399,8 @@ uint64_t to_base64_mask(block64* b, bool* error) {
 #endif
     uint8x16_t roll0, roll1, roll2, roll3;
     if (default_or_url) {
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
-        const uint8x16_t delta_asso = simdutf_make_uint8x16_t(0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+#if KUMO_COMPILER_MSVC
+        const uint8x16_t delta_asso = unicode_make_uint8x16_t(0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x00, 0x16);
 #else
         const uint8x16_t delta_asso = uint8x16_t { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
@@ -493,12 +493,12 @@ static size_t compress_block_single(block64* b, uint64_t mask, char* output) {
     const int8_t pos = pos64 & 0xf;
 
     // Predefine the index vector
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
-    const uint8x16_t v1 = simdutf_make_uint8x16_t(0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+#if KUMO_COMPILER_MSVC
+    const uint8x16_t v1 = unicode_make_uint8x16_t(0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
         10, 11, 12, 13, 14, 15);
-#else // SIMDUTF_REGULAR_VISUAL_STUDIO
+#else // KUMO_COMPILER_MSVC
     const uint8x16_t v1 = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
-#endif // SIMDUTF_REGULAR_VISUAL_STUDIO
+#endif // KUMO_COMPILER_MSVC
 
     switch (pos64 >> 4) {
     case 0b00: {
@@ -661,7 +661,7 @@ compress_decode_base64(char* dst, const char_type* src, size_t srclen,
         while (buffer_start + 4 < bufferptr) {
             uint32_t triple = ((uint32_t(uint8_t(buffer_start[0])) << 3 * 6) + (uint32_t(uint8_t(buffer_start[1])) << 2 * 6) + (uint32_t(uint8_t(buffer_start[2])) << 1 * 6) + (uint32_t(uint8_t(buffer_start[3])) << 0 * 6))
                 << 8;
-#if !SIMDUTF_IS_BIG_ENDIAN
+#if !KUMO_ENDIAN_BIG
             triple = scalar::u32_swap_bytes(triple);
 #endif
             std::memcpy(dst, &triple, 4);
@@ -672,7 +672,7 @@ compress_decode_base64(char* dst, const char_type* src, size_t srclen,
         if (buffer_start + 4 <= bufferptr) {
             uint32_t triple = ((uint32_t(uint8_t(buffer_start[0])) << 3 * 6) + (uint32_t(uint8_t(buffer_start[1])) << 2 * 6) + (uint32_t(uint8_t(buffer_start[2])) << 1 * 6) + (uint32_t(uint8_t(buffer_start[3])) << 0 * 6))
                 << 8;
-#if !SIMDUTF_IS_BIG_ENDIAN
+#if !KUMO_ENDIAN_BIG
             triple = scalar::u32_swap_bytes(triple);
 #endif
             std::memcpy(dst, &triple, 3);

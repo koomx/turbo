@@ -1,5 +1,5 @@
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
 
             // Walks through a buffer in block-sized increments, loading the last part with
@@ -72,5 +72,5 @@ namespace turbo {
             }
 
         } // unnamed namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo

@@ -1,5 +1,5 @@
-#ifndef SIMDUTF_ASCII_H
-#define SIMDUTF_ASCII_H
+#ifndef UNICODE_ASCII_H
+#define UNICODE_ASCII_H
 
 #include <cstring>
 

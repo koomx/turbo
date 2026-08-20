@@ -1,5 +1,5 @@
-#ifndef SIMDUTF_VALID_UTF32_TO_UTF16_H
-#define SIMDUTF_VALID_UTF32_TO_UTF16_H
+#ifndef UNICODE_VALID_UTF32_TO_UTF16_H
+#define UNICODE_VALID_UTF32_TO_UTF16_H
 
 namespace turbo {
     namespace scalar {

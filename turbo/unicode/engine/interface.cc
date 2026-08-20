@@ -58,7 +58,7 @@ namespace turbo {
         return TextEncoding::unspecified;
     }
 
-#ifdef SIMDUTF_INTERNAL_TESTS
+#ifdef UNICODE_INTERNAL_TESTS
     std::vector<implementation::TestProcedure>
     implementation::internal_tests() const {
         return {};

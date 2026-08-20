@@ -1,3 +1,4 @@
+#include <turbo/macros/macros/pragma/pragma.h>
 #include <turbo/unicode/utf.h>
 
 #include <fstream>
@@ -11,10 +12,10 @@
 static uint32_t seed = 123;
 const size_t MAX_SIZE = 1025;
 
-#ifndef SIMDUTF_TEST_FUZZER_TRIALS
-#error "SIMDUTF_TEST_FUZZER_TRIALS not set."
+#ifndef UNICODE_TEST_FUZZER_TRIALS
+#error "UNICODE_TEST_FUZZER_TRIALS not set."
 #endif
-constexpr std::size_t trials = SIMDUTF_TEST_FUZZER_TRIALS;
+constexpr std::size_t trials = UNICODE_TEST_FUZZER_TRIALS;
 
 std::vector<char> input;
 std::pair<bool, bool> is_ok_utf8 = std::make_pair(false, false);
@@ -48,10 +49,9 @@ void __asan_on_error() {
     const size_t buf_size = 4 * MAX_SIZE + 3;
     char buffer[buf_size];
     for (unsigned int i = 0; i < input.size(); i++) {
-        SIMDUTF_PUSH_DISABLE_WARNINGS
-        SIMDUTF_DISABLE_DEPRECATED_WARNING
+        KUMO_DISABLE_DEPRECATED_WARNINGS
         sprintf(buffer + 4 * i + 1, "\\x%02x", input[i]);
-        SIMDUTF_POP_DISABLE_WARNINGS
+        KUMO_RESTORE_DEPRECATED_WARNINGS
     }
     buffer[0] = '"';
     buffer[buf_size - 2] = '"';

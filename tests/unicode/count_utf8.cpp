@@ -16,7 +16,7 @@ namespace {
         67,
         128,
         256
-#if !SIMDUTF_FAST_TEST
+#if !UNICODE_FAST_TEST
         ,
         511,
         1000,

@@ -1,5 +1,5 @@
 #include <turbo/unicode/engine/lasx.h>
-#if SIMDUTF_IMPLEMENTATION_LASX
+#if UNICODE_IMPLEMENTATION_LASX
 
 #include <turbo/unicode/tables/utf8_to_utf16_tables.h>
 #include <turbo/unicode/tables/utf16_to_utf8_tables.h>
@@ -8,9 +8,9 @@
 
 #include <turbo/unicode/engine/lasx/begin.h>
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
-#ifndef SIMDUTF_LASX_H
+#ifndef UNICODE_LASX_H
 #error "lasx.h must be included"
 #endif
             using namespace simd;
@@ -137,7 +137,7 @@ namespace turbo {
 #include <turbo/unicode/engine/lasx/lasx_find.cpp>
 
         } // namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
 #include <turbo/unicode/generic/buf_block_reader.h>
@@ -175,7 +175,7 @@ namespace turbo {
 // Implementation-specific overrides
 //
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
 
          [[nodiscard]] int
         implementation::detect_encodings(const char* input,
@@ -1340,7 +1340,7 @@ namespace turbo {
             return base64_lengths::binary_length_from_base64(input, length);
         }
 
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
 #include <turbo/unicode/engine/lasx/end.h>

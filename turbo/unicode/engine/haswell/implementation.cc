@@ -1,6 +1,6 @@
 
 #include <turbo/unicode/engine/haswell.h>
-#if SIMDUTF_IMPLEMENTATION_HASWELL
+#if UNICODE_IMPLEMENTATION_HASWELL
 #include <turbo/unicode/tables/utf8_to_utf16_tables.h>
 #include <turbo/unicode/tables/utf16_to_utf8_tables.h>
 #include <turbo/unicode/tables/utf32_to_utf16_tables.h>
@@ -8,9 +8,9 @@
 #include <turbo/unicode/engine/haswell/begin.h>
 
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
-#ifndef SIMDUTF_HASWELL_H
+#ifndef UNICODE_HASWELL_H
 #error "haswell.h must be included"
 #endif
             using namespace simd;
@@ -60,7 +60,7 @@ namespace turbo {
 #include <turbo/unicode/engine/haswell/avx2_base64.cpp>
 
         } // unnamed namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
 #include <turbo/unicode/generic/buf_block_reader.h>
@@ -98,7 +98,7 @@ namespace turbo {
 #include <turbo/unicode/generic/find.h>
 
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
 
          [[nodiscard]] int
         implementation::detect_encodings(const char* input,
@@ -1259,7 +1259,7 @@ namespace turbo {
             return avx2_binary_length_from_base64(input, length);
         }
 
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
 #include <turbo/unicode/engine/haswell/end.h>

@@ -26,22 +26,22 @@ utf16_to_latin1_t ppc64_convert_utf16_to_latin1(const char16_t* buf, size_t len,
 #if defined(__clang__)
         __attribute__((aligned(16))) uint64_t tmp[8];
         in.store(tmp);
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
         memcpy(latin1_output, &tmp[0], 8);
         const uint64_t upper = tmp[1];
 #else
         memcpy(latin1_output, &tmp[1], 8);
         const uint64_t upper = tmp[0];
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
 #else
         const auto tmp = vec_u64_t(in.value);
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
         memcpy(latin1_output, &tmp[0], 8);
         const uint64_t upper = tmp[1];
 #else
         memcpy(latin1_output, &tmp[1], 8);
         const uint64_t upper = tmp[0];
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
 #endif // defined(__clang__)
         // AltiVec
 

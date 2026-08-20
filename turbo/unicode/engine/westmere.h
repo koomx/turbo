@@ -1,35 +1,35 @@
-#ifndef SIMDUTF_WESTMERE_H
-#define SIMDUTF_WESTMERE_H
+#ifndef UNICODE_WESTMERE_H
+#define UNICODE_WESTMERE_H
 
-#ifdef SIMDUTF_FALLBACK_H
+#ifdef UNICODE_FALLBACK_H
 #error "westmere.h must be included before fallback.h"
 #endif
 
 #include <turbo/unicode/engine/portability.h>
 
 // Default Westmere to on if this is x86-64, unless we'll always select Haswell.
-#ifndef SIMDUTF_IMPLEMENTATION_WESTMERE
+#ifndef UNICODE_IMPLEMENTATION_WESTMERE
 //
-// You do not want to set it to (SIMDUTF_IS_X86_64 &&
-// !SIMDUTF_REQUIRES_HASWELL) because you want to rely on runtime dispatch!
+// You do not want to set it to (KUMO_ARCH_X86_64 &&
+// !UNICODE_REQUIRES_HASWELL) because you want to rely on runtime dispatch!
 //
-#if SIMDUTF_CAN_ALWAYS_RUN_ICELAKE || SIMDUTF_CAN_ALWAYS_RUN_HASWELL
-#define SIMDUTF_IMPLEMENTATION_WESTMERE 0
+#if UNICODE_CAN_ALWAYS_RUN_ICELAKE || UNICODE_CAN_ALWAYS_RUN_HASWELL
+#define UNICODE_IMPLEMENTATION_WESTMERE 0
 #else
-#define SIMDUTF_IMPLEMENTATION_WESTMERE (SIMDUTF_IS_X86_64)
+#define UNICODE_IMPLEMENTATION_WESTMERE (KUMO_ARCH_X86_64)
 #endif
 
 #endif
 
-#if (SIMDUTF_IMPLEMENTATION_WESTMERE && SIMDUTF_IS_X86_64 && __SSE4_2__)
-#define SIMDUTF_CAN_ALWAYS_RUN_WESTMERE 1
+#if (UNICODE_IMPLEMENTATION_WESTMERE && KUMO_ARCH_X86_64 && __SSE4_2__)
+#define UNICODE_CAN_ALWAYS_RUN_WESTMERE 1
 #else
-#define SIMDUTF_CAN_ALWAYS_RUN_WESTMERE 0
+#define UNICODE_CAN_ALWAYS_RUN_WESTMERE 0
 #endif
 
-#if SIMDUTF_IMPLEMENTATION_WESTMERE
+#if UNICODE_IMPLEMENTATION_WESTMERE
 
-#define SIMDUTF_TARGET_WESTMERE SIMDUTF_TARGET_REGION("sse4.2,popcnt")
+#define UNICODE_TARGET_WESTMERE UNICODE_TARGET_REGION("sse4.2,popcnt")
 
 namespace turbo {
     /// Implementation for Westmere (Intel SSE4.2).
@@ -37,7 +37,7 @@ namespace turbo {
 } // namespace turbo
 
 //
-// These two need to be included outside SIMDUTF_TARGET_REGION
+// These two need to be included outside UNICODE_TARGET_REGION
 //
 #include <turbo/unicode/engine/westmere/implementation.h>
 #include <turbo/unicode/engine/westmere/intrinsics.h>
@@ -53,5 +53,5 @@ namespace turbo {
 
 #include <turbo/unicode/engine/westmere/end.h>
 
-#endif // SIMDUTF_IMPLEMENTATION_WESTMERE
-#endif // SIMDUTF_WESTMERE_COMMON_H
+#endif // UNICODE_IMPLEMENTATION_WESTMERE
+#endif // UNICODE_WESTMERE_COMMON_H

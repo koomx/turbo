@@ -1,5 +1,5 @@
-#ifndef SIMDUTF_FALLBACK_IMPLEMENTATION_H
-#define SIMDUTF_FALLBACK_IMPLEMENTATION_H
+#ifndef UNICODE_FALLBACK_IMPLEMENTATION_H
+#define UNICODE_FALLBACK_IMPLEMENTATION_H
 
 #include <turbo/unicode/engine/implementation.h>
 
@@ -262,4 +262,4 @@ namespace turbo {
     } // namespace fallback
 } // namespace turbo
 
-#endif // SIMDUTF_FALLBACK_IMPLEMENTATION_H
+#endif // UNICODE_FALLBACK_IMPLEMENTATION_H

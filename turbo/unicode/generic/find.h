@@ -1,5 +1,5 @@
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
             namespace util {
 
@@ -83,5 +83,5 @@ namespace turbo {
 
             } // namespace util
         } // namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo

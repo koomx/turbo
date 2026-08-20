@@ -32,11 +32,9 @@ struct simd32<uint32_t> {
     }
 
     void dump() const {
-#ifdef SIMDUTF_LOGGING
         uint32_t temp[4];
         vst1q_u32(temp, value);
         printf("[%08x, %08x, %08x, %08x]\n", temp[0], temp[1], temp[2], temp[3]);
-#endif // SIMDUTF_LOGGING
     }
 
     // operators

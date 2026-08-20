@@ -1,5 +1,5 @@
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
             namespace utf8_validation {
 
@@ -213,5 +213,5 @@ namespace turbo {
             using utf8_validation::utf8_checker;
 
         } // unnamed namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo

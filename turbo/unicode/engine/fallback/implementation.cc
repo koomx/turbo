@@ -1,6 +1,6 @@
 
 #include <turbo/unicode/engine/fallback.h>
-#if SIMDUTF_IMPLEMENTATION_FALLBACK
+#if UNICODE_IMPLEMENTATION_FALLBACK
 
 #include <turbo/unicode/tables/utf8_to_utf16_tables.h>
 #include <turbo/unicode/tables/utf16_to_utf8_tables.h>
@@ -10,7 +10,7 @@
 #include <turbo/unicode/engine/fallback/begin.h>
 
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
 
          [[nodiscard]] int
         implementation::detect_encodings(const char* input,
@@ -540,7 +540,7 @@ namespace turbo {
             return end;
         }
 
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
 #include <turbo/unicode/engine/fallback/end.h>

@@ -14,10 +14,10 @@
 #include <tests/unicode/helpers/test.h>
 
 // to limit the runtime of this test
-#ifndef SIMDUTF_BASE64_TEST_MAXLEN
-#error "SIMDUTF_BASE64_TEST_MAXLEN not set."
+#ifndef UNICODE_BASE64_TEST_MAXLEN
+#error "UNICODE_BASE64_TEST_MAXLEN not set."
 #endif
-constexpr std::size_t max_len = SIMDUTF_BASE64_TEST_MAXLEN;
+constexpr std::size_t max_len = UNICODE_BASE64_TEST_MAXLEN;
 
 // Return the length of the prefix that contains count base64 characters.
 // Thus, if count is 3, the function returns the length of the prefix
@@ -59,7 +59,7 @@ size_t length_without_empty_tail(
 }
 
 // We may disable base64url tests by commenting out this next line.
-#define SIMDUTF_BASE64URL_TESTS 1
+#define UNICODE_BASE64URL_TESTS 1
 
 using random_generator = std::mt19937;
 static random_generator::result_type seed = 42;
@@ -2707,7 +2707,7 @@ TEST(encode_base64_cases_no_padding) {
     }
 }
 
-#if SIMDUTF_BASE64URL_TESTS
+#if UNICODE_BASE64URL_TESTS
 
 TEST(encode_base64url_simple) {
     for (const auto& p : cases::simple_url) {
@@ -2809,7 +2809,7 @@ TEST(safe_decode_base64_cases_16) {
     }
 }
 
-#if SIMDUTF_BASE64URL_TESTS
+#if UNICODE_BASE64URL_TESTS
 
 TEST(decode_base64url_cases_16) {
     for (const auto& p : cases16::simple_url_without_padding) {
@@ -2947,7 +2947,7 @@ TEST(roundtrip_base64_16) {
     }
 }
 
-#if SIMDUTF_BASE64URL_TESTS
+#if UNICODE_BASE64URL_TESTS
 
 TEST(roundtrip_base64url) {
     for (size_t len = 0; len < max_len; len++) {

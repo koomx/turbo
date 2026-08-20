@@ -76,7 +76,7 @@ TEST(base64_fun_safe) {
 }
 
 // this is a compile test
-void check_simdutf_result() {
+void check_unicode_result() {
     turbo::UnicodeResult r;
 }
 

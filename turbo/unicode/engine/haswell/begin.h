@@ -1,15 +1,16 @@
-#define SIMDUTF_IMPLEMENTATION haswell
-#define SIMDUTF_SIMD_HAS_BYTEMASK 1
+#define UNICODE_IMPLEMENTATION haswell
+#define UNICODE_SIMD_HAS_BYTEMASK 1
 
-#if SIMDUTF_CAN_ALWAYS_RUN_HASWELL
+#include <turbo/macros/macros/pragma/pragma.h>
+
+#if UNICODE_CAN_ALWAYS_RUN_HASWELL
 // nothing needed.
 #else
-SIMDUTF_TARGET_HASWELL
+UNICODE_TARGET_HASWELL
 #endif
 
-#if SIMDUTF_GCC11ORMORE // workaround for
+#if UNICODE_GCC11ORMORE // workaround for
                         // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105593
-// clang-format off
-SIMDUTF_DISABLE_GCC_WARNING(-Wmaybe-uninitialized)
-// clang-format on
+KUMO_PRAGMA_DIAG_PUSH
+KUMO_PRAGMA_DIAG_IGNORED("-Wmaybe-uninitialized")
 #endif // end of workaround

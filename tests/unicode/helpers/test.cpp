@@ -100,7 +100,7 @@ void print_help() {
 }
 
 void print_architectures(FILE* file) {
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
     fprintf(file, "Big-endian system detected.\n");
 #else
     fprintf(file, "Little-endian system detected.\n");

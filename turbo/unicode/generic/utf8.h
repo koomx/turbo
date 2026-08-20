@@ -1,5 +1,5 @@
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
             namespace utf8 {
 
@@ -16,7 +16,7 @@ namespace turbo {
                     return count + scalar::utf8::count_code_points(in + pos, size - pos);
                 }
 
-#ifdef SIMDUTF_SIMD_HAS_BYTEMASK
+#ifdef UNICODE_SIMD_HAS_BYTEMASK
                 [[maybe_unused]] KUMO_FORCE_INLINE size_t
                 count_code_points_bytemask(const char* in, size_t size) {
                     using vector_i8 = simd8<int8_t>;
@@ -63,7 +63,7 @@ namespace turbo {
 
                     return count + scalar::utf8::count_code_points(in + pos, size - pos);
                 }
-#endif // SIMDUTF_SIMD_HAS_BYTEMASK
+#endif // UNICODE_SIMD_HAS_BYTEMASK
 
                 KUMO_FORCE_INLINE size_t utf16_length_from_utf8(const char* in,
                     size_t size) {
@@ -84,5 +84,5 @@ namespace turbo {
 
             } // namespace utf8
         } // unnamed namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo

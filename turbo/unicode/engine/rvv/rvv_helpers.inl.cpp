@@ -1,4 +1,4 @@
-template <simdutf_ByteFlip bflip>
+template <unicode_ByteFlip bflip>
 KUMO_FORCE_INLINE static size_t
 rvv_utf32_store_utf16_m4(uint16_t* dst, vuint32m4_t utf32, size_t vl,
     vbool4_t m4even) {
@@ -18,6 +18,6 @@ rvv_utf32_store_utf16_m4(uint16_t* dst, vuint32m4_t utf32, size_t vl,
         __riscv_vmsne_vx_u16m4_b4(utf32_16, 0, vl * 2), m4even, vl * 2);
     vuint16m4_t vout = __riscv_vcompress_vm_u16m4(utf32_16, mOut, vl * 2);
     vl = __riscv_vcpop_m_b4(mOut, vl * 2);
-    __riscv_vse16_v_u16m4(dst, simdutf_byteflip<bflip>(vout, vl), vl);
+    __riscv_vse16_v_u16m4(dst, unicode_byteflip<bflip>(vout, vl), vl);
     return vl;
 };

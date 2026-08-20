@@ -32,11 +32,11 @@ write_v_u16_11bits_to_utf8(const vector_u16 v_u16, char*& utf8_output,
     // 2. merge ASCII and 2-byte codewords
     const auto utf8_unpacked1 = select(one_byte_bytemask, as_vector_u8(v_u16), as_vector_u8(t3));
 
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
     const auto tmp = as_vector_u16(utf8_unpacked1).swap_bytes();
 #else
     const auto tmp = as_vector_u16(utf8_unpacked1);
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
     const auto utf8_unpacked = as_vector_u8(tmp);
 
     // 3. prepare bitmask for 8-bit lookup

@@ -91,7 +91,7 @@ set(UNICODE_TESTS
         basic_fuzzer
         base64_tests
         constexpr_base64_tests
-        simdutf_c_tests
+        c_tests
         internal_tests
         utf8_length_from_utf16_tests
         to_well_formed_utf16_tests
@@ -101,13 +101,13 @@ set(UNICODE_TESTS
 
 foreach (case IN LISTS UNICODE_TESTS)
     if (case STREQUAL "random_fuzzer")
-        set(_extra_defines SIMDUTF_TEST_FUZZER_TRIALS=10000)
+        set(_extra_defines UNICODE_TEST_FUZZER_TRIALS=10000)
     elseif (case STREQUAL "count_utf8")
-        set(_extra_defines SIMDUTF_FAST_TESTS=0)
+        set(_extra_defines UNICODE_FAST_TESTS=0)
     elseif (case STREQUAL "basic_fuzzer")
-        set(_extra_defines SIMDUTF_TEST_FUZZER_TRIALS=100000)
+        set(_extra_defines UNICODE_TEST_FUZZER_TRIALS=100000)
     elseif (case STREQUAL "base64_tests")
-        set(_extra_defines SIMDUTF_BASE64_TEST_MAXLEN=2048)
+        set(_extra_defines UNICODE_BASE64_TEST_MAXLEN=2048)
     else ()
         set(_extra_defines)
     endif ()

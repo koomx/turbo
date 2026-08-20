@@ -194,7 +194,7 @@ TEST(boommmmm) {
         turbo::TextEncoding::UTF16_LE);
 }
 
-#if !SIMDUTF_IS_BIG_ENDIAN
+#if !KUMO_ENDIAN_BIG
 TEST(issue_627) {
     std::vector<unsigned char> data {
         251,

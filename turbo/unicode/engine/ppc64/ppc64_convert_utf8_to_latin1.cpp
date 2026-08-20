@@ -41,11 +41,11 @@ size_t convert_masked_utf8_to_latin1(const char* input,
 
     const auto reshuffle = vector_u8::load(&tables::utf8_to_utf16::shufutf8[idx]);
     const auto perm8 = reshuffle.lookup_32(in, vector_u8::zero());
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
     const auto perm16 = as_vector_u16(perm8).swap_bytes();
 #else
     const auto perm16 = as_vector_u16(perm8);
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
     const auto ascii = perm16 & uint16_t(0x7f);
     const auto highbyte = perm16 & uint16_t(0x1f00);
     const auto composed = ascii | highbyte.shr<2>();

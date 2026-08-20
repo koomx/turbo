@@ -33,17 +33,17 @@ static const char *hello = "hello";
 static const size_t hello_len = 5;
 
 static int test_validate_utf8_c(void) {
-  bool ok = simdutf_validate_utf8(hello, hello_len);
+  bool ok = unicode_validate_utf8(hello, hello_len);
   ASSERT_TRUE(ok);
-  simdutf_result r = simdutf_validate_utf8_with_errors(hello, hello_len);
-  ASSERT_EQUAL_INT(r.error, SIMDUTF_ERROR_SUCCESS);
+  unicode_result r = unicode_validate_utf8_with_errors(hello, hello_len);
+  ASSERT_EQUAL_INT(r.error, UNICODE_ERROR_SUCCESS);
   ASSERT_EQUAL_SIZE_T(r.count, hello_len);
   return 0;
 }
 
 static int test_convert_utf8_to_utf16_c(void) {
   char16_t out[16];
-  size_t n = simdutf_convert_utf8_to_utf16(hello, hello_len, out);
+  size_t n = unicode_convert_utf8_to_utf16(hello, hello_len, out);
   ASSERT_EQUAL_SIZE_T(n, hello_len);
   for (size_t i = 0; i < n; i++) {
     ASSERT_TRUE(out[i] == (char16_t)hello[i]);
@@ -53,7 +53,7 @@ static int test_convert_utf8_to_utf16_c(void) {
 
 static int test_convert_utf8_to_utf32_c(void) {
   char32_t out[16];
-  size_t n = simdutf_convert_utf8_to_utf32(hello, hello_len, out);
+  size_t n = unicode_convert_utf8_to_utf32(hello, hello_len, out);
   ASSERT_EQUAL_SIZE_T(n, hello_len);
   for (size_t i = 0; i < n; i++) {
     ASSERT_TRUE(out[i] == (char32_t)hello[i]);
@@ -62,13 +62,13 @@ static int test_convert_utf8_to_utf32_c(void) {
 }
 
 static int test_count_utf8_c(void) {
-  size_t cnt = simdutf_count_utf8(hello, hello_len);
+  size_t cnt = unicode_count_utf8(hello, hello_len);
   ASSERT_EQUAL_SIZE_T(cnt, hello_len);
   return 0;
 }
 
 static int test_find_c(void) {
-  const char *f = simdutf_find(hello, hello + hello_len, 'e');
+  const char *f = unicode_find(hello, hello + hello_len, 'e');
   ASSERT_TRUE(f == hello + 1);
   return 0;
 }
@@ -77,80 +77,80 @@ static int test_base64_c(void) {
   const char *b64 = "aGVsbG8="; /* "hello" */
   char binout[16] = {0};
   size_t outlen = sizeof(binout);
-  simdutf_result br = simdutf_base64_to_binary_safe(
-      b64, strlen(b64), binout, &outlen, SIMDUTF_BASE64_DEFAULT,
-      SIMDUTF_LAST_CHUNK_LOOSE, true);
-  ASSERT_EQUAL_INT(br.error, SIMDUTF_ERROR_SUCCESS);
+  unicode_result br = unicode_base64_to_binary_safe(
+      b64, strlen(b64), binout, &outlen, UNICODE_BASE64_DEFAULT,
+      UNICODE_LAST_CHUNK_LOOSE, true);
+  ASSERT_EQUAL_INT(br.error, UNICODE_ERROR_SUCCESS);
   ASSERT_EQUAL_SIZE_T(outlen, hello_len);
   ASSERT_TRUE(memcmp(binout, "hello", hello_len) == 0);
 
   char b64out[32] = {0};
-  size_t b64len = simdutf_binary_to_base64("hello", hello_len, b64out,
-                                           SIMDUTF_BASE64_DEFAULT);
+  size_t b64len = unicode_binary_to_base64("hello", hello_len, b64out,
+                                           UNICODE_BASE64_DEFAULT);
   ASSERT_TRUE(b64len >= 8);
   return 0;
 }
 
 static int test_ascii_and_detect_c(void) {
-  ASSERT_TRUE(simdutf_validate_ascii(hello, hello_len));
-  simdutf_result r = simdutf_validate_ascii_with_errors(hello, hello_len);
-  ASSERT_EQUAL_INT(r.error, SIMDUTF_ERROR_SUCCESS);
+  ASSERT_TRUE(unicode_validate_ascii(hello, hello_len));
+  unicode_result r = unicode_validate_ascii_with_errors(hello, hello_len);
+  ASSERT_EQUAL_INT(r.error, UNICODE_ERROR_SUCCESS);
 
-  simdutf_encoding_type et = simdutf_autodetect_encoding(hello, hello_len);
-  ASSERT_EQUAL_INT(et, SIMDUTF_ENCODING_UTF8);
-  int encs = simdutf_detect_encodings(hello, hello_len);
+  unicode_encoding_type et = unicode_autodetect_encoding(hello, hello_len);
+  ASSERT_EQUAL_INT(et, UNICODE_ENCODING_UTF8);
+  int encs = unicode_detect_encodings(hello, hello_len);
   ASSERT_TRUE(encs >= 0);
   return 0;
 }
 
 static int test_lengths_and_conversions_c(void) {
   char latin_out[8] = {0};
-  size_t latin_to_utf8 = simdutf_convert_latin1_to_utf8("abc", 3, latin_out);
+  size_t latin_to_utf8 = unicode_convert_latin1_to_utf8("abc", 3, latin_out);
   ASSERT_EQUAL_SIZE_T(latin_to_utf8, 3);
 
   /* prepare a UTF-16 sample */
   char16_t u16[5] = {(char16_t)'h', (char16_t)'e', (char16_t)'l', (char16_t)'l',
                      (char16_t)'o'};
-  size_t u16len = simdutf_utf8_length_from_utf16(u16, 5);
+  size_t u16len = unicode_utf8_length_from_utf16(u16, 5);
 
   /* convert utf16->utf8 safe */
   char out8[8] = {0};
   size_t safelen =
-      simdutf_convert_utf16_to_utf8_safe(u16, 5, out8, sizeof(out8));
+      unicode_convert_utf16_to_utf8_safe(u16, 5, out8, sizeof(out8));
   ASSERT_EQUAL_SIZE_T(safelen, u16len);
 
   /* convert with errors */
-  simdutf_result cr = simdutf_convert_utf16_to_utf8_with_errors(u16, 5, out8);
-  ASSERT_EQUAL_INT(cr.error, SIMDUTF_ERROR_SUCCESS);
+  unicode_result cr = unicode_convert_utf16_to_utf8_with_errors(u16, 5, out8);
+  ASSERT_EQUAL_INT(cr.error, UNICODE_ERROR_SUCCESS);
   return 0;
 }
 
 static int test_counts_and_find_utf16_c(void) {
   char16_t u16[5] = {(char16_t)'h', (char16_t)'e', (char16_t)'l', (char16_t)'l',
                      (char16_t)'o'};
-  size_t c16 = simdutf_count_utf16(u16, 5);
+  size_t c16 = unicode_count_utf16(u16, 5);
   ASSERT_EQUAL_SIZE_T(c16, 5);
 
-  const char16_t *f16 = simdutf_find_utf16(u16, u16 + 5, (char16_t)'e');
+  const char16_t *f16 = unicode_find_utf16(u16, u16 + 5, (char16_t)'e');
   ASSERT_TRUE(f16 != NULL);
   ASSERT_TRUE(f16 == u16 + 1);
   return 0;
 }
 
 static int test_base64_length_helpers_c(void) {
-  size_t maxbin = simdutf_maximal_binary_length_from_base64("aGVsbG8=", 8);
+  size_t maxbin = unicode_maximal_binary_length_from_base64("aGVsbG8=", 8);
   ASSERT_TRUE(maxbin >= 5);
 
-  size_t b64len = simdutf_base64_length_from_binary(5, SIMDUTF_BASE64_DEFAULT);
+  size_t b64len = unicode_base64_length_from_binary(5, UNICODE_BASE64_DEFAULT);
   ASSERT_TRUE(b64len >= 8);
 
-  size_t with_lines = simdutf_base64_length_from_binary_with_lines(
-      5, SIMDUTF_BASE64_DEFAULT, 4);
+  size_t with_lines = unicode_base64_length_from_binary_with_lines(
+      5, UNICODE_BASE64_DEFAULT, 4);
   ASSERT_TRUE(with_lines >= b64len);
 
   char out[64] = {0};
-  size_t bl = simdutf_binary_to_base64_with_lines("hello", 5, out, 4,
-                                                  SIMDUTF_BASE64_DEFAULT);
+  size_t bl = unicode_binary_to_base64_with_lines("hello", 5, out, 4,
+                                                  UNICODE_BASE64_DEFAULT);
   ASSERT_TRUE(bl > 0);
   return 0;
 }

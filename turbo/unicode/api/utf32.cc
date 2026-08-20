@@ -46,7 +46,7 @@ namespace turbo {
 
      [[nodiscard]] size_t convert_utf32_to_utf16(
         const char32_t* buf, size_t len, char16_t* utf16_buffer) noexcept {
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
         return convert_utf32_to_utf16be(buf, len, utf16_buffer);
 #else
         return convert_utf32_to_utf16le(buf, len, utf16_buffer);
@@ -86,7 +86,7 @@ namespace turbo {
     }
      [[nodiscard]] UnicodeResult convert_utf32_to_utf16_with_errors(
         const char32_t* buf, size_t len, char16_t* utf16_buffer) noexcept {
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
         return convert_utf32_to_utf16be_with_errors(buf, len, utf16_buffer);
 #else
         return convert_utf32_to_utf16le_with_errors(buf, len, utf16_buffer);
@@ -106,7 +106,7 @@ namespace turbo {
 
      [[nodiscard]] size_t convert_valid_utf32_to_utf16(
         const char32_t* buf, size_t len, char16_t* utf16_buffer) noexcept {
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
         return convert_valid_utf32_to_utf16be(buf, len, utf16_buffer);
 #else
         return convert_valid_utf32_to_utf16le(buf, len, utf16_buffer);

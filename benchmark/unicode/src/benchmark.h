@@ -65,11 +65,11 @@ protected:
                    size_t iterations) override;
 
 private:
-  using simdutf_fn = void (Benchmark::*)(const turbo::implementation &,
+  using unicode_fn = void (Benchmark::*)(const turbo::implementation &,
                                          size_t);
   using thirdparty_fn = void (Benchmark::*)(size_t);
 
-  std::map<std::string, std::pair<std::variant<simdutf_fn, thirdparty_fn>,
+  std::map<std::string, std::pair<std::variant<unicode_fn, thirdparty_fn>,
                                   std::set<turbo::TextEncoding>>>
       benchmarks;
 

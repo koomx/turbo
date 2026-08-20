@@ -1,29 +1,41 @@
-#ifndef SIMDUTF_LASX_H
-#define SIMDUTF_LASX_H
+#ifndef UNICODE_LASX_H
+#define UNICODE_LASX_H
 
-#ifdef SIMDUTF_FALLBACK_H
+#ifdef UNICODE_FALLBACK_H
 #error "lasx.h must be included before fallback.h"
 #endif
 
 #include <turbo/unicode/engine/portability.h>
 
-#ifndef SIMDUTF_IMPLEMENTATION_LASX
-#define SIMDUTF_IMPLEMENTATION_LASX (SIMDUTF_IS_LSX)
-#endif
-#if SIMDUTF_IMPLEMENTATION_LASX && SIMDUTF_IS_LASX
-#define SIMDUTF_CAN_ALWAYS_RUN_LASX 1
+#ifndef UNICODE_IMPLEMENTATION_LASX
+#if KUMO_SIMD_LASX
+#define UNICODE_IMPLEMENTATION_LASX 1
+#elif KUMO_SIMD_LSX
+#if defined(__GNUC__) && !defined(__clang__) && !defined(__INTEL_COMPILER) && \
+    !defined(__NVCOMPILER) && \
+    (__GNUC__ > 15 || (__GNUC__ == 15 && __GNUC_MINOR__ >= 0))
+#define UNICODE_IMPLEMENTATION_LASX 1
 #else
-#define SIMDUTF_CAN_ALWAYS_RUN_LASX 0
+#define UNICODE_IMPLEMENTATION_LASX 0
+#endif
+#else
+#define UNICODE_IMPLEMENTATION_LASX 0
+#endif
+#endif
+#if UNICODE_IMPLEMENTATION_LASX && KUMO_SIMD_LASX
+#define UNICODE_CAN_ALWAYS_RUN_LASX 1
+#else
+#define UNICODE_CAN_ALWAYS_RUN_LASX 0
 #endif
 
-#define SIMDUTF_CAN_ALWAYS_RUN_FALLBACK (SIMDUTF_IMPLEMENTATION_FALLBACK)
-#include <turbo/unicode/internal/isadetection.h>
+#define UNICODE_CAN_ALWAYS_RUN_FALLBACK (UNICODE_IMPLEMENTATION_FALLBACK)
+#include <turbo/arch/isadetection.h>
 
-#if SIMDUTF_IMPLEMENTATION_LASX
-#define SIMDUTF_TARGET_LASX SIMDUTF_TARGET_REGION("lasx,lsx")
+#if UNICODE_IMPLEMENTATION_LASX
+#define UNICODE_TARGET_LASX UNICODE_TARGET_REGION("lasx,lsx")
 
 // For runtime dispatching to work, we need the lsxintrin to appear
-// before we call SIMDUTF_TARGET_LASX. It is unclear why.
+// before we call UNICODE_TARGET_LASX. It is unclear why.
 #include <lsxintrin.h>
 
 namespace turbo {
@@ -42,6 +54,6 @@ namespace turbo {
 
 #include <turbo/unicode/engine/lasx/end.h>
 
-#endif // SIMDUTF_IMPLEMENTATION_LASX
+#endif // UNICODE_IMPLEMENTATION_LASX
 
-#endif // SIMDUTF_LASX_H
+#endif // UNICODE_LASX_H

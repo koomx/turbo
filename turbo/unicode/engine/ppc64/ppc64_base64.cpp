@@ -76,7 +76,7 @@ vector_u8 encoding_translate_6bit_values(const vector_u8 input) {
 */
 template <typename = void>
 KUMO_FORCE_INLINE vector_u8 encoding_expand_6bit_fields(vector_u8 input) {
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
 #define indices4(dx) (dx + 0), (dx + 1), (dx + 1), (dx + 2)
     const auto expand_3_to_4 = vector_u8(indices4(0 * 3), indices4(1 * 3),
         indices4(2 * 3), indices4(3 * 3));
@@ -128,7 +128,7 @@ KUMO_FORCE_INLINE vector_u8 encoding_expand_6bit_fields(vector_u8 input) {
     const auto t3 = select(uint32_t(0x0000003f), in.shr<10>(), t2);
 
     return as_vector_u8(t3);
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
 }
 
 template <bool isbase64url>
@@ -197,7 +197,7 @@ static KUMO_FORCE_INLINE void compress(const vector_u8 data, uint16_t mask,
     // thintable_epi8[mask2] into a 128-bit register, using only
     // two instructions on most compilers.
 
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
     vec_u64_t tmp = {
         tables::base64::thintable_epi8[mask2],
         tables::base64::thintable_epi8[mask1],
@@ -217,7 +217,7 @@ static KUMO_FORCE_INLINE void compress(const vector_u8 data, uint16_t mask,
 
     // we increment by 0x08 the second half of the mask
     shufmask = shufmask + vector_u8(0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8);
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
 
     // this is the version "nearly pruned"
     const auto pruned = shufmask.lookup_16(data);
@@ -236,7 +236,7 @@ static KUMO_FORCE_INLINE void compress(const vector_u8 data, uint16_t mask,
 }
 
 static KUMO_FORCE_INLINE vector_u8 decoding_pack(vector_u8 input) {
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
     // in   = [00aaaaaa|00bbbbbb|00cccccc|00dddddd]
     // want = [00000000|aaaaaabb|bbbbcccc|ccdddddd]
 
@@ -280,7 +280,7 @@ static KUMO_FORCE_INLINE vector_u8 decoding_pack(vector_u8 input) {
     const auto t = shuffle.lookup_16(tmp);
 
     return t;
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
 }
 static KUMO_FORCE_INLINE void base64_decode(char* out, vector_u8 input) {
     const auto expanded = decoding_pack(input);

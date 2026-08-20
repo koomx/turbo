@@ -72,12 +72,10 @@ struct base16 : base_u16<T> {
 
     static const int SIZE = sizeof(base_u16<T>::value);
     void dump() const {
-#ifdef SIMDUTF_LOGGING
         uint16_t temp[8];
         vst1q_u16(temp, *this);
         printf("[%04x, %04x, %04x, %04x, %04x, %04x, %04x, %04x]\n", temp[0],
             temp[1], temp[2], temp[3], temp[4], temp[5], temp[6], temp[7]);
-#endif // SIMDUTF_LOGGING
     }
     template <int N = 1>
     KUMO_FORCE_INLINE simd16<T> prev(const simd16<T> prev_chunk) const {
@@ -146,7 +144,7 @@ template <>
 struct simd16<int16_t> : base16_numeric<int16_t> {
     KUMO_FORCE_INLINE simd16()
         : base16_numeric<int16_t>() { }
-#ifndef SIMDUTF_REGULAR_VISUAL_STUDIO
+#if !KUMO_COMPILER_MSVC
     KUMO_FORCE_INLINE simd16(const uint16x8_t _value)
         : base16_numeric<int16_t>(_value) { }
 #endif
@@ -346,8 +344,8 @@ struct simd16x32 {
     }
 
     KUMO_FORCE_INLINE uint64_t to_bitmask() const {
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
-        const uint8x16_t bit_mask = simdutf_make_uint8x16_t(0x01, 0x02, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80,
+#if KUMO_COMPILER_MSVC
+        const uint8x16_t bit_mask = unicode_make_uint8x16_t(0x01, 0x02, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80,
             0x01, 0x02, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80);
 #else
         const uint8x16_t bit_mask = { 0x01, 0x02, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80,

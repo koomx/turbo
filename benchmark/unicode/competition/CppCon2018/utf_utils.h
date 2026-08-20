@@ -58,7 +58,7 @@
 #else
     #define KEWB_PLATFORM_LINUX
 #endif
-SIMDUTF_TARGET_WESTMERE
+UNICODE_TARGET_WESTMERE
 
 namespace uu {
 //--------------------------------------------------------------------------------------------------
@@ -590,6 +590,6 @@ UtfUtils::AdvanceWithTrace(char8_t const*& pSrc, char8_t const* pSrcEnd, char32_
 }
 
 }       //- namespace uu
-SIMDUTF_UNTARGET_REGION
+UNICODE_UNTARGET_REGION
 
 #endif  //- KEWB_UNICODE_UTILS_H_DEFINED

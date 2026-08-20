@@ -1,12 +1,12 @@
-#ifndef SIMDUTF_PPC64_SIMD_H
-#define SIMDUTF_PPC64_SIMD_H
+#ifndef UNICODE_PPC64_SIMD_H
+#define UNICODE_PPC64_SIMD_H
 
 #include <turbo/unicode/utf.h>
 #include <turbo/unicode/engine/ppc64/bitmanipulation.h>
 #include <type_traits>
 
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
             namespace simd {
 
@@ -70,7 +70,7 @@ template <typename T> struct vector_u32_type_for_element_aux {
                         3 * 8, 2 * 8, 1 * 8, 0 * 8 };
 
                     const auto result = (vec_u64_t)vec_vbpermq((vec_u8_t)vec, perm_mask);
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
                     return static_cast<uint16_t>(result[0]);
 #else
                     return static_cast<uint16_t>(result[1]);
@@ -172,7 +172,7 @@ template <typename T> struct vector_u32_type_for_element_aux {
 
             } // namespace simd
         } // unnamed namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
-#endif // SIMDUTF_PPC64_SIMD_INPUT_H
+#endif // UNICODE_PPC64_SIMD_INPUT_H

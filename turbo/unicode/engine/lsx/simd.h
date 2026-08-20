@@ -1,11 +1,11 @@
-#ifndef SIMDUTF_LSX_SIMD_H
-#define SIMDUTF_LSX_SIMD_H
+#ifndef UNICODE_LSX_SIMD_H
+#define UNICODE_LSX_SIMD_H
 
 #include <turbo/unicode/utf.h>
 #include <turbo/unicode/engine/lsx/bitmanipulation.h>
 
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
             namespace simd {
 
@@ -428,7 +428,7 @@ namespace turbo {
 
             } // namespace simd
         } // unnamed namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
-#endif // SIMDUTF_LSX_SIMD_H
+#endif // UNICODE_LSX_SIMD_H

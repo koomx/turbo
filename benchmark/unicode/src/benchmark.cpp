@@ -1,4 +1,5 @@
 #include "benchmark.h"
+#include <turbo/macros/macros/pragma/pragma.h>
 #include <turbo/unicode/utf.h>
 
 #include <cassert>
@@ -15,11 +16,11 @@
  * by stgatilov (2019)
  *  https://dirtyhandscoding.github.io/posts/utf8lut-vectorized-utf-8-converter-introduction.html
  */
-SIMDUTF_TARGET_WESTMERE
+UNICODE_TARGET_WESTMERE
 namespace {
   #include "benchmarks/competition/utf8lut/src/utf8lut.h"
 }
-SIMDUTF_UNTARGET_REGION
+UNICODE_UNTARGET_REGION
 
   /**
    * Bob Steagall, CppCon2018
@@ -224,7 +225,7 @@ Benchmark::Benchmark(std::vector<input::Testcase> &&testcases)
   register_function("convert_valid_utf16le_to_latin1",
                     &Benchmark::run_convert_valid_utf16le_to_latin1,
                     turbo::TextEncoding::UTF16_LE);
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
   register_function("convert_utf16_to_utf8_safe",
                     &Benchmark::run_convert_utf16_to_utf8_safe,
                     turbo::TextEncoding::UTF16_BE);
@@ -232,7 +233,7 @@ Benchmark::Benchmark(std::vector<input::Testcase> &&testcases)
   register_function("convert_utf16_to_utf8_safe",
                     &Benchmark::run_convert_utf16_to_utf8_safe,
                     turbo::TextEncoding::UTF16_LE);
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
   register_function("convert_utf16le_to_utf8",
                     &Benchmark::run_convert_utf16le_to_utf8,
                     turbo::TextEncoding::UTF16_LE);
@@ -510,7 +511,7 @@ void Benchmark::list_procedures(ListingMode lm) const {
       printf("    \"name\": \"%s\",\n", name.c_str());
       if (std::holds_alternative<thirdparty_fn>(entry.first)) {
         printf("    \"simdutf\": false,\n");
-      } else if (std::holds_alternative<simdutf_fn>(entry.first)) {
+      } else if (std::holds_alternative<unicode_fn>(entry.first)) {
         printf("    \"simdutf\": true,\n");
       }
 
@@ -571,7 +572,7 @@ void Benchmark::run(const std::string &procedure_name, size_t iterations) {
     const auto fn = std::get<thirdparty_fn>(entry.first);
 
     (this->*fn)(iterations);
-  } else if (std::holds_alternative<simdutf_fn>(entry.first)) {
+  } else if (std::holds_alternative<unicode_fn>(entry.first)) {
     const auto p = procedure_name.find('+');
     const std::string name{procedure_name.substr(0, p)};
     const std::string impl{procedure_name.substr(p + 1)};
@@ -582,19 +583,18 @@ void Benchmark::run(const std::string &procedure_name, size_t iterations) {
     }
     // If you want to skip the CPU feature checks, you can set
     // a variable when calling the benchmark program. E.g.,
-    // SIMDUTF_SKIP_CPU_CHECK=ON benchmark -F myfile.txt
+    // UNICODE_SKIP_CPU_CHECK=ON benchmark -F myfile.txt
     // This might result in a crash (E.g., Illegal instruction).
-    SIMDUTF_PUSH_DISABLE_WARNINGS
-    SIMDUTF_DISABLE_DEPRECATED_WARNING // Disable CRT_SECURE warning on MSVC:
+    KUMO_DISABLE_DEPRECATED_WARNINGS // Disable CRT_SECURE warning on MSVC:
                                        // manually verified this is safe
-        static const char *skip_check = getenv("SIMDUTF_SKIP_CPU_CHECK");
-    SIMDUTF_POP_DISABLE_WARNINGS
+        static const char *skip_check = getenv("UNICODE_SKIP_CPU_CHECK");
+    KUMO_RESTORE_DEPRECATED_WARNINGS
     if (!skip_check && !implementation->supported_by_runtime_system()) {
       std::cout << procedure_name << ": unsupported by the system\n";
       return;
     }
 
-    const auto fn = std::get<simdutf_fn>(entry.first);
+    const auto fn = std::get<unicode_fn>(entry.first);
     (this->*fn)(*implementation, iterations);
   } else {
     throw std::logic_error("The entry for '" + procedure_name +

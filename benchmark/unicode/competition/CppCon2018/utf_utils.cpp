@@ -15,7 +15,7 @@
 #elif defined KEWB_PLATFORM_WINDOWS
     #include <intrin.h>
 #endif
-SIMDUTF_TARGET_WESTMERE
+UNICODE_TARGET_WESTMERE
 
 namespace uu {
 //- Static member data init.
@@ -1273,4 +1273,4 @@ UtfUtils::PrintStateData(State curr, CharClass type, uint32_t unit, State next)
 }
 
 }   //- Namespace uu
-SIMDUTF_UNTARGET_REGION
+UNICODE_UNTARGET_REGION

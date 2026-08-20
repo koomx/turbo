@@ -1,10 +1,10 @@
-#ifndef SIMDUTF_WESTMERE_IMPLEMENTATION_H
-#define SIMDUTF_WESTMERE_IMPLEMENTATION_H
+#ifndef UNICODE_WESTMERE_IMPLEMENTATION_H
+#define UNICODE_WESTMERE_IMPLEMENTATION_H
 
 #include <turbo/unicode/engine/implementation.h>
 
 // The constructor may be executed on any host, so we take care not to use
-// SIMDUTF_TARGET_REGION
+// UNICODE_TARGET_REGION
 namespace turbo {
     namespace westmere {
 
@@ -269,4 +269,4 @@ namespace turbo {
     } // namespace westmere
 } // namespace turbo
 
-#endif // SIMDUTF_WESTMERE_IMPLEMENTATION_H
+#endif // UNICODE_WESTMERE_IMPLEMENTATION_H

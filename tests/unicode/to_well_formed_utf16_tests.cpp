@@ -8,7 +8,7 @@
 #include <tests/unicode/helpers/random_utf16.h>
 #include <tests/unicode/helpers/test.h>
 
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
 constexpr char16_t replacement_le = 0xFDFF;
 constexpr char16_t replacement_be = 0xFFFD;
 #else
@@ -19,7 +19,7 @@ constexpr char16_t replacement_be = 0xFDFF;
 TEST_LOOP(to_well_formed_utf16le_single_surrogate) {
     const size_t length = 128;
     std::vector<uint16_t> utf16(length);
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
     std::vector<char16_t> surrogates = { 0x00D8, 0x00DC, 0xFFDF, 0x00D8, 0x00DC };
 #else
     std::vector<char16_t> surrogates = { 0xD800, 0xDC00, 0xDFFF, 0xD800, 0xDC00 };
@@ -48,7 +48,7 @@ TEST_LOOP(to_well_formed_utf16le_single_surrogate) {
 TEST_LOOP(to_well_formed_utf16be_single_surrogate) {
     const size_t length = 128;
     std::vector<uint16_t> utf16(length);
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
     std::vector<char16_t> surrogates = { 0xD800, 0xDC00, 0xDFFF, 0xD800, 0xDC00 };
 #else
     std::vector<char16_t> surrogates = { 0x00D8, 0x00DC, 0xFFDF, 0x00D8, 0x00DC };

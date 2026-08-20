@@ -184,7 +184,7 @@ template <bool with_validation>
     return res.count;
 }
 
-template <simdutf_ByteFlip bflip>
+template <unicode_ByteFlip bflip>
 KUMO_FORCE_INLINE static UnicodeResult
 rvv_convert_utf32_to_utf16_with_errors(const char32_t* src, size_t len,
     char16_t* dst) {
@@ -206,7 +206,7 @@ rvv_convert_utf32_to_utf16_with_errors(const char32_t* src, size_t len,
             }
 
             vlOut = vl;
-            vuint16m2_t n = simdutf_byteflip<bflip>(__riscv_vncvt_x_x_w_u16m2(v, vlOut), vlOut);
+            vuint16m2_t n = unicode_byteflip<bflip>(__riscv_vncvt_x_x_w_u16m2(v, vlOut), vlOut);
             __riscv_vse16_v_u16m2((uint16_t*)dst, n, vlOut);
             continue;
         }
@@ -239,21 +239,21 @@ rvv_convert_utf32_to_utf16_with_errors(const char32_t* src, size_t len,
 
  [[nodiscard]] UnicodeResult implementation::convert_utf32_to_utf16le_with_errors(
     const char32_t* src, size_t len, char16_t* dst) const noexcept {
-    return rvv_convert_utf32_to_utf16_with_errors<simdutf_ByteFlip::NONE>(
+    return rvv_convert_utf32_to_utf16_with_errors<unicode_ByteFlip::NONE>(
         src, len, dst);
 }
 
  [[nodiscard]] UnicodeResult implementation::convert_utf32_to_utf16be_with_errors(
     const char32_t* src, size_t len, char16_t* dst) const noexcept {
     if (supports_zvbb())
-        return rvv_convert_utf32_to_utf16_with_errors<simdutf_ByteFlip::ZVBB>(
+        return rvv_convert_utf32_to_utf16_with_errors<unicode_ByteFlip::ZVBB>(
             src, len, dst);
     else
-        return rvv_convert_utf32_to_utf16_with_errors<simdutf_ByteFlip::V>(src, len,
+        return rvv_convert_utf32_to_utf16_with_errors<unicode_ByteFlip::V>(src, len,
             dst);
 }
 
-template <simdutf_ByteFlip bflip>
+template <unicode_ByteFlip bflip>
 KUMO_FORCE_INLINE static size_t
 rvv_convert_valid_utf32_to_utf16(const char32_t* src, size_t len,
     char16_t* dst) {
@@ -266,7 +266,7 @@ rvv_convert_valid_utf32_to_utf16(const char32_t* src, size_t len,
         vuint32m4_t v = __riscv_vle32_v_u32m4((uint32_t*)src, vl);
         if (__riscv_vfirst_m_b8(__riscv_vmsgtu_vx_u32m4_b8(v, 0xFFFF, vl), vl) < 0) {
             vlOut = vl;
-            vuint16m2_t n = simdutf_byteflip<bflip>(__riscv_vncvt_x_x_w_u16m2(v, vlOut), vlOut);
+            vuint16m2_t n = unicode_byteflip<bflip>(__riscv_vncvt_x_x_w_u16m2(v, vlOut), vlOut);
             __riscv_vse16_v_u16m2((uint16_t*)dst, n, vlOut);
             continue;
         }
@@ -277,15 +277,15 @@ rvv_convert_valid_utf32_to_utf16(const char32_t* src, size_t len,
 
  [[nodiscard]] size_t implementation::convert_valid_utf32_to_utf16le(
     const char32_t* src, size_t len, char16_t* dst) const noexcept {
-    return rvv_convert_valid_utf32_to_utf16<simdutf_ByteFlip::NONE>(src, len,
+    return rvv_convert_valid_utf32_to_utf16<unicode_ByteFlip::NONE>(src, len,
         dst);
 }
 
  [[nodiscard]] size_t implementation::convert_valid_utf32_to_utf16be(
     const char32_t* src, size_t len, char16_t* dst) const noexcept {
     if (supports_zvbb())
-        return rvv_convert_valid_utf32_to_utf16<simdutf_ByteFlip::ZVBB>(src, len,
+        return rvv_convert_valid_utf32_to_utf16<unicode_ByteFlip::ZVBB>(src, len,
             dst);
     else
-        return rvv_convert_valid_utf32_to_utf16<simdutf_ByteFlip::V>(src, len, dst);
+        return rvv_convert_valid_utf32_to_utf16<unicode_ByteFlip::V>(src, len, dst);
 }

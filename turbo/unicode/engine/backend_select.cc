@@ -13,15 +13,14 @@
 // limitations under the License.
 //
 
-#include <turbo/unicode/engine/backend_select.h>
-#include <turbo/unicode/utf.h>
 #include <climits>
 #include <initializer_list>
+#include <turbo/macros/macros/pragma/pragma.h>
+#include <turbo/unicode/engine/backend_select.h>
+#include <turbo/unicode/utf.h>
 #include <type_traits>
 // The best choice should always come first!
-#ifndef SIMDUTF_REGULAR_VISUAL_STUDIO
-SIMDUTF_DISABLE_UNUSED_WARNING
-#endif
+KUMO_DISABLE_UNUSED_WARNING
 #include <turbo/unicode/engine/arm64.h>
 #include <turbo/unicode/engine/icelake.h>
 #include <turbo/unicode/engine/haswell.h>
@@ -31,9 +30,7 @@ SIMDUTF_DISABLE_UNUSED_WARNING
 #include <turbo/unicode/engine/lasx.h>
 #include <turbo/unicode/engine/lsx.h>
 #include <turbo/unicode/engine/fallback.h> // have it always last.
-#ifndef SIMDUTF_REGULAR_VISUAL_STUDIO
-SIMDUTF_POP_DISABLE_WARNINGS
-#endif
+KUMO_RESTORE_UNUSED_WARNING
 
 
 #include <turbo/unicode/engine/backend_select.h>
@@ -53,96 +50,96 @@ namespace turbo {
 // When there is a single implementation, we should not pay a price
 // for dispatching to the best implementation. We should just use the
 // one we have. This is a compile-time check.
-#define SIMDUTF_SINGLE_IMPLEMENTATION \
-    (SIMDUTF_IMPLEMENTATION_ICELAKE + SIMDUTF_IMPLEMENTATION_HASWELL + SIMDUTF_IMPLEMENTATION_WESTMERE + SIMDUTF_IMPLEMENTATION_ARM64 + SIMDUTF_IMPLEMENTATION_PPC64 + SIMDUTF_IMPLEMENTATION_LSX + SIMDUTF_IMPLEMENTATION_LASX + SIMDUTF_IMPLEMENTATION_FALLBACK == 1)
+#define UNICODE_SINGLE_IMPLEMENTATION \
+    (UNICODE_IMPLEMENTATION_ICELAKE + UNICODE_IMPLEMENTATION_HASWELL + UNICODE_IMPLEMENTATION_WESTMERE + UNICODE_IMPLEMENTATION_ARM64 + UNICODE_IMPLEMENTATION_PPC64 + UNICODE_IMPLEMENTATION_LSX + UNICODE_IMPLEMENTATION_LASX + UNICODE_IMPLEMENTATION_FALLBACK == 1)
 
-#if SIMDUTF_IMPLEMENTATION_ICELAKE
+#if UNICODE_IMPLEMENTATION_ICELAKE
         static const icelake::implementation* get_icelake_singleton() {
-            static const icelake::implementation icelake_singleton {};
+            static const icelake::implementation icelake_singleton { };
             return &icelake_singleton;
         }
 #endif
-#if SIMDUTF_IMPLEMENTATION_HASWELL
+#if UNICODE_IMPLEMENTATION_HASWELL
         static const haswell::implementation* get_haswell_singleton() {
-            static const haswell::implementation haswell_singleton {};
+            static const haswell::implementation haswell_singleton { };
             return &haswell_singleton;
         }
 #endif
-#if SIMDUTF_IMPLEMENTATION_WESTMERE
+#if UNICODE_IMPLEMENTATION_WESTMERE
         static const westmere::implementation* get_westmere_singleton() {
-            static const westmere::implementation westmere_singleton {};
+            static const westmere::implementation westmere_singleton { };
             return &westmere_singleton;
         }
 #endif
-#if SIMDUTF_IMPLEMENTATION_ARM64
+#if UNICODE_IMPLEMENTATION_ARM64
         static const arm64::implementation* get_arm64_singleton() {
-            static const arm64::implementation arm64_singleton {};
+            static const arm64::implementation arm64_singleton { };
             return &arm64_singleton;
         }
 #endif
-#if SIMDUTF_IMPLEMENTATION_PPC64
+#if UNICODE_IMPLEMENTATION_PPC64
         static const ppc64::implementation* get_ppc64_singleton() {
-            static const ppc64::implementation ppc64_singleton {};
+            static const ppc64::implementation ppc64_singleton { };
             return &ppc64_singleton;
         }
 #endif
-#if SIMDUTF_IMPLEMENTATION_RVV
+#if UNICODE_IMPLEMENTATION_RVV
         static const rvv::implementation* get_rvv_singleton() {
-            static const rvv::implementation rvv_singleton {};
+            static const rvv::implementation rvv_singleton { };
             return &rvv_singleton;
         }
 #endif
-#if SIMDUTF_IMPLEMENTATION_LASX
+#if UNICODE_IMPLEMENTATION_LASX
         static const lasx::implementation* get_lasx_singleton() {
-            static const lasx::implementation lasx_singleton {};
+            static const lasx::implementation lasx_singleton { };
             return &lasx_singleton;
         }
 #endif
-#if SIMDUTF_IMPLEMENTATION_LSX
+#if UNICODE_IMPLEMENTATION_LSX
         static const lsx::implementation* get_lsx_singleton() {
-            static const lsx::implementation lsx_singleton {};
+            static const lsx::implementation lsx_singleton { };
             return &lsx_singleton;
         }
 #endif
-#if SIMDUTF_IMPLEMENTATION_FALLBACK
+#if UNICODE_IMPLEMENTATION_FALLBACK
         static const fallback::implementation* get_fallback_singleton() {
-            static const fallback::implementation fallback_singleton {};
+            static const fallback::implementation fallback_singleton { };
             return &fallback_singleton;
         }
 #endif
 
-#if SIMDUTF_SINGLE_IMPLEMENTATION
+#if UNICODE_SINGLE_IMPLEMENTATION
         KUMO_FORCE_INLINE static const implementation* get_single_implementation() {
             return
-#if SIMDUTF_IMPLEMENTATION_ICELAKE
+#if UNICODE_IMPLEMENTATION_ICELAKE
                 get_icelake_singleton();
 #endif
-#if SIMDUTF_IMPLEMENTATION_HASWELL
+#if UNICODE_IMPLEMENTATION_HASWELL
             get_haswell_singleton();
 #endif
-#if SIMDUTF_IMPLEMENTATION_WESTMERE
+#if UNICODE_IMPLEMENTATION_WESTMERE
             get_westmere_singleton();
 #endif
-#if SIMDUTF_IMPLEMENTATION_ARM64
+#if UNICODE_IMPLEMENTATION_ARM64
             get_arm64_singleton();
 #endif
-#if SIMDUTF_IMPLEMENTATION_PPC64
+#if UNICODE_IMPLEMENTATION_PPC64
             get_ppc64_singleton();
 #endif
-#if SIMDUTF_IMPLEMENTATION_LASX
+#if UNICODE_IMPLEMENTATION_LASX
             get_lasx_singleton();
 #endif
-#if SIMDUTF_IMPLEMENTATION_LSX
+#if UNICODE_IMPLEMENTATION_LSX
             get_lsx_singleton();
 #endif
-#if SIMDUTF_IMPLEMENTATION_FALLBACK
+#if UNICODE_IMPLEMENTATION_FALLBACK
             get_fallback_singleton();
 #endif
         }
 #endif
 
         /// @private Detects best supported implementation on first use, and sets it
-        class detect_best_supported_implementation_on_first_use final
+        class detect_best_supported_implementation_on_first_use
             : public implementation {
         public:
             std::string_view name() const noexcept final { return set_best()->name(); }
@@ -153,480 +150,479 @@ namespace turbo {
                 return set_best()->required_instruction_sets();
             }
 
-             [[nodiscard]] int
+            [[nodiscard]] int
             detect_encodings(const char* input, size_t length) const noexcept override {
                 return set_best()->detect_encodings(input, length);
             }
 
-             [[nodiscard]] bool
-            validate_utf8(const char* buf, size_t len) const noexcept final override {
+            [[nodiscard]] bool
+            validate_utf8(const char* buf, size_t len) const noexcept final {
                 return set_best()->validate_utf8(buf, len);
             }
 
-             [[nodiscard]] UnicodeResult validate_utf8_with_errors(
-                const char* buf, size_t len) const noexcept final override {
+            [[nodiscard]] UnicodeResult validate_utf8_with_errors(
+                const char* buf, size_t len) const noexcept final {
                 return set_best()->validate_utf8_with_errors(buf, len);
             }
 
-             [[nodiscard]] bool
-            validate_ascii(const char* buf, size_t len) const noexcept final override {
+            [[nodiscard]] bool
+            validate_ascii(const char* buf, size_t len) const noexcept final {
                 return set_best()->validate_ascii(buf, len);
             }
-             [[nodiscard]] UnicodeResult validate_ascii_with_errors(
-                const char* buf, size_t len) const noexcept final override {
+            [[nodiscard]] UnicodeResult validate_ascii_with_errors(
+                const char* buf, size_t len) const noexcept final {
                 return set_best()->validate_ascii_with_errors(buf, len);
             }
 
-             [[nodiscard]] bool
+            [[nodiscard]] bool
             validate_utf16le_as_ascii(const char16_t* buf,
-                size_t len) const noexcept final override {
+                size_t len) const noexcept final {
                 return set_best()->validate_utf16le_as_ascii(buf, len);
             }
-             [[nodiscard]] bool
+            [[nodiscard]] bool
             validate_utf16be_as_ascii(const char16_t* buf,
-                size_t len) const noexcept final override {
+                size_t len) const noexcept final {
                 return set_best()->validate_utf16be_as_ascii(buf, len);
             }
 
-             [[nodiscard]] bool
+            [[nodiscard]] bool
             validate_utf16le(const char16_t* buf,
-                size_t len) const noexcept final override {
+                size_t len) const noexcept final {
                 return set_best()->validate_utf16le(buf, len);
             }
 
-             [[nodiscard]] bool
+            [[nodiscard]] bool
             validate_utf16be(const char16_t* buf,
-                size_t len) const noexcept final override {
+                size_t len) const noexcept final {
                 return set_best()->validate_utf16be(buf, len);
             }
 
-             [[nodiscard]] UnicodeResult validate_utf16le_with_errors(
-                const char16_t* buf, size_t len) const noexcept final override {
+            [[nodiscard]] UnicodeResult validate_utf16le_with_errors(
+                const char16_t* buf, size_t len) const noexcept final {
                 return set_best()->validate_utf16le_with_errors(buf, len);
             }
 
-             [[nodiscard]] UnicodeResult validate_utf16be_with_errors(
-                const char16_t* buf, size_t len) const noexcept final override {
+            [[nodiscard]] UnicodeResult validate_utf16be_with_errors(
+                const char16_t* buf, size_t len) const noexcept final {
                 return set_best()->validate_utf16be_with_errors(buf, len);
             }
             void to_well_formed_utf16be(const char16_t* input, size_t len,
-                char16_t* output) const noexcept final override {
+                char16_t* output) const noexcept final {
                 return set_best()->to_well_formed_utf16be(input, len, output);
             }
             void to_well_formed_utf16le(const char16_t* input, size_t len,
-                char16_t* output) const noexcept final override {
+                char16_t* output) const noexcept final {
                 return set_best()->to_well_formed_utf16le(input, len, output);
             }
 
-             [[nodiscard]] bool
+            [[nodiscard]] bool
             validate_utf32(const char32_t* buf,
-                size_t len) const noexcept final override {
+                size_t len) const noexcept final {
                 return set_best()->validate_utf32(buf, len);
             }
 
-             [[nodiscard]] UnicodeResult validate_utf32_with_errors(
-                const char32_t* buf, size_t len) const noexcept final override {
+            [[nodiscard]] UnicodeResult validate_utf32_with_errors(
+                const char32_t* buf, size_t len) const noexcept final {
                 return set_best()->validate_utf32_with_errors(buf, len);
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             convert_latin1_to_utf8(const char* buf, size_t len,
-                char* utf8_output) const noexcept final override {
+                char* utf8_output) const noexcept final {
                 return set_best()->convert_latin1_to_utf8(buf, len, utf8_output);
             }
 
-             [[nodiscard]] size_t convert_latin1_to_utf16le(
+            [[nodiscard]] size_t convert_latin1_to_utf16le(
                 const char* buf, size_t len,
-                char16_t* utf16_output) const noexcept final override {
+                char16_t* utf16_output) const noexcept final {
                 return set_best()->convert_latin1_to_utf16le(buf, len, utf16_output);
             }
 
-             [[nodiscard]] size_t convert_latin1_to_utf16be(
+            [[nodiscard]] size_t convert_latin1_to_utf16be(
                 const char* buf, size_t len,
-                char16_t* utf16_output) const noexcept final override {
+                char16_t* utf16_output) const noexcept final {
                 return set_best()->convert_latin1_to_utf16be(buf, len, utf16_output);
             }
 
-             [[nodiscard]] size_t convert_latin1_to_utf32(
+            [[nodiscard]] size_t convert_latin1_to_utf32(
                 const char* buf, size_t len,
-                char32_t* latin1_output) const noexcept final override {
+                char32_t* latin1_output) const noexcept final {
                 return set_best()->convert_latin1_to_utf32(buf, len, latin1_output);
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             convert_utf8_to_latin1(const char* buf, size_t len,
-                char* latin1_output) const noexcept final override {
+                char* latin1_output) const noexcept final {
                 return set_best()->convert_utf8_to_latin1(buf, len, latin1_output);
             }
 
-             [[nodiscard]] UnicodeResult convert_utf8_to_latin1_with_errors(
+            [[nodiscard]] UnicodeResult convert_utf8_to_latin1_with_errors(
                 const char* buf, size_t len,
-                char* latin1_output) const noexcept final override {
+                char* latin1_output) const noexcept final {
                 return set_best()->convert_utf8_to_latin1_with_errors(buf, len,
                     latin1_output);
             }
 
-             [[nodiscard]] size_t convert_valid_utf8_to_latin1(
+            [[nodiscard]] size_t convert_valid_utf8_to_latin1(
                 const char* buf, size_t len,
-                char* latin1_output) const noexcept final override {
+                char* latin1_output) const noexcept final {
                 return set_best()->convert_valid_utf8_to_latin1(buf, len, latin1_output);
             }
 
-             [[nodiscard]] size_t convert_utf8_to_utf16le(
+            [[nodiscard]] size_t convert_utf8_to_utf16le(
                 const char* buf, size_t len,
-                char16_t* utf16_output) const noexcept final override {
+                char16_t* utf16_output) const noexcept final {
                 return set_best()->convert_utf8_to_utf16le(buf, len, utf16_output);
             }
 
-             [[nodiscard]] size_t convert_utf8_to_utf16be(
+            [[nodiscard]] size_t convert_utf8_to_utf16be(
                 const char* buf, size_t len,
-                char16_t* utf16_output) const noexcept final override {
+                char16_t* utf16_output) const noexcept final {
                 return set_best()->convert_utf8_to_utf16be(buf, len, utf16_output);
             }
 
-             [[nodiscard]] UnicodeResult convert_utf8_to_utf16le_with_errors(
+            [[nodiscard]] UnicodeResult convert_utf8_to_utf16le_with_errors(
                 const char* buf, size_t len,
-                char16_t* utf16_output) const noexcept final override {
+                char16_t* utf16_output) const noexcept final {
                 return set_best()->convert_utf8_to_utf16le_with_errors(buf, len,
                     utf16_output);
             }
 
-             [[nodiscard]] UnicodeResult convert_utf8_to_utf16be_with_errors(
+            [[nodiscard]] UnicodeResult convert_utf8_to_utf16be_with_errors(
                 const char* buf, size_t len,
-                char16_t* utf16_output) const noexcept final override {
+                char16_t* utf16_output) const noexcept final {
                 return set_best()->convert_utf8_to_utf16be_with_errors(buf, len,
                     utf16_output);
             }
 
-             [[nodiscard]] size_t convert_valid_utf8_to_utf16le(
+            [[nodiscard]] size_t convert_valid_utf8_to_utf16le(
                 const char* buf, size_t len,
-                char16_t* utf16_output) const noexcept final override {
+                char16_t* utf16_output) const noexcept final {
                 return set_best()->convert_valid_utf8_to_utf16le(buf, len, utf16_output);
             }
 
-             [[nodiscard]] size_t convert_valid_utf8_to_utf16be(
+            [[nodiscard]] size_t convert_valid_utf8_to_utf16be(
                 const char* buf, size_t len,
-                char16_t* utf16_output) const noexcept final override {
+                char16_t* utf16_output) const noexcept final {
                 return set_best()->convert_valid_utf8_to_utf16be(buf, len, utf16_output);
             }
-             [[nodiscard]] UnicodeResult utf8_length_from_utf16le_with_replacement(
-                const char16_t* input, size_t length) const noexcept final override {
+            [[nodiscard]] UnicodeResult utf8_length_from_utf16le_with_replacement(
+                const char16_t* input, size_t length) const noexcept final {
                 return set_best()->utf8_length_from_utf16le_with_replacement(input, length);
             }
 
-             [[nodiscard]] UnicodeResult utf8_length_from_utf16be_with_replacement(
-                const char16_t* input, size_t length) const noexcept final override {
+            [[nodiscard]] UnicodeResult utf8_length_from_utf16be_with_replacement(
+                const char16_t* input, size_t length) const noexcept final {
                 return set_best()->utf8_length_from_utf16be_with_replacement(input, length);
             }
 
-             [[nodiscard]] size_t convert_utf16le_to_utf8_with_replacement(
+            [[nodiscard]] size_t convert_utf16le_to_utf8_with_replacement(
                 const char16_t* input, size_t length,
-                char* utf8_buffer) const noexcept final override {
+                char* utf8_buffer) const noexcept final {
                 return set_best()->convert_utf16le_to_utf8_with_replacement(input, length,
                     utf8_buffer);
             }
 
-             [[nodiscard]] size_t convert_utf16be_to_utf8_with_replacement(
+            [[nodiscard]] size_t convert_utf16be_to_utf8_with_replacement(
                 const char16_t* input, size_t length,
-                char* utf8_buffer) const noexcept final override {
+                char* utf8_buffer) const noexcept final {
                 return set_best()->convert_utf16be_to_utf8_with_replacement(input, length,
                     utf8_buffer);
             }
 
-
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             convert_utf8_to_utf32(const char* buf, size_t len,
-                char32_t* utf32_output) const noexcept final override {
+                char32_t* utf32_output) const noexcept final {
                 return set_best()->convert_utf8_to_utf32(buf, len, utf32_output);
             }
 
-             [[nodiscard]] UnicodeResult convert_utf8_to_utf32_with_errors(
+            [[nodiscard]] UnicodeResult convert_utf8_to_utf32_with_errors(
                 const char* buf, size_t len,
-                char32_t* utf32_output) const noexcept final override {
+                char32_t* utf32_output) const noexcept final {
                 return set_best()->convert_utf8_to_utf32_with_errors(buf, len,
                     utf32_output);
             }
 
-             [[nodiscard]] size_t convert_valid_utf8_to_utf32(
+            [[nodiscard]] size_t convert_valid_utf8_to_utf32(
                 const char* buf, size_t len,
-                char32_t* utf32_output) const noexcept final override {
+                char32_t* utf32_output) const noexcept final {
                 return set_best()->convert_valid_utf8_to_utf32(buf, len, utf32_output);
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             convert_utf16le_to_latin1(const char16_t* buf, size_t len,
-                char* latin1_output) const noexcept final override {
+                char* latin1_output) const noexcept final {
                 return set_best()->convert_utf16le_to_latin1(buf, len, latin1_output);
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             convert_utf16be_to_latin1(const char16_t* buf, size_t len,
-                char* latin1_output) const noexcept final override {
+                char* latin1_output) const noexcept final {
                 return set_best()->convert_utf16be_to_latin1(buf, len, latin1_output);
             }
 
-             [[nodiscard]] UnicodeResult convert_utf16le_to_latin1_with_errors(
+            [[nodiscard]] UnicodeResult convert_utf16le_to_latin1_with_errors(
                 const char16_t* buf, size_t len,
-                char* latin1_output) const noexcept final override {
+                char* latin1_output) const noexcept final {
                 return set_best()->convert_utf16le_to_latin1_with_errors(buf, len,
                     latin1_output);
             }
 
-             [[nodiscard]] UnicodeResult convert_utf16be_to_latin1_with_errors(
+            [[nodiscard]] UnicodeResult convert_utf16be_to_latin1_with_errors(
                 const char16_t* buf, size_t len,
-                char* latin1_output) const noexcept final override {
+                char* latin1_output) const noexcept final {
                 return set_best()->convert_utf16be_to_latin1_with_errors(buf, len,
                     latin1_output);
             }
 
-             [[nodiscard]] size_t convert_valid_utf16le_to_latin1(
+            [[nodiscard]] size_t convert_valid_utf16le_to_latin1(
                 const char16_t* buf, size_t len,
-                char* latin1_output) const noexcept final override {
+                char* latin1_output) const noexcept final {
                 return set_best()->convert_valid_utf16le_to_latin1(buf, len, latin1_output);
             }
 
-             [[nodiscard]] size_t convert_valid_utf16be_to_latin1(
+            [[nodiscard]] size_t convert_valid_utf16be_to_latin1(
                 const char16_t* buf, size_t len,
-                char* latin1_output) const noexcept final override {
+                char* latin1_output) const noexcept final {
                 return set_best()->convert_valid_utf16be_to_latin1(buf, len, latin1_output);
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             convert_utf16le_to_utf8(const char16_t* buf, size_t len,
-                char* utf8_output) const noexcept final override {
+                char* utf8_output) const noexcept final {
                 return set_best()->convert_utf16le_to_utf8(buf, len, utf8_output);
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             convert_utf16be_to_utf8(const char16_t* buf, size_t len,
-                char* utf8_output) const noexcept final override {
+                char* utf8_output) const noexcept final {
                 return set_best()->convert_utf16be_to_utf8(buf, len, utf8_output);
             }
 
-             [[nodiscard]] UnicodeResult convert_utf16le_to_utf8_with_errors(
+            [[nodiscard]] UnicodeResult convert_utf16le_to_utf8_with_errors(
                 const char16_t* buf, size_t len,
-                char* utf8_output) const noexcept final override {
+                char* utf8_output) const noexcept final {
                 return set_best()->convert_utf16le_to_utf8_with_errors(buf, len,
                     utf8_output);
             }
 
-             [[nodiscard]] UnicodeResult convert_utf16be_to_utf8_with_errors(
+            [[nodiscard]] UnicodeResult convert_utf16be_to_utf8_with_errors(
                 const char16_t* buf, size_t len,
-                char* utf8_output) const noexcept final override {
+                char* utf8_output) const noexcept final {
                 return set_best()->convert_utf16be_to_utf8_with_errors(buf, len,
                     utf8_output);
             }
 
-             [[nodiscard]] size_t convert_valid_utf16le_to_utf8(
+            [[nodiscard]] size_t convert_valid_utf16le_to_utf8(
                 const char16_t* buf, size_t len,
-                char* utf8_output) const noexcept final override {
+                char* utf8_output) const noexcept final {
                 return set_best()->convert_valid_utf16le_to_utf8(buf, len, utf8_output);
             }
 
-             [[nodiscard]] size_t convert_valid_utf16be_to_utf8(
+            [[nodiscard]] size_t convert_valid_utf16be_to_utf8(
                 const char16_t* buf, size_t len,
-                char* utf8_output) const noexcept final override {
+                char* utf8_output) const noexcept final {
                 return set_best()->convert_valid_utf16be_to_utf8(buf, len, utf8_output);
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             convert_utf32_to_latin1(const char32_t* buf, size_t len,
-                char* latin1_output) const noexcept final override {
+                char* latin1_output) const noexcept final {
                 return set_best()->convert_utf32_to_latin1(buf, len, latin1_output);
             }
 
-             [[nodiscard]] UnicodeResult convert_utf32_to_latin1_with_errors(
+            [[nodiscard]] UnicodeResult convert_utf32_to_latin1_with_errors(
                 const char32_t* buf, size_t len,
-                char* latin1_output) const noexcept final override {
+                char* latin1_output) const noexcept final {
                 return set_best()->convert_utf32_to_latin1_with_errors(buf, len,
                     latin1_output);
             }
 
-             [[nodiscard]] size_t convert_valid_utf32_to_latin1(
+            [[nodiscard]] size_t convert_valid_utf32_to_latin1(
                 const char32_t* buf, size_t len,
-                char* latin1_output) const noexcept final override {
+                char* latin1_output) const noexcept final {
                 return set_best()->convert_utf32_to_latin1(buf, len, latin1_output);
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             convert_utf32_to_utf8(const char32_t* buf, size_t len,
-                char* utf8_output) const noexcept final override {
+                char* utf8_output) const noexcept final {
                 return set_best()->convert_utf32_to_utf8(buf, len, utf8_output);
             }
 
-             [[nodiscard]] UnicodeResult convert_utf32_to_utf8_with_errors(
+            [[nodiscard]] UnicodeResult convert_utf32_to_utf8_with_errors(
                 const char32_t* buf, size_t len,
-                char* utf8_output) const noexcept final override {
+                char* utf8_output) const noexcept final {
                 return set_best()->convert_utf32_to_utf8_with_errors(buf, len, utf8_output);
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             convert_valid_utf32_to_utf8(const char32_t* buf, size_t len,
-                char* utf8_output) const noexcept final override {
+                char* utf8_output) const noexcept final {
                 return set_best()->convert_valid_utf32_to_utf8(buf, len, utf8_output);
             }
 
-             [[nodiscard]] size_t convert_utf32_to_utf16le(
+            [[nodiscard]] size_t convert_utf32_to_utf16le(
                 const char32_t* buf, size_t len,
-                char16_t* utf16_output) const noexcept final override {
+                char16_t* utf16_output) const noexcept final {
                 return set_best()->convert_utf32_to_utf16le(buf, len, utf16_output);
             }
 
-             [[nodiscard]] size_t convert_utf32_to_utf16be(
+            [[nodiscard]] size_t convert_utf32_to_utf16be(
                 const char32_t* buf, size_t len,
-                char16_t* utf16_output) const noexcept final override {
+                char16_t* utf16_output) const noexcept final {
                 return set_best()->convert_utf32_to_utf16be(buf, len, utf16_output);
             }
 
-             [[nodiscard]] UnicodeResult convert_utf32_to_utf16le_with_errors(
+            [[nodiscard]] UnicodeResult convert_utf32_to_utf16le_with_errors(
                 const char32_t* buf, size_t len,
-                char16_t* utf16_output) const noexcept final override {
+                char16_t* utf16_output) const noexcept final {
                 return set_best()->convert_utf32_to_utf16le_with_errors(buf, len,
                     utf16_output);
             }
 
-             [[nodiscard]] UnicodeResult convert_utf32_to_utf16be_with_errors(
+            [[nodiscard]] UnicodeResult convert_utf32_to_utf16be_with_errors(
                 const char32_t* buf, size_t len,
-                char16_t* utf16_output) const noexcept final override {
+                char16_t* utf16_output) const noexcept final {
                 return set_best()->convert_utf32_to_utf16be_with_errors(buf, len,
                     utf16_output);
             }
 
-             [[nodiscard]] size_t convert_valid_utf32_to_utf16le(
+            [[nodiscard]] size_t convert_valid_utf32_to_utf16le(
                 const char32_t* buf, size_t len,
-                char16_t* utf16_output) const noexcept final override {
+                char16_t* utf16_output) const noexcept final {
                 return set_best()->convert_valid_utf32_to_utf16le(buf, len, utf16_output);
             }
 
-             [[nodiscard]] size_t convert_valid_utf32_to_utf16be(
+            [[nodiscard]] size_t convert_valid_utf32_to_utf16be(
                 const char32_t* buf, size_t len,
-                char16_t* utf16_output) const noexcept final override {
+                char16_t* utf16_output) const noexcept final {
                 return set_best()->convert_valid_utf32_to_utf16be(buf, len, utf16_output);
             }
 
-             [[nodiscard]] size_t convert_utf16le_to_utf32(
+            [[nodiscard]] size_t convert_utf16le_to_utf32(
                 const char16_t* buf, size_t len,
-                char32_t* utf32_output) const noexcept final override {
+                char32_t* utf32_output) const noexcept final {
                 return set_best()->convert_utf16le_to_utf32(buf, len, utf32_output);
             }
 
-             [[nodiscard]] size_t convert_utf16be_to_utf32(
+            [[nodiscard]] size_t convert_utf16be_to_utf32(
                 const char16_t* buf, size_t len,
-                char32_t* utf32_output) const noexcept final override {
+                char32_t* utf32_output) const noexcept final {
                 return set_best()->convert_utf16be_to_utf32(buf, len, utf32_output);
             }
 
-             [[nodiscard]] UnicodeResult convert_utf16le_to_utf32_with_errors(
+            [[nodiscard]] UnicodeResult convert_utf16le_to_utf32_with_errors(
                 const char16_t* buf, size_t len,
-                char32_t* utf32_output) const noexcept final override {
+                char32_t* utf32_output) const noexcept final {
                 return set_best()->convert_utf16le_to_utf32_with_errors(buf, len,
                     utf32_output);
             }
 
-             [[nodiscard]] UnicodeResult convert_utf16be_to_utf32_with_errors(
+            [[nodiscard]] UnicodeResult convert_utf16be_to_utf32_with_errors(
                 const char16_t* buf, size_t len,
-                char32_t* utf32_output) const noexcept final override {
+                char32_t* utf32_output) const noexcept final {
                 return set_best()->convert_utf16be_to_utf32_with_errors(buf, len,
                     utf32_output);
             }
 
-             [[nodiscard]] size_t convert_valid_utf16le_to_utf32(
+            [[nodiscard]] size_t convert_valid_utf16le_to_utf32(
                 const char16_t* buf, size_t len,
-                char32_t* utf32_output) const noexcept final override {
+                char32_t* utf32_output) const noexcept final {
                 return set_best()->convert_valid_utf16le_to_utf32(buf, len, utf32_output);
             }
 
-             [[nodiscard]] size_t convert_valid_utf16be_to_utf32(
+            [[nodiscard]] size_t convert_valid_utf16be_to_utf32(
                 const char16_t* buf, size_t len,
-                char32_t* utf32_output) const noexcept final override {
+                char32_t* utf32_output) const noexcept final {
                 return set_best()->convert_valid_utf16be_to_utf32(buf, len, utf32_output);
             }
 
             void change_endianness_utf16(const char16_t* buf, size_t len,
-                char16_t* output) const noexcept final override {
+                char16_t* output) const noexcept final {
                 set_best()->change_endianness_utf16(buf, len, output);
             }
 
-             [[nodiscard]] size_t
-            count_utf16le(const char16_t* buf, size_t len) const noexcept final override {
+            [[nodiscard]] size_t
+            count_utf16le(const char16_t* buf, size_t len) const noexcept final {
                 return set_best()->count_utf16le(buf, len);
             }
 
-             [[nodiscard]] size_t
-            count_utf16be(const char16_t* buf, size_t len) const noexcept final override {
+            [[nodiscard]] size_t
+            count_utf16be(const char16_t* buf, size_t len) const noexcept final {
                 return set_best()->count_utf16be(buf, len);
             }
 
-             [[nodiscard]] size_t
-            count_utf8(const char* buf, size_t len) const noexcept final override {
+            [[nodiscard]] size_t
+            count_utf8(const char* buf, size_t len) const noexcept final {
                 return set_best()->count_utf8(buf, len);
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             latin1_length_from_utf8(const char* buf, size_t len) const noexcept override {
                 return set_best()->latin1_length_from_utf8(buf, len);
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             utf8_length_from_latin1(const char* buf, size_t len) const noexcept override {
                 return set_best()->utf8_length_from_latin1(buf, len);
             }
 
-             [[nodiscard]] size_t utf8_length_from_utf16le(
+            [[nodiscard]] size_t utf8_length_from_utf16le(
                 const char16_t* buf, size_t len) const noexcept override {
                 return set_best()->utf8_length_from_utf16le(buf, len);
             }
 
-             [[nodiscard]] size_t utf8_length_from_utf16be(
+            [[nodiscard]] size_t utf8_length_from_utf16be(
                 const char16_t* buf, size_t len) const noexcept override {
                 return set_best()->utf8_length_from_utf16be(buf, len);
             }
 
-             [[nodiscard]] size_t utf32_length_from_utf16le(
+            [[nodiscard]] size_t utf32_length_from_utf16le(
                 const char16_t* buf, size_t len) const noexcept override {
                 return set_best()->utf32_length_from_utf16le(buf, len);
             }
 
-             [[nodiscard]] size_t utf32_length_from_utf16be(
+            [[nodiscard]] size_t utf32_length_from_utf16be(
                 const char16_t* buf, size_t len) const noexcept override {
                 return set_best()->utf32_length_from_utf16be(buf, len);
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             utf16_length_from_utf8(const char* buf, size_t len) const noexcept override {
                 return set_best()->utf16_length_from_utf8(buf, len);
             }
 
-             [[nodiscard]] size_t utf8_length_from_utf32(
+            [[nodiscard]] size_t utf8_length_from_utf32(
                 const char32_t* buf, size_t len) const noexcept override {
                 return set_best()->utf8_length_from_utf32(buf, len);
             }
 
-             [[nodiscard]] size_t utf16_length_from_utf32(
+            [[nodiscard]] size_t utf16_length_from_utf32(
                 const char32_t* buf, size_t len) const noexcept override {
                 return set_best()->utf16_length_from_utf32(buf, len);
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             utf32_length_from_utf8(const char* buf, size_t len) const noexcept override {
                 return set_best()->utf32_length_from_utf8(buf, len);
             }
 
-             [[nodiscard]] UnicodeResult base64_to_binary(
+            [[nodiscard]] UnicodeResult base64_to_binary(
                 const char* input, size_t length, char* output, Base64Options options,
                 last_chunk_handling_options last_chunk_handling_options = last_chunk_handling_options::loose) const noexcept override {
                 return set_best()->base64_to_binary(input, length, output, options,
                     last_chunk_handling_options);
             }
 
-             [[nodiscard]] full_result base64_to_binary_details(
+            [[nodiscard]] full_result base64_to_binary_details(
                 const char* input, size_t length, char* output, Base64Options options,
                 last_chunk_handling_options last_chunk_handling_options = last_chunk_handling_options::loose) const noexcept override {
                 return set_best()->base64_to_binary_details(input, length, output, options,
                     last_chunk_handling_options);
             }
 
-             [[nodiscard]] UnicodeResult base64_to_binary(
+            [[nodiscard]] UnicodeResult base64_to_binary(
                 const char16_t* input, size_t length, char* output,
                 Base64Options options,
                 last_chunk_handling_options last_chunk_handling_options = last_chunk_handling_options::loose) const noexcept override {
@@ -634,7 +630,7 @@ namespace turbo {
                     last_chunk_handling_options);
             }
 
-             [[nodiscard]] full_result base64_to_binary_details(
+            [[nodiscard]] full_result base64_to_binary_details(
                 const char16_t* input, size_t length, char* output,
                 Base64Options options,
                 last_chunk_handling_options last_chunk_handling_options = last_chunk_handling_options::loose) const noexcept override {
@@ -665,12 +661,12 @@ namespace turbo {
                 return set_best()->find(start, end, character);
             }
 
-             [[nodiscard]] size_t binary_length_from_base64(
+            [[nodiscard]] size_t binary_length_from_base64(
                 const char* input, size_t length) const noexcept override {
                 return set_best()->binary_length_from_base64(input, length);
             }
 
-             [[nodiscard]] size_t binary_length_from_base64(
+            [[nodiscard]] size_t binary_length_from_base64(
                 const char16_t* input, size_t length) const noexcept override {
                 return set_best()->binary_length_from_base64(input, length);
             }
@@ -694,31 +690,31 @@ namespace turbo {
         get_available_implementation_pointers() {
             static const std::initializer_list<const implementation*>
                 available_implementation_pointers {
-#if SIMDUTF_IMPLEMENTATION_ICELAKE
+#if UNICODE_IMPLEMENTATION_ICELAKE
                     get_icelake_singleton(),
 #endif
-#if SIMDUTF_IMPLEMENTATION_HASWELL
+#if UNICODE_IMPLEMENTATION_HASWELL
                     get_haswell_singleton(),
 #endif
-#if SIMDUTF_IMPLEMENTATION_WESTMERE
+#if UNICODE_IMPLEMENTATION_WESTMERE
                     get_westmere_singleton(),
 #endif
-#if SIMDUTF_IMPLEMENTATION_ARM64
+#if UNICODE_IMPLEMENTATION_ARM64
                     get_arm64_singleton(),
 #endif
-#if SIMDUTF_IMPLEMENTATION_PPC64
+#if UNICODE_IMPLEMENTATION_PPC64
                     get_ppc64_singleton(),
 #endif
-#if SIMDUTF_IMPLEMENTATION_RVV
+#if UNICODE_IMPLEMENTATION_RVV
                     get_rvv_singleton(),
 #endif
-#if SIMDUTF_IMPLEMENTATION_LASX
+#if UNICODE_IMPLEMENTATION_LASX
                     get_lasx_singleton(),
 #endif
-#if SIMDUTF_IMPLEMENTATION_LSX
+#if UNICODE_IMPLEMENTATION_LSX
                     get_lsx_singleton(),
 #endif
-#if SIMDUTF_IMPLEMENTATION_FALLBACK
+#if UNICODE_IMPLEMENTATION_FALLBACK
                     get_fallback_singleton(),
 #endif
                 };
@@ -727,15 +723,15 @@ namespace turbo {
 
         // So we can return UNSUPPORTED_ARCHITECTURE from the parser when there is no
         // support
-        class unsupported_implementation final : public implementation {
+        class unsupported_implementation : public implementation {
         public:
-             [[nodiscard]] int detect_encodings(const char*,
+            [[nodiscard]] int detect_encodings(const char*,
                 size_t) const noexcept override {
                 return TextEncoding::unspecified;
             }
 
-             [[nodiscard]] bool validate_utf8(const char*,
-                size_t) const noexcept final override {
+            [[nodiscard]] bool validate_utf8(const char*,
+                size_t) const noexcept final {
                 return false; // Just refuse to validate. Given that we have a fallback
                               // implementation
                 // it seems unlikely that unsupported_implementation will ever be used. If
@@ -749,404 +745,403 @@ namespace turbo {
                 // fallback for our fallback.
             }
 
-             [[nodiscard]] UnicodeResult validate_utf8_with_errors(
-                const char*, size_t) const noexcept final override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+            [[nodiscard]] UnicodeResult validate_utf8_with_errors(
+                const char*, size_t) const noexcept final {
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] bool
-            validate_ascii(const char*, size_t) const noexcept final override {
+            [[nodiscard]] bool
+            validate_ascii(const char*, size_t) const noexcept final {
                 return false;
             }
 
-             [[nodiscard]] UnicodeResult validate_ascii_with_errors(
-                const char*, size_t) const noexcept final override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+            [[nodiscard]] UnicodeResult validate_ascii_with_errors(
+                const char*, size_t) const noexcept final {
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] bool
+            [[nodiscard]] bool
             validate_utf16le_as_ascii(const char16_t*,
-                size_t) const noexcept final override {
+                size_t) const noexcept final {
                 return false;
             }
 
-             [[nodiscard]] bool
+            [[nodiscard]] bool
             validate_utf16be_as_ascii(const char16_t*,
-                size_t) const noexcept final override {
+                size_t) const noexcept final {
                 return false;
             }
 
-             [[nodiscard]] bool
-            validate_utf16le(const char16_t*, size_t) const noexcept final override {
+            [[nodiscard]] bool
+            validate_utf16le(const char16_t*, size_t) const noexcept final {
                 return false;
             }
 
-             [[nodiscard]] bool
-            validate_utf16be(const char16_t*, size_t) const noexcept final override {
+            [[nodiscard]] bool
+            validate_utf16be(const char16_t*, size_t) const noexcept final {
                 return false;
             }
 
-             [[nodiscard]] UnicodeResult validate_utf16le_with_errors(
-                const char16_t*, size_t) const noexcept final override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+            [[nodiscard]] UnicodeResult validate_utf16le_with_errors(
+                const char16_t*, size_t) const noexcept final {
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] UnicodeResult validate_utf16be_with_errors(
-                const char16_t*, size_t) const noexcept final override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+            [[nodiscard]] UnicodeResult validate_utf16be_with_errors(
+                const char16_t*, size_t) const noexcept final {
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
             void to_well_formed_utf16be(const char16_t*, size_t,
-                char16_t*) const noexcept final override { }
+                char16_t*) const noexcept final { }
             void to_well_formed_utf16le(const char16_t*, size_t,
-                char16_t*) const noexcept final override { }
+                char16_t*) const noexcept final { }
 
-             [[nodiscard]] bool
-            validate_utf32(const char32_t*, size_t) const noexcept final override {
+            [[nodiscard]] bool
+            validate_utf32(const char32_t*, size_t) const noexcept final {
                 return false;
             }
 
-             [[nodiscard]] UnicodeResult validate_utf32_with_errors(
-                const char32_t*, size_t) const noexcept final override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+            [[nodiscard]] UnicodeResult validate_utf32_with_errors(
+                const char32_t*, size_t) const noexcept final {
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] size_t convert_latin1_to_utf8(
-                const char*, size_t, char*) const noexcept final override {
+            [[nodiscard]] size_t convert_latin1_to_utf8(
+                const char*, size_t, char*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_latin1_to_utf16le(
-                const char*, size_t, char16_t*) const noexcept final override {
+            [[nodiscard]] size_t convert_latin1_to_utf16le(
+                const char*, size_t, char16_t*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_latin1_to_utf16be(
-                const char*, size_t, char16_t*) const noexcept final override {
+            [[nodiscard]] size_t convert_latin1_to_utf16be(
+                const char*, size_t, char16_t*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_latin1_to_utf32(
-                const char*, size_t, char32_t*) const noexcept final override {
+            [[nodiscard]] size_t convert_latin1_to_utf32(
+                const char*, size_t, char32_t*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_utf8_to_latin1(
-                const char*, size_t, char*) const noexcept final override {
+            [[nodiscard]] size_t convert_utf8_to_latin1(
+                const char*, size_t, char*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] UnicodeResult convert_utf8_to_latin1_with_errors(
-                const char*, size_t, char*) const noexcept final override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+            [[nodiscard]] UnicodeResult convert_utf8_to_latin1_with_errors(
+                const char*, size_t, char*) const noexcept final {
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] size_t convert_valid_utf8_to_latin1(
-                const char*, size_t, char*) const noexcept final override {
+            [[nodiscard]] size_t convert_valid_utf8_to_latin1(
+                const char*, size_t, char*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_utf8_to_utf16le(
-                const char*, size_t, char16_t*) const noexcept final override {
+            [[nodiscard]] size_t convert_utf8_to_utf16le(
+                const char*, size_t, char16_t*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_utf8_to_utf16be(
-                const char*, size_t, char16_t*) const noexcept final override {
+            [[nodiscard]] size_t convert_utf8_to_utf16be(
+                const char*, size_t, char16_t*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] UnicodeResult convert_utf8_to_utf16le_with_errors(
-                const char*, size_t, char16_t*) const noexcept final override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+            [[nodiscard]] UnicodeResult convert_utf8_to_utf16le_with_errors(
+                const char*, size_t, char16_t*) const noexcept final {
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] UnicodeResult convert_utf8_to_utf16be_with_errors(
-                const char*, size_t, char16_t*) const noexcept final override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+            [[nodiscard]] UnicodeResult convert_utf8_to_utf16be_with_errors(
+                const char*, size_t, char16_t*) const noexcept final {
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] size_t convert_valid_utf8_to_utf16le(
-                const char*, size_t, char16_t*) const noexcept final override {
+            [[nodiscard]] size_t convert_valid_utf8_to_utf16le(
+                const char*, size_t, char16_t*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_valid_utf8_to_utf16be(
-                const char*, size_t, char16_t*) const noexcept final override {
+            [[nodiscard]] size_t convert_valid_utf8_to_utf16be(
+                const char*, size_t, char16_t*) const noexcept final {
                 return 0;
             }
-             [[nodiscard]] UnicodeResult utf8_length_from_utf16le_with_replacement(
-                const char16_t*, size_t) const noexcept final override {
+            [[nodiscard]] UnicodeResult utf8_length_from_utf16le_with_replacement(
+                const char16_t*, size_t) const noexcept final {
                 return { OTHER, 0 }; // Not supported
             }
 
-             [[nodiscard]] UnicodeResult utf8_length_from_utf16be_with_replacement(
-                const char16_t*, size_t) const noexcept final override {
+            [[nodiscard]] UnicodeResult utf8_length_from_utf16be_with_replacement(
+                const char16_t*, size_t) const noexcept final {
                 return { OTHER, 0 }; // Not supported
             }
 
-             [[nodiscard]] size_t convert_utf16le_to_utf8_with_replacement(
-                const char16_t*, size_t, char*) const noexcept final override {
+            [[nodiscard]] size_t convert_utf16le_to_utf8_with_replacement(
+                const char16_t*, size_t, char*) const noexcept final {
                 return 0; // Not supported
             }
 
-             [[nodiscard]] size_t convert_utf16be_to_utf8_with_replacement(
-                const char16_t*, size_t, char*) const noexcept final override {
+            [[nodiscard]] size_t convert_utf16be_to_utf8_with_replacement(
+                const char16_t*, size_t, char*) const noexcept final {
                 return 0; // Not supported
             }
 
-
-             [[nodiscard]] size_t convert_utf8_to_utf32(
-                const char*, size_t, char32_t*) const noexcept final override {
+            [[nodiscard]] size_t convert_utf8_to_utf32(
+                const char*, size_t, char32_t*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] UnicodeResult convert_utf8_to_utf32_with_errors(
-                const char*, size_t, char32_t*) const noexcept final override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+            [[nodiscard]] UnicodeResult convert_utf8_to_utf32_with_errors(
+                const char*, size_t, char32_t*) const noexcept final {
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] size_t convert_valid_utf8_to_utf32(
-                const char*, size_t, char32_t*) const noexcept final override {
+            [[nodiscard]] size_t convert_valid_utf8_to_utf32(
+                const char*, size_t, char32_t*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_utf16le_to_latin1(
-                const char16_t*, size_t, char*) const noexcept final override {
+            [[nodiscard]] size_t convert_utf16le_to_latin1(
+                const char16_t*, size_t, char*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_utf16be_to_latin1(
-                const char16_t*, size_t, char*) const noexcept final override {
+            [[nodiscard]] size_t convert_utf16be_to_latin1(
+                const char16_t*, size_t, char*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] UnicodeResult convert_utf16le_to_latin1_with_errors(
-                const char16_t*, size_t, char*) const noexcept final override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+            [[nodiscard]] UnicodeResult convert_utf16le_to_latin1_with_errors(
+                const char16_t*, size_t, char*) const noexcept final {
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] UnicodeResult convert_utf16be_to_latin1_with_errors(
-                const char16_t*, size_t, char*) const noexcept final override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+            [[nodiscard]] UnicodeResult convert_utf16be_to_latin1_with_errors(
+                const char16_t*, size_t, char*) const noexcept final {
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] size_t convert_valid_utf16le_to_latin1(
-                const char16_t*, size_t, char*) const noexcept final override {
+            [[nodiscard]] size_t convert_valid_utf16le_to_latin1(
+                const char16_t*, size_t, char*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_valid_utf16be_to_latin1(
-                const char16_t*, size_t, char*) const noexcept final override {
+            [[nodiscard]] size_t convert_valid_utf16be_to_latin1(
+                const char16_t*, size_t, char*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_utf16le_to_utf8(
-                const char16_t*, size_t, char*) const noexcept final override {
+            [[nodiscard]] size_t convert_utf16le_to_utf8(
+                const char16_t*, size_t, char*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_utf16be_to_utf8(
-                const char16_t*, size_t, char*) const noexcept final override {
+            [[nodiscard]] size_t convert_utf16be_to_utf8(
+                const char16_t*, size_t, char*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] UnicodeResult convert_utf16le_to_utf8_with_errors(
-                const char16_t*, size_t, char*) const noexcept final override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+            [[nodiscard]] UnicodeResult convert_utf16le_to_utf8_with_errors(
+                const char16_t*, size_t, char*) const noexcept final {
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] UnicodeResult convert_utf16be_to_utf8_with_errors(
-                const char16_t*, size_t, char*) const noexcept final override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+            [[nodiscard]] UnicodeResult convert_utf16be_to_utf8_with_errors(
+                const char16_t*, size_t, char*) const noexcept final {
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] size_t convert_valid_utf16le_to_utf8(
-                const char16_t*, size_t, char*) const noexcept final override {
+            [[nodiscard]] size_t convert_valid_utf16le_to_utf8(
+                const char16_t*, size_t, char*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_valid_utf16be_to_utf8(
-                const char16_t*, size_t, char*) const noexcept final override {
+            [[nodiscard]] size_t convert_valid_utf16be_to_utf8(
+                const char16_t*, size_t, char*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_utf32_to_latin1(
-                const char32_t*, size_t, char*) const noexcept final override {
+            [[nodiscard]] size_t convert_utf32_to_latin1(
+                const char32_t*, size_t, char*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] UnicodeResult convert_utf32_to_latin1_with_errors(
-                const char32_t*, size_t, char*) const noexcept final override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+            [[nodiscard]] UnicodeResult convert_utf32_to_latin1_with_errors(
+                const char32_t*, size_t, char*) const noexcept final {
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] size_t convert_valid_utf32_to_latin1(
-                const char32_t*, size_t, char*) const noexcept final override {
+            [[nodiscard]] size_t convert_valid_utf32_to_latin1(
+                const char32_t*, size_t, char*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_utf32_to_utf8(
-                const char32_t*, size_t, char*) const noexcept final override {
+            [[nodiscard]] size_t convert_utf32_to_utf8(
+                const char32_t*, size_t, char*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] UnicodeResult convert_utf32_to_utf8_with_errors(
-                const char32_t*, size_t, char*) const noexcept final override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+            [[nodiscard]] UnicodeResult convert_utf32_to_utf8_with_errors(
+                const char32_t*, size_t, char*) const noexcept final {
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] size_t convert_valid_utf32_to_utf8(
-                const char32_t*, size_t, char*) const noexcept final override {
+            [[nodiscard]] size_t convert_valid_utf32_to_utf8(
+                const char32_t*, size_t, char*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_utf32_to_utf16le(
-                const char32_t*, size_t, char16_t*) const noexcept final override {
+            [[nodiscard]] size_t convert_utf32_to_utf16le(
+                const char32_t*, size_t, char16_t*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_utf32_to_utf16be(
-                const char32_t*, size_t, char16_t*) const noexcept final override {
+            [[nodiscard]] size_t convert_utf32_to_utf16be(
+                const char32_t*, size_t, char16_t*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] UnicodeResult convert_utf32_to_utf16le_with_errors(
-                const char32_t*, size_t, char16_t*) const noexcept final override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+            [[nodiscard]] UnicodeResult convert_utf32_to_utf16le_with_errors(
+                const char32_t*, size_t, char16_t*) const noexcept final {
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] UnicodeResult convert_utf32_to_utf16be_with_errors(
-                const char32_t*, size_t, char16_t*) const noexcept final override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+            [[nodiscard]] UnicodeResult convert_utf32_to_utf16be_with_errors(
+                const char32_t*, size_t, char16_t*) const noexcept final {
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] size_t convert_valid_utf32_to_utf16le(
-                const char32_t*, size_t, char16_t*) const noexcept final override {
+            [[nodiscard]] size_t convert_valid_utf32_to_utf16le(
+                const char32_t*, size_t, char16_t*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_valid_utf32_to_utf16be(
-                const char32_t*, size_t, char16_t*) const noexcept final override {
+            [[nodiscard]] size_t convert_valid_utf32_to_utf16be(
+                const char32_t*, size_t, char16_t*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_utf16le_to_utf32(
-                const char16_t*, size_t, char32_t*) const noexcept final override {
+            [[nodiscard]] size_t convert_utf16le_to_utf32(
+                const char16_t*, size_t, char32_t*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_utf16be_to_utf32(
-                const char16_t*, size_t, char32_t*) const noexcept final override {
+            [[nodiscard]] size_t convert_utf16be_to_utf32(
+                const char16_t*, size_t, char32_t*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] UnicodeResult convert_utf16le_to_utf32_with_errors(
-                const char16_t*, size_t, char32_t*) const noexcept final override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+            [[nodiscard]] UnicodeResult convert_utf16le_to_utf32_with_errors(
+                const char16_t*, size_t, char32_t*) const noexcept final {
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] UnicodeResult convert_utf16be_to_utf32_with_errors(
-                const char16_t*, size_t, char32_t*) const noexcept final override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+            [[nodiscard]] UnicodeResult convert_utf16be_to_utf32_with_errors(
+                const char16_t*, size_t, char32_t*) const noexcept final {
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] size_t convert_valid_utf16le_to_utf32(
-                const char16_t*, size_t, char32_t*) const noexcept final override {
+            [[nodiscard]] size_t convert_valid_utf16le_to_utf32(
+                const char16_t*, size_t, char32_t*) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t convert_valid_utf16be_to_utf32(
-                const char16_t*, size_t, char32_t*) const noexcept final override {
+            [[nodiscard]] size_t convert_valid_utf16be_to_utf32(
+                const char16_t*, size_t, char32_t*) const noexcept final {
                 return 0;
             }
 
             void change_endianness_utf16(const char16_t*, size_t,
-                char16_t*) const noexcept final override { }
+                char16_t*) const noexcept final { }
 
-             [[nodiscard]] size_t
-            count_utf16le(const char16_t*, size_t) const noexcept final override {
+            [[nodiscard]] size_t
+            count_utf16le(const char16_t*, size_t) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t
-            count_utf16be(const char16_t*, size_t) const noexcept final override {
+            [[nodiscard]] size_t
+            count_utf16be(const char16_t*, size_t) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t count_utf8(const char*,
-                size_t) const noexcept final override {
+            [[nodiscard]] size_t count_utf8(const char*,
+                size_t) const noexcept final {
                 return 0;
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             latin1_length_from_utf8(const char*, size_t) const noexcept override {
                 return 0;
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             utf8_length_from_latin1(const char*, size_t) const noexcept override {
                 return 0;
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             utf8_length_from_utf16le(const char16_t*, size_t) const noexcept override {
                 return 0;
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             utf8_length_from_utf16be(const char16_t*, size_t) const noexcept override {
                 return 0;
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             utf32_length_from_utf16le(const char16_t*, size_t) const noexcept override {
                 return 0;
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             utf32_length_from_utf16be(const char16_t*, size_t) const noexcept override {
                 return 0;
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             utf16_length_from_utf8(const char*, size_t) const noexcept override {
                 return 0;
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             utf8_length_from_utf32(const char32_t*, size_t) const noexcept override {
                 return 0;
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             utf16_length_from_utf32(const char32_t*, size_t) const noexcept override {
                 return 0;
             }
 
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             utf32_length_from_utf8(const char*, size_t) const noexcept override {
                 return 0;
             }
 
-             [[nodiscard]] UnicodeResult
+            [[nodiscard]] UnicodeResult
             base64_to_binary(const char*, size_t, char*, Base64Options,
                 last_chunk_handling_options) const noexcept override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] full_result base64_to_binary_details(
+            [[nodiscard]] full_result base64_to_binary_details(
                 const char*, size_t, char*, Base64Options,
                 last_chunk_handling_options) const noexcept override {
                 return full_result(UnicodeError::OTHER, 0, 0);
             }
 
-             [[nodiscard]] UnicodeResult
+            [[nodiscard]] UnicodeResult
             base64_to_binary(const char16_t*, size_t, char*, Base64Options,
                 last_chunk_handling_options) const noexcept override {
-                return UnicodeResult(UnicodeError::OTHER, 0);
+                return UnicodeResult{UnicodeError::OTHER, 0};
             }
 
-             [[nodiscard]] full_result base64_to_binary_details(
+            [[nodiscard]] full_result base64_to_binary_details(
                 const char16_t*, size_t, char*, Base64Options,
                 last_chunk_handling_options) const noexcept override {
                 return full_result(UnicodeError::OTHER, 0, 0);
@@ -1167,11 +1162,11 @@ namespace turbo {
                 char16_t) const noexcept override {
                 return nullptr;
             }
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             binary_length_from_base64(const char*, size_t) const noexcept override {
                 return 0;
             }
-             [[nodiscard]] size_t
+            [[nodiscard]] size_t
             binary_length_from_base64(const char16_t*, size_t) const noexcept override {
                 return 0;
             }
@@ -1182,7 +1177,7 @@ namespace turbo {
         };
 
         const unsupported_implementation* get_unsupported_singleton() {
-            static const unsupported_implementation unsupported_singleton {};
+            static const unsupported_implementation unsupported_singleton { };
             return &unsupported_singleton;
         }
         static_assert(std::is_trivially_destructible<unsupported_implementation>::value,
@@ -1215,12 +1210,11 @@ namespace turbo {
 
         const implementation*
         detect_best_supported_implementation_on_first_use::set_best() const noexcept {
-            SIMDUTF_PUSH_DISABLE_WARNINGS
-            SIMDUTF_DISABLE_DEPRECATED_WARNING // Disable CRT_SECURE warning on MSVC:
-                                               // manually verified this is safe
+            KUMO_DISABLE_DEPRECATED_WARNINGS // Disable CRT_SECURE warning on MSVC:
+                                             // manually verified this is safe
                 char* force_implementation_name
-                = getenv("SIMDUTF_FORCE_IMPLEMENTATION");
-            SIMDUTF_POP_DISABLE_WARNINGS
+                = getenv("UNICODE_FORCE_IMPLEMENTATION");
+            KUMO_RESTORE_DEPRECATED_WARNINGS
 
             if (force_implementation_name) {
                 auto force_implementation = get_available_implementations()[force_implementation_name];
@@ -1236,24 +1230,24 @@ namespace turbo {
 
     } // namespace internal
 
-/// The list of available implementations compiled into simdutf.
+    /// The list of available implementations compiled into simdutf.
     KUMO_DLL const internal::AvailableImplementationList&
     get_available_implementations() {
         static const internal::AvailableImplementationList
-            available_implementations_instance {};
+            available_implementations_instance { };
         return available_implementations_instance;
     }
 
     /// The active implementation.
     KUMO_DLL internal::atomic_ptr<const implementation>&
     get_active_implementation() {
-#if !SIMDUTF_SINGLE_IMPLEMENTATION
+#if !UNICODE_SINGLE_IMPLEMENTATION
         static const internal::detect_best_supported_implementation_on_first_use
             detect_best_supported_implementation_on_first_use_singleton;
 #endif
         static internal::atomic_ptr<const implementation>
             active_implementation_instance {
-#if SIMDUTF_SINGLE_IMPLEMENTATION
+#if UNICODE_SINGLE_IMPLEMENTATION
                 internal::get_single_implementation()
 #else
                 &detect_best_supported_implementation_on_first_use_singleton
@@ -1262,7 +1256,7 @@ namespace turbo {
         return active_implementation_instance;
     }
 
-#if SIMDUTF_SINGLE_IMPLEMENTATION
+#if UNICODE_SINGLE_IMPLEMENTATION
     const implementation* get_default_implementation() {
         return internal::get_single_implementation();
     }
@@ -1272,11 +1266,11 @@ namespace turbo {
         return get_active_implementation();
     }
 #endif
-#define SIMDUTF_GET_CURRENT_IMPLEMENTATION
+#define UNICODE_GET_CURRENT_IMPLEMENTATION
 
     const implementation* builtin_implementation() {
-        static const implementation* const builtin_impl_instance = get_available_implementations()[SIMDUTF_STRINGIFY(
-            SIMDUTF_BUILTIN_IMPLEMENTATION)];
+        static const implementation* const builtin_impl_instance = get_available_implementations()[KUMO_STRINGIFY(
+            UNICODE_BUILTIN_IMPLEMENTATION)];
         return builtin_impl_instance;
     }
 

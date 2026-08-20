@@ -16,7 +16,7 @@
 #pragma once
 
 #include <turbo/unicode/api/base64_tables.h>
-#include <turbo/unicode/engine/common_defs.h>
+#include <turbo/unicode/engine/portability.h>
 
 #include <turbo/unicode/error.h>
 #include <turbo/unicode/scalar/base64.h>

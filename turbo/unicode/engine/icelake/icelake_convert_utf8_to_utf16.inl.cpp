@@ -14,10 +14,10 @@ fast_avx512_convert_utf8_to_utf16(const char* in, size_t len, char16_t* out) {
     bool result = true;
     while (result) {
         if (final_in - in >= 64) {
-            result = process_block_utf8_to_utf16<SIMDUTF_FULL, big_endian>(
+            result = process_block_utf8_to_utf16<UNICODE_FULL, big_endian>(
                 in, out, final_in - in);
         } else if (in < final_in) {
-            result = process_block_utf8_to_utf16<SIMDUTF_TAIL, big_endian>(
+            result = process_block_utf8_to_utf16<UNICODE_TAIL, big_endian>(
                 in, out, final_in - in);
         } else {
             break;
@@ -39,10 +39,10 @@ turbo::UnicodeResult fast_avx512_convert_utf8_to_utf16_with_errors(const char* i
     bool result = true;
     while (result) {
         if (final_in - in >= 64) {
-            result = process_block_utf8_to_utf16<SIMDUTF_FULL, big_endian>(
+            result = process_block_utf8_to_utf16<UNICODE_FULL, big_endian>(
                 in, out, final_in - in);
         } else if (in < final_in) {
-            result = process_block_utf8_to_utf16<SIMDUTF_TAIL, big_endian>(
+            result = process_block_utf8_to_utf16<UNICODE_TAIL, big_endian>(
                 in, out, final_in - in);
         } else {
             break;

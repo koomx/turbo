@@ -1,7 +1,7 @@
 #include <limits>
 
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
             namespace utf32 {
 
@@ -22,7 +22,7 @@ namespace turbo {
 
                     const size_t N = vector_u32::ELEMENTS;
 
-#if SIMDUTF_SIMD_HAS_UNSIGNED_CMP
+#if UNICODE_SIMD_HAS_UNSIGNED_CMP
                     const auto v_0000007f = vector_u32::splat(0x0000007f);
                     const auto v_000007ff = vector_u32::splat(0x000007ff);
                     const auto v_0000ffff = vector_u32::splat(0x0000ffff);
@@ -31,7 +31,7 @@ namespace turbo {
                     const auto v_fffff800 = vector_u32::splat(0xfffff800);
                     const auto v_ffff0000 = vector_u32::splat(0xffff0000);
                     const auto one = vector_u32::splat(1);
-#endif // SIMDUTF_SIMD_HAS_UNSIGNED_CMP
+#endif // UNICODE_SIMD_HAS_UNSIGNED_CMP
 
                     size_t counter = 0;
 
@@ -52,7 +52,7 @@ namespace turbo {
                                 const auto in2 = vector_u32(input + 2 * N);
                                 const auto in3 = vector_u32(input + 3 * N);
 
-#if SIMDUTF_SIMD_HAS_UNSIGNED_CMP
+#if UNICODE_SIMD_HAS_UNSIGNED_CMP
                                 acc -= as_vector_u32(in0 > v_0000007f);
                                 acc -= as_vector_u32(in1 > v_0000007f);
                                 acc -= as_vector_u32(in2 > v_0000007f);
@@ -82,7 +82,7 @@ namespace turbo {
                                 acc += min(one, in1 & v_ffff0000);
                                 acc += min(one, in2 & v_ffff0000);
                                 acc += min(one, in3 & v_ffff0000);
-#endif // SIMDUTF_SIMD_HAS_UNSIGNED_CMP
+#endif // UNICODE_SIMD_HAS_UNSIGNED_CMP
 
                                 input += 4 * N;
                             }
@@ -104,7 +104,7 @@ namespace turbo {
                             for (size_t i = 0; i < iterations; i++) {
                                 const auto in = vector_u32(input);
 
-#if SIMDUTF_SIMD_HAS_UNSIGNED_CMP
+#if UNICODE_SIMD_HAS_UNSIGNED_CMP
                                 acc -= as_vector_u32(in > v_0000007f);
                                 acc -= as_vector_u32(in > v_000007ff);
                                 acc -= as_vector_u32(in > v_0000ffff);
@@ -112,7 +112,7 @@ namespace turbo {
                                 acc += min(one, in & v_ffffff80);
                                 acc += min(one, in & v_fffff800);
                                 acc += min(one, in & v_ffff0000);
-#endif // SIMDUTF_SIMD_HAS_UNSIGNED_CMP
+#endif // UNICODE_SIMD_HAS_UNSIGNED_CMP
 
                                 input += N;
                             }
@@ -133,5 +133,5 @@ namespace turbo {
 
             } // namespace utf32
         } // unnamed namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo

@@ -1,5 +1,5 @@
 #include <turbo/unicode/engine/rvv.h>
-#if SIMDUTF_IMPLEMENTATION_WESTMERE
+#if UNICODE_IMPLEMENTATION_WESTMERE
 
 #include <turbo/unicode/tables/utf8_to_utf16_tables.h>
 #include <turbo/unicode/tables/utf16_to_utf8_tables.h>
@@ -8,9 +8,9 @@
 #include <turbo/unicode/engine/westmere/begin.h>
 
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
-#ifndef SIMDUTF_WESTMERE_H
+#ifndef UNICODE_WESTMERE_H
 #error "westmere.h must be included"
 #endif
             using namespace simd;
@@ -59,7 +59,7 @@ namespace turbo {
 #include <turbo/unicode/engine/westmere/sse_base64.cpp>
 
         } // unnamed namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
 #include <turbo/unicode/generic/buf_block_reader.h>
@@ -96,7 +96,7 @@ namespace turbo {
 //
 
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
 
          [[nodiscard]] int
         implementation::detect_encodings(const char* input,
@@ -1279,7 +1279,7 @@ namespace turbo {
             return base64_lengths::binary_length_from_base64(input, length);
         }
 
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
 #include <turbo/unicode/engine/westmere/end.h>

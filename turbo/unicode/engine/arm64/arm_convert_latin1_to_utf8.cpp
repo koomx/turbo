@@ -43,8 +43,8 @@ arm_convert_latin1_to_utf8(const char* latin1_input, size_t len,
         const uint16x8_t one_byte_bytemask = vcleq_u16(in16, v_007f);
         const uint8x16_t utf8_unpacked = vreinterpretq_u8_u16(vbslq_u16(one_byte_bytemask, in16, t4));
         // 3. prepare bitmask for 8-bit lookup
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
-        const uint16x8_t mask = simdutf_make_uint16x8_t(
+#if KUMO_COMPILER_MSVC
+        const uint16x8_t mask = unicode_make_uint16x8_t(
             0x0001, 0x0004, 0x0010, 0x0040, 0x0002, 0x0008, 0x0020, 0x0080);
 #else
         const uint16x8_t mask = { 0x0001, 0x0004, 0x0010, 0x0040,

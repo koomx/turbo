@@ -1,8 +1,8 @@
-#ifndef SIMDUTF_LASX_IMPLEMENTATION_H
-#define SIMDUTF_LASX_IMPLEMENTATION_H
+#ifndef UNICODE_LASX_IMPLEMENTATION_H
+#define UNICODE_LASX_IMPLEMENTATION_H
 
 #include <turbo/unicode/utf.h>
-#include <turbo/unicode/internal/isadetection.h>
+#include <turbo/arch/isadetection.h>
 
 namespace turbo {
     namespace lasx {
@@ -240,4 +240,4 @@ namespace turbo {
     } // namespace lasx
 } // namespace turbo
 
-#endif // SIMDUTF_LASX_IMPLEMENTATION_H
+#endif // UNICODE_LASX_IMPLEMENTATION_H

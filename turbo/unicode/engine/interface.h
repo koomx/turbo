@@ -1,16 +1,15 @@
 #pragma once
 
-#if !defined(SIMDUTF_NO_THREADS)
+#if !UNICODE_NO_THREADS
 #include <atomic>
 #endif
-#ifdef SIMDUTF_INTERNAL_TESTS
+#ifdef UNICODE_INTERNAL_TESTS
 #include <vector>
 #endif
-#include <turbo/unicode/engine/common_defs.h>
-
+#include <turbo/unicode/engine/portability.h>
 #include <turbo/unicode/text_encoding.h>
 #include <turbo/unicode/error.h>
-#include <turbo/unicode/internal/isadetection.h>
+#include <turbo/arch/isadetection.h>
 #include <turbo/unicode/api/base64.h>
 #include <string_view>
 
@@ -18,8 +17,8 @@ namespace turbo {
 
 
 
-#ifndef SIMDUTF_NEED_TRAILING_ZEROES
-#define SIMDUTF_NEED_TRAILING_ZEROES 1
+#ifndef UNICODE_NEED_TRAILING_ZEROES
+#define UNICODE_NEED_TRAILING_ZEROES 1
 #endif
 
     /// An implementation of simdutf for a particular CPU architecture.
@@ -1748,7 +1747,7 @@ namespace turbo {
             char16_t character) const noexcept
             = 0;
 
-#ifdef SIMDUTF_INTERNAL_TESTS
+#ifdef UNICODE_INTERNAL_TESTS
         // This method is exported only in developer mode, its purpose
         // is to expose some internal test procedures from the given
         // implementation and then use them through our standard test

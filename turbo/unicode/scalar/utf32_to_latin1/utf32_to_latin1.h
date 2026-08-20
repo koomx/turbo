@@ -1,5 +1,5 @@
-#ifndef SIMDUTF_UTF32_TO_LATIN1_H
-#define SIMDUTF_UTF32_TO_LATIN1_H
+#ifndef UNICODE_UTF32_TO_LATIN1_H
+#define UNICODE_UTF32_TO_LATIN1_H
 
 #include <cstring>
 

@@ -1,21 +1,21 @@
-#ifndef SIMDUTF_ARM64_SIMD_H
-#define SIMDUTF_ARM64_SIMD_H
+#ifndef UNICODE_ARM64_SIMD_H
+#define UNICODE_ARM64_SIMD_H
 
 #include <turbo/unicode/utf.h>
 #include <turbo/unicode/engine/arm64/bitmanipulation.h>
 #include <type_traits>
 
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
             namespace simd {
 
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
+#if KUMO_COMPILER_MSVC
                 namespace {
                     // Start of private section with Visual Studio workaround
 
-#ifndef simdutf_make_uint8x16_t
-#define simdutf_make_uint8x16_t(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, \
+#ifndef unicode_make_uint8x16_t
+#define unicode_make_uint8x16_t(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, \
     x11, x12, x13, x14, x15, x16)                                        \
     ([=]() {                                                             \
         uint8_t array[16] = { x1, x2, x3, x4, x5, x6, x7, x8,            \
@@ -23,8 +23,8 @@ namespace turbo {
         return vld1q_u8(array);                                          \
     }())
 #endif
-#ifndef simdutf_make_int8x16_t
-#define simdutf_make_int8x16_t(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, \
+#ifndef unicode_make_int8x16_t
+#define unicode_make_int8x16_t(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, \
     x11, x12, x13, x14, x15, x16)                                       \
     ([=]() {                                                            \
         int8_t array[16] = { x1, x2, x3, x4, x5, x6, x7, x8,            \
@@ -33,29 +33,29 @@ namespace turbo {
     }())
 #endif
 
-#ifndef simdutf_make_uint8x8_t
-#define simdutf_make_uint8x8_t(x1, x2, x3, x4, x5, x6, x7, x8) \
+#ifndef unicode_make_uint8x8_t
+#define unicode_make_uint8x8_t(x1, x2, x3, x4, x5, x6, x7, x8) \
     ([=]() {                                                   \
         uint8_t array[8] = { x1, x2, x3, x4, x5, x6, x7, x8 }; \
         return vld1_u8(array);                                 \
     }())
 #endif
-#ifndef simdutf_make_int8x8_t
-#define simdutf_make_int8x8_t(x1, x2, x3, x4, x5, x6, x7, x8) \
+#ifndef unicode_make_int8x8_t
+#define unicode_make_int8x8_t(x1, x2, x3, x4, x5, x6, x7, x8) \
     ([=]() {                                                  \
         int8_t array[8] = { x1, x2, x3, x4, x5, x6, x7, x8 }; \
         return vld1_s8(array);                                \
     }())
 #endif
-#ifndef simdutf_make_uint16x8_t
-#define simdutf_make_uint16x8_t(x1, x2, x3, x4, x5, x6, x7, x8) \
+#ifndef unicode_make_uint16x8_t
+#define unicode_make_uint16x8_t(x1, x2, x3, x4, x5, x6, x7, x8) \
     ([=]() {                                                    \
         uint16_t array[8] = { x1, x2, x3, x4, x5, x6, x7, x8 }; \
         return vld1q_u16(array);                                \
     }())
 #endif
-#ifndef simdutf_make_int16x8_t
-#define simdutf_make_int16x8_t(x1, x2, x3, x4, x5, x6, x7, x8) \
+#ifndef unicode_make_int16x8_t
+#define unicode_make_int16x8_t(x1, x2, x3, x4, x5, x6, x7, x8) \
     ([=]() {                                                   \
         int16_t array[8] = { x1, x2, x3, x4, x5, x6, x7, x8 }; \
         return vld1q_s16(array);                               \
@@ -64,7 +64,7 @@ namespace turbo {
 
                     // End of private section with Visual Studio workaround
                 } // namespace
-#endif // SIMDUTF_REGULAR_VISUAL_STUDIO
+#endif // KUMO_COMPILER_MSVC
 
                 // Returns true if any lane of `mask` is set. The argument *must* be the result
                 // of a lane-wise comparison, i.e. each byte must be either 0x00 or 0xff. The
@@ -104,7 +104,6 @@ namespace turbo {
                     uint8x16_t value;
                     static const int SIZE = sizeof(value);
                     void dump() const {
-#ifdef SIMDUTF_LOGGING
                         uint8_t temp[16];
                         vst1q_u8(temp, *this);
                         printf("[%04x, %04x, %04x, %04x, %04x, %04x, %04x, %04x,%04x, %04x, %04x, "
@@ -112,7 +111,6 @@ namespace turbo {
                             temp[0], temp[1], temp[2], temp[3], temp[4], temp[5], temp[6],
                             temp[7], temp[8], temp[9], temp[10], temp[11], temp[12], temp[13],
                             temp[14], temp[15]);
-#endif // SIMDUTF_LOGGING
                     }
                     // Conversion from/to SIMD register
                     KUMO_FORCE_INLINE base_u8(const uint8x16_t _value)
@@ -171,8 +169,8 @@ namespace turbo {
                     // efficient for most purposes (cutting it down to uint16_t costs performance
                     // in some compilers).
                     KUMO_FORCE_INLINE uint32_t to_bitmask() const {
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
-                        const uint8x16_t bit_mask = simdutf_make_uint8x16_t(0x01, 0x02, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80,
+#if KUMO_COMPILER_MSVC
+                        const uint8x16_t bit_mask = unicode_make_uint8x16_t(0x01, 0x02, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80,
                             0x01, 0x02, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80);
 #else
                         const uint8x16_t bit_mask = { 0x01, 0x02, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80,
@@ -217,12 +215,12 @@ namespace turbo {
                     KUMO_FORCE_INLINE simd8(uint8_t _value)
                         : simd8(splat(_value)) { }
                     // Member-by-member initialization
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
+#if KUMO_COMPILER_MSVC
                     KUMO_FORCE_INLINE
                     simd8(uint8_t v0, uint8_t v1, uint8_t v2, uint8_t v3, uint8_t v4, uint8_t v5,
                         uint8_t v6, uint8_t v7, uint8_t v8, uint8_t v9, uint8_t v10,
                         uint8_t v11, uint8_t v12, uint8_t v13, uint8_t v14, uint8_t v15)
-                        : simd8(simdutf_make_uint8x16_t(v0, v1, v2, v3, v4, v5, v6, v7, v8, v9,
+                        : simd8(unicode_make_uint8x16_t(v0, v1, v2, v3, v4, v5, v6, v7, v8, v9,
                               v10, v11, v12, v13, v14, v15)) { }
 #else
                     KUMO_FORCE_INLINE
@@ -384,7 +382,7 @@ namespace turbo {
                     KUMO_FORCE_INLINE operator const int8x16_t&() const {
                         return this->value;
                     }
-#ifndef SIMDUTF_REGULAR_VISUAL_STUDIO
+#if !KUMO_COMPILER_MSVC
                     KUMO_FORCE_INLINE operator const uint8x16_t() const {
                         return vreinterpretq_u8_s8(this->value);
                     }
@@ -401,12 +399,12 @@ namespace turbo {
                     KUMO_FORCE_INLINE simd8(const int8_t* values)
                         : simd8(load(values)) { }
                     // Member-by-member initialization
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
+#if KUMO_COMPILER_MSVC
                     KUMO_FORCE_INLINE simd8(int8_t v0, int8_t v1, int8_t v2, int8_t v3,
                         int8_t v4, int8_t v5, int8_t v6, int8_t v7,
                         int8_t v8, int8_t v9, int8_t v10, int8_t v11,
                         int8_t v12, int8_t v13, int8_t v14, int8_t v15)
-                        : simd8(simdutf_make_int8x16_t(v0, v1, v2, v3, v4, v5, v6, v7, v8, v9,
+                        : simd8(unicode_make_int8x16_t(v0, v1, v2, v3, v4, v5, v6, v7, v8, v9,
                               v10, v11, v12, v13, v14, v15)) { }
 #else
                     KUMO_FORCE_INLINE simd8(int8_t v0, int8_t v1, int8_t v2, int8_t v3,
@@ -426,7 +424,7 @@ namespace turbo {
                     // Under Visual Studio/ARM64 uint8x16_t and int8x16_t are apparently the same
                     // type. In theory, we could check this occurrence with std::same_as and
                     // std::enabled_if but it is C++14 and relatively ugly and hard to read.
-#ifndef SIMDUTF_REGULAR_VISUAL_STUDIO
+#if !KUMO_COMPILER_MSVC
                     KUMO_FORCE_INLINE explicit simd8(const uint8x16_t other)
                         : simd8(vreinterpretq_s8_u8(other)) { }
 #endif
@@ -517,8 +515,8 @@ namespace turbo {
                     }
 
                     KUMO_FORCE_INLINE uint64_t to_bitmask() const {
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
-                        const uint8x16_t bit_mask = simdutf_make_uint8x16_t(0x01, 0x02, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80,
+#if KUMO_COMPILER_MSVC
+                        const uint8x16_t bit_mask = unicode_make_uint8x16_t(0x01, 0x02, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80,
                             0x01, 0x02, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80);
 #else
                         const uint8x16_t bit_mask = { 0x01, 0x02, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80,
@@ -576,7 +574,7 @@ namespace turbo {
 
             } // namespace simd
         } // unnamed namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
-#endif // SIMDUTF_ARM64_SIMD_H
+#endif // UNICODE_ARM64_SIMD_H

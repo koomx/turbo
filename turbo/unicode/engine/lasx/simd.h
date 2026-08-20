@@ -1,11 +1,11 @@
-#ifndef SIMDUTF_LASX_SIMD_H
-#define SIMDUTF_LASX_SIMD_H
+#ifndef UNICODE_LASX_SIMD_H
+#define UNICODE_LASX_SIMD_H
 
 #include <turbo/unicode/utf.h>
 #include <turbo/unicode/engine/lasx/bitmanipulation.h>
 
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
             namespace simd {
 
@@ -565,7 +565,7 @@ namespace turbo {
 
             } // namespace simd
         } // unnamed namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
-#endif // SIMDUTF_LASX_SIMD_H
+#endif // UNICODE_LASX_SIMD_H

@@ -1,10 +1,11 @@
-#ifndef SIMDUTF_BASE64_IMPLEMENTATION_H
-#define SIMDUTF_BASE64_IMPLEMENTATION_H
+#ifndef UNICODE_BASE64_IMPLEMENTATION_H
+#define UNICODE_BASE64_IMPLEMENTATION_H
 
 // this is not part of the public api
 
 #include <type_traits> // for is_same
 #include <algorithm>
+#include <turbo/macros/macros/assert.h>
 #include <turbo/unicode/engine/backend_select.h>
 
 namespace turbo {
@@ -83,10 +84,8 @@ namespace turbo {
                     ? last_chunk_handling_options
                     : turbo::last_chunk_handling_options::only_full_chunks);
         }
-        simdutf_log_assert(r.input_count <= safe_input,
-            "You should not read more than safe_input");
-        simdutf_log_assert(r.output_count <= remaining_output_length,
-            "You should not write more than remaining_output_length");
+        KUMO_DASSERT(r.input_count <= safe_input); // You should not read more than safe_input
+        KUMO_DASSERT(r.output_count <= remaining_output_length); // You should not write more than remaining_output_length
         // Technically redundant, but we want to be explicit about it.
         input_position += r.input_count;
         output_position += r.output_count;
@@ -145,4 +144,4 @@ namespace turbo {
     }
 
 } // namespace turbo
-#endif // SIMDUTF_BASE64_IMPLEMENTATION_H
+#endif // UNICODE_BASE64_IMPLEMENTATION_H

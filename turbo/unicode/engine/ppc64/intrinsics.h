@@ -1,5 +1,5 @@
-#ifndef SIMDUTF_PPC64_INTRINSICS_H
-#define SIMDUTF_PPC64_INTRINSICS_H
+#ifndef UNICODE_PPC64_INTRINSICS_H
+#define UNICODE_PPC64_INTRINSICS_H
 
 #include <turbo/unicode/utf.h>
 
@@ -16,4 +16,4 @@
 #undef vector
 #endif
 
-#endif //  SIMDUTF_PPC64_INTRINSICS_H
+#endif //  UNICODE_PPC64_INTRINSICS_H

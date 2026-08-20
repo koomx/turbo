@@ -1,10 +1,10 @@
-template <typename Tdst, simdutf_ByteFlip bflip, bool validate = true>
+template <typename Tdst, unicode_ByteFlip bflip, bool validate = true>
 KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
     size_t len, Tdst* dst) {
     static_assert(std::is_same<Tdst, uint16_t>() || std::is_same<Tdst, uint32_t>(),
         "invalid type");
     constexpr bool is16 = std::is_same<Tdst, uint16_t>();
-    constexpr endianness endian = bflip == simdutf_ByteFlip::NONE ? endianness::LITTLE : endianness::BIG;
+    constexpr endianness endian = bflip == unicode_ByteFlip::NONE ? endianness::LITTLE : endianness::BIG;
     const auto scalar = [](char const* in, size_t count, Tdst* out) {
         return is16 ? scalar::utf8_to_utf16::convert<endian>(in, count,
                           (char16_t*)out)
@@ -57,7 +57,7 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
             if (is16)
                 __riscv_vse16_v_u16m4(
                     (uint16_t*)dst,
-                    simdutf_byteflip<bflip>(__riscv_vzext_vf2_u16m4(v0, vlOut), vlOut),
+                    unicode_byteflip<bflip>(__riscv_vzext_vf2_u16m4(v0, vlOut), vlOut),
                     vlOut);
             else
                 __riscv_vse32_v_u32m8((uint32_t*)dst,
@@ -76,9 +76,9 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
             vuint8m2_t idx1 = __riscv_vsrl_vx_u8m2(v2, 4, vl);
             vuint8m2_t idx3 = __riscv_vsrl_vx_u8m2(v3, 4, vl);
 
-            vuint8m2_t err1 = simdutf_vrgather_u8m1x2(err1tbl, idx1);
-            vuint8m2_t err2 = simdutf_vrgather_u8m1x2(err2tbl, idx2);
-            vuint8m2_t err3 = simdutf_vrgather_u8m1x2(err3tbl, idx3);
+            vuint8m2_t err1 = unicode_vrgather_u8m1x2(err1tbl, idx1);
+            vuint8m2_t err2 = unicode_vrgather_u8m1x2(err2tbl, idx2);
+            vuint8m2_t err3 = unicode_vrgather_u8m1x2(err3tbl, idx3);
             vint8m2_t errs = __riscv_vreinterpret_v_u8m2_i8m2(
                 __riscv_vand_vv_u8m2(__riscv_vand_vv_u8m2(err1, err2, vl), err3, vl));
 
@@ -116,7 +116,7 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
             b12 = __riscv_vwaddu_wv_u16m4_mu(m1, b12, b12, b2, vlOut);
             if (is16)
                 __riscv_vse16_v_u16m4((uint16_t*)dst,
-                    simdutf_byteflip<bflip>(b12, vlOut), vlOut);
+                    unicode_byteflip<bflip>(b12, vlOut), vlOut);
             else
                 __riscv_vse32_v_u32m8((uint32_t*)dst,
                     __riscv_vzext_vf2_u32m8(b12, vlOut), vlOut);
@@ -146,7 +146,7 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
                 m3, b12, __riscv_vsll_vx_u16m4_mu(m3, b12, b12, 6, vlOut), b3, vlOut);
             if (is16)
                 __riscv_vse16_v_u16m4((uint16_t*)dst,
-                    simdutf_byteflip<bflip>(b123, vlOut), vlOut);
+                    unicode_byteflip<bflip>(b123, vlOut), vlOut);
             else
                 __riscv_vse32_v_u32m8((uint32_t*)dst,
                     __riscv_vzext_vf2_u32m8(b123, vlOut), vlOut);
@@ -176,7 +176,7 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
          * vssubu.vx v, 10, (max(x-10, 0)) almost gives us what we want, we
          * just need to manually detect and handle the one special case:
          */
-#define SIMDUTF_RVV_UTF8_TO_COMMON_M1(idx)                                     \
+#define UNICODE_RVV_UTF8_TO_COMMON_M1(idx)                                     \
     vuint8m1_t c1 = __riscv_vget_v_u8m2_u8m1(b1, idx);                         \
     vuint8m1_t c2 = __riscv_vget_v_u8m2_u8m1(b2, idx);                         \
     vuint8m1_t c3 = __riscv_vget_v_u8m2_u8m1(b3, idx);                         \
@@ -221,7 +221,7 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
         {
             size_t vlOutm2 = vlOut, vlDst;
             vlOut = __riscv_vsetvl_e8m1(vlOut < vl8m1 ? vlOut : vl8m1);
-            SIMDUTF_RVV_UTF8_TO_COMMON_M1(0)
+            UNICODE_RVV_UTF8_TO_COMMON_M1(0)
             if (vlOutm2 == vlOut) {
                 vlOut = vlDst;
                 continue;
@@ -232,11 +232,11 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
         }
         {
             size_t vlDst;
-            SIMDUTF_RVV_UTF8_TO_COMMON_M1(1)
+            UNICODE_RVV_UTF8_TO_COMMON_M1(1)
             vlOut = vlDst;
         }
 
-#undef SIMDUTF_RVV_UTF8_TO_COMMON_M1
+#undef UNICODE_RVV_UTF8_TO_COMMON_M1
     }
 
     /* validate the last character and reparse it + tail */
@@ -247,7 +247,7 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
             --src, ++tail;
         if (is16) {
             /* go back one more, when on high surrogate */
-            if (simdutf_byteflip<bflip>((uint16_t)dst[-1]) >= 0xD800 && simdutf_byteflip<bflip>((uint16_t)dst[-1]) <= 0xDBFF)
+            if (unicode_byteflip<bflip>((uint16_t)dst[-1]) >= 0xD800 && unicode_byteflip<bflip>((uint16_t)dst[-1]) <= 0xDBFF)
                 --dst;
         }
     }
@@ -349,17 +349,17 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
 
  [[nodiscard]] size_t implementation::convert_utf8_to_utf16le(
     const char* src, size_t len, char16_t* dst) const noexcept {
-    return rvv_utf8_to_common<uint16_t, simdutf_ByteFlip::NONE>(src, len,
+    return rvv_utf8_to_common<uint16_t, unicode_ByteFlip::NONE>(src, len,
         (uint16_t*)dst);
 }
 
  [[nodiscard]] size_t implementation::convert_utf8_to_utf16be(
     const char* src, size_t len, char16_t* dst) const noexcept {
     if (supports_zvbb())
-        return rvv_utf8_to_common<uint16_t, simdutf_ByteFlip::ZVBB>(
+        return rvv_utf8_to_common<uint16_t, unicode_ByteFlip::ZVBB>(
             src, len, (uint16_t*)dst);
     else
-        return rvv_utf8_to_common<uint16_t, simdutf_ByteFlip::V>(src, len,
+        return rvv_utf8_to_common<uint16_t, unicode_ByteFlip::V>(src, len,
             (uint16_t*)dst);
 }
 
@@ -383,23 +383,23 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
 
  [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf16le(
     const char* src, size_t len, char16_t* dst) const noexcept {
-    return rvv_utf8_to_common<uint16_t, simdutf_ByteFlip::NONE, false>(
+    return rvv_utf8_to_common<uint16_t, unicode_ByteFlip::NONE, false>(
         src, len, (uint16_t*)dst);
 }
 
  [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf16be(
     const char* src, size_t len, char16_t* dst) const noexcept {
     if (supports_zvbb())
-        return rvv_utf8_to_common<uint16_t, simdutf_ByteFlip::ZVBB, false>(
+        return rvv_utf8_to_common<uint16_t, unicode_ByteFlip::ZVBB, false>(
             src, len, (uint16_t*)dst);
     else
-        return rvv_utf8_to_common<uint16_t, simdutf_ByteFlip::V, false>(
+        return rvv_utf8_to_common<uint16_t, unicode_ByteFlip::V, false>(
             src, len, (uint16_t*)dst);
 }
 
  [[nodiscard]] size_t implementation::convert_utf8_to_utf32(
     const char* src, size_t len, char32_t* dst) const noexcept {
-    return rvv_utf8_to_common<uint32_t, simdutf_ByteFlip::NONE>(src, len,
+    return rvv_utf8_to_common<uint32_t, unicode_ByteFlip::NONE>(src, len,
         (uint32_t*)dst);
 }
 
@@ -413,6 +413,6 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
 
  [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf32(
     const char* src, size_t len, char32_t* dst) const noexcept {
-    return rvv_utf8_to_common<uint32_t, simdutf_ByteFlip::NONE, false>(
+    return rvv_utf8_to_common<uint32_t, unicode_ByteFlip::NONE, false>(
         src, len, (uint32_t*)dst);
 }

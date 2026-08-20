@@ -1,5 +1,5 @@
-#ifndef SIMDUTF_LSX_INTRINSICS_H
-#define SIMDUTF_LSX_INTRINSICS_H
+#ifndef UNICODE_LSX_INTRINSICS_H
+#define UNICODE_LSX_INTRINSICS_H
 
 #include <turbo/unicode/utf.h>
 
@@ -184,4 +184,4 @@ namespace {
 #define lsx_splat_u32(v) lsx_splat_u32_aux<(v)>()
 #endif // QEMU_VLDI_BUG
 #endif // lsx_splat_u16
-#endif //  SIMDUTF_LSX_INTRINSICS_H
+#endif //  UNICODE_LSX_INTRINSICS_H

@@ -1,8 +1,8 @@
-#ifndef SIMDUTF_HASWELL_SIMD_H
-#define SIMDUTF_HASWELL_SIMD_H
+#ifndef UNICODE_HASWELL_SIMD_H
+#define UNICODE_HASWELL_SIMD_H
 
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
             namespace simd {
 
@@ -376,7 +376,7 @@ namespace turbo {
             } // namespace simd
 
         } // unnamed namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
-#endif // SIMDUTF_HASWELL_SIMD_H
+#endif // UNICODE_HASWELL_SIMD_H

@@ -2,7 +2,7 @@
 // SIMD kernel's translation unit (and re-expanded per kernel in the
 // amalgamation), matching the other generic/ transcoder headers.
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
             namespace utf16_to_utf8 {
 
@@ -43,5 +43,5 @@ namespace turbo {
 
             } // namespace utf16_to_utf8
         } // unnamed namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo

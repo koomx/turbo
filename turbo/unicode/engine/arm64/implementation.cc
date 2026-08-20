@@ -1,6 +1,6 @@
 
 #include <turbo/unicode/engine/arm64.h>
-#if SIMDUTF_IMPLEMENTATION_ARM64
+#if UNICODE_IMPLEMENTATION_ARM64
 
 #include <turbo/unicode/tables/utf8_to_utf16_tables.h>
 #include <turbo/unicode/tables/utf16_to_utf8_tables.h>
@@ -9,9 +9,9 @@
 #include <turbo/unicode/engine/arm64/begin.h>
 #include <turbo/unicode/engine/implementation.h>
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
-#ifndef SIMDUTF_ARM64_H
+#ifndef UNICODE_ARM64_H
 #error "arm64.h must be included"
 #endif
             using namespace simd;
@@ -33,8 +33,8 @@ namespace turbo {
             KUMO_FORCE_INLINE uint16x4_t convert_utf8_3_byte_to_utf16(uint8x16_t in) {
 // Low half contains  10cccccc|1110aaaa
 // High half contains 10bbbbbb|10bbbbbb
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
-                const uint8x16_t sh = simdutf_make_uint8x16_t(0, 2, 3, 5, 6, 8, 9, 11, 1, 1,
+#if KUMO_COMPILER_MSVC
+                const uint8x16_t sh = unicode_make_uint8x16_t(0, 2, 3, 5, 6, 8, 9, 11, 1, 1,
                     4, 4, 7, 7, 10, 10);
 #else
                 const uint8x16_t sh = { 0, 2, 3, 5, 6, 8, 9, 11, 1, 1, 4, 4, 7, 7, 10, 10 };
@@ -124,7 +124,7 @@ namespace turbo {
 #include <turbo/unicode/engine/arm64/arm_convert_utf32_to_utf16.cpp>
 #include <turbo/unicode/engine/arm64/arm_convert_utf32_to_utf8.cpp>
         } // unnamed namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
 #include <turbo/unicode/generic/buf_block_reader.h>
@@ -151,7 +151,7 @@ namespace turbo {
 // Implementation-specific overrides
 //
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
 
          [[nodiscard]] int
         implementation::detect_encodings(const char* input,
@@ -1250,7 +1250,7 @@ namespace turbo {
             return base64_lengths::binary_length_from_base64(input, length);
         }
 
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
 #include <turbo/unicode/engine/arm64/end.h>

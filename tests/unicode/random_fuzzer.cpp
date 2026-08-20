@@ -7,6 +7,7 @@
 #include <iostream>
 #include <vector>
 
+#include <turbo/macros/macros/pragma/pragma.h>
 #include <turbo/unicode/utf.h>
 
 std::string input;
@@ -38,10 +39,9 @@ void dump_case() {
   const size_t buf_size = 4 * input.size() + 3;
   char *buffer = new char[buf_size];
   for (unsigned int i = 0; i < input.size(); i++) {
-    SIMDUTF_PUSH_DISABLE_WARNINGS
-    SIMDUTF_DISABLE_DEPRECATED_WARNING
+    KUMO_DISABLE_DEPRECATED_WARNINGS
     sprintf(buffer + 4 * i + 1, "\\x%02x", input[i]);
-    SIMDUTF_POP_DISABLE_WARNINGS
+    KUMO_RESTORE_DEPRECATED_WARNINGS
   }
   buffer[0] = '"';
   buffer[buf_size - 2] = '"';
@@ -754,10 +754,10 @@ int main(int argc, char *argv[]) {
     }
     printf("testing: %.*s\n", int(e->name().size()), e->name().data());
   }
-#ifndef SIMDUTF_TEST_FUZZER_TRIALS
-  #error "SIMDUTF_TEST_FUZZER_TRIALS not set."
+#ifndef UNICODE_TEST_FUZZER_TRIALS
+  #error "UNICODE_TEST_FUZZER_TRIALS not set."
 #endif
-  std::size_t N = SIMDUTF_TEST_FUZZER_TRIALS;
+  std::size_t N = UNICODE_TEST_FUZZER_TRIALS;
   if (argc == 2) {
     try {
       N = std::stoi(argv[1]);

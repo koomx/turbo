@@ -1,21 +1,21 @@
-#ifndef SIMDUTF_PPC64_H
-#define SIMDUTF_PPC64_H
+#ifndef UNICODE_PPC64_H
+#define UNICODE_PPC64_H
 
-#ifdef SIMDUTF_FALLBACK_H
+#ifdef UNICODE_FALLBACK_H
 #error "ppc64.h must be included before fallback.h"
 #endif
 
 #include <turbo/unicode/engine/portability.h>
 
-#ifndef SIMDUTF_IMPLEMENTATION_PPC64
-#define SIMDUTF_IMPLEMENTATION_PPC64 (SIMDUTF_IS_PPC64)
+#ifndef UNICODE_IMPLEMENTATION_PPC64
+#define UNICODE_IMPLEMENTATION_PPC64 (KUMO_ARCH_PPC64 && KUMO_SIMD_ALTIVEC)
 #endif
-#define SIMDUTF_CAN_ALWAYS_RUN_PPC64 \
-    SIMDUTF_IMPLEMENTATION_PPC64&& SIMDUTF_IS_PPC64
+#define UNICODE_CAN_ALWAYS_RUN_PPC64 \
+    UNICODE_IMPLEMENTATION_PPC64 && KUMO_ARCH_PPC64 && KUMO_SIMD_ALTIVEC
 
-#include <turbo/unicode/internal/isadetection.h>
+#include <turbo/arch/isadetection.h>
 
-#if SIMDUTF_IMPLEMENTATION_PPC64
+#if UNICODE_IMPLEMENTATION_PPC64
 
 namespace turbo {
     /// Implementation for ALTIVEC (PPC64).
@@ -33,6 +33,6 @@ namespace turbo {
 
 #include <turbo/unicode/engine/ppc64/end.h>
 
-#endif // SIMDUTF_IMPLEMENTATION_PPC64
+#endif // UNICODE_IMPLEMENTATION_PPC64
 
-#endif // SIMDUTF_PPC64_H
+#endif // UNICODE_PPC64_H

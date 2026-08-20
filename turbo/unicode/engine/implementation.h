@@ -1,13 +1,12 @@
-#ifndef SIMDUTF_IMPLEMENTATION_H
-#define SIMDUTF_IMPLEMENTATION_H
+#ifndef UNICODE_IMPLEMENTATION_H
+#define UNICODE_IMPLEMENTATION_H
 
 #include <atomic>
 #include <vector>
-#include <turbo/unicode/engine/common_defs.h>
-
+#include <turbo/unicode/engine/portability.h>
 #include <turbo/unicode/text_encoding.h>
 #include <turbo/unicode/error.h>
-#include <turbo/unicode/internal/isadetection.h>
+#include <turbo/arch/isadetection.h>
 
 #include <string_view>
 
@@ -52,4 +51,4 @@
 #include <turbo/unicode/engine/backend_select.h>
 
 
-#endif // SIMDUTF_IMPLEMENTATION_H
+#endif // UNICODE_IMPLEMENTATION_H

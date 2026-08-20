@@ -1,5 +1,5 @@
 #include <turbo/unicode/engine/icelake.h>
-#if SIMDUTF_IMPLEMENTATION_ICELAKE
+#if UNICODE_IMPLEMENTATION_ICELAKE
 
 #include <turbo/unicode/tables/utf8_to_utf16_tables.h>
 #include <turbo/unicode/tables/utf16_to_utf8_tables.h>
@@ -16,9 +16,9 @@
 // are included inside the turbo::icelake namespace below)
 #include <turbo/unicode/generic/utf16_to_utf8/utf16_to_utf8_with_replacement.h>
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
-#ifndef SIMDUTF_ICELAKE_H
+#ifndef UNICODE_ICELAKE_H
 #error "icelake.h must be included"
 #endif
             using namespace simd;
@@ -62,13 +62,13 @@ namespace turbo {
 #include <cstdint>
 
         } // namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
 #include <turbo/unicode/generic/utf32.h>
 
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
 
          [[nodiscard]] int
         implementation::detect_encodings(const char* input,
@@ -1720,7 +1720,7 @@ namespace turbo {
             return icelake_binary_length_from_base64(input, length);
         }
 
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
 #include <turbo/unicode/engine/icelake/end.h>

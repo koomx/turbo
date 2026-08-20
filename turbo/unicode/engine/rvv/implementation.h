@@ -1,8 +1,8 @@
-#ifndef SIMDUTF_RVV_IMPLEMENTATION_H
-#define SIMDUTF_RVV_IMPLEMENTATION_H
+#ifndef UNICODE_RVV_IMPLEMENTATION_H
+#define UNICODE_RVV_IMPLEMENTATION_H
 
 #include <turbo/unicode/utf.h>
-#include <turbo/unicode/internal/isadetection.h>
+#include <turbo/arch/isadetection.h>
 
 namespace turbo {
     namespace rvv {
@@ -235,9 +235,9 @@ namespace turbo {
         private:
             const bool _supports_zvbb;
 
-#if SIMDUTF_IS_ZVBB
+#if UNICODE_IS_ZVBB
             bool supports_zvbb() const { return true; }
-#elif SIMDUTF_HAS_ZVBB_INTRINSICS
+#elif UNICODE_HAS_ZVBB_INTRINSICS
             bool supports_zvbb() const { return _supports_zvbb; }
 #else
             bool supports_zvbb() const { return false; }
@@ -247,4 +247,4 @@ namespace turbo {
     } // namespace rvv
 } // namespace turbo
 
-#endif // SIMDUTF_RVV_IMPLEMENTATION_H
+#endif // UNICODE_RVV_IMPLEMENTATION_H

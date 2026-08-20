@@ -1,10 +1,10 @@
-#ifndef SIMDUTF_HASWELL_IMPLEMENTATION_H
-#define SIMDUTF_HASWELL_IMPLEMENTATION_H
+#ifndef UNICODE_HASWELL_IMPLEMENTATION_H
+#define UNICODE_HASWELL_IMPLEMENTATION_H
 
 #include <turbo/unicode/engine/implementation.h>
 
 // The constructor may be executed on any host, so we take care not to use
-// SIMDUTF_TARGET_REGION
+// UNICODE_TARGET_REGION
 namespace turbo {
     namespace haswell {
 
@@ -267,4 +267,4 @@ namespace turbo {
     } // namespace haswell
 } // namespace turbo
 
-#endif // SIMDUTF_HASWELL_IMPLEMENTATION_H
+#endif // UNICODE_HASWELL_IMPLEMENTATION_H

@@ -118,8 +118,8 @@ arm_convert_utf16_to_utf8(const char16_t* buf, size_t len, char* utf8_out) {
             const uint16x8_t one_byte_bytemask = vcleq_u16(in, v_007f);
             const uint8x16_t utf8_unpacked = vreinterpretq_u8_u16(vbslq_u16(one_byte_bytemask, in, t4));
             // 3. prepare bitmask for 8-bit lookup
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
-            const uint16x8_t mask = simdutf_make_uint16x8_t(
+#if KUMO_COMPILER_MSVC
+            const uint16x8_t mask = unicode_make_uint16x8_t(
                 0x0001, 0x0004, 0x0010, 0x0040, 0x0002, 0x0008, 0x0020, 0x0080);
 #else
             const uint16x8_t mask = { 0x0001, 0x0004, 0x0010, 0x0040,
@@ -144,8 +144,8 @@ arm_convert_utf16_to_utf8(const char16_t* buf, size_t len, char* utf8_out) {
         // However, it is likely an uncommon occurrence.
         if (!any_lane_set(surrogates_bytemask)) {
             // case: code units from register produce either 1, 2 or 3 UTF-8 bytes
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
-            const uint16x8_t dup_even = simdutf_make_uint16x8_t(
+#if KUMO_COMPILER_MSVC
+            const uint16x8_t dup_even = unicode_make_uint16x8_t(
                 0x0000, 0x0202, 0x0404, 0x0606, 0x0808, 0x0a0a, 0x0c0c, 0x0e0e);
 #else
             const uint16x8_t dup_even = { 0x0000, 0x0202, 0x0404, 0x0606,
@@ -176,30 +176,30 @@ arm_convert_utf16_to_utf8(const char16_t* buf, size_t len, char* utf8_out) {
             /// Given [aaaa|bbbb|bbcc|cccc] our goal is to produce:
 /// t2 => [0ccc|cccc] [10cc|cccc]
 /// s4 => [1110|aaaa] ([110b|bbbb] OR [10bb|bbbb])
-#define simdutf_vec(x) vmovq_n_u16(static_cast<uint16_t>(x))
+#define unicode_vec(x) vmovq_n_u16(static_cast<uint16_t>(x))
             // [aaaa|bbbb|bbcc|cccc] => [bbcc|cccc|bbcc|cccc]
             const uint16x8_t t0 = vreinterpretq_u16_u8(
                 vqtbl1q_u8(vreinterpretq_u8_u16(in), vreinterpretq_u8_u16(dup_even)));
             // [bbcc|cccc|bbcc|cccc] => [00cc|cccc|0bcc|cccc]
-            const uint16x8_t t1 = vandq_u16(t0, simdutf_vec(0b0011111101111111));
+            const uint16x8_t t1 = vandq_u16(t0, unicode_vec(0b0011111101111111));
             // [00cc|cccc|0bcc|cccc] => [10cc|cccc|0bcc|cccc]
-            const uint16x8_t t2 = vorrq_u16(t1, simdutf_vec(0b1000000000000000));
+            const uint16x8_t t2 = vorrq_u16(t1, unicode_vec(0b1000000000000000));
 
             // s0: [aaaa|bbbb|bbcc|cccc] => [0000|0000|0000|aaaa]
             const uint16x8_t s0 = vshrq_n_u16(in, 12);
             // s1: [aaaa|bbbb|bbcc|cccc] => [0000|bbbb|bb00|0000]
-            const uint16x8_t s1 = vandq_u16(in, simdutf_vec(0b0000111111000000));
+            const uint16x8_t s1 = vandq_u16(in, unicode_vec(0b0000111111000000));
             // [0000|bbbb|bb00|0000] => [00bb|bbbb|0000|0000]
             const uint16x8_t s1s = vshlq_n_u16(s1, 2);
             // [00bb|bbbb|0000|aaaa]
             const uint16x8_t s2 = vorrq_u16(s0, s1s);
             // s3: [00bb|bbbb|0000|aaaa] => [11bb|bbbb|1110|aaaa]
-            const uint16x8_t s3 = vorrq_u16(s2, simdutf_vec(0b1100000011100000));
+            const uint16x8_t s3 = vorrq_u16(s2, unicode_vec(0b1100000011100000));
             const uint16x8_t v_07ff = vmovq_n_u16((uint16_t)0x07FF);
             const uint16x8_t one_or_two_bytes_bytemask = vcleq_u16(in, v_07ff);
-            const uint16x8_t m0 = vbicq_u16(simdutf_vec(0b0100000000000000), one_or_two_bytes_bytemask);
+            const uint16x8_t m0 = vbicq_u16(unicode_vec(0b0100000000000000), one_or_two_bytes_bytemask);
             const uint16x8_t s4 = veorq_u16(s3, m0);
-#undef simdutf_vec
+#undef unicode_vec
 
             // 4. expand code units 16-bit => 32-bit
             const uint8x16_t out0 = vreinterpretq_u8_u16(vzip1q_u16(t2, s4));
@@ -208,10 +208,10 @@ arm_convert_utf16_to_utf8(const char16_t* buf, size_t len, char* utf8_out) {
             // 5. compress 32-bit code units into 1, 2 or 3 bytes -- 2 x shuffle
             const uint16x8_t v_007f = vmovq_n_u16((uint16_t)0x007F);
             const uint16x8_t one_byte_bytemask = vcleq_u16(in, v_007f);
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
-            const uint16x8_t onemask = simdutf_make_uint16x8_t(
+#if KUMO_COMPILER_MSVC
+            const uint16x8_t onemask = unicode_make_uint16x8_t(
                 0x0001, 0x0004, 0x0010, 0x0040, 0x0100, 0x0400, 0x1000, 0x4000);
-            const uint16x8_t twomask = simdutf_make_uint16x8_t(
+            const uint16x8_t twomask = unicode_make_uint16x8_t(
                 0x0002, 0x0008, 0x0020, 0x0080, 0x0200, 0x0800, 0x2000, 0x8000);
 #else
             const uint16x8_t onemask = { 0x0001, 0x0004, 0x0010, 0x0040,
@@ -375,8 +375,8 @@ arm_convert_utf16_to_utf8_with_errors(const char16_t* buf, size_t len,
             const uint16x8_t one_byte_bytemask = vcleq_u16(in, v_007f);
             const uint8x16_t utf8_unpacked = vreinterpretq_u8_u16(vbslq_u16(one_byte_bytemask, in, t4));
             // 3. prepare bitmask for 8-bit lookup
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
-            const uint16x8_t mask = simdutf_make_uint16x8_t(
+#if KUMO_COMPILER_MSVC
+            const uint16x8_t mask = unicode_make_uint16x8_t(
                 0x0001, 0x0004, 0x0010, 0x0040, 0x0002, 0x0008, 0x0020, 0x0080);
 #else
             const uint16x8_t mask = { 0x0001, 0x0004, 0x0010, 0x0040,
@@ -401,8 +401,8 @@ arm_convert_utf16_to_utf8_with_errors(const char16_t* buf, size_t len,
         // However, it is likely an uncommon occurrence.
         if (!any_lane_set(surrogates_bytemask)) {
             // case: code units from register produce either 1, 2 or 3 UTF-8 bytes
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
-            const uint16x8_t dup_even = simdutf_make_uint16x8_t(
+#if KUMO_COMPILER_MSVC
+            const uint16x8_t dup_even = unicode_make_uint16x8_t(
                 0x0000, 0x0202, 0x0404, 0x0606, 0x0808, 0x0a0a, 0x0c0c, 0x0e0e);
 #else
             const uint16x8_t dup_even = { 0x0000, 0x0202, 0x0404, 0x0606,
@@ -433,30 +433,30 @@ arm_convert_utf16_to_utf8_with_errors(const char16_t* buf, size_t len,
             /// Given [aaaa|bbbb|bbcc|cccc] our goal is to produce:
 /// t2 => [0ccc|cccc] [10cc|cccc]
 /// s4 => [1110|aaaa] ([110b|bbbb] OR [10bb|bbbb])
-#define simdutf_vec(x) vmovq_n_u16(static_cast<uint16_t>(x))
+#define unicode_vec(x) vmovq_n_u16(static_cast<uint16_t>(x))
             // [aaaa|bbbb|bbcc|cccc] => [bbcc|cccc|bbcc|cccc]
             const uint16x8_t t0 = vreinterpretq_u16_u8(
                 vqtbl1q_u8(vreinterpretq_u8_u16(in), vreinterpretq_u8_u16(dup_even)));
             // [bbcc|cccc|bbcc|cccc] => [00cc|cccc|0bcc|cccc]
-            const uint16x8_t t1 = vandq_u16(t0, simdutf_vec(0b0011111101111111));
+            const uint16x8_t t1 = vandq_u16(t0, unicode_vec(0b0011111101111111));
             // [00cc|cccc|0bcc|cccc] => [10cc|cccc|0bcc|cccc]
-            const uint16x8_t t2 = vorrq_u16(t1, simdutf_vec(0b1000000000000000));
+            const uint16x8_t t2 = vorrq_u16(t1, unicode_vec(0b1000000000000000));
 
             // s0: [aaaa|bbbb|bbcc|cccc] => [0000|0000|0000|aaaa]
             const uint16x8_t s0 = vshrq_n_u16(in, 12);
             // s1: [aaaa|bbbb|bbcc|cccc] => [0000|bbbb|bb00|0000]
-            const uint16x8_t s1 = vandq_u16(in, simdutf_vec(0b0000111111000000));
+            const uint16x8_t s1 = vandq_u16(in, unicode_vec(0b0000111111000000));
             // [0000|bbbb|bb00|0000] => [00bb|bbbb|0000|0000]
             const uint16x8_t s1s = vshlq_n_u16(s1, 2);
             // [00bb|bbbb|0000|aaaa]
             const uint16x8_t s2 = vorrq_u16(s0, s1s);
             // s3: [00bb|bbbb|0000|aaaa] => [11bb|bbbb|1110|aaaa]
-            const uint16x8_t s3 = vorrq_u16(s2, simdutf_vec(0b1100000011100000));
+            const uint16x8_t s3 = vorrq_u16(s2, unicode_vec(0b1100000011100000));
             const uint16x8_t v_07ff = vmovq_n_u16((uint16_t)0x07FF);
             const uint16x8_t one_or_two_bytes_bytemask = vcleq_u16(in, v_07ff);
-            const uint16x8_t m0 = vbicq_u16(simdutf_vec(0b0100000000000000), one_or_two_bytes_bytemask);
+            const uint16x8_t m0 = vbicq_u16(unicode_vec(0b0100000000000000), one_or_two_bytes_bytemask);
             const uint16x8_t s4 = veorq_u16(s3, m0);
-#undef simdutf_vec
+#undef unicode_vec
 
             // 4. expand code units 16-bit => 32-bit
             const uint8x16_t out0 = vreinterpretq_u8_u16(vzip1q_u16(t2, s4));
@@ -465,10 +465,10 @@ arm_convert_utf16_to_utf8_with_errors(const char16_t* buf, size_t len,
             // 5. compress 32-bit code units into 1, 2 or 3 bytes -- 2 x shuffle
             const uint16x8_t v_007f = vmovq_n_u16((uint16_t)0x007F);
             const uint16x8_t one_byte_bytemask = vcleq_u16(in, v_007f);
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
-            const uint16x8_t onemask = simdutf_make_uint16x8_t(
+#if KUMO_COMPILER_MSVC
+            const uint16x8_t onemask = unicode_make_uint16x8_t(
                 0x0001, 0x0004, 0x0010, 0x0040, 0x0100, 0x0400, 0x1000, 0x4000);
-            const uint16x8_t twomask = simdutf_make_uint16x8_t(
+            const uint16x8_t twomask = unicode_make_uint16x8_t(
                 0x0002, 0x0008, 0x0020, 0x0080, 0x0200, 0x0800, 0x2000, 0x8000);
 #else
             const uint16x8_t onemask = { 0x0001, 0x0004, 0x0010, 0x0040,

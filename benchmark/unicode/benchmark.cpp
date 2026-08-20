@@ -23,7 +23,7 @@ void info_message() {
 #elif defined(_MSC_VER)
   std::cout << "Compiler: MSVC " << _MSC_VER << "\n";
 #endif
-  std::cout << "SIMDUTF version: " << SIMDUTF_VERSION << "\n";
+  std::cout << "UNICODE version: " << 1 << "\n";
   std::cout << "System: " << turbo::get_active_implementation()->name()
             << "\n";
   std::cout << "===========================\n";

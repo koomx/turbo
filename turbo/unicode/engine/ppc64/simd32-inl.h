@@ -37,7 +37,6 @@ struct base32 {
 #endif // defined(__clang__)
     }
     void dump(const char* name = nullptr) const {
-#ifdef SIMDUTF_LOGGING
         if (name != nullptr) {
             printf("%-10s = ", name);
         }
@@ -54,7 +53,6 @@ struct base32 {
             }
         }
         putchar('\n');
-#endif // SIMDUTF_LOGGING
     }
 };
 

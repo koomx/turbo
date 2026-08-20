@@ -1,10 +1,11 @@
-#ifndef SIMDUTF_BASE64_H
-#define SIMDUTF_BASE64_H
+#ifndef UNICODE_BASE64_H
+#define UNICODE_BASE64_H
 
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 
+#include <turbo/macros/macros/assert.h>
 #include <turbo/unicode/options.h>
 #include <turbo/unicode/api/find.h>
 
@@ -240,7 +241,7 @@ namespace turbo {
                             src++;
                         }
                         if (idx != 4) {
-                            simdutf_log_assert(idx < 4, "idx should be less than 4");
+                            KUMO_DASSERT(idx < 4); // idx should be less than 4
                             // We never should have that the number of base64 characters + the
                             // number of padding characters is more than 4.
                             if (!ignore_garbage && (idx + padding_characters > 4)) {
@@ -377,8 +378,7 @@ namespace turbo {
                         if (line_length < 4) {
                             line_length = 4;
                         }
-                        simdutf_log_assert(line_offset <= line_length,
-                            "line_offset should be less than line_length");
+                        KUMO_DASSERT(line_offset <= line_length); // line_offset should be less than line_length
                     }
                     // By default, we use padding if we are not using the URL variant.
                     // This is check with ((options & base64_url) == 0) which returns true if we
@@ -827,7 +827,7 @@ namespace turbo {
                             return i + 1;
                         }
                     }
-                    simdutf_log_assert(false, "You never get here");
+                    KUMO_DASSERT(false); // You never get here
 
                     return -1; // should never happen
                 }

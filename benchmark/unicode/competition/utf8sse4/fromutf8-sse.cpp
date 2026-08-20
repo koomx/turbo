@@ -21,7 +21,7 @@
 #include <algorithm>
 #include <x86intrin.h>
 
-SIMDUTF_TARGET_WESTMERE
+UNICODE_TARGET_WESTMERE
 
 namespace utf8sse4 {
 
@@ -286,7 +286,7 @@ size_t fromUtf8(const char **inbuf, size_t *inbytesleft, char **outbuf, size_t *
 }
 
 }
-SIMDUTF_UNTARGET_REGION
+UNICODE_UNTARGET_REGION
 
 
 #endif // __x86_64__

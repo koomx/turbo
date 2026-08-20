@@ -28,6 +28,8 @@
 //
 //   // Compiler variant
 //   KUMO_COMPILER_APPLECLANG 0|1   (Apple's Clang fork)
+//   KUMO_COMPILER_MSVC_CLANG 0|1   (clang-cl)
+//   KUMO_COMPILER_MSVC_ENV   0|1   (MSVC || MSVC_CLANG)
 //
 //   // Version
 //   KUMO_COMPILER_VERSION           integer  (GCC: 1402 / Clang: 1800 / MSVC: 1939)
@@ -52,6 +54,7 @@
 #include <turbo/macros/compiler/clang.h>
 #include <turbo/macros/compiler/gnu.h>
 #include <turbo/macros/compiler/msvc.h>
+#include <turbo/macros/compiler/msvc_env.h>
 
 #include <turbo/macros/compiler/cuda.h>
 #include <turbo/macros/compiler/lang.h>
@@ -70,6 +73,14 @@
 
 #ifndef KUMO_COMPILER_MSVC
 #error "KUMO_COMPILER_MSVC is not defined"
+#endif
+
+#ifndef KUMO_COMPILER_MSVC_CLANG
+#error "KUMO_COMPILER_MSVC_CLANG is not defined"
+#endif
+
+#ifndef KUMO_COMPILER_MSVC_ENV
+#error "KUMO_COMPILER_MSVC_ENV is not defined"
 #endif
 
 #ifndef KUMO_COMPILER_INTEL

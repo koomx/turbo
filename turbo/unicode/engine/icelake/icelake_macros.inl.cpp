@@ -1,6 +1,6 @@
 
 /*
-    This upcoming macro (SIMDUTF_ICELAKE_TRANSCODE16) takes 16 + 4 bytes (of a
+    This upcoming macro (UNICODE_ICELAKE_TRANSCODE16) takes 16 + 4 bytes (of a
    UTF-8 string) and loads all possible 4-byte substring into an AVX512
    register.
 
@@ -38,7 +38,7 @@
 /// 17, 18, 19 12, 13, 14, 15, 13, 14, 15,  0, 14, 15,  0,  1, 15,  0,  1,  2,
 /// ]
 
-#define SIMDUTF_ICELAKE_TRANSCODE16(LANE0, LANE1, MASKED)                                   \
+#define UNICODE_ICELAKE_TRANSCODE16(LANE0, LANE1, MASKED)                                   \
     {                                                                                       \
         const __m512i merged = _mm512_mask_mov_epi32(LANE0, 0x1000, LANE1);                 \
         const __m512i expand_ver2 = _mm512_setr_epi64(                                      \
@@ -85,7 +85,7 @@
         }                                                                                   \
     }
 
-#define SIMDUTF_ICELAKE_WRITE_UTF16_OR_UTF32(INPUT, VALID_COUNT, MASKED)           \
+#define UNICODE_ICELAKE_WRITE_UTF16_OR_UTF32(INPUT, VALID_COUNT, MASKED)           \
     {                                                                              \
         if (UTF32) {                                                               \
             if (MASKED) {                                                          \
@@ -107,7 +107,7 @@
         }                                                                          \
     }
 
-#define SIMDUTF_ICELAKE_STORE_ASCII(UTF32, utf8, output)                  \
+#define UNICODE_ICELAKE_STORE_ASCII(UTF32, utf8, output)                  \
     if (UTF32) {                                                          \
         const __m128i t0 = _mm512_castsi512_si128(utf8);                  \
         const __m128i t1 = _mm512_extracti32x4_epi32(utf8, 1);            \

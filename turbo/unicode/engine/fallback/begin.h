@@ -1,1 +1,1 @@
-#define SIMDUTF_IMPLEMENTATION fallback
+#define UNICODE_IMPLEMENTATION fallback

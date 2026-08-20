@@ -16,7 +16,7 @@ namespace {
 
 } // namespace
 
-#if !SIMDUTF_IS_BIG_ENDIAN
+#if !KUMO_ENDIAN_BIG
 TEST(issue_convert_utf32_to_utf8_with_errors_1b8034ed546f4bf7) {
     alignas(4) const unsigned char data[] = {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

@@ -1,9 +1,5 @@
 #include "validate_utf16.h"
 
-#ifndef SIMDUTF_IS_BIG_ENDIAN
-#error "SIMDUTF_IS_BIG_ENDIAN should be defined."
-#endif
-
 namespace turbo {
     namespace tests {
         namespace reference {

@@ -73,7 +73,7 @@ namespace turbo::internal {
         atomic_ptr(T* _ptr)
             : ptr { _ptr } { }
 
-#if defined(SIMDUTF_NO_THREADS)
+#if UNICODE_NO_THREADS
         operator const T*() const { return ptr; }
         const T& operator*() const { return *ptr; }
         const T* operator->() const { return ptr; }
@@ -102,7 +102,7 @@ namespace turbo::internal {
 #endif
 
     private:
-#if defined(SIMDUTF_NO_THREADS)
+#if UNICODE_NO_THREADS
         T* ptr;
 #else
         std::atomic<T*> ptr;

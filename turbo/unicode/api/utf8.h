@@ -16,8 +16,7 @@
 #pragma once
 
 
-#include <turbo/unicode/engine/common_defs.h>
-
+#include <turbo/unicode/engine/portability.h>
 #include <turbo/unicode/text_encoding.h>
 #include <turbo/unicode/error.h>
 

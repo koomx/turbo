@@ -1,11 +1,11 @@
-#ifndef SIMDUTF_PPC64_BITMANIPULATION_H
-#define SIMDUTF_PPC64_BITMANIPULATION_H
+#ifndef UNICODE_PPC64_BITMANIPULATION_H
+#define UNICODE_PPC64_BITMANIPULATION_H
 
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
 
-#ifdef SIMDUTF_REGULAR_VISUAL_STUDIO
+#if KUMO_COMPILER_MSVC
             KUMO_FORCE_INLINE int count_ones(uint64_t input_num) {
                 // note: we do not support legacy 32-bit Windows
                 return __popcnt64(input_num); // Visual Studio wants two underscores
@@ -16,14 +16,14 @@ namespace turbo {
             }
 #endif
 
-#if SIMDUTF_NEED_TRAILING_ZEROES
+#if UNICODE_NEED_TRAILING_ZEROES
             KUMO_FORCE_INLINE int trailing_zeroes(uint64_t input_num) {
                 return __builtin_ctzll(input_num);
             }
 #endif
 
         } // unnamed namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
-#endif // SIMDUTF_PPC64_BITMANIPULATION_H
+#endif // UNICODE_PPC64_BITMANIPULATION_H

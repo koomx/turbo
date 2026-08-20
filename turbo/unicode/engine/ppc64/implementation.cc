@@ -1,6 +1,6 @@
 
 #include <turbo/unicode/engine/ppc64.h>
-#if SIMDUTF_IMPLEMENTATION_PPC64
+#if UNICODE_IMPLEMENTATION_PPC64
 
 #include <turbo/unicode/tables/utf8_to_utf16_tables.h>
 #include <turbo/unicode/tables/utf16_to_utf8_tables.h>
@@ -13,9 +13,9 @@
 #include <turbo/unicode/engine/ppc64/ppc64_utf16_to_utf8_tables.h>
 
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
-#ifndef SIMDUTF_PPC64_H
+#ifndef UNICODE_PPC64_H
 #error "ppc64.h must be included"
 #endif
             using namespace simd;
@@ -79,7 +79,7 @@ namespace turbo {
 #include <turbo/unicode/engine/ppc64/ppc64_base64.cpp>
 
         } // unnamed namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
 #include <turbo/unicode/generic/buf_block_reader.h>
@@ -111,14 +111,14 @@ namespace turbo {
 
 #include <turbo/unicode/engine/ppc64/templates.cpp>
 
-#ifdef SIMDUTF_INTERNAL_TESTS
+#ifdef UNICODE_INTERNAL_TESTS
 #include "ppc64_base64_internal_tests.cpp"
-#endif // SIMDUTF_INTERNAL_TESTS
+#endif // UNICODE_INTERNAL_TESTS
 //
 // Implementation-specific overrides
 //
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
 
          [[nodiscard]] int
         implementation::detect_encodings(const char* input,
@@ -876,7 +876,7 @@ namespace turbo {
             return util::find(start, end, character);
         }
 
-#ifdef SIMDUTF_INTERNAL_TESTS
+#ifdef UNICODE_INTERNAL_TESTS
         std::vector<implementation::TestProcedure>
         implementation::internal_tests() const {
 #define entry(proc) \
@@ -896,7 +896,7 @@ namespace turbo {
         }
 #endif
 
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
 #include <turbo/unicode/engine/ppc64/end.h>

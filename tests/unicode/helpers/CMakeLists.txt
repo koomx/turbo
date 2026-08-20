@@ -26,7 +26,7 @@ kmcmake_cc_library(
         CXXOPTS
         ${KMCMAKE_CXX_OPTIONS}
         DEFINES
-        SIMDUTF_TEST_LOOP_TRIALS=1000
+        UNICODE_TEST_LOOP_TRIALS=1000
         PLINKS
         turbo::turbo_static
         turbo::unicode_test_reference_static

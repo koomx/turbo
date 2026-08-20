@@ -1,5 +1,5 @@
 #include <turbo/unicode/engine/rvv.h>
-#if SIMDUTF_IMPLEMENTATION_RVV
+#if UNICODE_IMPLEMENTATION_RVV
 
 #include <turbo/unicode/tables/utf8_to_utf16_tables.h>
 #include <turbo/unicode/tables/utf16_to_utf8_tables.h>
@@ -8,14 +8,14 @@
 
 #include <turbo/unicode/engine/rvv/begin.h>
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
-#ifndef SIMDUTF_RVV_H
+#ifndef UNICODE_RVV_H
 #error "rvv.h must be included"
 #endif
 
         } // unnamed namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
   // transcoding from UTF-16 to UTF-8 (self-wrapping generic header, must be
@@ -26,7 +26,7 @@ namespace turbo {
 // Implementation-specific overrides
 //
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
 #include <turbo/unicode/engine/rvv/rvv_helpers.inl.cpp>
 
 #include <turbo/unicode/engine/rvv/rvv_length_from.inl.cpp>
@@ -146,7 +146,7 @@ namespace turbo {
         }
 
 
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
 
 #include <turbo/unicode/engine/rvv/end.h>

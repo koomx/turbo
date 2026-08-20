@@ -1,5 +1,5 @@
-#ifndef SIMDUTF_ICELAKE_IMPLEMENTATION_H
-#define SIMDUTF_ICELAKE_IMPLEMENTATION_H
+#ifndef UNICODE_ICELAKE_IMPLEMENTATION_H
+#define UNICODE_ICELAKE_IMPLEMENTATION_H
 
 #include <turbo/unicode/engine/implementation.h>
 
@@ -271,4 +271,4 @@ namespace turbo {
     } // namespace icelake
 } // namespace turbo
 
-#endif // SIMDUTF_ICELAKE_IMPLEMENTATION_H
+#endif // UNICODE_ICELAKE_IMPLEMENTATION_H

@@ -1,8 +1,8 @@
-#ifndef SIMDUTF_ARM64_IMPLEMENTATION_H
-#define SIMDUTF_ARM64_IMPLEMENTATION_H
+#ifndef UNICODE_ARM64_IMPLEMENTATION_H
+#define UNICODE_ARM64_IMPLEMENTATION_H
 
 #include <turbo/unicode/utf.h>
-#include <turbo/unicode/internal/isadetection.h>
+#include <turbo/arch/isadetection.h>
 
 namespace turbo {
     namespace arm64 {
@@ -238,4 +238,4 @@ namespace turbo {
     } // namespace arm64
 } // namespace turbo
 
-#endif // SIMDUTF_ARM64_IMPLEMENTATION_H
+#endif // UNICODE_ARM64_IMPLEMENTATION_H

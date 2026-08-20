@@ -74,7 +74,7 @@ namespace turbo {
 
      [[nodiscard]] size_t convert_latin1_to_utf16(
        const char* buf, size_t len, char16_t* utf16_output) noexcept {
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
         return convert_latin1_to_utf16be(buf, len, utf16_output);
 #else
         return convert_latin1_to_utf16le(buf, len, utf16_output);

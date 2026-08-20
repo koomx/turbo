@@ -14,9 +14,9 @@
 #ifndef ARM_BASE64_SPACES_H
 #define ARM_BASE64_SPACES_H
 
-#include <turbo/unicode/utf.h> // for SIMDUTF_IS_ARM64
+#include <turbo/unicode/utf.h> // for KUMO_ARCH_ARM64
 
-#if SIMDUTF_IS_ARM64
+#if KUMO_ARCH_ARM64
 
   #include <cstddef>
   #include <cstdint>
@@ -287,5 +287,5 @@ static inline bool space_decode_inplace(const char *src, size_t srclen,
 
 } // namespace arm_base64_spaces
 
-#endif // SIMDUTF_IS_ARM64
+#endif // KUMO_ARCH_ARM64
 #endif // ARM_BASE64_SPACES_H

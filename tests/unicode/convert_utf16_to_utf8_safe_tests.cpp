@@ -11,7 +11,7 @@
 
 namespace {
     constexpr std::array<size_t, 7> input_size { 7, 16, 12, 64, 67, 128, 256 };
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
     constexpr turbo::endianness BE = turbo::endianness::BIG;
 #else
     constexpr turbo::endianness BE = turbo::endianness::LITTLE;

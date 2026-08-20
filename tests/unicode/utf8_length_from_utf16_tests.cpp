@@ -62,7 +62,7 @@ TEST(issue001) {
     // There are surrogates but they are well formed.
     std::vector<char16_t> input = { 0x004e, 0x000e, 0xdbba, 0xdd90,
         0x030b, 0x0035, 0x004f, 0x0045 };
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
     const size_t standard = implementation.utf8_length_from_utf16be(input.data(), input.size());
     ASSERT_EQUAL(standard, 11);
     const auto result1 = implementation.utf8_length_from_utf16be_with_replacement(
@@ -82,7 +82,7 @@ TEST(issue001) {
 TEST(issue002) {
     // There are surrogates but they are well formed.
     std::vector<char16_t> input = { 0xd950, 0xdd9a, 0x002d };
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
     const size_t standard = implementation.utf8_length_from_utf16be(input.data(), input.size());
     ASSERT_EQUAL(standard, 5);
     const auto result1 = implementation.utf8_length_from_utf16be_with_replacement(
@@ -114,7 +114,7 @@ TEST(bug_found_in_release_7_7_0) {
     const auto native_length = turbo::utf8_length_from_utf16(input.data(), input.size());
     const auto be_length = turbo::utf8_length_from_utf16be(input.data(), input.size());
     const auto le_length = turbo::utf8_length_from_utf16le(input.data(), input.size());
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
     ASSERT_EQUAL(native_length, be_length);
     (void)le_length;
 #else

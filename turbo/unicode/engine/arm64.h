@@ -1,24 +1,24 @@
-#ifndef SIMDUTF_ARM64_H
-#define SIMDUTF_ARM64_H
+#ifndef UNICODE_ARM64_H
+#define UNICODE_ARM64_H
 
-#ifdef SIMDUTF_FALLBACK_H
+#ifdef UNICODE_FALLBACK_H
 #error "arm64.h must be included before fallback.h"
 #endif
 
 #include <turbo/unicode/engine/portability.h>
 
-#ifndef SIMDUTF_IMPLEMENTATION_ARM64
-#define SIMDUTF_IMPLEMENTATION_ARM64 (SIMDUTF_IS_ARM64)
+#ifndef UNICODE_IMPLEMENTATION_ARM64
+#define UNICODE_IMPLEMENTATION_ARM64 (KUMO_ARCH_ARM64)
 #endif
-#if SIMDUTF_IMPLEMENTATION_ARM64 && SIMDUTF_IS_ARM64
-#define SIMDUTF_CAN_ALWAYS_RUN_ARM64 1
+#if UNICODE_IMPLEMENTATION_ARM64 && KUMO_ARCH_ARM64
+#define UNICODE_CAN_ALWAYS_RUN_ARM64 1
 #else
-#define SIMDUTF_CAN_ALWAYS_RUN_ARM64 0
+#define UNICODE_CAN_ALWAYS_RUN_ARM64 0
 #endif
 
-#include <turbo/unicode/internal/isadetection.h>
+#include <turbo/arch/isadetection.h>
 
-#if SIMDUTF_IMPLEMENTATION_ARM64
+#if UNICODE_IMPLEMENTATION_ARM64
 
 namespace turbo {
     /// Implementation for NEON (ARMv8).
@@ -36,6 +36,6 @@ namespace turbo {
 
 #include <turbo/unicode/engine/arm64/end.h>
 
-#endif // SIMDUTF_IMPLEMENTATION_ARM64
+#endif // UNICODE_IMPLEMENTATION_ARM64
 
-#endif // SIMDUTF_ARM64_H
+#endif // UNICODE_ARM64_H

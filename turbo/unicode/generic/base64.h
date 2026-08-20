@@ -24,7 +24,7 @@
 /// Nick Kopp. 2013. Base64 Encoding on a GPU.
 /// https://www.codeproject.com/Articles/276993/Base-Encoding-on-a-GPU. (2013).
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
             namespace base64 {
 
@@ -142,7 +142,7 @@ namespace turbo {
                         while (buffer_start + 4 < bufferptr) {
                             uint32_t triple = ((uint32_t(uint8_t(buffer_start[0])) << 3 * 6) + (uint32_t(uint8_t(buffer_start[1])) << 2 * 6) + (uint32_t(uint8_t(buffer_start[2])) << 1 * 6) + (uint32_t(uint8_t(buffer_start[3])) << 0 * 6))
                                 << 8;
-#if !SIMDUTF_IS_BIG_ENDIAN
+#if !KUMO_ENDIAN_BIG
                             triple = scalar::u32_swap_bytes(triple);
 #endif
                             std::memcpy(dst, &triple, 3);
@@ -153,7 +153,7 @@ namespace turbo {
                         if (buffer_start + 4 <= bufferptr) {
                             uint32_t triple = ((uint32_t(uint8_t(buffer_start[0])) << 3 * 6) + (uint32_t(uint8_t(buffer_start[1])) << 2 * 6) + (uint32_t(uint8_t(buffer_start[2])) << 1 * 6) + (uint32_t(uint8_t(buffer_start[3])) << 0 * 6))
                                 << 8;
-#if !SIMDUTF_IS_BIG_ENDIAN
+#if !KUMO_ENDIAN_BIG
                             triple = scalar::u32_swap_bytes(triple);
 #endif
                             std::memcpy(dst, &triple, 3);
@@ -214,5 +214,5 @@ namespace turbo {
 
             } // namespace base64
         } // unnamed namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo

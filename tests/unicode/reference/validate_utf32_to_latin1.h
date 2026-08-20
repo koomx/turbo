@@ -1,4 +1,4 @@
-#include <turbo/unicode/engine/common_defs.h>
+#include <turbo/unicode/engine/portability.h>
 
 namespace turbo {
     namespace tests {

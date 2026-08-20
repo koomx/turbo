@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-#ifndef SIMDUTF_SWAP_BYTES_H
-#define SIMDUTF_SWAP_BYTES_H
+#ifndef UNICODE_SWAP_BYTES_H
+#define UNICODE_SWAP_BYTES_H
 
 namespace turbo {
     namespace scalar {

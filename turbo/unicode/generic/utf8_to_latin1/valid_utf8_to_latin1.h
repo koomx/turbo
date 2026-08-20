@@ -1,5 +1,5 @@
 namespace turbo {
-    namespace SIMDUTF_IMPLEMENTATION {
+    namespace UNICODE_IMPLEMENTATION {
         namespace {
             namespace utf8_to_latin1 {
                 using namespace simd;
@@ -71,6 +71,6 @@ namespace turbo {
 
             } // namespace utf8_to_latin1
         } // namespace
-    } // namespace SIMDUTF_IMPLEMENTATION
+    } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo
   // namespace turbo

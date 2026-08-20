@@ -1,10 +1,6 @@
 #include "transcode_test_base.h"
 #include <turbo/unicode/utf.h>
 
-#ifndef SIMDUTF_IS_BIG_ENDIAN
-#error "SIMDUTF_IS_BIG_ENDIAN should be defined."
-#endif
-
 #include <algorithm>
 #include <array>
 #include <cstdlib>

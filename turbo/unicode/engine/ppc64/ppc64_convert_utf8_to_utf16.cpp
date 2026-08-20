@@ -31,11 +31,11 @@ size_t convert_masked_utf8_to_utf16(const char* input,
     if (((utf8_end_of_code_point_mask & 0xFFFF) == 0xaaaa)) {
         // We want to take 8 2-byte UTF-8 code units and turn them into 8 2-byte
         // UTF-16 code units.
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
         const auto in16 = as_vector_u16(in);
 #else
         const auto in16 = as_vector_u16(in).swap_bytes();
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
         const auto lo = in16 & uint16_t(0x007f);
         const auto hi = in16.shr<2>();
 
@@ -56,11 +56,11 @@ size_t convert_masked_utf8_to_utf16(const char* input,
         // AltiVec: it might be done better, for now SSE translation
 
         const auto sh = vector_u8(2, 1, 0, 16, 5, 4, 3, 16, 8, 7, 6, 16, 11, 10, 9, 16);
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
         const auto perm = as_vector_u32(sh.lookup_32(in, vector_u8::zero())).swap_bytes();
 #else
         const auto perm = as_vector_u32(sh.lookup_32(in, vector_u8::zero()));
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
         const auto b0 = perm & uint32_t(0x0000007f);
         const auto b1 = select(uint32_t(0x00003f00 >> 2), perm.shr<2>(), b0);
         const auto b2 = select(uint32_t(0x000f0000 >> 4), perm.shr<4>(), b1);
@@ -88,11 +88,11 @@ size_t convert_masked_utf8_to_utf16(const char* input,
         // processors where pdep/pext is fast, we might be able to use a small
         // lookup table.
         const auto sh = vector_u8::load(&tables::utf8_to_utf16::shufutf8[idx]);
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
         const auto perm = as_vector_u16(sh.lookup_32(in, vector_u8::zero())).swap_bytes();
 #else
         const auto perm = as_vector_u16(sh.lookup_32(in, vector_u8::zero()));
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
         const auto b0 = perm & uint16_t(0x007f);
         const auto b1 = perm & uint16_t(0x1f00);
 
@@ -107,11 +107,11 @@ size_t convert_masked_utf8_to_utf16(const char* input,
     } else if (idx < 145) {
         // FOUR (4) input code-code units
         const auto sh = vector_u8::load(&tables::utf8_to_utf16::shufutf8[idx]);
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
         const auto perm = as_vector_u32(sh.lookup_32(in, vector_u8::zero())).swap_bytes();
 #else
         const auto perm = as_vector_u32(sh.lookup_32(in, vector_u8::zero()));
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
         const auto b0 = perm & uint32_t(0x0000007f);
         const auto b1 = perm & uint32_t(0x00003f00);
         const auto b2 = perm & uint32_t(0x000f0000);
@@ -138,11 +138,11 @@ size_t convert_masked_utf8_to_utf16(const char* input,
         // do as at the cost of an extra mask.
         /////////////
         const auto sh = vector_u8::load(&tables::utf8_to_utf16::shufutf8[idx]);
-#if SIMDUTF_IS_BIG_ENDIAN
+#if KUMO_ENDIAN_BIG
         const auto perm = as_vector_u32(sh.lookup_32(in, vector_u8::zero())).swap_bytes();
 #else
         const auto perm = as_vector_u32(sh.lookup_32(in, vector_u8::zero()));
-#endif // SIMDUTF_IS_BIG_ENDIAN
+#endif // KUMO_ENDIAN_BIG
         const auto ascii = perm & uint32_t(0x00000007f);
         const auto middlebyte = perm & uint32_t(0x00003f00);
         const auto middlebyte_shifted = middlebyte.shr<2>();
