@@ -17,6 +17,7 @@
 
 #include <string_view>
 #include <turbo/unicode/engine/portability.h>
+#include <turbo/bits/bits.h>
 
 namespace turbo {
 
@@ -30,23 +31,6 @@ namespace turbo {
 
         unspecified = 0
     };
-
-
-    enum endianness {
-        LITTLE = 0,
-        BIG = 1,
-        NATIVE =
-#if KUMO_ENDIAN_BIG
-            BIG
-#else
-            LITTLE
-#endif
-    };
-
-     [[nodiscard]] KUMO_FORCE_INLINE constexpr bool
-    match_system(endianness e) {
-        return e == endianness::NATIVE;
-    }
 
      [[nodiscard]] std::string_view to_string(TextEncoding bom);
 

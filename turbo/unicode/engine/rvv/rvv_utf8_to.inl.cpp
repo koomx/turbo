@@ -4,7 +4,7 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
     static_assert(std::is_same<Tdst, uint16_t>() || std::is_same<Tdst, uint32_t>(),
         "invalid type");
     constexpr bool is16 = std::is_same<Tdst, uint16_t>();
-    constexpr endianness endian = bflip == unicode_ByteFlip::NONE ? endianness::LITTLE : endianness::BIG;
+    constexpr Endian endian = bflip == unicode_ByteFlip::NONE ? Endian::little : Endian::big;
     const auto scalar = [](char const* in, size_t count, Tdst* out) {
         return is16 ? scalar::utf8_to_utf16::convert<endian>(in, count,
                           (char16_t*)out)
@@ -368,7 +368,7 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
     size_t res = convert_utf8_to_utf16le(src, len, dst);
     if (res)
         return UnicodeResult(UnicodeError::SUCCESS, res);
-    return scalar::utf8_to_utf16::convert_with_errors<endianness::LITTLE>(
+    return scalar::utf8_to_utf16::convert_with_errors<Endian::little>(
         src, len, dst);
 }
 
@@ -377,7 +377,7 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
     size_t res = convert_utf8_to_utf16be(src, len, dst);
     if (res)
         return UnicodeResult(UnicodeError::SUCCESS, res);
-    return scalar::utf8_to_utf16::convert_with_errors<endianness::BIG>(src, len,
+    return scalar::utf8_to_utf16::convert_with_errors<Endian::big>(src, len,
         dst);
 }
 

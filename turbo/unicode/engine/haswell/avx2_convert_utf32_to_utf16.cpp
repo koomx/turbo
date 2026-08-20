@@ -1,4 +1,4 @@
-template <endianness big_endian>
+template <Endian big_endian>
 std::pair<const char32_t*, char16_t*>
 avx2_convert_utf32_to_utf16(const char32_t* buf, size_t len,
     char16_t* utf16_output) {
@@ -75,7 +75,7 @@ avx2_convert_utf32_to_utf16(const char32_t* buf, size_t len,
     return std::make_pair(buf, utf16_output);
 }
 
-template <endianness big_endian>
+template <Endian big_endian>
 std::pair<UnicodeResult, char16_t*>
 avx2_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
     char16_t* utf16_output) {

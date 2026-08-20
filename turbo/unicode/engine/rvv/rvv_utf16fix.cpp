@@ -1,17 +1,17 @@
-template <endianness big_endian, bool in_place, bool vlmax>
+template <Endian big_endian, bool in_place, bool vlmax>
 KUMO_FORCE_INLINE void utf16fix_block_rvv(char16_t* out, const char16_t* in,
     size_t vl) {
     const char16_t replacement = scalar::utf16::replacement<big_endian>();
     vuint16m8_t block = __riscv_vle16_v_u16m8((const uint16_t*)in, vl);
     vuint16m8_t lookback = __riscv_vslide1up_vx_u16m8(block, in[-1], vl);
     vuint16m8_t lb_masked = __riscv_vand_vx_u16m8(
-        lookback, scalar::utf16::swap_if_needed<big_endian>(0xfc00U), vl);
+        lookback, u16_byteswap_if_needed<big_endian>(0xfc00U), vl);
     vuint16m8_t block_masked = __riscv_vand_vx_u16m8(
-        block, scalar::utf16::swap_if_needed<big_endian>(0xfc00U), vl);
+        block, u16_byteswap_if_needed<big_endian>(0xfc00U), vl);
     vbool2_t lb_is_high = __riscv_vmseq_vx_u16m8_b2(
-        lb_masked, scalar::utf16::swap_if_needed<big_endian>(0xd800U), vl);
+        lb_masked, u16_byteswap_if_needed<big_endian>(0xd800U), vl);
     vbool2_t block_is_low = __riscv_vmseq_vx_u16m8_b2(
-        block_masked, scalar::utf16::swap_if_needed<big_endian>(0xdc00U), vl);
+        block_masked, u16_byteswap_if_needed<big_endian>(0xdc00U), vl);
 
     vbool2_t illseq = __riscv_vmxor_mm_b2(lb_is_high, block_is_low, vl);
     if (__riscv_vfirst_m_b2(illseq, vl) >= 0) {
@@ -29,10 +29,10 @@ KUMO_FORCE_INLINE void utf16fix_block_rvv(char16_t* out, const char16_t* in,
             lb_illseq_right_shifted = __riscv_vmandn_mm_b2(
                 __riscv_vmseq_vx_u16m8_b2(
                     __riscv_vslide1down_vx_u16m8(lb_masked, 0, vl),
-                    scalar::utf16::swap_if_needed<big_endian>(0xd800U), vl),
+                    u16_byteswap_if_needed<big_endian>(0xd800U), vl),
                 __riscv_vmseq_vx_u16m8_b2(
                     __riscv_vslide1down_vx_u16m8(block_masked, 0, vl),
-                    scalar::utf16::swap_if_needed<big_endian>(0xdc00U), vl),
+                    u16_byteswap_if_needed<big_endian>(0xdc00U), vl),
                 vl);
         }
 
@@ -47,7 +47,7 @@ KUMO_FORCE_INLINE void utf16fix_block_rvv(char16_t* out, const char16_t* in,
     }
 }
 
-template <endianness big_endian>
+template <Endian big_endian>
 void rvv_to_well_formed_utf16(const char16_t* in, size_t n, char16_t* out) {
     const char16_t replacement = scalar::utf16::replacement<big_endian>();
     const size_t VL = __riscv_vsetvlmax_e16m8();
@@ -79,12 +79,12 @@ void rvv_to_well_formed_utf16(const char16_t* in, size_t n, char16_t* out) {
 
 void implementation::to_well_formed_utf16le(const char16_t* input, size_t len,
     char16_t* output) const noexcept {
-    return rvv_to_well_formed_utf16<endianness::LITTLE>(input, len, output);
+    return rvv_to_well_formed_utf16<Endian::little>(input, len, output);
 }
 
 void implementation::to_well_formed_utf16be(const char16_t* input, size_t len,
     char16_t* output) const noexcept {
-    return rvv_to_well_formed_utf16<endianness::BIG>(input, len, output);
+    return rvv_to_well_formed_utf16<Endian::big>(input, len, output);
 }
 
 template <unicode_ByteFlip bflip>

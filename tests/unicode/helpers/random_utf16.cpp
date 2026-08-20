@@ -12,7 +12,7 @@ namespace helpers {
 
 std::vector<char16_t> random_utf16::generate_le(size_t size) {
   auto result = generate_counted(size).first;
-  if constexpr (!match_system(endianness::LITTLE)) {
+  if constexpr (!match_system(Endian::little)) {
     change_endianness_utf16(result.data(), result.size(), result.data());
   }
 
@@ -21,7 +21,7 @@ std::vector<char16_t> random_utf16::generate_le(size_t size) {
 
 void random_utf16::to_ascii_le(std::vector<char16_t> &output) {
   char16_t mask = 0x7F;
-  if constexpr (!match_system(endianness::LITTLE)) {
+  if constexpr (!match_system(Endian::little)) {
     mask = 0x7F00;
   }
   for (auto &ch : output) {
@@ -31,7 +31,7 @@ void random_utf16::to_ascii_le(std::vector<char16_t> &output) {
 
 void random_utf16::to_ascii_be(std::vector<char16_t> &output) {
   char16_t mask = 0x7F;
-  if constexpr (!match_system(endianness::BIG)) {
+  if constexpr (!match_system(Endian::big)) {
     mask = 0x7F00;
   }
   for (auto &ch : output) {
@@ -41,7 +41,7 @@ void random_utf16::to_ascii_be(std::vector<char16_t> &output) {
 
 std::vector<char16_t> random_utf16::generate_be(size_t size) {
   auto result = generate_counted(size).first;
-  if constexpr (!match_system(endianness::BIG)) {
+  if constexpr (!match_system(Endian::big)) {
     change_endianness_utf16(result.data(), result.size(), result.data());
   }
 
@@ -61,7 +61,7 @@ std::vector<char16_t> random_utf16::generate_be(size_t size, long seed) {
 std::pair<std::vector<char16_t>, size_t>
 random_utf16::generate_counted_le(size_t size) {
   auto res = generate_counted(size);
-  if constexpr (!match_system(endianness::LITTLE)) {
+  if constexpr (!match_system(Endian::little)) {
     change_endianness_utf16(res.first.data(), res.first.size(),
                             res.first.data());
   }
@@ -72,7 +72,7 @@ random_utf16::generate_counted_le(size_t size) {
 std::pair<std::vector<char16_t>, size_t>
 random_utf16::generate_counted_be(size_t size) {
   auto res = generate_counted(size);
-  if constexpr (!match_system(endianness::BIG)) {
+  if constexpr (!match_system(Endian::big)) {
     change_endianness_utf16(res.first.data(), res.first.size(),
                             res.first.data());
   }

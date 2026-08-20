@@ -51,7 +51,7 @@
   Returns a pair: the first unprocessed byte from buf and utf8_output
   A scalar routing should carry on the conversion of the tail.
 */
-template <endianness big_endian>
+template <Endian big_endian>
 std::pair<const char16_t*, char*>
 avx2_convert_utf16_to_utf8(const char16_t* buf, size_t len, char* utf8_output) {
     const char16_t* end = buf + len;
@@ -265,7 +265,7 @@ avx2_convert_utf16_to_utf8(const char16_t* buf, size_t len, char* utf8_output) {
                 forward = size_t(end - buf - 1);
             }
             for (; k < forward; k++) {
-                uint16_t word = scalar::utf16::swap_if_needed<big_endian>(buf[k]);
+                uint16_t word = u16_byteswap_if_needed<big_endian>(buf[k]);
                 if ((word & 0xFF80) == 0) {
                     *utf8_output++ = char(word);
                 } else if ((word & 0xF800) == 0) {
@@ -278,7 +278,7 @@ avx2_convert_utf16_to_utf8(const char16_t* buf, size_t len, char* utf8_output) {
                 } else {
                     // must be a surrogate pair
                     uint16_t diff = uint16_t(word - 0xD800);
-                    uint16_t next_word = scalar::utf16::swap_if_needed<big_endian>(buf[k + 1]);
+                    uint16_t next_word = u16_byteswap_if_needed<big_endian>(buf[k + 1]);
                     k++;
                     uint16_t diff2 = uint16_t(next_word - 0xDC00);
                     if ((diff | diff2) > 0x3FF) {
@@ -304,7 +304,7 @@ avx2_convert_utf16_to_utf8(const char16_t* buf, size_t len, char* utf8_output) {
   (even if finished). A scalar routing should carry on the conversion of the
   tail if needed.
 */
-template <endianness big_endian>
+template <Endian big_endian>
 std::pair<UnicodeResult, char*>
 avx2_convert_utf16_to_utf8_with_errors(const char16_t* buf, size_t len,
     char* utf8_output) {
@@ -521,7 +521,7 @@ avx2_convert_utf16_to_utf8_with_errors(const char16_t* buf, size_t len,
                 forward = size_t(end - buf - 1);
             }
             for (; k < forward; k++) {
-                uint16_t word = scalar::utf16::swap_if_needed<big_endian>(buf[k]);
+                uint16_t word = u16_byteswap_if_needed<big_endian>(buf[k]);
                 if ((word & 0xFF80) == 0) {
                     *utf8_output++ = char(word);
                 } else if ((word & 0xF800) == 0) {
@@ -534,7 +534,7 @@ avx2_convert_utf16_to_utf8_with_errors(const char16_t* buf, size_t len,
                 } else {
                     // must be a surrogate pair
                     uint16_t diff = uint16_t(word - 0xD800);
-                    uint16_t next_word = scalar::utf16::swap_if_needed<big_endian>(buf[k + 1]);
+                    uint16_t next_word = u16_byteswap_if_needed<big_endian>(buf[k + 1]);
                     k++;
                     uint16_t diff2 = uint16_t(next_word - 0xDC00);
                     if ((diff | diff2) > 0x3FF) {

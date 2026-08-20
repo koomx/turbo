@@ -12,9 +12,9 @@
 namespace {
     constexpr std::array<size_t, 7> input_size { 7, 16, 12, 64, 67, 128, 256 };
 #if KUMO_ENDIAN_BIG
-    constexpr turbo::endianness BE = turbo::endianness::BIG;
+    constexpr turbo::Endian BE = turbo::Endian::big;
 #else
-    constexpr turbo::endianness BE = turbo::endianness::LITTLE;
+    constexpr turbo::Endian BE = turbo::Endian::little;
 #endif
     using turbo::tests::helpers::transcode_utf16_to_utf8_test_base;
 

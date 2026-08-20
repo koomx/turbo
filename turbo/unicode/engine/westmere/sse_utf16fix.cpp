@@ -6,11 +6,11 @@
  * character before the beginning of the buffer as a lookback.
  * If that character is illsequenced, it too is overwritten.
  */
-template <endianness big_endian, bool in_place>
+template <Endian big_endian, bool in_place>
 KUMO_FORCE_INLINE void utf16fix_block_sse(char16_t* out,
     const char16_t* in) {
     auto swap_if_needed = [](uint16_t x) constexpr -> uint16_t {
-        return scalar::utf16::swap_if_needed<big_endian>(x);
+        return u16_byteswap_if_needed<big_endian>(x);
     };
     const char16_t replacement = scalar::utf16::replacement<big_endian>();
 
@@ -46,7 +46,7 @@ KUMO_FORCE_INLINE void utf16fix_block_sse(char16_t* out,
     }
 }
 
-template <endianness big_endian>
+template <Endian big_endian>
 void utf16fix_sse(const char16_t* in, size_t n, char16_t* out) {
     const char16_t replacement = scalar::utf16::replacement<big_endian>();
     size_t i;

@@ -17,7 +17,7 @@ namespace turbo {
                       "icelake",
                       "Intel AVX512 (AVX-512BW, AVX-512CD, AVX-512VL, AVX-512VBMI2 "
                       "extensions)",
-                      internal::instruction_set::AVX2 | internal::instruction_set::BMI1 | internal::instruction_set::BMI2 | internal::instruction_set::AVX512BW | internal::instruction_set::AVX512CD | internal::instruction_set::AVX512VL | internal::instruction_set::AVX512VBMI2 | internal::instruction_set::AVX512VPOPCNTDQ) { }
+                      InstructionSet::AVX2 | InstructionSet::BMI1 | InstructionSet::BMI2 | InstructionSet::AVX512BW | InstructionSet::AVX512CD | InstructionSet::AVX512VL | InstructionSet::AVX512VBMI2 | InstructionSet::AVX512VPOPCNTDQ) { }
 
              [[nodiscard]] int detect_encodings(const char* input,
                 size_t length) const noexcept final;

@@ -52,7 +52,7 @@
             __riscv_vsetvlmax_e8m1()))
 #endif
 
-/* Zvbb adds dedicated support for endianness swaps with vrev8, but if we can't
+/* Zvbb adds dedicated support for Endian swaps with vrev8, but if we can't
  * use that, we have to emulate it with the standard V extension.
  * Using LMUL=1 vrgathers could be faster than the srl+macc variant, but that
  * would increase register pressure, and vrgather implementations performance

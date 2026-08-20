@@ -375,13 +375,13 @@ BitBlock delmask;
 
 @* Endianness.
 
-@ Depending on the endianness of the machine, the 
+@ Depending on the Endian of the machine, the
 ordering of bytes within SIMD registers may be from left to right
 (big endian) or right to left (little endian).
 Upon transformation
 to parallel bit streams, the ordering of bit values may
 similarly vary.   To remove the dependencies of core bit-stream
-algorithms on endianness, logical ``shift forward'' and
+algorithms on Endian, logical ``shift forward'' and
  ``shift back'' operations are defined for bitblocks.
 
 @<Endianness definitions@>=

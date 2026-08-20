@@ -46,6 +46,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef UNICODE_INTERNAL_ISADETECTION_H
 #define UNICODE_INTERNAL_ISADETECTION_H
 
+#include <turbo/arch/instruction.h>
 #include <cstdint>
 #include <cstdlib>
 #if defined(_MSC_VER)
@@ -84,46 +85,21 @@ struct unicode_riscv_hwprobe {
 namespace turbo {
     namespace internal {
 
-        enum instruction_set {
-            DEFAULT = 0x0,
-            NEON = 0x1,
-            AVX2 = 0x4,
-            SSE42 = 0x8,
-            PCLMULQDQ = 0x10,
-            BMI1 = 0x20,
-            BMI2 = 0x40,
-            ALTIVEC = 0x80,
-            AVX512F = 0x100,
-            AVX512DQ = 0x200,
-            AVX512IFMA = 0x400,
-            AVX512PF = 0x800,
-            AVX512ER = 0x1000,
-            AVX512CD = 0x2000,
-            AVX512BW = 0x4000,
-            AVX512VL = 0x8000,
-            AVX512VBMI2 = 0x10000,
-            AVX512VPOPCNTDQ = 0x2000,
-            RVV = 0x4000,
-            ZVBB = 0x8000,
-            LSX = 0x40000,
-            LASX = 0x80000,
-        };
-
 #if defined(__PPC64__)
 
         static inline uint32_t detect_supported_architectures() {
-            return instruction_set::ALTIVEC;
+            return InstructionSet::ALTIVEC;
         }
 
 #elif KUMO_ARCH_RISCV64
 
         static inline uint32_t detect_supported_architectures() {
-            uint32_t host_isa = instruction_set::DEFAULT;
+            uint32_t host_isa = InstructionSet::DEFAULT;
 #if UNICODE_IS_RVV
-            host_isa |= instruction_set::RVV;
+            host_isa |= InstructionSet::RVV;
 #endif
 #if UNICODE_IS_ZVBB
-            host_isa |= instruction_set::ZVBB;
+            host_isa |= InstructionSet::ZVBB;
 #endif
 #if defined(__linux__)
             unicode_riscv_hwprobe probes[] = { { UNICODE_RISCV_HWPROBE_KEY_IMA_EXT_0, 0 } };
@@ -132,14 +108,14 @@ namespace turbo {
             if (ret == 0) {
                 uint64_t extensions = probes[0].value;
                 if (extensions & UNICODE_RISCV_HWPROBE_IMA_V)
-                    host_isa |= instruction_set::RVV;
+                    host_isa |= InstructionSet::RVV;
                 if (extensions & UNICODE_RISCV_HWPROBE_EXT_ZVBB)
-                    host_isa |= instruction_set::ZVBB;
+                    host_isa |= InstructionSet::ZVBB;
             }
 #endif
 #if defined(RUN_IN_SPIKE_SIMULATOR)
             // Proxy Kernel does not implement yet hwprobe syscall
-            host_isa |= instruction_set::RVV;
+            host_isa |= InstructionSet::RVV;
 #endif
             return host_isa;
         }
@@ -147,7 +123,7 @@ namespace turbo {
 #elif defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
 
         static inline uint32_t detect_supported_architectures() {
-            return instruction_set::NEON;
+            return InstructionSet::NEON;
         }
 
 #elif defined(__x86_64__) || defined(_M_AMD64) // x64
@@ -240,11 +216,11 @@ namespace turbo {
             cpuid(&eax, &ebx, &ecx, &edx);
 
             if (ecx & cpuid_bit::sse42) {
-                host_isa |= instruction_set::SSE42;
+                host_isa |= InstructionSet::SSE42;
             }
 
             if (ecx & cpuid_bit::pclmulqdq) {
-                host_isa |= instruction_set::PCLMULQDQ;
+                host_isa |= InstructionSet::PCLMULQDQ;
             }
 
             if ((ecx & cpuid_bit::osxsave) != cpuid_bit::osxsave) {
@@ -262,52 +238,52 @@ namespace turbo {
             ecx = 0x0; // Sub-leaf = 0
             cpuid(&eax, &ebx, &ecx, &edx);
             if (ebx & cpuid_bit::ebx::avx2) {
-                host_isa |= instruction_set::AVX2;
+                host_isa |= InstructionSet::AVX2;
             }
             if (ebx & cpuid_bit::ebx::bmi1) {
-                host_isa |= instruction_set::BMI1;
+                host_isa |= InstructionSet::BMI1;
             }
             if (ebx & cpuid_bit::ebx::bmi2) {
-                host_isa |= instruction_set::BMI2;
+                host_isa |= InstructionSet::BMI2;
             }
             if (!((xcr0 & cpuid_bit::xcr0_bit::avx512_saved) == cpuid_bit::xcr0_bit::avx512_saved)) {
                 return host_isa;
             }
             if (ebx & cpuid_bit::ebx::avx512f) {
-                host_isa |= instruction_set::AVX512F;
+                host_isa |= InstructionSet::AVX512F;
             }
             if (ebx & cpuid_bit::ebx::avx512bw) {
-                host_isa |= instruction_set::AVX512BW;
+                host_isa |= InstructionSet::AVX512BW;
             }
             if (ebx & cpuid_bit::ebx::avx512cd) {
-                host_isa |= instruction_set::AVX512CD;
+                host_isa |= InstructionSet::AVX512CD;
             }
             if (ebx & cpuid_bit::ebx::avx512dq) {
-                host_isa |= instruction_set::AVX512DQ;
+                host_isa |= InstructionSet::AVX512DQ;
             }
             if (ebx & cpuid_bit::ebx::avx512vl) {
-                host_isa |= instruction_set::AVX512VL;
+                host_isa |= InstructionSet::AVX512VL;
             }
             if (ecx & cpuid_bit::ecx::avx512vbmi2) {
-                host_isa |= instruction_set::AVX512VBMI2;
+                host_isa |= InstructionSet::AVX512VBMI2;
             }
             if (ecx & cpuid_bit::ecx::avx512vpopcnt) {
-                host_isa |= instruction_set::AVX512VPOPCNTDQ;
+                host_isa |= InstructionSet::AVX512VPOPCNTDQ;
             }
             return host_isa;
         }
 #elif defined(__loongarch__)
 
         static inline uint32_t detect_supported_architectures() {
-            uint32_t host_isa = instruction_set::DEFAULT;
+            uint32_t host_isa = InstructionSet::DEFAULT;
 #if defined(__linux__)
             uint64_t hwcap = 0;
             hwcap = getauxval(AT_HWCAP);
             if (hwcap & HWCAP_LOONGARCH_LSX) {
-                host_isa |= instruction_set::LSX;
+                host_isa |= InstructionSet::LSX;
             }
             if (hwcap & HWCAP_LOONGARCH_LASX) {
-                host_isa |= instruction_set::LASX;
+                host_isa |= InstructionSet::LASX;
             }
 #endif
             return host_isa;
@@ -316,7 +292,7 @@ namespace turbo {
 
         // includes 32-bit ARM.
         static inline uint32_t detect_supported_architectures() {
-            return instruction_set::DEFAULT;
+            return InstructionSet::DEFAULT;
         }
 
 #endif // end SIMD extension detection code

@@ -1,42 +1,11 @@
 #ifndef UNICODE_ICELAKE_BITMANIPULATION_H
 #define UNICODE_ICELAKE_BITMANIPULATION_H
 
+#include <turbo/bits/bits.h>
+
 namespace turbo {
     namespace UNICODE_IMPLEMENTATION {
         namespace {
-
-#if KUMO_COMPILER_MSVC
-            KUMO_FORCE_INLINE unsigned __int64 count_ones(uint64_t input_num) {
-                // note: we do not support legacy 32-bit Windows
-                return __popcnt64(input_num); // Visual Studio wants two underscores
-            }
-#else
-            KUMO_FORCE_INLINE long long int count_ones(uint64_t input_num) {
-                return _popcnt64(input_num);
-            }
-#endif
-
-#if KUMO_COMPILER_MSVC
-            KUMO_FORCE_INLINE unsigned __int64 count_ones32(uint32_t input_num) {
-                // note: we do not support legacy 32-bit Windows
-                return __popcnt(input_num); // Visual Studio wants two underscores
-            }
-#else
-            KUMO_FORCE_INLINE long long int count_ones32(uint32_t input_num) {
-                return _popcnt32(input_num);
-            }
-#endif
-
-#if UNICODE_NEED_TRAILING_ZEROES
-// KUMO_FORCE_INLINE int trailing_zeroes(uint64_t input_num) {
-//   #if KUMO_COMPILER_MSVC
-//   return (int)_tzcnt_u64(input_num);
-//   #else  // KUMO_COMPILER_MSVC
-//   return __builtin_ctzll(input_num);
-//   #endif // KUMO_COMPILER_MSVC
-// }
-#endif
-
         } // unnamed namespace
     } // namespace UNICODE_IMPLEMENTATION
 } // namespace turbo

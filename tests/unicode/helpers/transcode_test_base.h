@@ -8,7 +8,7 @@
 #include <vector>
 
 std::vector<std::vector<char16_t>>
-all_utf16_combinations(turbo::endianness byte_order);
+all_utf16_combinations(turbo::Endian byte_order);
 
 namespace turbo {
     namespace tests {
@@ -21,12 +21,12 @@ namespace turbo {
              */
             class transcode_test_base {
             protected:
-                endianness utf16_endianness;
+                Endian utf16_endianness;
 
             protected:
                 transcode_test_base()
-                    : utf16_endianness { endianness::LITTLE } { }
-                transcode_test_base(endianness utf16)
+                    : utf16_endianness { Endian::little } { }
+                transcode_test_base(Endian utf16)
                     : utf16_endianness { utf16 } { }
 
                 void encode_utf8(uint32_t codepoint, std::vector<char>& target);
@@ -102,12 +102,12 @@ namespace turbo {
                 static constexpr size_t output_size_margin = 0; // extra room for buggy procedures
 
             public:
-                transcode_latin1_to_utf16_test_base(endianness utf16_endianness,
+                transcode_latin1_to_utf16_test_base(Endian utf16_endianness,
                     GenerateCodepoint generate,
                     size_t input_size);
 
                 template <typename COLLECTION>
-                transcode_latin1_to_utf16_test_base(endianness utf16_endianness,
+                transcode_latin1_to_utf16_test_base(Endian utf16_endianness,
                     COLLECTION&& collection)
                     : transcode_test_base { utf16_endianness } {
                     for (const uint32_t codepoint : collection) {
@@ -158,15 +158,15 @@ namespace turbo {
                 static constexpr size_t output_size_margin = 16; // extra room for buggy procedures
 
             public:
-                transcode_utf16_to_latin1_test_base(endianness utf16_endianness,
+                transcode_utf16_to_latin1_test_base(Endian utf16_endianness,
                     GenerateCodepoint generate,
                     size_t input_size);
 
-                transcode_utf16_to_latin1_test_base(endianness utf16_endianness,
+                transcode_utf16_to_latin1_test_base(Endian utf16_endianness,
                     const std::vector<char16_t>& input_utf16);
 
                 template <typename COLLECTION>
-                transcode_utf16_to_latin1_test_base(endianness utf16_endianness,
+                transcode_utf16_to_latin1_test_base(Endian utf16_endianness,
                     COLLECTION&& collection)
                     : transcode_test_base { utf16_endianness } {
                     for (const uint32_t codepoint : collection) {
@@ -319,12 +319,12 @@ namespace turbo {
                 static constexpr size_t output_size_margin = 0; // extra room for buggy procedures
 
             public:
-                transcode_utf8_to_utf16_test_base(endianness utf16_endianness,
+                transcode_utf8_to_utf16_test_base(Endian utf16_endianness,
                     GenerateCodepoint generate,
                     size_t input_size);
 
                 template <typename COLLECTION>
-                transcode_utf8_to_utf16_test_base(endianness utf16_endianness,
+                transcode_utf8_to_utf16_test_base(Endian utf16_endianness,
                     COLLECTION&& collection)
                     : transcode_test_base { utf16_endianness } {
                     for (const uint32_t codepoint : collection) {
@@ -425,15 +425,15 @@ namespace turbo {
                 static constexpr size_t output_size_margin = 0; // extra room for buggy procedures
 
             public:
-                transcode_utf16_to_utf8_test_base(endianness utf16_endianness,
+                transcode_utf16_to_utf8_test_base(Endian utf16_endianness,
                     GenerateCodepoint generate,
                     size_t input_size);
 
-                transcode_utf16_to_utf8_test_base(endianness utf16_endianness,
+                transcode_utf16_to_utf8_test_base(Endian utf16_endianness,
                     const std::vector<char16_t>& input_utf16);
 
                 template <typename COLLECTION>
-                transcode_utf16_to_utf8_test_base(endianness utf16_endianness,
+                transcode_utf16_to_utf8_test_base(Endian utf16_endianness,
                     COLLECTION&& collection)
                     : transcode_test_base { utf16_endianness } {
                     for (const uint32_t codepoint : collection) {
@@ -587,12 +587,12 @@ namespace turbo {
                 static constexpr size_t output_size_margin = 0; // extra room for buggy procedures
 
             public:
-                transcode_utf32_to_utf16_test_base(endianness utf16_endianness,
+                transcode_utf32_to_utf16_test_base(Endian utf16_endianness,
                     GenerateCodepoint generate,
                     size_t input_size);
 
                 template <typename COLLECTION>
-                transcode_utf32_to_utf16_test_base(endianness utf16_endianness,
+                transcode_utf32_to_utf16_test_base(Endian utf16_endianness,
                     COLLECTION&& collection)
                     : transcode_test_base { utf16_endianness } {
                     for (const uint32_t codepoint : collection) {
@@ -641,15 +641,15 @@ namespace turbo {
                 static constexpr size_t output_size_margin = 16; // extra room for buggy procedures
 
             public:
-                transcode_utf16_to_utf32_test_base(endianness utf16_endianness,
+                transcode_utf16_to_utf32_test_base(Endian utf16_endianness,
                     GenerateCodepoint generate,
                     size_t input_size);
 
-                transcode_utf16_to_utf32_test_base(endianness utf16_endianness,
+                transcode_utf16_to_utf32_test_base(Endian utf16_endianness,
                     const std::vector<char16_t>& input_utf16);
 
                 template <typename COLLECTION>
-                transcode_utf16_to_utf32_test_base(endianness utf16_endianness,
+                transcode_utf16_to_utf32_test_base(Endian utf16_endianness,
                     COLLECTION&& collection)
                     : transcode_test_base { utf16_endianness } {
                     for (const uint32_t codepoint : collection) {

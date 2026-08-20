@@ -5,7 +5,7 @@ namespace turbo {
 
                 using namespace simd;
 
-                template <endianness endian>
+                template <Endian endian>
                  [[nodiscard]] size_t convert_valid(const char* input, size_t size,
                     char16_t* utf16_output) noexcept {
                     // The implementation is not specific to haswell and should be moved to the

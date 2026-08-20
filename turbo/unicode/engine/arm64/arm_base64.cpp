@@ -489,7 +489,7 @@ void base64_decode_block(char* out, const char* src) {
 }
 
 static size_t compress_block_single(block64* b, uint64_t mask, char* output) {
-    const size_t pos64 = trailing_zeroes(mask);
+    const size_t pos64 = countr_zero(mask);
     const int8_t pos = pos64 & 0xf;
 
     // Predefine the index vector
@@ -662,7 +662,7 @@ compress_decode_base64(char* dst, const char_type* src, size_t srclen,
             uint32_t triple = ((uint32_t(uint8_t(buffer_start[0])) << 3 * 6) + (uint32_t(uint8_t(buffer_start[1])) << 2 * 6) + (uint32_t(uint8_t(buffer_start[2])) << 1 * 6) + (uint32_t(uint8_t(buffer_start[3])) << 0 * 6))
                 << 8;
 #if !KUMO_ENDIAN_BIG
-            triple = scalar::u32_swap_bytes(triple);
+            triple = u32_byteswap(triple);
 #endif
             std::memcpy(dst, &triple, 4);
 
@@ -673,7 +673,7 @@ compress_decode_base64(char* dst, const char_type* src, size_t srclen,
             uint32_t triple = ((uint32_t(uint8_t(buffer_start[0])) << 3 * 6) + (uint32_t(uint8_t(buffer_start[1])) << 2 * 6) + (uint32_t(uint8_t(buffer_start[2])) << 1 * 6) + (uint32_t(uint8_t(buffer_start[3])) << 0 * 6))
                 << 8;
 #if !KUMO_ENDIAN_BIG
-            triple = scalar::u32_swap_bytes(triple);
+            triple = u32_byteswap(triple);
 #endif
             std::memcpy(dst, &triple, 3);
 

@@ -101,7 +101,7 @@ namespace turbo {
      [[nodiscard]] size_t convert_valid_utf32_to_utf8(
         const char32_t* input, size_t length, char* utf8_buffer) noexcept;
 
-    /// Using native endianness, convert possibly broken UTF-32 string into a UTF-16
+    /// Using native Endian, convert possibly broken UTF-32 string into a UTF-16
     /// string.
     ///
     /// During the conversion also validation of the input string is done.
@@ -218,7 +218,7 @@ namespace turbo {
      [[nodiscard]] size_t convert_utf32_to_utf16be(
         const char32_t* input, size_t length, char16_t* utf16_buffer) noexcept;
 
-    /// Using native endianness, convert possibly broken UTF-32 string into UTF-16
+    /// Using native Endian, convert possibly broken UTF-32 string into UTF-16
     /// string and stop on error.
     ///
     /// During the conversion also validation of the input string is done.
@@ -273,7 +273,7 @@ namespace turbo {
         const char32_t* input, size_t length, char16_t* utf16_buffer) noexcept;
 
 
-    /// Using native endianness, convert valid UTF-32 string into a UTF-16 string.
+    /// Using native Endian, convert valid UTF-32 string into a UTF-16 string.
     ///
     /// This function assumes that the input string is valid UTF-32.
     ///

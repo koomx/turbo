@@ -109,14 +109,14 @@ namespace turbo {
         implementation::utf8_length_from_utf16le_with_replacement(
             const char16_t* input, size_t length) const noexcept {
             return scalar::utf16::utf8_length_from_utf16_with_replacement<
-                endianness::LITTLE>(input, length);
+                Endian::little>(input, length);
         }
 
          [[nodiscard]] UnicodeResult
         implementation::utf8_length_from_utf16be_with_replacement(
             const char16_t* input, size_t length) const noexcept {
             return scalar::utf16::utf8_length_from_utf16_with_replacement<
-                endianness::BIG>(input, length);
+                Endian::big>(input, length);
         }
 
          [[nodiscard]] size_t

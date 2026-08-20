@@ -266,7 +266,7 @@ bool convertUTF16ToUTF8String(ArrayRef<char> SrcBytes, std::string &Out);
 bool convertUTF16ToUTF8String(ArrayRef<UTF16> Src, std::string &Out);
 
 /**
- * Converts a UTF-8 string into a UTF-16 string with native endianness.
+ * Converts a UTF-8 string into a UTF-16 string with native Endian.
  *
  * \returns true on success
  */

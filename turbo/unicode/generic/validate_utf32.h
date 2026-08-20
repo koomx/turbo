@@ -24,7 +24,7 @@ namespace turbo {
 
                     while (input + N < end) {
                         auto in = vector_u32(input);
-                        if constexpr (!match_system(endianness::BIG)) {
+                        if constexpr (!match_system(Endian::big)) {
                             in.swap_bytes();
                         }
 
@@ -67,7 +67,7 @@ namespace turbo {
 
                     while (input + N < end) {
                         auto in = vector_u32(input);
-                        if constexpr (!match_system(endianness::BIG)) {
+                        if constexpr (!match_system(Endian::big)) {
                             in.swap_bytes();
                         }
 

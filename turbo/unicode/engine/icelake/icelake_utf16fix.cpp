@@ -8,13 +8,13 @@
  * character before the beginning of the buffer as a lookback.
  * If that character is illsequenced, it too is overwritten.
  */
-template <endianness big_endian, bool in_place>
+template <Endian big_endian, bool in_place>
 KUMO_FORCE_INLINE void utf16fix_block(char16_t* out, const char16_t* in) {
     const char16_t replacement = scalar::utf16::replacement<big_endian>();
     __m512i lookback, block, lb_masked, block_masked;
     __mmask32 lb_is_high, block_is_low, illseq;
     auto swap_if_needed = [](uint16_t x) constexpr -> uint16_t {
-        return scalar::utf16::swap_if_needed<big_endian>(x);
+        return u16_byteswap_if_needed<big_endian>(x);
     };
 
     lookback = _mm512_loadu_si512((const __m512i*)(in - 1));
@@ -57,14 +57,14 @@ KUMO_FORCE_INLINE void utf16fix_block(char16_t* out, const char16_t* in) {
  * Special case for inputs of 0--32 bytes.  Works for both in-place and
  * out-of-place operation.
  */
-template <endianness big_endian>
+template <Endian big_endian>
 void utf16fix_short(const char16_t* in, size_t n, char16_t* out) {
     const char16_t replacement = scalar::utf16::replacement<big_endian>();
     __m512i lookback, block, lb_masked, block_masked;
     __mmask32 lb_is_high, block_is_low, illseq;
     uint32_t mask = 0xFFFFFFFF >> (32 - n);
     auto swap_if_needed = [](uint16_t x) constexpr -> uint16_t {
-        return scalar::utf16::swap_if_needed<big_endian>(x);
+        return u16_byteswap_if_needed<big_endian>(x);
     };
     lookback = _mm512_maskz_loadu_epi16(_cvtmask32_u32(mask << 1),
         (const uint16_t*)(in - 1));
@@ -98,7 +98,7 @@ void utf16fix_short(const char16_t* in, size_t n, char16_t* out) {
         : out[n - 1];
 }
 
-template <endianness big_endian>
+template <Endian big_endian>
 void utf16fix_avx512(const char16_t* in, size_t n, char16_t* out) {
     const char16_t replacement = scalar::utf16::replacement<big_endian>();
     size_t i;

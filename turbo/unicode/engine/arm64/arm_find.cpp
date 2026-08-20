@@ -45,28 +45,28 @@ KUMO_FORCE_INLINE const char* util_find(const char* start, const char* end,
                 vreinterpret_u64_u8(vshrn_n_u16(vreinterpretq_u16_u8(cmp1), 4)), 0);
             if (mask1 != 0) {
                 // Found a match in the first chunk
-                int index = trailing_zeroes(mask1) / 4; // Each character maps to 4 bits
+                int index = countr_zero(mask1) / 4; // Each character maps to 4 bits
                 return start + index;
             }
             uint64_t mask2 = vget_lane_u64(
                 vreinterpret_u64_u8(vshrn_n_u16(vreinterpretq_u16_u8(cmp2), 4)), 0);
             if (mask2 != 0) {
                 // Found a match in the second chunk
-                int index = trailing_zeroes(mask2) / 4; // Each character maps to 4 bits
+                int index = countr_zero(mask2) / 4; // Each character maps to 4 bits
                 return start + index + 16;
             }
             uint64_t mask3 = vget_lane_u64(
                 vreinterpret_u64_u8(vshrn_n_u16(vreinterpretq_u16_u8(cmp3), 4)), 0);
             if (mask3 != 0) {
                 // Found a match in the third chunk
-                int index = trailing_zeroes(mask3) / 4; // Each character maps to 4 bits
+                int index = countr_zero(mask3) / 4; // Each character maps to 4 bits
                 return start + index + 32;
             }
             uint64_t mask4 = vget_lane_u64(
                 vreinterpret_u64_u8(vshrn_n_u16(vreinterpretq_u16_u8(cmp4), 4)), 0);
             if (mask4 != 0) {
                 // Found a match in the fourth chunk
-                int index = trailing_zeroes(mask4) / 4; // Each character maps to 4 bits
+                int index = countr_zero(mask4) / 4; // Each character maps to 4 bits
                 return start + index + 48;
             }
         }
@@ -83,7 +83,7 @@ KUMO_FORCE_INLINE const char* util_find(const char* start, const char* end,
 
         if (mask != 0) {
             // Found a match, return the first one
-            int index = trailing_zeroes(mask) / 4; // Each character maps to 4 bits
+            int index = countr_zero(mask) / 4; // Each character maps to 4 bits
             return start + index;
         }
 
@@ -140,28 +140,28 @@ KUMO_FORCE_INLINE const char16_t* util_find(const char16_t* start,
         uint64_t mask1 = vget_lane_u64(
             vreinterpret_u64_u16(vshrn_n_u32(vreinterpretq_u32_u16(cmp1), 4)), 0);
         if (mask1 != 0) {
-            int index = trailing_zeroes(mask1) / 8;
+            int index = countr_zero(mask1) / 8;
             return start + index;
         }
 
         uint64_t mask2 = vget_lane_u64(
             vreinterpret_u64_u16(vshrn_n_u32(vreinterpretq_u32_u16(cmp2), 4)), 0);
         if (mask2 != 0) {
-            int index = trailing_zeroes(mask2) / 8;
+            int index = countr_zero(mask2) / 8;
             return start + index + step;
         }
 
         uint64_t mask3 = vget_lane_u64(
             vreinterpret_u64_u16(vshrn_n_u32(vreinterpretq_u32_u16(cmp3), 4)), 0);
         if (mask3 != 0) {
-            int index = trailing_zeroes(mask3) / 8;
+            int index = countr_zero(mask3) / 8;
             return start + index + 2 * step;
         }
 
         uint64_t mask4 = vget_lane_u64(
             vreinterpret_u64_u16(vshrn_n_u32(vreinterpretq_u32_u16(cmp4), 4)), 0);
         if (mask4 != 0) {
-            int index = trailing_zeroes(mask4) / 8;
+            int index = countr_zero(mask4) / 8;
             return start + index + 3 * step;
         }
 
@@ -176,7 +176,7 @@ KUMO_FORCE_INLINE const char16_t* util_find(const char16_t* start,
             vreinterpret_u64_u16(vshrn_n_u32(vreinterpretq_u32_u16(cmp), 4)), 0);
 
         if (mask != 0) {
-            int index = trailing_zeroes(mask) / 8;
+            int index = countr_zero(mask) / 8;
             return start + index;
         }
 

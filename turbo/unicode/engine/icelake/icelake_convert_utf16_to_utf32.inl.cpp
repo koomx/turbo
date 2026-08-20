@@ -4,7 +4,7 @@
   Returns a pair: the first unprocessed byte from buf and utf32_output
   A scalar routing should carry on the conversion of the tail.
 */
-template <endianness big_endian>
+template <Endian big_endian>
 std::tuple<const char16_t*, char32_t*, bool>
 convert_utf16_to_utf32(const char16_t* buf, size_t len,
     char32_t* utf32_output) {
@@ -89,11 +89,11 @@ convert_utf16_to_utf32(const char16_t* buf, size_t len,
                 // We deliberately do a _mm512_maskz_compress_epi32 followed by
                 // storeu_epi32 to ease performance portability to Zen 4.
                 const __m512i compressed_first = _mm512_maskz_compress_epi32((__mmask16)(valid), utf32_first);
-                const size_t howmany1 = count_ones((uint16_t)(valid));
+                const size_t howmany1 = popcount((uint16_t)(valid));
                 _mm512_storeu_si512((__m512i*)utf32_output, compressed_first);
                 utf32_output += howmany1;
                 const __m512i compressed_second = _mm512_maskz_compress_epi32((__mmask16)(valid >> 16), utf32_second);
-                const size_t howmany2 = count_ones((uint16_t)(valid >> 16));
+                const size_t howmany2 = popcount((uint16_t)(valid >> 16));
                 // The following could be unsafe in some cases?
                 //_mm512_storeu_epi32((__m512i *) utf32_output, compressed_second);
                 _mm512_mask_storeu_epi32((__m512i*)utf32_output,

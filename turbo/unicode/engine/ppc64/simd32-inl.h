@@ -189,7 +189,7 @@ struct simd32<uint32_t> : base32_numeric<uint32_t> {
         return vec_sl(value, vec_splats(uint32_t(N)));
     }
 
-    // Change the endianness
+    // Change the Endian
     KUMO_FORCE_INLINE simd32<uint32_t> swap_bytes() const {
         return vec_revb(value);
     }

@@ -14,7 +14,7 @@ namespace turbo {
         public:
             KUMO_FORCE_INLINE implementation()
                 : turbo::implementation("haswell", "Intel/AMD AVX2",
-                      internal::instruction_set::AVX2 | internal::instruction_set::BMI1 | internal::instruction_set::BMI2) { }
+                      InstructionSet::AVX2 | InstructionSet::BMI1 | InstructionSet::BMI2) { }
 
              [[nodiscard]] int detect_encodings(const char* input,
                 size_t length) const noexcept final;

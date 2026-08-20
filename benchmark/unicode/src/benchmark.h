@@ -209,14 +209,14 @@ private:
   run_convert_valid_utf32_to_utf8(const turbo::implementation &implementation,
                                   size_t iterations);
 
-  template <endianness byte_order>
+  template <Endian byte_order>
   void run_convert_utf32_to_utf16(const turbo::implementation &implementation,
                                   size_t iterations);
-  template <endianness byte_order>
+  template <Endian byte_order>
   void run_convert_utf32_to_utf16_with_errors(
       const turbo::implementation &implementation, size_t iterations);
 
-  template <endianness byte_order>
+  template <Endian byte_order>
   void run_convert_valid_utf32_to_utf16(
       const turbo::implementation &implementation, size_t iterations);
 

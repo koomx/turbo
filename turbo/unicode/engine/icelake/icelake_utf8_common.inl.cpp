@@ -19,7 +19,7 @@ using utf8_to_utf32_result = std::pair<const char*, uint32_t*>;
     The provided in and out pointers are advanced according to how many input
     bytes have been processed, upon success.
 */
-template <BlockProcessingMode tail, endianness big_endian>
+template <BlockProcessingMode tail, Endian big_endian>
 KUMO_FORCE_INLINE bool
 process_block_utf8_to_utf16(const char*& in, char16_t*& out, size_t gap) {
     // constants
@@ -218,7 +218,7 @@ process_block_utf8_to_utf16(const char*& in, char16_t*& out, size_t gap) {
                 }
             }
             int64_t nout = _mm_popcnt_u64(mprocessed);
-            in += 64 - _lzcnt_u64(mprocessed);
+            in += 64 - countl_zero(mprocessed);
             if (big_endian) {
                 Wout = _mm512_shuffle_epi8(Wout, byteflip);
             }
@@ -330,7 +330,7 @@ process_block_utf8_to_utf16(const char*& in, char16_t*& out, size_t gap) {
                 return false;
             }
         }
-        in += 64 - _lzcnt_u64(mprocessed);
+        in += 64 - countl_zero(mprocessed);
         int64_t nout = _mm_popcnt_u64(mprocessed);
         if (big_endian) {
             Wout = _mm512_shuffle_epi8(Wout, byteflip);
@@ -373,12 +373,12 @@ process_block_utf8_to_utf16(const char*& in, char16_t*& out, size_t gap) {
         if (int8_t(*in) <= int8_t(0xc0))
             in++;
         // The alternative is to do
-        // in += 64 - _lzcnt_u64(_pdep_u64(0xFFFFFFFF, continuation_or_ascii));
+        // in += 64 - countl_zero(_pdep_u64(0xFFFFFFFF, continuation_or_ascii));
         // but it requires loading the input, doing the mask computation, and
         // converting back the mask to a general register. It just takes too long,
         // leaving the processor likely to be idle.
     } else {
-        in += 64 - _lzcnt_u64(_pdep_u64(0xFFFFFFFF, continuation_or_ascii));
+        in += 64 - countl_zero(_pdep_u64(0xFFFFFFFF, continuation_or_ascii));
     }
     __m512i lead = _mm512_maskz_compress_epi8(
         leading, leading2byte); // will contain zero for ascii, and the data
@@ -429,7 +429,7 @@ process_block_utf8_to_utf16(const char*& in, char16_t*& out, size_t gap) {
     We pass it to the (always inlined) function to encourage the compiler to
     keep the value in a (constant) register.
 */
-template <endianness big_endian>
+template <Endian big_endian>
 KUMO_FORCE_INLINE size_t utf32_to_utf16_masked(const __m512i byteflip,
     __m512i utf32,
     unsigned int count,
@@ -496,7 +496,7 @@ KUMO_FORCE_INLINE size_t utf32_to_utf16_masked(const __m512i byteflip,
         //_mm512_mask_compressstoreu_epi16(output, nonzero_masked, t5);
     }
 
-    return count + static_cast<unsigned int>(count_ones(sp_mask));
+    return count + static_cast<unsigned int>(popcount(sp_mask));
 }
 
 /*
@@ -519,7 +519,7 @@ KUMO_FORCE_INLINE size_t utf32_to_utf16_masked(const __m512i byteflip,
     We pass it to the (always inlined) function to encourage the compiler to
     keep the value in a (constant) register.
 */
-template <endianness big_endian>
+template <Endian big_endian>
 KUMO_FORCE_INLINE size_t utf32_to_utf16(const __m512i byteflip,
     __m512i utf32, unsigned int count,
     char16_t* output) {
@@ -574,12 +574,12 @@ KUMO_FORCE_INLINE size_t utf32_to_utf16(const __m512i byteflip,
         __m512i compressed = _mm512_maskz_compress_epi16(nonzero, t5);
         _mm512_mask_storeu_epi16(
             output,
-            __mmask32((uint64_t(1) << (count + static_cast<unsigned int>(count_ones(sp_mask)))) - 1),
+            __mmask32((uint64_t(1) << (count + static_cast<unsigned int>(popcount(sp_mask)))) - 1),
             compressed);
         //_mm512_mask_compressstoreu_epi16(output, nonzero, t5);
     }
 
-    return count + static_cast<unsigned int>(count_ones(sp_mask));
+    return count + static_cast<unsigned int>(popcount(sp_mask));
 }
 
 /*
@@ -712,7 +712,7 @@ KUMO_FORCE_INLINE __m512i expand_and_identify(__m512i lane0, __m512i lane1,
     const __m512i t0 = _mm512_and_si512(input, v_0000_00c0);
     const __m512i v_0000_0080 = _mm512_set1_epi32(0x80);
     const __mmask16 leading_bytes = _mm512_cmpneq_epu32_mask(t0, v_0000_0080);
-    count = static_cast<int>(count_ones(leading_bytes));
+    count = static_cast<int>(popcount(leading_bytes));
     return _mm512_mask_compress_epi32(_mm512_setzero_si512(), leading_bytes,
         input);
 }

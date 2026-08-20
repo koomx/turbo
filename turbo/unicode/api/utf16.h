@@ -58,7 +58,7 @@ namespace turbo {
         size_t len) noexcept;
 
 
-    /// Using native endianness; Validate the UTF-16 string.
+    /// Using native Endian; Validate the UTF-16 string.
     /// This function may be best when you expect the input to be almost always
     /// valid. Otherwise, consider using validate_utf16_with_errors.
     ///
@@ -103,7 +103,7 @@ namespace turbo {
      [[nodiscard]] bool validate_utf16be(const char16_t* buf,
         size_t len) noexcept;
 
-    /// Using native endianness; Validate the UTF-16 string and stop on error.
+    /// Using native Endian; Validate the UTF-16 string and stop on error.
     /// It might be faster than validate_utf16 when an error is expected to occur
     /// early.
     ///
@@ -196,7 +196,7 @@ namespace turbo {
         char16_t* output) noexcept;
 
 
-    /// Using native endianness, convert possibly broken UTF-16 string into UTF-8
+    /// Using native Endian, convert possibly broken UTF-16 string into UTF-8
     /// string.
     ///
     /// During the conversion also validation of the input string is done.
@@ -213,7 +213,7 @@ namespace turbo {
         size_t length,
         char* utf8_buffer) noexcept;
 
-    /// Using native endianness, convert possibly broken UTF-16 string into UTF-8
+    /// Using native Endian, convert possibly broken UTF-16 string into UTF-8
     /// string with output limit.
     ///
     /// We write as many characters as possible into the output buffer,
@@ -239,7 +239,7 @@ namespace turbo {
         char* utf8_output,
         size_t utf8_len) noexcept;
 
-     /// Using native endianness, convert possibly broken UTF-16 string into Latin1
+     /// Using native Endian, convert possibly broken UTF-16 string into Latin1
     /// string.
     ///
     /// During the conversion also validation of the input string is done.
@@ -321,7 +321,7 @@ namespace turbo {
         size_t length,
         char* utf8_buffer) noexcept;
 
-     /// Using native endianness, convert possibly broken UTF-16 string into Latin1
+     /// Using native Endian, convert possibly broken UTF-16 string into Latin1
     /// string.
     ///
     /// During the conversion also validation of the input string is done.
@@ -374,7 +374,7 @@ namespace turbo {
         const char16_t* input, size_t length, char* latin1_buffer) noexcept;
 
 
-     /// Using native endianness, convert possibly broken UTF-16 string into UTF-8
+     /// Using native Endian, convert possibly broken UTF-16 string into UTF-8
     /// string and stop on error.
     ///
     /// During the conversion also validation of the input string is done.
@@ -458,7 +458,7 @@ namespace turbo {
         const char16_t* input, size_t length, char* utf8_buffer) noexcept;
 
 
-    /// Convert possibly broken UTF-16 string (native endianness) into UTF-8 string,
+    /// Convert possibly broken UTF-16 string (native Endian) into UTF-8 string,
     /// replacing unpaired surrogates with the Unicode replacement character U+FFFD.
     ///
     /// This function always succeeds: unpaired surrogates are replaced with
@@ -474,7 +474,7 @@ namespace turbo {
         const char16_t* input, size_t length, char* utf8_buffer) noexcept;
 
 
-     /// Using native endianness, convert valid UTF-16 string into UTF-8 string.
+     /// Using native Endian, convert valid UTF-16 string into UTF-8 string.
     ///
     /// This function assumes that the input string is valid UTF-16.
     ///
@@ -488,7 +488,7 @@ namespace turbo {
      [[nodiscard]] size_t convert_valid_utf16_to_utf8(
         const char16_t* input, size_t length, char* utf8_buffer) noexcept;
 
-    /// Using native endianness, convert UTF-16 string into Latin1 string.
+    /// Using native Endian, convert UTF-16 string into Latin1 string.
     ///
     /// This function assumes that the input string is valid UTF-16 and that it can
     /// be represented as Latin1. If you violate this assumption, the UnicodeResult is
@@ -580,7 +580,7 @@ namespace turbo {
      [[nodiscard]] size_t convert_valid_utf16be_to_utf8(
         const char16_t* input, size_t length, char* utf8_buffer) noexcept;
 
-     /// Using native endianness, convert possibly broken UTF-16 string into UTF-32
+     /// Using native Endian, convert possibly broken UTF-16 string into UTF-32
     /// string.
     ///
     /// During the conversion also validation of the input string is done.
@@ -627,7 +627,7 @@ namespace turbo {
      [[nodiscard]] size_t convert_utf16be_to_utf32(
         const char16_t* input, size_t length, char32_t* utf32_buffer) noexcept;
 
-    /// Using native endianness, convert possibly broken UTF-16 string into
+    /// Using native Endian, convert possibly broken UTF-16 string into
     /// UTF-32 string and stop on error.
     ///
     /// During the conversion also validation of the input string is done.
@@ -681,10 +681,10 @@ namespace turbo {
      [[nodiscard]] UnicodeResult convert_utf16be_to_utf32_with_errors(
         const char16_t* input, size_t length, char32_t* utf32_buffer) noexcept;
 
-    /// Using native endianness, convert valid UTF-16 string into UTF-32 string.
+    /// Using native Endian, convert valid UTF-16 string into UTF-32 string.
     ///
     /// This function assumes that the input string is valid UTF-16 (native
-    /// endianness).
+    /// Endian).
     ///
     /// This function is not BOM-aware.
     ///
@@ -726,7 +726,7 @@ namespace turbo {
      [[nodiscard]] size_t convert_valid_utf16be_to_utf32(
         const char16_t* input, size_t length, char32_t* utf32_buffer) noexcept;
 
-    /// Using native endianness; Compute the number of bytes that this UTF-16
+    /// Using native Endian; Compute the number of bytes that this UTF-16
     /// string would require in UTF-8 format.
     ///
     /// This function does not validate the input. It is acceptable to pass invalid
@@ -739,7 +739,7 @@ namespace turbo {
         size_t length) noexcept;
 
 
-    /// Using native endianness; compute the number of bytes that this UTF-16
+    /// Using native Endian; compute the number of bytes that this UTF-16
     /// string would require in UTF-8 format even when the UTF-16LE content contains
     /// mismatched surrogates that have to be replaced by the replacement character
     /// (0xFFFD).
@@ -783,7 +783,7 @@ namespace turbo {
         size_t length) noexcept;
 
 
-    /// Change the endianness of the input. Can be used to go from UTF-16LE to
+    /// Change the Endian of the input. Can be used to go from UTF-16LE to
     /// UTF-16BE or from UTF-16BE to UTF-16LE.
     ///
     /// This function does not validate the input.
@@ -802,7 +802,7 @@ namespace turbo {
     /// it is valid.
     ///
     /// This function assumes that the input string is valid UTF-16 (native
-    /// endianness). It is acceptable to pass invalid UTF-16 strings but in such
+    /// Endian). It is acceptable to pass invalid UTF-16 strings but in such
     /// cases the UnicodeResult is implementation defined.
     ///
     /// This function is not BOM-aware.
@@ -881,7 +881,7 @@ namespace turbo {
     /// truncated character, the original length is returned.
     ///
     /// This function assumes that the input string is valid UTF-16, but possibly
-    /// truncated. We use the native endianness.
+    /// truncated. We use the native Endian.
     ///
     /// @param input         the UTF-16 string to process
     /// @param length        the length of the string in bytes
@@ -901,7 +901,7 @@ namespace turbo {
     }
 
 
-    /// Using native endianness; Compute the number of bytes that this UTF-16
+    /// Using native Endian; Compute the number of bytes that this UTF-16
     /// string would require in UTF-32 format.
     ///
     /// This function is equivalent to count_utf16.

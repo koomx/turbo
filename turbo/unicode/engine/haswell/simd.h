@@ -21,7 +21,7 @@ namespace turbo {
 
                     KUMO_FORCE_INLINE operator const __m256i&() const { return this->value; }
 
-                    template <endianness big_endian>
+                    template <Endian big_endian>
                     KUMO_FORCE_INLINE void store_ascii_as_utf16(char16_t* ptr) const {
                         __m256i first = _mm256_cvtepu8_epi16(_mm256_castsi256_si128(*this));
                         __m256i second = _mm256_cvtepu8_epi16(_mm256_extractf128_si256(*this, 1));
@@ -320,7 +320,7 @@ namespace turbo {
                         return this->reduce_or().is_ascii();
                     }
 
-                    template <endianness endian>
+                    template <Endian endian>
                     KUMO_FORCE_INLINE void store_ascii_as_utf16(char16_t* ptr) const {
                         this->chunks[0].template store_ascii_as_utf16<endian>(ptr + sizeof(simd8<T>) * 0);
                         this->chunks[1].template store_ascii_as_utf16<endian>(ptr + sizeof(simd8<T>) * 1);

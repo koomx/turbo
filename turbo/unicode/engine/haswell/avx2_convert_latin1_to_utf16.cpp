@@ -1,4 +1,4 @@
-template <endianness big_endian>
+template <Endian big_endian>
 std::pair<const char*, char16_t*>
 avx2_convert_latin1_to_utf16(const char* latin1_input, size_t len,
     char16_t* utf16_output) {

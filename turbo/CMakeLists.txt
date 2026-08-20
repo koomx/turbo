@@ -17,6 +17,9 @@
 ###########################################################################
 ###kmcmake_example
 
+set(ARCH_SRC
+        arch/isa.cc
+)
 set(BASE_SRC
         base/log_severity.cc
         base/throw_delegate.cc
@@ -251,6 +254,7 @@ set(UNICODE_SRC
 )
 
 set(TURBO_SRC
+        ${ARCH_SRC}
         ${BASE_SRC}
         ${BITS_SRC}
         ${CORD_SRC}

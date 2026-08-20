@@ -5,7 +5,7 @@ namespace turbo {
     namespace tests {
         namespace reference {
 
-            [[nodiscard]] bool validate_utf16(endianness utf16_endianness,
+            [[nodiscard]] bool validate_utf16(Endian utf16_endianness,
                 const char16_t* buf,
                 size_t len) noexcept {
                 const char16_t* curr = buf;

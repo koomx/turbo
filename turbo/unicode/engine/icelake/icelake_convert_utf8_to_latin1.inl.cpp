@@ -39,7 +39,7 @@ KUMO_FORCE_INLINE size_t process_block_from_utf8_to_latin1(
 
     __mmask64 retain = ~leading & load_mask;
     __m512i output = _mm512_maskz_compress_epi8(retain, input);
-    int64_t written_out = count_ones(retain);
+    int64_t written_out = popcount(retain);
     if (written_out == 0) {
         return 0; // Indicates error
     }

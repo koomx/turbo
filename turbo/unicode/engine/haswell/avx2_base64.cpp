@@ -386,7 +386,7 @@ KUMO_FORCE_INLINE void compress(__m256i data, uint32_t mask, char* output) {
     }
     compress(_mm256_castsi256_si128(data), uint16_t(mask), output);
     compress(_mm256_extracti128_si256(data, 1), uint16_t(mask >> 16),
-        output + count_ones(~mask & 0xFFFF));
+        output + popcount(~mask & 0xFFFF));
 }
 
 template <typename = void>
@@ -608,13 +608,13 @@ public:
         uint64_t nmask = ~mask;
         compress(chunks[0], uint32_t(mask), output);
         compress(chunks[1], uint32_t(mask >> 32),
-            output + count_ones(nmask & 0xFFFFFFFF));
-        return count_ones(nmask);
+            output + popcount(nmask & 0xFFFFFFFF));
+        return popcount(nmask);
     }
 
     KUMO_FORCE_INLINE size_t compress_block_single(uint64_t mask,
         char* output) {
-        const size_t pos64 = trailing_zeroes(mask);
+        const size_t pos64 = countr_zero(mask);
         const int8_t pos = pos64 & 0xf;
         switch (pos64 >> 4) {
         case 0b00: {
@@ -692,7 +692,7 @@ public:
         __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(ptr));
         __m256i gt_space = _mm256_cmpgt_epi8(data, spaces);
         uint32_t mask = static_cast<uint32_t>(_mm256_movemask_epi8(gt_space));
-        count += count_ones(mask);
+        count += popcount(mask);
         ptr += 32;
     }
 
@@ -725,7 +725,7 @@ public:
         __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(ptr));
         __m256i gt_space = _mm256_cmpgt_epi16(data, spaces);
         uint32_t mask = static_cast<uint32_t>(_mm256_movemask_epi8(gt_space));
-        count += count_ones(mask);
+        count += popcount(mask);
         ptr += 16;
     }
     count /= 2;

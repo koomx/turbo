@@ -8,7 +8,7 @@ namespace turbo {
         namespace {
             namespace utf8_to_utf16 {
 
-                template <endianness big_endian, typename InputPtr>
+                template <Endian big_endian, typename InputPtr>
 
                  size_t convert_valid(InputPtr data, size_t len,
                     char16_t* utf16_output) {
@@ -25,7 +25,7 @@ namespace turbo {
                                     size_t final_pos = pos + 8;
                                     while (pos < final_pos) {
                                         const char16_t byte = uint8_t(data[pos]);
-                                        *utf16_output++ = !match_system(big_endian) ? u16_swap_bytes(byte) : byte;
+                                        *utf16_output++ = !match_system(big_endian) ? u16_byteswap(byte) : byte;
                                         pos++;
                                     }
                                     continue;
@@ -37,7 +37,7 @@ namespace turbo {
                         if (leading_byte < 0b10000000) {
                             // converting one ASCII byte !!!
                             *utf16_output++ = !match_system(big_endian)
-                                ? char16_t(u16_swap_bytes(leading_byte))
+                                ? char16_t(u16_byteswap(leading_byte))
                                 : char16_t(leading_byte);
                             pos++;
                         } else if ((leading_byte & 0b11100000) == 0b11000000) {
@@ -48,7 +48,7 @@ namespace turbo {
                             } // minimal bound checking
                             uint16_t code_point = uint16_t(((leading_byte & 0b00011111) << 6) | (uint8_t(data[pos + 1]) & 0b00111111));
                             if constexpr (!match_system(big_endian)) {
-                                code_point = u16_swap_bytes(uint16_t(code_point));
+                                code_point = u16_byteswap(code_point);
                             }
                             *utf16_output++ = char16_t(code_point);
                             pos += 2;
@@ -60,7 +60,7 @@ namespace turbo {
                             } // minimal bound checking
                             uint16_t code_point = uint16_t(((leading_byte & 0b00001111) << 12) | ((uint8_t(data[pos + 1]) & 0b00111111) << 6) | (uint8_t(data[pos + 2]) & 0b00111111));
                             if constexpr (!match_system(big_endian)) {
-                                code_point = u16_swap_bytes(uint16_t(code_point));
+                                code_point = u16_byteswap(code_point);
                             }
                             *utf16_output++ = char16_t(code_point);
                             pos += 3;
@@ -74,8 +74,8 @@ namespace turbo {
                             uint16_t high_surrogate = uint16_t(0xD800 + (code_point >> 10));
                             uint16_t low_surrogate = uint16_t(0xDC00 + (code_point & 0x3FF));
                             if constexpr (!match_system(big_endian)) {
-                                high_surrogate = u16_swap_bytes(high_surrogate);
-                                low_surrogate = u16_swap_bytes(low_surrogate);
+                                high_surrogate = u16_byteswap(high_surrogate);
+                                low_surrogate = u16_byteswap(low_surrogate);
                             }
                             *utf16_output++ = char16_t(high_surrogate);
                             *utf16_output++ = char16_t(low_surrogate);

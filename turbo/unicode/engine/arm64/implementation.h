@@ -15,7 +15,7 @@ namespace turbo {
         public:
             KUMO_FORCE_INLINE implementation()
                 : turbo::implementation("arm64", "ARM NEON",
-                      internal::instruction_set::NEON) { }
+                      InstructionSet::NEON) { }
              [[nodiscard]] int detect_encodings(const char* input,
                 size_t length) const noexcept final;
              [[nodiscard]] bool validate_utf8(const char* buf,

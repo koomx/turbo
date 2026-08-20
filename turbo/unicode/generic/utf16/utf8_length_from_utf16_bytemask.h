@@ -5,7 +5,7 @@ namespace turbo {
 
                 using namespace simd;
 
-                template <endianness big_endian>
+                template <Endian big_endian>
                 KUMO_FORCE_INLINE size_t utf8_length_from_utf16_bytemask(const char16_t* in,
                     size_t size) {
                     size_t pos = 0;
@@ -83,7 +83,7 @@ namespace turbo {
                     return count + scalar::utf16::utf8_length_from_utf16<big_endian>(in + pos, size - pos);
                 }
 
-                template <endianness big_endian>
+                template <Endian big_endian>
                 KUMO_FORCE_INLINE UnicodeResult
                 utf8_length_from_utf16_with_replacement(const char16_t* in, size_t size) {
                     using vector_u16 = simd16<uint16_t>;

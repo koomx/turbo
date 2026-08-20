@@ -5,7 +5,7 @@ struct expansion_result_t {
 
 // Function sse_expand_surrogate takes four **valid** UTF-32 characters
 // having at least one code-point producing a surrogate pair.
-template <endianness byte_order>
+template <Endian byte_order>
 expansion_result_t sse_expand_surrogate(const __m128i x) {
     using vector_u32 = simd32<uint32_t>;
     using vector_u8 = simd8<uint8_t>;
@@ -23,11 +23,11 @@ expansion_result_t sse_expand_surrogate(const __m128i x) {
     const auto merged = as_vector_u8(select(non_surrogate_mask, in, surrogates));
 
     const auto shuffle = vector_u8::load(
-        (byte_order == endianness::LITTLE)
+        (byte_order == Endian::little)
             ? tables::utf32_to_utf16::pack_utf32_to_utf16le[mask]
             : tables::utf32_to_utf16::pack_utf32_to_utf16be[mask]);
 
-    const size_t u16count = (4 + count_ones(mask));
+    const size_t u16count = (4 + popcount(mask));
     const auto compressed = shuffle.lookup_16(merged);
 
     return { u16count, compressed };
@@ -52,7 +52,7 @@ KUMO_FORCE_INLINE bool validate_utf32(const __m128i a, const __m128i b) {
     return !combined.any();
 }
 
-template <endianness big_endian>
+template <Endian big_endian>
 std::pair<const char32_t*, char16_t*>
 sse_convert_utf32_to_utf16(const char32_t* buf, size_t len,
     char16_t* utf16_output) {
@@ -126,7 +126,7 @@ sse_convert_utf32_to_utf16(const char32_t* buf, size_t len,
     return std::make_pair(buf, utf16_output);
 }
 
-template <endianness big_endian>
+template <Endian big_endian>
 std::pair<UnicodeResult, char16_t*>
 sse_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
     char16_t* utf16_output) {

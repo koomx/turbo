@@ -128,7 +128,7 @@ struct simd16<uint16_t> : base16_numeric<uint16_t> {
         return simd16<uint16_t>(_mm_srli_epi16(*this, N));
     }
 
-    // Change the endianness
+    // Change the Endian
     KUMO_FORCE_INLINE simd16<uint16_t> swap_bytes() const {
         const __m128i swap = _mm_setr_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
         return _mm_shuffle_epi8(*this, swap);

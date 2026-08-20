@@ -8,7 +8,7 @@ namespace turbo {
         namespace {
             namespace utf16_to_utf8 {
 
-                template <endianness big_endian, typename InputPtr, typename OutputPtr>
+                template <Endian big_endian, typename InputPtr, typename OutputPtr>
                  size_t convert(InputPtr data, size_t len,
                     OutputPtr utf8_output) {
                     size_t pos = 0;
@@ -27,7 +27,7 @@ namespace turbo {
                                     size_t final_pos = pos + 4;
                                     while (pos < final_pos) {
                                         *utf8_output++ = !match_system(big_endian)
-                                            ? char(u16_swap_bytes(data[pos]))
+                                            ? char(u16_byteswap(data[pos]))
                                             : char(data[pos]);
                                         pos++;
                                     }
@@ -35,7 +35,7 @@ namespace turbo {
                                 }
                             }
                         }
-                        uint16_t word = !match_system(big_endian) ? u16_swap_bytes(data[pos]) : data[pos];
+                        uint16_t word = !match_system(big_endian) ? u16_byteswap(data[pos]) : data[pos];
                         if ((word & 0xFF80) == 0) {
                             // will generate one UTF-8 bytes
                             *utf8_output++ = char(word);
@@ -63,7 +63,7 @@ namespace turbo {
                                 return 0;
                             }
                             uint16_t next_word = !match_system(big_endian)
-                                ? u16_swap_bytes(data[pos + 1])
+                                ? u16_byteswap(data[pos + 1])
                                 : data[pos + 1];
                             uint16_t diff2 = uint16_t(next_word - 0xDC00);
                             if (diff2 > 0x3FF) {
@@ -82,7 +82,7 @@ namespace turbo {
                     return utf8_output - start;
                 }
 
-                template <endianness big_endian, bool check_output = false, typename InputPtr,
+                template <Endian big_endian, bool check_output = false, typename InputPtr,
                     typename OutputPtr>
                  full_result convert_with_errors(InputPtr data, size_t len,
                     OutputPtr utf8_output,
@@ -112,7 +112,7 @@ namespace turbo {
                                                 utf8_output - start);
                                         }
                                         *utf8_output++ = !match_system(big_endian)
-                                            ? char(u16_swap_bytes(data[pos]))
+                                            ? char(u16_byteswap(data[pos]))
                                             : char(data[pos]);
                                         pos++;
                                     }
@@ -121,7 +121,7 @@ namespace turbo {
                             }
                         }
 
-                        uint16_t word = !match_system(big_endian) ? u16_swap_bytes(data[pos]) : data[pos];
+                        uint16_t word = !match_system(big_endian) ? u16_byteswap(data[pos]) : data[pos];
                         if ((word & 0xFF80) == 0) {
                             // will generate one UTF-8 bytes
                             if (check_output && size_t(end - utf8_output) < 1) {
@@ -167,7 +167,7 @@ namespace turbo {
                                 return full_result(UnicodeError::SURROGATE, pos, utf8_output - start);
                             }
                             uint16_t next_word = !match_system(big_endian)
-                                ? u16_swap_bytes(data[pos + 1])
+                                ? u16_byteswap(data[pos + 1])
                                 : data[pos + 1];
                             uint16_t diff2 = uint16_t(next_word - 0xDC00);
                             if (diff2 > 0x3FF) {
@@ -186,13 +186,13 @@ namespace turbo {
                     return full_result(UnicodeError::SUCCESS, pos, utf8_output - start);
                 }
 
-                template <endianness big_endian>
+                template <Endian big_endian>
                 inline UnicodeResult simple_convert_with_errors(const char16_t* buf, size_t len,
                     char* utf8_output) {
                     return convert_with_errors<big_endian, false>(buf, len, utf8_output, 0);
                 }
 
-                template <endianness big_endian>
+                template <Endian big_endian>
                  size_t convert_with_replacement(const char16_t* data,
                     size_t len,
                     char* utf8_output) {
@@ -212,7 +212,7 @@ namespace turbo {
                                     size_t final_pos = pos + 4;
                                     while (pos < final_pos) {
                                         *utf8_output++ = !match_system(big_endian)
-                                            ? char(u16_swap_bytes(data[pos]))
+                                            ? char(u16_byteswap(data[pos]))
                                             : char(data[pos]);
                                         pos++;
                                     }
@@ -220,7 +220,7 @@ namespace turbo {
                                 }
                             }
                         }
-                        uint16_t word = !match_system(big_endian) ? u16_swap_bytes(data[pos]) : data[pos];
+                        uint16_t word = !match_system(big_endian) ? u16_byteswap(data[pos]) : data[pos];
                         if ((word & 0xFF80) == 0) {
                             // will generate one UTF-8 bytes
                             *utf8_output++ = char(word);
@@ -244,7 +244,7 @@ namespace turbo {
                             if (diff <= 0x3FF && pos + 1 < len) {
                                 // high surrogate, check for valid pair
                                 uint16_t next_word = !match_system(big_endian)
-                                    ? u16_swap_bytes(data[pos + 1])
+                                    ? u16_byteswap(data[pos + 1])
                                     : data[pos + 1];
                                 uint16_t diff2 = uint16_t(next_word - 0xDC00);
                                 if (diff2 <= 0x3FF) {

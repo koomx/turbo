@@ -221,7 +221,7 @@ namespace turbo {
                 __mmask64 notascii = _mm512_cmp_epu8_mask(input, ascii, _MM_CMPINT_NLT);
                 if (notascii) {
                     return UnicodeResult(UnicodeError::TOO_LARGE,
-                        buf - buf_orig + _tzcnt_u64(notascii));
+                        buf - buf_orig + countr_zero(notascii));
                 }
             }
             if (end != buf) {
@@ -230,7 +230,7 @@ namespace turbo {
                 __mmask64 notascii = _mm512_cmp_epu8_mask(input, ascii, _MM_CMPINT_NLT);
                 if (notascii) {
                     return UnicodeResult(UnicodeError::TOO_LARGE,
-                        buf - buf_orig + _tzcnt_u64(notascii));
+                        buf - buf_orig + countr_zero(notascii));
                 }
             }
             return UnicodeResult(UnicodeError::SUCCESS, len);
@@ -528,12 +528,12 @@ namespace turbo {
 
         void implementation::to_well_formed_utf16le(const char16_t* input, size_t len,
             char16_t* output) const noexcept {
-            return utf16fix_avx512<endianness::LITTLE>(input, len, output);
+            return utf16fix_avx512<Endian::little>(input, len, output);
         }
 
         void implementation::to_well_formed_utf16be(const char16_t* input, size_t len,
             char16_t* output) const noexcept {
-            return utf16fix_avx512<endianness::BIG>(input, len, output);
+            return utf16fix_avx512<Endian::big>(input, len, output);
         }
 
          [[nodiscard]] bool
@@ -600,13 +600,13 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_latin1_to_utf16le(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
-            return icelake_convert_latin1_to_utf16<endianness::LITTLE>(buf, len,
+            return icelake_convert_latin1_to_utf16<Endian::little>(buf, len,
                 utf16_output);
         }
 
          [[nodiscard]] size_t implementation::convert_latin1_to_utf16be(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
-            return icelake_convert_latin1_to_utf16<endianness::BIG>(buf, len,
+            return icelake_convert_latin1_to_utf16<Endian::big>(buf, len,
                 utf16_output);
         }
 
@@ -646,7 +646,7 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_utf8_to_utf16le(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
-            utf8_to_utf16_result ret = fast_avx512_convert_utf8_to_utf16<endianness::LITTLE>(buf, len,
+            utf8_to_utf16_result ret = fast_avx512_convert_utf8_to_utf16<Endian::little>(buf, len,
                 utf16_output);
             if (ret.second == nullptr) {
                 return 0;
@@ -656,7 +656,7 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_utf8_to_utf16be(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
-            utf8_to_utf16_result ret = fast_avx512_convert_utf8_to_utf16<endianness::BIG>(
+            utf8_to_utf16_result ret = fast_avx512_convert_utf8_to_utf16<Endian::big>(
                 buf, len, utf16_output);
             if (ret.second == nullptr) {
                 return 0;
@@ -666,19 +666,19 @@ namespace turbo {
 
          [[nodiscard]] UnicodeResult implementation::convert_utf8_to_utf16le_with_errors(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
-            return fast_avx512_convert_utf8_to_utf16_with_errors<endianness::LITTLE>(
+            return fast_avx512_convert_utf8_to_utf16_with_errors<Endian::little>(
                 buf, len, utf16_output);
         }
 
          [[nodiscard]] UnicodeResult implementation::convert_utf8_to_utf16be_with_errors(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
-            return fast_avx512_convert_utf8_to_utf16_with_errors<endianness::BIG>(
+            return fast_avx512_convert_utf8_to_utf16_with_errors<Endian::big>(
                 buf, len, utf16_output);
         }
 
          [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf16le(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
-            utf8_to_utf16_result ret = icelake::valid_utf8_to_fixed_length<endianness::LITTLE, char16_t>(
+            utf8_to_utf16_result ret = icelake::valid_utf8_to_fixed_length<Endian::little, char16_t>(
                 buf, len, utf16_output);
             size_t saved_bytes = ret.second - utf16_output;
             const char* end = buf + len;
@@ -696,7 +696,7 @@ namespace turbo {
             }
 
             if (ret.first != end) {
-                const size_t scalar_saved_bytes = scalar::utf8_to_utf16::convert_valid<endianness::LITTLE>(
+                const size_t scalar_saved_bytes = scalar::utf8_to_utf16::convert_valid<Endian::little>(
                     ret.first, len - (ret.first - buf), ret.second);
                 if (scalar_saved_bytes == 0) {
                     return 0;
@@ -709,7 +709,7 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf16be(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
-            utf8_to_utf16_result ret = icelake::valid_utf8_to_fixed_length<endianness::BIG, char16_t>(
+            utf8_to_utf16_result ret = icelake::valid_utf8_to_fixed_length<Endian::big, char16_t>(
                 buf, len, utf16_output);
             size_t saved_bytes = ret.second - utf16_output;
             const char* end = buf + len;
@@ -727,7 +727,7 @@ namespace turbo {
             }
 
             if (ret.first != end) {
-                const size_t scalar_saved_bytes = scalar::utf8_to_utf16::convert_valid<endianness::BIG>(
+                const size_t scalar_saved_bytes = scalar::utf8_to_utf16::convert_valid<Endian::big>(
                     ret.first, len - (ret.first - buf), ret.second);
                 if (scalar_saved_bytes == 0) {
                     return 0;
@@ -741,7 +741,7 @@ namespace turbo {
          [[nodiscard]] size_t implementation::convert_utf8_to_utf32(
             const char* buf, size_t len, char32_t* utf32_out) const noexcept {
             uint32_t* utf32_output = reinterpret_cast<uint32_t*>(utf32_out);
-            utf8_to_utf32_result ret = icelake::validating_utf8_to_fixed_length<endianness::LITTLE, uint32_t>(
+            utf8_to_utf32_result ret = icelake::validating_utf8_to_fixed_length<Endian::little, uint32_t>(
                 buf, len, utf32_output);
             if (ret.second == nullptr)
                 return 0;
@@ -779,7 +779,7 @@ namespace turbo {
             }
             uint32_t* utf32_output = reinterpret_cast<uint32_t*>(utf32);
             auto ret = icelake::validating_utf8_to_fixed_length_with_constant_checks<
-                endianness::LITTLE, uint32_t>(buf, len, utf32_output);
+                Endian::little, uint32_t>(buf, len, utf32_output);
 
             if (!std::get<2>(ret)) {
                 size_t pos = std::get<0>(ret) - buf;
@@ -838,7 +838,7 @@ namespace turbo {
          [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf32(
             const char* buf, size_t len, char32_t* utf32_out) const noexcept {
             uint32_t* utf32_output = reinterpret_cast<uint32_t*>(utf32_out);
-            utf8_to_utf32_result ret = icelake::valid_utf8_to_fixed_length<endianness::LITTLE, uint32_t>(
+            utf8_to_utf32_result ret = icelake::valid_utf8_to_fixed_length<Endian::little, uint32_t>(
                 buf, len, utf32_output);
             size_t saved_bytes = ret.second - utf32_output;
             const char* end = buf + len;
@@ -869,20 +869,20 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_utf16le_to_latin1(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
-            return icelake_convert_utf16_to_latin1<endianness::LITTLE>(buf, len,
+            return icelake_convert_utf16_to_latin1<Endian::little>(buf, len,
                 latin1_output);
         }
 
          [[nodiscard]] size_t implementation::convert_utf16be_to_latin1(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
-            return icelake_convert_utf16_to_latin1<endianness::BIG>(buf, len,
+            return icelake_convert_utf16_to_latin1<Endian::big>(buf, len,
                 latin1_output);
         }
 
          [[nodiscard]] UnicodeResult
         implementation::convert_utf16le_to_latin1_with_errors(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
-            return icelake_convert_utf16_to_latin1_with_errors<endianness::LITTLE>(
+            return icelake_convert_utf16_to_latin1_with_errors<Endian::little>(
                 buf, len, latin1_output)
                 .first;
         }
@@ -890,7 +890,7 @@ namespace turbo {
          [[nodiscard]] UnicodeResult
         implementation::convert_utf16be_to_latin1_with_errors(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
-            return icelake_convert_utf16_to_latin1_with_errors<endianness::BIG>(
+            return icelake_convert_utf16_to_latin1_with_errors<Endian::big>(
                 buf, len, latin1_output)
                 .first;
         }
@@ -910,7 +910,7 @@ namespace turbo {
          [[nodiscard]] size_t implementation::convert_utf16le_to_utf8(
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
             size_t outlen;
-            size_t inlen = utf16_to_utf8_avx512i<endianness::LITTLE>(
+            size_t inlen = utf16_to_utf8_avx512i<Endian::little>(
                 buf, len, (unsigned char*)utf8_output, &outlen);
             if (inlen != len) {
                 return 0;
@@ -921,7 +921,7 @@ namespace turbo {
          [[nodiscard]] size_t implementation::convert_utf16be_to_utf8(
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
             size_t outlen;
-            size_t inlen = utf16_to_utf8_avx512i<endianness::BIG>(
+            size_t inlen = utf16_to_utf8_avx512i<Endian::big>(
                 buf, len, (unsigned char*)utf8_output, &outlen);
             if (inlen != len) {
                 return 0;
@@ -932,10 +932,10 @@ namespace turbo {
          [[nodiscard]] UnicodeResult implementation::convert_utf16le_to_utf8_with_errors(
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
             size_t outlen;
-            size_t inlen = utf16_to_utf8_avx512i<endianness::LITTLE>(
+            size_t inlen = utf16_to_utf8_avx512i<Endian::little>(
                 buf, len, (unsigned char*)utf8_output, &outlen);
             if (inlen != len) {
-                UnicodeResult res = scalar::utf16_to_utf8::convert_with_errors<endianness::LITTLE>(
+                UnicodeResult res = scalar::utf16_to_utf8::convert_with_errors<Endian::little>(
                     buf + inlen, len - inlen, utf8_output + outlen);
                 res.count += inlen;
                 return res;
@@ -946,10 +946,10 @@ namespace turbo {
          [[nodiscard]] UnicodeResult implementation::convert_utf16be_to_utf8_with_errors(
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
             size_t outlen;
-            size_t inlen = utf16_to_utf8_avx512i<endianness::BIG>(
+            size_t inlen = utf16_to_utf8_avx512i<Endian::big>(
                 buf, len, (unsigned char*)utf8_output, &outlen);
             if (inlen != len) {
-                UnicodeResult res = scalar::utf16_to_utf8::convert_with_errors<endianness::BIG>(
+                UnicodeResult res = scalar::utf16_to_utf8::convert_with_errors<Endian::big>(
                     buf + inlen, len - inlen, utf8_output + outlen);
                 res.count += inlen;
                 return res;
@@ -1027,7 +1027,7 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_utf32_to_utf16le(
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
-            std::pair<const char32_t*, char16_t*> ret = avx512_convert_utf32_to_utf16<endianness::LITTLE>(buf, len, utf16_output);
+            std::pair<const char32_t*, char16_t*> ret = avx512_convert_utf32_to_utf16<Endian::little>(buf, len, utf16_output);
             if (ret.first == nullptr) {
                 return 0;
             }
@@ -1037,7 +1037,7 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_utf32_to_utf16be(
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
-            std::pair<const char32_t*, char16_t*> ret = avx512_convert_utf32_to_utf16<endianness::BIG>(buf, len, utf16_output);
+            std::pair<const char32_t*, char16_t*> ret = avx512_convert_utf32_to_utf16<Endian::big>(buf, len, utf16_output);
             if (ret.first == nullptr) {
                 return 0;
             }
@@ -1049,7 +1049,7 @@ namespace turbo {
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
-            std::pair<UnicodeResult, char16_t*> ret = avx512_convert_utf32_to_utf16_with_errors<endianness::LITTLE>(
+            std::pair<UnicodeResult, char16_t*> ret = avx512_convert_utf32_to_utf16_with_errors<Endian::little>(
                 buf, len, utf16_output);
             if (ret.first.error) {
                 return ret.first;
@@ -1062,7 +1062,7 @@ namespace turbo {
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
-            std::pair<UnicodeResult, char16_t*> ret = avx512_convert_utf32_to_utf16_with_errors<endianness::BIG>(buf, len,
+            std::pair<UnicodeResult, char16_t*> ret = avx512_convert_utf32_to_utf16_with_errors<Endian::big>(buf, len,
                 utf16_output);
             if (ret.first.error) {
                 return ret.first;
@@ -1083,14 +1083,14 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_utf16le_to_utf32(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
-            std::tuple<const char16_t*, char32_t*, bool> ret = icelake::convert_utf16_to_utf32<endianness::LITTLE>(buf, len,
+            std::tuple<const char16_t*, char32_t*, bool> ret = icelake::convert_utf16_to_utf32<Endian::little>(buf, len,
                 utf32_output);
             if (!std::get<2>(ret)) {
                 return 0;
             }
             size_t saved_bytes = std::get<1>(ret) - utf32_output;
             if (std::get<0>(ret) != buf + len) {
-                const size_t scalar_saved_bytes = scalar::utf16_to_utf32::convert<endianness::LITTLE>(
+                const size_t scalar_saved_bytes = scalar::utf16_to_utf32::convert<Endian::little>(
                     std::get<0>(ret), len - (std::get<0>(ret) - buf), std::get<1>(ret));
                 if (scalar_saved_bytes == 0) {
                     return 0;
@@ -1102,13 +1102,13 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_utf16be_to_utf32(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
-            std::tuple<const char16_t*, char32_t*, bool> ret = icelake::convert_utf16_to_utf32<endianness::BIG>(buf, len, utf32_output);
+            std::tuple<const char16_t*, char32_t*, bool> ret = icelake::convert_utf16_to_utf32<Endian::big>(buf, len, utf32_output);
             if (!std::get<2>(ret)) {
                 return 0;
             }
             size_t saved_bytes = std::get<1>(ret) - utf32_output;
             if (std::get<0>(ret) != buf + len) {
-                const size_t scalar_saved_bytes = scalar::utf16_to_utf32::convert<endianness::BIG>(
+                const size_t scalar_saved_bytes = scalar::utf16_to_utf32::convert<Endian::big>(
                     std::get<0>(ret), len - (std::get<0>(ret) - buf), std::get<1>(ret));
                 if (scalar_saved_bytes == 0) {
                     return 0;
@@ -1120,17 +1120,17 @@ namespace turbo {
 
          [[nodiscard]] UnicodeResult implementation::convert_utf16le_to_utf32_with_errors(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
-            std::tuple<const char16_t*, char32_t*, bool> ret = icelake::convert_utf16_to_utf32<endianness::LITTLE>(buf, len,
+            std::tuple<const char16_t*, char32_t*, bool> ret = icelake::convert_utf16_to_utf32<Endian::little>(buf, len,
                 utf32_output);
             if (!std::get<2>(ret)) {
-                UnicodeResult scalar_res = scalar::utf16_to_utf32::convert_with_errors<endianness::LITTLE>(
+                UnicodeResult scalar_res = scalar::utf16_to_utf32::convert_with_errors<Endian::little>(
                     std::get<0>(ret), len - (std::get<0>(ret) - buf), std::get<1>(ret));
                 scalar_res.count += (std::get<0>(ret) - buf);
                 return scalar_res;
             }
             size_t saved_bytes = std::get<1>(ret) - utf32_output;
             if (std::get<0>(ret) != buf + len) {
-                UnicodeResult scalar_res = scalar::utf16_to_utf32::convert_with_errors<endianness::LITTLE>(
+                UnicodeResult scalar_res = scalar::utf16_to_utf32::convert_with_errors<Endian::little>(
                     std::get<0>(ret), len - (std::get<0>(ret) - buf), std::get<1>(ret));
                 if (scalar_res.error) {
                     scalar_res.count += (std::get<0>(ret) - buf);
@@ -1145,16 +1145,16 @@ namespace turbo {
 
          [[nodiscard]] UnicodeResult implementation::convert_utf16be_to_utf32_with_errors(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
-            std::tuple<const char16_t*, char32_t*, bool> ret = icelake::convert_utf16_to_utf32<endianness::BIG>(buf, len, utf32_output);
+            std::tuple<const char16_t*, char32_t*, bool> ret = icelake::convert_utf16_to_utf32<Endian::big>(buf, len, utf32_output);
             if (!std::get<2>(ret)) {
-                UnicodeResult scalar_res = scalar::utf16_to_utf32::convert_with_errors<endianness::BIG>(
+                UnicodeResult scalar_res = scalar::utf16_to_utf32::convert_with_errors<Endian::big>(
                     std::get<0>(ret), len - (std::get<0>(ret) - buf), std::get<1>(ret));
                 scalar_res.count += (std::get<0>(ret) - buf);
                 return scalar_res;
             }
             size_t saved_bytes = std::get<1>(ret) - utf32_output;
             if (std::get<0>(ret) != buf + len) {
-                UnicodeResult scalar_res = scalar::utf16_to_utf32::convert_with_errors<endianness::BIG>(
+                UnicodeResult scalar_res = scalar::utf16_to_utf32::convert_with_errors<Endian::big>(
                     std::get<0>(ret), len - (std::get<0>(ret) - buf), std::get<1>(ret));
                 if (scalar_res.error) {
                     scalar_res.count += (std::get<0>(ret) - buf);
@@ -1169,14 +1169,14 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_valid_utf16le_to_utf32(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
-            std::tuple<const char16_t*, char32_t*, bool> ret = icelake::convert_utf16_to_utf32<endianness::LITTLE>(buf, len,
+            std::tuple<const char16_t*, char32_t*, bool> ret = icelake::convert_utf16_to_utf32<Endian::little>(buf, len,
                 utf32_output);
             if (!std::get<2>(ret)) {
                 return 0;
             }
             size_t saved_bytes = std::get<1>(ret) - utf32_output;
             if (std::get<0>(ret) != buf + len) {
-                const size_t scalar_saved_bytes = scalar::utf16_to_utf32::convert<endianness::LITTLE>(
+                const size_t scalar_saved_bytes = scalar::utf16_to_utf32::convert<Endian::little>(
                     std::get<0>(ret), len - (std::get<0>(ret) - buf), std::get<1>(ret));
                 if (scalar_saved_bytes == 0) {
                     return 0;
@@ -1188,13 +1188,13 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_valid_utf16be_to_utf32(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
-            std::tuple<const char16_t*, char32_t*, bool> ret = icelake::convert_utf16_to_utf32<endianness::BIG>(buf, len, utf32_output);
+            std::tuple<const char16_t*, char32_t*, bool> ret = icelake::convert_utf16_to_utf32<Endian::big>(buf, len, utf32_output);
             if (!std::get<2>(ret)) {
                 return 0;
             }
             size_t saved_bytes = std::get<1>(ret) - utf32_output;
             if (std::get<0>(ret) != buf + len) {
-                const size_t scalar_saved_bytes = scalar::utf16_to_utf32::convert<endianness::BIG>(
+                const size_t scalar_saved_bytes = scalar::utf16_to_utf32::convert<Endian::big>(
                     std::get<0>(ret), len - (std::get<0>(ret) - buf), std::get<1>(ret));
                 if (scalar_saved_bytes == 0) {
                     return 0;
@@ -1241,11 +1241,11 @@ namespace turbo {
                     __m512i utf16 = _mm512_loadu_si512((const __m512i*)ptr);
                     ptr += 32;
                     uint64_t not_high_surrogate = static_cast<uint64_t>(_mm512_cmpgt_epu16_mask(utf16, high) | _mm512_cmplt_epu16_mask(utf16, low));
-                    count += count_ones(not_high_surrogate);
+                    count += popcount(not_high_surrogate);
                 }
             }
 
-            return count + scalar::utf16::count_code_points<endianness::LITTLE>(ptr, length - (ptr - input));
+            return count + scalar::utf16::count_code_points<Endian::little>(ptr, length - (ptr - input));
         }
 
          [[nodiscard]] size_t implementation::count_utf16be(
@@ -1267,11 +1267,11 @@ namespace turbo {
                     __m512i utf16 = _mm512_shuffle_epi8(_mm512_loadu_si512((__m512i*)ptr), byteflip);
                     ptr += 32;
                     uint64_t not_high_surrogate = static_cast<uint64_t>(_mm512_cmpgt_epu16_mask(utf16, high) | _mm512_cmplt_epu16_mask(utf16, low));
-                    count += count_ones(not_high_surrogate);
+                    count += popcount(not_high_surrogate);
                 }
             }
 
-            return count + scalar::utf16::count_code_points<endianness::BIG>(ptr, length - (ptr - input));
+            return count + scalar::utf16::count_code_points<Endian::big>(ptr, length - (ptr - input));
         }
 
          [[nodiscard]] size_t
@@ -1317,7 +1317,7 @@ namespace turbo {
                     __m512i more_input = _mm512_loadu_si512((const __m512i*)(str + i));
                     uint64_t continuation_bitmask = static_cast<uint64_t>(
                         _mm512_cmple_epi8_mask(more_input, continuation));
-                    answer -= count_ones(continuation_bitmask);
+                    answer -= popcount(continuation_bitmask);
                 }
             }
 
@@ -1333,12 +1333,12 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::utf8_length_from_utf16le(
             const char16_t* input, size_t length) const noexcept {
-            return icelake_utf8_length_from_utf16<endianness::LITTLE>(input, length);
+            return icelake_utf8_length_from_utf16<Endian::little>(input, length);
         }
 
          [[nodiscard]] size_t implementation::utf8_length_from_utf16be(
             const char16_t* input, size_t length) const noexcept {
-            return icelake_utf8_length_from_utf16<endianness::BIG>(input, length);
+            return icelake_utf8_length_from_utf16<Endian::big>(input, length);
         }
 
          [[nodiscard]] size_t implementation::utf32_length_from_utf16le(
@@ -1410,7 +1410,7 @@ namespace turbo {
                 for (; i + sizeof(__m512i) <= length; i += sizeof(__m512i)) {
                     __m512i latin = _mm512_loadu_si512((const __m512i*)(str + i));
                     uint64_t non_ascii = _mm512_movepi8_mask(latin);
-                    answer += count_ones(non_ascii);
+                    answer += popcount(non_ascii);
                 }
             }
             return answer + scalar::latin1::utf8_length_from_latin1(reinterpret_cast<const char*>(str + i), length - i);
@@ -1491,14 +1491,14 @@ namespace turbo {
          [[nodiscard]] UnicodeResult
         implementation::utf8_length_from_utf16le_with_replacement(
             const char16_t* input, size_t length) const noexcept {
-            return icelake_utf8_length_from_utf16_with_replacement<endianness::LITTLE>(
+            return icelake_utf8_length_from_utf16_with_replacement<Endian::little>(
                 input, length);
         }
 
          [[nodiscard]] UnicodeResult
         implementation::utf8_length_from_utf16be_with_replacement(
             const char16_t* input, size_t length) const noexcept {
-            return icelake_utf8_length_from_utf16_with_replacement<endianness::BIG>(
+            return icelake_utf8_length_from_utf16_with_replacement<Endian::big>(
                 input, length);
         }
 
@@ -1547,7 +1547,7 @@ namespace turbo {
                     ptr += 16;
                     __mmask16 surrogates_bitmask = _mm512_cmpgt_epu32_mask(utf32, v_0000_ffff);
 
-                    count += 16 + count_ones(surrogates_bitmask);
+                    count += 16 + popcount(surrogates_bitmask);
                 }
             }
 

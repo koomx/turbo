@@ -3,7 +3,7 @@
 #include <turbo/unicode/text_encoding.h>
 
 template <typename = void>
-char16_t to_utf16(turbo::endianness byte_order, char16_t chr) {
+char16_t to_utf16(turbo::Endian byte_order, char16_t chr) {
     if (!match_system(byte_order)) {
         return char16_t((uint16_t(chr) << 8) | (uint16_t(chr) >> 8));
     } else {
@@ -13,12 +13,12 @@ char16_t to_utf16(turbo::endianness byte_order, char16_t chr) {
 
 template <typename = void>
 char16_t to_utf16be(char16_t chr) {
-    return to_utf16(turbo::endianness::BIG, chr);
+    return to_utf16(turbo::Endian::big, chr);
 }
 
 template <typename = void>
 char16_t to_utf16le(char16_t chr) {
-    return to_utf16(turbo::endianness::LITTLE, chr);
+    return to_utf16(turbo::Endian::little, chr);
 }
 
 template <typename = void>

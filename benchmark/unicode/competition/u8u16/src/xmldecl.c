@@ -27,7 +27,7 @@ Entity_Info::~Entity_Info() {
    Appendix F of the XML 1.0 and 1.1 specifications. */
 
 /* These definitions use b2int16 to determine appropriate doublebyte
-   values based on endianness of the underlying architecture. */
+   values based on Endian of the underlying architecture. */
 static const int x0000 = b2int16<0x00, 0x00>::value;
 static const int xFEFF = b2int16<0xFE, 0xFF>::value;
 static const int xFFFE = b2int16<0xFF, 0xFE>::value;

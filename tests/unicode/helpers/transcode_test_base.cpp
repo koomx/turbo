@@ -158,7 +158,7 @@ namespace turbo {
              * transcoding.
              */
             transcode_latin1_to_utf16_test_base::transcode_latin1_to_utf16_test_base(
-                endianness utf16_endianness, GenerateCodepoint generate, size_t input_size)
+                Endian utf16_endianness, GenerateCodepoint generate, size_t input_size)
                 : transcode_test_base { utf16_endianness } {
                 while (input_latin1.size() < input_size) {
                     const uint32_t codepoint = generate();
@@ -415,7 +415,7 @@ namespace turbo {
              * transcoding.
              */
             transcode_utf16_to_latin1_test_base::transcode_utf16_to_latin1_test_base(
-                endianness utf16_endianness, GenerateCodepoint generate, size_t input_size)
+                Endian utf16_endianness, GenerateCodepoint generate, size_t input_size)
                 : transcode_test_base { utf16_endianness } {
                 while (input_utf16.size() < input_size) {
                     const uint32_t codepoint = generate();
@@ -425,7 +425,7 @@ namespace turbo {
             }
 
             transcode_utf16_to_latin1_test_base::transcode_utf16_to_latin1_test_base(
-                endianness utf16_endianness, const std::vector<char16_t>& input_utf16)
+                Endian utf16_endianness, const std::vector<char16_t>& input_utf16)
                 : transcode_test_base { utf16_endianness }
                 , input_utf16 { input_utf16 } {
                 auto consume = [this](const uint32_t codepoint) {
@@ -521,7 +521,7 @@ namespace turbo {
              * transcoding.
              */
             transcode_utf8_to_utf16_test_base::transcode_utf8_to_utf16_test_base(
-                endianness utf16_endianness, GenerateCodepoint generate, size_t input_size)
+                Endian utf16_endianness, GenerateCodepoint generate, size_t input_size)
                 : transcode_test_base { utf16_endianness } {
                 while (input_utf8.size() < input_size) {
                     const uint32_t codepoint = generate();
@@ -671,7 +671,7 @@ namespace turbo {
              * transcoding.
              */
             transcode_utf16_to_utf8_test_base::transcode_utf16_to_utf8_test_base(
-                endianness utf16_endianness, GenerateCodepoint generate, size_t input_size)
+                Endian utf16_endianness, GenerateCodepoint generate, size_t input_size)
                 : transcode_test_base { utf16_endianness } {
                 while (input_utf16.size() < input_size) {
                     const uint32_t codepoint = generate();
@@ -682,7 +682,7 @@ namespace turbo {
             }
 
             transcode_utf16_to_utf8_test_base::transcode_utf16_to_utf8_test_base(
-                endianness utf16_endianness, const std::vector<char16_t>& input_utf16)
+                Endian utf16_endianness, const std::vector<char16_t>& input_utf16)
                 : transcode_test_base { utf16_endianness }
                 , input_utf16 { input_utf16 } {
 
@@ -779,7 +779,7 @@ namespace turbo {
              * transcoding.
              */
             transcode_utf16_to_utf32_test_base::transcode_utf16_to_utf32_test_base(
-                endianness utf16_endianness, GenerateCodepoint generate, size_t input_size)
+                Endian utf16_endianness, GenerateCodepoint generate, size_t input_size)
                 : transcode_test_base { utf16_endianness } {
                 while (input_utf16.size() < input_size) {
                     const uint32_t codepoint = generate();
@@ -790,7 +790,7 @@ namespace turbo {
             }
 
             transcode_utf16_to_utf32_test_base::transcode_utf16_to_utf32_test_base(
-                endianness utf16_endianness, const std::vector<char16_t>& input_utf16)
+                Endian utf16_endianness, const std::vector<char16_t>& input_utf16)
                 : transcode_test_base { utf16_endianness }
                 , input_utf16 { input_utf16 } {
 
@@ -1080,7 +1080,7 @@ namespace turbo {
              * transcoding.
              */
             transcode_utf32_to_utf16_test_base::transcode_utf32_to_utf16_test_base(
-                endianness utf16_endianness, GenerateCodepoint generate, size_t input_size)
+                Endian utf16_endianness, GenerateCodepoint generate, size_t input_size)
                 : transcode_test_base { utf16_endianness } {
                 while (input_utf32.size() < input_size) {
                     const uint32_t codepoint = generate();
@@ -1171,7 +1171,7 @@ namespace turbo {
 //------------------------------------------------------------
 
 std::vector<std::vector<char16_t>>
-all_utf16_combinations(turbo::endianness byte_order) {
+all_utf16_combinations(turbo::Endian byte_order) {
     // non-surrogate word that yields 1 UTF-8 byte
     const char16_t V_1byte_start = 0x0042;
     // non-surrogate word that yields 2 UTF-8 bytes

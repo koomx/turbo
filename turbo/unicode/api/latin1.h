@@ -107,7 +107,7 @@ namespace turbo {
      [[nodiscard]] size_t utf8_length_from_latin1(const char* input,
         size_t length) noexcept;
 
-    /// Using native endianness, convert a Latin1 string into a UTF-16 string.
+    /// Using native Endian, convert a Latin1 string into a UTF-16 string.
     ///
     /// @param input         the Latin1 string to convert
     /// @param length        the length of the string in bytes

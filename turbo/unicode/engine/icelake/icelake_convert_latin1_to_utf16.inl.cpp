@@ -1,5 +1,5 @@
 // file included directly
-template <endianness big_endian>
+template <Endian big_endian>
 size_t icelake_convert_latin1_to_utf16(const char* latin1_input, size_t len,
     char16_t* utf16_output) {
     size_t rounded_len = len & ~0x1F; // Round down to nearest multiple of 32

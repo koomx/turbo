@@ -10,7 +10,7 @@ namespace turbo {
                     for (; pos + 64 <= length; pos += 64) {
                         simd8x64<uint8_t> block(reinterpret_cast<const uint8_t*>(input + pos));
                         uint64_t maybe_base64 = block.gteq(33); // >= 33 which is '!' in ASCII
-                        count += count_ones(maybe_base64);
+                        count += popcount(maybe_base64);
                     }
                     while (pos < length) {
                         count += (input[pos] > 0x20) ? 1 : 0;
@@ -37,7 +37,7 @@ namespace turbo {
                     for (; pos + 32 <= length; pos += 32) {
                         simd16x32<uint16_t> block(reinterpret_cast<const uint16_t*>(input + pos));
                         uint64_t maybe_base64 = block.gteq(33); // >= 33 which is '!' in ASCII
-                        count += count_ones(maybe_base64);
+                        count += popcount(maybe_base64);
                     }
                     // simd16x32::to_bitmask sets two bits per matching 16-bit lane, so the
                     // vectorized loop counted each unit twice.

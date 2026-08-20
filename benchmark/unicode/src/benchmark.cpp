@@ -286,26 +286,26 @@ Benchmark::Benchmark(std::vector<input::Testcase> &&testcases)
                     turbo::TextEncoding::UTF32_LE);
 
   register_function("convert_utf32_to_utf16le",
-                    &Benchmark::run_convert_utf32_to_utf16<endianness::LITTLE>,
+                    &Benchmark::run_convert_utf32_to_utf16<Endian::little>,
                     turbo::TextEncoding::UTF32_LE);
   register_function("convert_utf32_to_utf16be",
-                    &Benchmark::run_convert_utf32_to_utf16<endianness::BIG>,
+                    &Benchmark::run_convert_utf32_to_utf16<Endian::big>,
                     turbo::TextEncoding::UTF32_LE);
   register_function(
       "convert_utf32_to_utf16le_with_errors",
-      &Benchmark::run_convert_utf32_to_utf16_with_errors<endianness::LITTLE>,
+      &Benchmark::run_convert_utf32_to_utf16_with_errors<Endian::little>,
       turbo::TextEncoding::UTF32_LE);
   register_function(
       "convert_utf32_to_utf16be_with_errors",
-      &Benchmark::run_convert_utf32_to_utf16_with_errors<endianness::BIG>,
+      &Benchmark::run_convert_utf32_to_utf16_with_errors<Endian::big>,
       turbo::TextEncoding::UTF32_LE);
   register_function(
       "convert_valid_utf32_to_utf16le",
-      &Benchmark::run_convert_valid_utf32_to_utf16<endianness::LITTLE>,
+      &Benchmark::run_convert_valid_utf32_to_utf16<Endian::little>,
       turbo::TextEncoding::UTF32_LE);
   register_function(
       "convert_valid_utf32_to_utf16be",
-      &Benchmark::run_convert_valid_utf32_to_utf16<endianness::BIG>,
+      &Benchmark::run_convert_valid_utf32_to_utf16<Endian::big>,
       turbo::TextEncoding::UTF32_LE);
 
   register_function("detect_encodings", &Benchmark::run_detect_encodings,
@@ -3300,7 +3300,7 @@ void Benchmark::run_convert_valid_utf16le_to_utf32(
   print_summary(result, input_data.size(), char_count);
 }
 
-template <endianness byte_order>
+template <Endian byte_order>
 void Benchmark::run_convert_utf32_to_utf16(
     const turbo::implementation &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
@@ -3324,7 +3324,7 @@ void Benchmark::run_convert_utf32_to_utf16(
   volatile size_t sink{0};
 
   auto proc = [&implementation, data, size, &output_buffer, &sink]() {
-    if (byte_order == endianness::LITTLE) {
+    if (byte_order == Endian::little) {
       sink = implementation.convert_utf32_to_utf16le(data, size,
                                                      output_buffer.get());
     } else {
@@ -3341,7 +3341,7 @@ void Benchmark::run_convert_utf32_to_utf16(
   print_summary(result, input_data.size(), char_count);
 }
 
-template <endianness byte_order>
+template <Endian byte_order>
 void Benchmark::run_convert_utf32_to_utf16_with_errors(
     const turbo::implementation &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
@@ -3365,7 +3365,7 @@ void Benchmark::run_convert_utf32_to_utf16_with_errors(
   volatile bool sink{false};
 
   auto proc = [&implementation, data, size, &output_buffer, &sink]() {
-    if (byte_order == endianness::LITTLE) {
+    if (byte_order == Endian::little) {
       result res = implementation.convert_utf32_to_utf16le_with_errors(
           data, size, output_buffer.get());
       sink = !(res.error);
@@ -3384,7 +3384,7 @@ void Benchmark::run_convert_utf32_to_utf16_with_errors(
   print_summary(result, input_data.size(), char_count);
 }
 
-template <endianness byte_order>
+template <Endian byte_order>
 void Benchmark::run_convert_valid_utf32_to_utf16(
     const turbo::implementation &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
@@ -3408,7 +3408,7 @@ void Benchmark::run_convert_valid_utf32_to_utf16(
   volatile size_t sink{0};
 
   auto proc = [&implementation, data, size, &output_buffer, &sink]() {
-    if (byte_order == endianness::LITTLE) {
+    if (byte_order == Endian::little) {
       sink = implementation.convert_valid_utf32_to_utf16le(data, size,
                                                            output_buffer.get());
     } else {

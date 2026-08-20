@@ -61,7 +61,7 @@ namespace turbo {
         size_t length,
         char* latin1_output) noexcept;
 
-    /// Using native endianness, convert possibly broken UTF-8 string into a UTF-16
+    /// Using native Endian, convert possibly broken UTF-8 string into a UTF-16
     /// string.
     ///
     /// During the conversion also validation of the input string is done.
@@ -120,7 +120,7 @@ namespace turbo {
         const char* input, size_t length, char* latin1_output) noexcept;
 
 
-    /// Using native endianness, convert possibly broken UTF-8 string into UTF-16
+    /// Using native Endian, convert possibly broken UTF-8 string into UTF-16
     /// string and stop on error.
     ///
     /// During the conversion also validation of the input string is done.
@@ -219,7 +219,7 @@ namespace turbo {
         const char* input, size_t length, char* latin1_output) noexcept;
 
 
-    /// Using native endianness, convert valid UTF-8 string into a UTF-16 string.
+    /// Using native Endian, convert valid UTF-8 string into a UTF-16 string.
     ///
     /// This function assumes that the input string is valid UTF-8.
     ///

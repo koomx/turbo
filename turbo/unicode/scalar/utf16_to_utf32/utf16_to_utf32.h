@@ -6,13 +6,13 @@ namespace turbo {
         namespace {
             namespace utf16_to_utf32 {
 
-                template <endianness big_endian>
+                template <Endian big_endian>
                  size_t convert(const char16_t* data, size_t len,
                     char32_t* utf32_output) {
                     size_t pos = 0;
                     char32_t* start { utf32_output };
                     while (pos < len) {
-                        uint16_t word = !match_system(big_endian) ? u16_swap_bytes(data[pos]) : data[pos];
+                        uint16_t word = !match_system(big_endian) ? u16_byteswap(data[pos]) : data[pos];
                         if ((word & 0xF800) != 0xD800) {
                             // No surrogate pair, extend 16-bit word to 32-bit word
                             *utf32_output++ = char32_t(word);
@@ -27,7 +27,7 @@ namespace turbo {
                                 return 0;
                             } // minimal bound checking
                             uint16_t next_word = !match_system(big_endian)
-                                ? u16_swap_bytes(data[pos + 1])
+                                ? u16_byteswap(data[pos + 1])
                                 : data[pos + 1];
                             uint16_t diff2 = uint16_t(next_word - 0xDC00);
                             if (diff2 > 0x3FF) {
@@ -41,13 +41,13 @@ namespace turbo {
                     return utf32_output - start;
                 }
 
-                template <endianness big_endian>
+                template <Endian big_endian>
                  UnicodeResult convert_with_errors(const char16_t* data, size_t len,
                     char32_t* utf32_output) {
                     size_t pos = 0;
                     char32_t* start { utf32_output };
                     while (pos < len) {
-                        uint16_t word = !match_system(big_endian) ? u16_swap_bytes(data[pos]) : data[pos];
+                        uint16_t word = !match_system(big_endian) ? u16_byteswap(data[pos]) : data[pos];
                         if ((word & 0xF800) != 0xD800) {
                             // No surrogate pair, extend 16-bit word to 32-bit word
                             *utf32_output++ = char32_t(word);
@@ -62,7 +62,7 @@ namespace turbo {
                                 return UnicodeResult(UnicodeError::SURROGATE, pos);
                             } // minimal bound checking
                             uint16_t next_word = !match_system(big_endian)
-                                ? u16_swap_bytes(data[pos + 1])
+                                ? u16_byteswap(data[pos + 1])
                                 : data[pos + 1];
                             uint16_t diff2 = uint16_t(next_word - 0xDC00);
                             if (diff2 > 0x3FF) {

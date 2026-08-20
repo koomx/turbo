@@ -17,7 +17,7 @@
     - pair.first    - the first unprocessed input byte
     - pair.second   - the first unprocessed output word
 */
-template <endianness big_endian, typename OUTPUT>
+template <Endian big_endian, typename OUTPUT>
 std::pair<const char*, OUTPUT*>
 valid_utf8_to_fixed_length(const char* str, size_t len, OUTPUT* dwords) {
     constexpr bool UTF32 = std::is_same<OUTPUT, uint32_t>::value;

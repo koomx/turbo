@@ -1,4 +1,4 @@
-template <endianness big_endian>
+template <Endian big_endian>
 std::pair<const char16_t*, char*>
 lasx_convert_utf16_to_latin1(const char16_t* buf, size_t len,
     char* latin1_output) {
@@ -25,7 +25,7 @@ lasx_convert_utf16_to_latin1(const char16_t* buf, size_t len,
     return std::make_pair(buf, latin1_output);
 }
 
-template <endianness big_endian>
+template <Endian big_endian>
 std::pair<UnicodeResult, char*>
 lasx_convert_utf16_to_latin1_with_errors(const char16_t* buf, size_t len,
     char* latin1_output) {
@@ -49,7 +49,7 @@ lasx_convert_utf16_to_latin1_with_errors(const char16_t* buf, size_t len,
         } else {
             // Let us do a scalar fallback.
             for (int k = 0; k < 16; k++) {
-                uint16_t word = scalar::utf16::swap_if_needed<big_endian>(buf[k]);
+                uint16_t word = u16_byteswap_if_needed<big_endian>(buf[k]);
                 if (word <= 0xff) {
                     *latin1_output++ = char(word);
                 } else {

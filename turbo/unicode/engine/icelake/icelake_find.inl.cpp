@@ -21,7 +21,7 @@ KUMO_FORCE_INLINE const char* util_find(const char* start, const char* end,
                                  // prevents false positives
 
         if (match_mask != 0) {
-            size_t index = _tzcnt_u64(match_mask);
+            size_t index = countr_zero(match_mask);
             return start + index;
         }
         start += adjustment;
@@ -37,10 +37,10 @@ KUMO_FORCE_INLINE const char* util_find(const char* start, const char* end,
         if (!_kortestz_mask64_u8(mask1, mask2)) {
             if (mask1 != 0) {
                 // Found a match, return the first one
-                size_t index = _tzcnt_u64(mask1);
+                size_t index = countr_zero(mask1);
                 return start + index;
             }
-            size_t index = _tzcnt_u64(mask2);
+            size_t index = countr_zero(mask2);
             return start + index + step;
         }
         start += 2 * step;
@@ -53,7 +53,7 @@ KUMO_FORCE_INLINE const char* util_find(const char* start, const char* end,
 
         if (mask != 0) {
             // Found a match, return the first one
-            size_t index = _tzcnt_u64(mask);
+            size_t index = countr_zero(mask);
             return start + index;
         }
 
@@ -74,7 +74,7 @@ KUMO_FORCE_INLINE const char* util_find(const char* start, const char* end,
 
         if (match_mask != 0) {
             // Found a match in the remaining bytes
-            size_t index = _tzcnt_u64(match_mask);
+            size_t index = countr_zero(match_mask);
             return start + index;
         }
     }

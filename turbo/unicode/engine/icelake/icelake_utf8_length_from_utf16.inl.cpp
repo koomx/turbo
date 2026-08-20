@@ -1,4 +1,4 @@
-template <endianness big_endian>
+template <Endian big_endian>
 KUMO_FORCE_INLINE size_t icelake_utf8_length_from_utf16(const char16_t* in,
     size_t size) {
 
@@ -42,12 +42,12 @@ KUMO_FORCE_INLINE size_t icelake_utf8_length_from_utf16(const char16_t* in,
         // c1 - chars that yield 3-byte UTF-8 codes (including surrogates)
         __mmask32 c11 = _mm512_test_epi16_mask(input1, _mm512_set1_epi16(uint16_t(0xf800)));
         __mmask32 c12 = _mm512_test_epi16_mask(input2, _mm512_set1_epi16(uint16_t(0xf800)));
-        count += count_ones32(c01);
-        count += count_ones32(c11);
-        count -= count_ones32(is_surrogate1);
-        count += count_ones32(c02);
-        count += count_ones32(c12);
-        count -= count_ones32(is_surrogate2);
+        count += popcount(c01);
+        count += popcount(c11);
+        count -= popcount(is_surrogate1);
+        count += popcount(c02);
+        count += popcount(c12);
+        count -= popcount(is_surrogate2);
     }
     if (pos + N <= size) {
         __m512i input = _mm512_loadu_si512(reinterpret_cast<const __m512i*>(in + pos));
@@ -65,9 +65,9 @@ KUMO_FORCE_INLINE size_t icelake_utf8_length_from_utf16(const char16_t* in,
 
         // c1 - chars that yield 3-byte UTF-8 codes (including surrogates)
         __mmask32 c1 = _mm512_test_epi16_mask(input, _mm512_set1_epi16(uint16_t(0xf800)));
-        count += count_ones32(c0);
-        count += count_ones32(c1);
-        count -= count_ones32(is_surrogate);
+        count += popcount(c0);
+        count += popcount(c1);
+        count -= popcount(is_surrogate);
         pos += N;
     }
     // At this point, we have processed 'pos' char16 values and we have less than
@@ -88,16 +88,16 @@ KUMO_FORCE_INLINE size_t icelake_utf8_length_from_utf16(const char16_t* in,
 
     // c1 - chars that yield 3-byte UTF-8 codes (including surrogates)
     __mmask32 c1 = _mm512_test_epi16_mask(input, _mm512_set1_epi16(uint16_t(0xf800)));
-    count += count_ones32(c0);
-    count += count_ones32(c1);
-    count -= count_ones32(is_surrogate);
+    count += popcount(c0);
+    count += popcount(c1);
+    count -= popcount(is_surrogate);
     pos = size;
 
     count += pos;
     return count;
 }
 
-template <endianness big_endian>
+template <Endian big_endian>
 KUMO_FORCE_INLINE UnicodeResult icelake_utf8_length_from_utf16_with_replacement(
     const char16_t* in, size_t size) {
     ///////
@@ -148,10 +148,10 @@ KUMO_FORCE_INLINE UnicodeResult icelake_utf8_length_from_utf16_with_replacement(
         __mmask32 c11 = _mm512_test_epi16_mask(current1, _mm512_set1_epi16(uint16_t(0xf800)));
         __mmask32 c02 = _mm512_test_epi16_mask(current2, _mm512_set1_epi16(uint16_t(0xff80)));
         __mmask32 c12 = _mm512_test_epi16_mask(current2, _mm512_set1_epi16(uint16_t(0xf800)));
-        count += count_ones32(c01);
-        count += count_ones32(c11);
-        count += count_ones32(c02);
-        count += count_ones32(c12);
+        count += popcount(c01);
+        count += popcount(c11);
+        count += popcount(c02);
+        count += popcount(c12);
         if (_kor_mask32(is_surrogate1, is_surrogate2)) {
             any_surrogates = true;
             __m512i lb_masked1 = _mm512_and_si512(current1, _mm512_set1_epi16(uint16_t(0xfc00)));
@@ -164,9 +164,9 @@ KUMO_FORCE_INLINE UnicodeResult icelake_utf8_length_from_utf16_with_replacement(
                 lb_masked2, _mm512_set1_epi16(uint16_t(0xd800)));
             __mmask32 lo_surrogates2 = _mm512_cmpeq_epi16_mask(
                 lb_masked2, _mm512_set1_epi16(uint16_t(0xdc00)));
-            matches += count_ones32(
+            matches += popcount(
                 _kand_mask32(_kshiftli_mask32(hi_surrogates1, 1), lo_surrogates1));
-            matches += count_ones32(
+            matches += popcount(
                 _kand_mask32(_kshiftli_mask32(hi_surrogates2, 1), lo_surrogates2));
             uint32_t straddle1, straddle2;
             memcpy(&straddle1, in + pos + 1 * N - 1, sizeof(uint32_t));
@@ -185,8 +185,8 @@ KUMO_FORCE_INLINE UnicodeResult icelake_utf8_length_from_utf16_with_replacement(
             _mm512_set1_epi16(uint16_t(0xd800)));
         __mmask32 c0 = _mm512_test_epi16_mask(input, _mm512_set1_epi16(uint16_t(0xff80)));
         __mmask32 c1 = _mm512_test_epi16_mask(input, _mm512_set1_epi16(uint16_t(0xf800)));
-        count += count_ones32(c0);
-        count += count_ones32(c1);
+        count += popcount(c0);
+        count += popcount(c1);
         if (is_surrogate) {
             any_surrogates = true;
             __m512i lb_masked = _mm512_and_si512(input, _mm512_set1_epi16(uint16_t(0xfc00)));
@@ -194,7 +194,7 @@ KUMO_FORCE_INLINE UnicodeResult icelake_utf8_length_from_utf16_with_replacement(
                 lb_masked, _mm512_set1_epi16(uint16_t(0xd800)));
             __mmask32 lo_surrogates = _mm512_cmpeq_epi16_mask(
                 lb_masked, _mm512_set1_epi16(uint16_t(0xdc00)));
-            matches += count_ones32(
+            matches += popcount(
                 _kand_mask32(_kshiftli_mask32(hi_surrogates, 1), lo_surrogates));
             uint32_t straddle;
             memcpy(&straddle, in + pos + N - 1, sizeof(uint32_t));
@@ -216,14 +216,14 @@ KUMO_FORCE_INLINE UnicodeResult icelake_utf8_length_from_utf16_with_replacement(
     __mmask32 c0 = _mm512_test_epi16_mask(input, _mm512_set1_epi16(uint16_t(0xff80)));
     __mmask32 c1 = _mm512_test_epi16_mask(input, _mm512_set1_epi16(uint16_t(0xf800)));
 
-    count += count_ones32(c0);
-    count += count_ones32(c1);
+    count += popcount(c0);
+    count += popcount(c1);
     if (is_surrogate) {
         any_surrogates = true;
         __m512i lb_masked = _mm512_and_si512(input, _mm512_set1_epi16(uint16_t(0xfc00)));
         __mmask32 hi_surrogates = _mm512_cmpeq_epi16_mask(lb_masked, _mm512_set1_epi16(uint16_t(0xd800)));
         __mmask32 lo_surrogates = _mm512_cmpeq_epi16_mask(lb_masked, _mm512_set1_epi16(uint16_t(0xdc00)));
-        matches += count_ones32(
+        matches += popcount(
             _kand_mask32(_kshiftli_mask32(hi_surrogates, 1), lo_surrogates));
     }
     pos = size;

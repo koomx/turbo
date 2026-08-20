@@ -14,7 +14,7 @@ KUMO_FORCE_INLINE const char* util_find(const char* start, const char* end,
             uint32_t mask0 = __lasx_xvpickve2gr_wu(res, 0);
             uint32_t mask1 = __lasx_xvpickve2gr_wu(res, 4);
             uint32_t mask = (mask0 | (mask1 << 16));
-            return start + trailing_zeroes(mask);
+            return start + countr_zero(mask);
         }
 
         start += step;
@@ -47,7 +47,7 @@ KUMO_FORCE_INLINE const char16_t* util_find(const char16_t* start,
             uint32_t mask0 = __lasx_xvpickve2gr_wu(res, 0);
             uint32_t mask1 = __lasx_xvpickve2gr_wu(res, 4);
             uint32_t mask = (mask0 | (mask1 << 16));
-            return start + trailing_zeroes(mask) / 2;
+            return start + countr_zero(mask) / 2;
         }
 
         start += step;

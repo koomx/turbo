@@ -13,7 +13,7 @@
 namespace {
     constexpr std::array<size_t, 9> input_size { 7, 12, 16, 64, 67,
         128, 256, 511, 1000 };
-    constexpr turbo::endianness LE = turbo::endianness::LITTLE;
+    constexpr turbo::Endian LE = turbo::Endian::little;
 
     using turbo::tests::helpers::transcode_utf16_to_utf8_test_base;
 

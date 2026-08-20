@@ -281,7 +281,7 @@ struct simd16<uint16_t> : base16_numeric<uint16_t> {
         return vqmovn_high_u16(vqmovn_u16(v0), v1);
     }
 
-    // Change the endianness
+    // Change the Endian
     KUMO_FORCE_INLINE simd16<uint16_t> swap_bytes() const {
         return vreinterpretq_u16_u8(vrev16q_u8(vreinterpretq_u8_u16(*this)));
     }

@@ -195,7 +195,7 @@ namespace turbo {
         /// use the well-known shrn-by-4 trick to compress a 16-byte vector of all-0/all-1
         /// bytes into a 64-bit value where each input byte is represented by a 4-bit
         /// nibble. The position of the lowest (or highest) matching byte is then
-        /// recovered as `__builtin_ctzll(mask) >> 2` (or `__builtin_clzll(mask) >> 2`).
+        /// recovered as `countr_zero(mask) >> 2` (or `countl_zero(mask) >> 2`).
         template <char s0>
         inline uint8x16_t neon_is_in(uint8x16_t bytes) {
             return vceqq_u8(bytes, vdupq_n_u8(static_cast<uint8_t>(s0)));
@@ -292,7 +292,7 @@ namespace turbo {
 
                 uint64_t bit_mask = neon_to_bitmask(eq);
                 if (bit_mask)
-                    return pos + (__builtin_ctzll(bit_mask) >> 2);
+                    return pos + (countr_zero(bit_mask) >> 2);
             }
 
             for (; pos < end; ++pos)
@@ -315,7 +315,7 @@ namespace turbo {
 
                 uint16_t bit_mask = maybe_negate<positive>(uint16_t(_mm_movemask_epi8(eq)));
                 if (bit_mask)
-                    return pos + __builtin_ctz(bit_mask);
+                    return pos + countr_zero(bit_mask);
             }
 #elif defined(__aarch64__)
             /// Short haystacks (< 16 bytes) dominate many callers (e.g. `trim` on
@@ -364,7 +364,7 @@ namespace turbo {
 
                 uint64_t bit_mask = neon_to_bitmask(eq);
                 if (bit_mask)
-                    return pos + (__builtin_ctzll(bit_mask) >> 2);
+                    return pos + (countr_zero(bit_mask) >> 2);
             }
 
             for (; pos < end; ++pos)
@@ -389,7 +389,7 @@ namespace turbo {
 
                     uint16_t bit_mask = maybe_negate<positive>(uint16_t(_mm_movemask_epi8(eq)));
                     if (bit_mask)
-                        return pos + __builtin_ctz(bit_mask);
+                        return pos + countr_zero(bit_mask);
                 }
             }
 #elif defined(__aarch64__)
@@ -443,7 +443,7 @@ namespace turbo {
 
                 uint64_t bit_mask = neon_to_bitmask(eq);
                 if (bit_mask)
-                    return pos - 1 - (__builtin_clzll(bit_mask) >> 2);
+                    return pos - 1 - (countl_zero(bit_mask) >> 2);
             }
 
             --pos;
@@ -468,7 +468,7 @@ namespace turbo {
 
                 uint16_t bit_mask = maybe_negate<positive>(uint16_t(_mm_movemask_epi8(eq)));
                 if (bit_mask)
-                    return pos - 1 - (__builtin_clz(bit_mask) - 16); /// because __builtin_clz works with mask as uint32.
+                    return pos - 1 - countl_zero(bit_mask);
             }
 #elif defined(__aarch64__)
             if (end - begin >= 16) [[unlikely]] {
@@ -518,7 +518,7 @@ namespace turbo {
 
                 uint64_t bit_mask = neon_to_bitmask(eq);
                 if (bit_mask)
-                    return pos - 1 - (__builtin_clzll(bit_mask) >> 2);
+                    return pos - 1 - (countl_zero(bit_mask) >> 2);
             }
 
             --pos;
@@ -544,7 +544,7 @@ namespace turbo {
 
                     uint16_t bit_mask = maybe_negate<positive>(uint16_t(_mm_movemask_epi8(eq)));
                     if (bit_mask)
-                        return pos - 1 - (__builtin_clz(bit_mask) - 16); /// because __builtin_clz works with mask as uint32.
+                        return pos - 1 - countl_zero(bit_mask);
                 }
             }
 #elif defined(__aarch64__)

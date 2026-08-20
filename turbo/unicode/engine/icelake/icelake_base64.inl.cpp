@@ -102,7 +102,7 @@ static inline size_t write_multi_lf_m256i(__m256i chunk, uint8_t* out,
             _mm512_castsi256_si512(chunk));
         _mm512_mask_storeu_epi8(reinterpret_cast<__m512i*>(out), write_mask,
             expanded);
-        offset = _lzcnt_u64(mask) - _lzcnt_u64(write_mask);
+        offset = countl_zero(mask) - countl_zero(write_mask);
         return num_lf + output_len;
     }
 }
@@ -408,7 +408,7 @@ compress_decode_base64(char* dst, const chartype* src, size_t srclen,
                 &error);
             if (!ignore_garbage && error) {
                 src -= 64;
-                size_t error_offset = _tzcnt_u64(error);
+                size_t error_offset = countr_zero(error);
                 return { UnicodeError::INVALID_BASE64_CHARACTER,
                     size_t(src - srcinit + error_offset), size_t(dst - dstinit) };
             }
@@ -445,7 +445,7 @@ compress_decode_base64(char* dst, const chartype* src, size_t srclen,
         uint64_t badcharmask = to_base64_mask<base64_url, ignore_garbage, default_or_url>(&b, &error,
             input_mask);
         if (!ignore_garbage && error) {
-            size_t error_offset = _tzcnt_u64(error);
+            size_t error_offset = countr_zero(error);
             return { UnicodeError::INVALID_BASE64_CHARACTER,
                 size_t(src - srcinit + error_offset), size_t(dst - dstinit) };
         }
@@ -615,7 +615,7 @@ compress_decode_base64(char* dst, const chartype* src, size_t srclen,
     while (ptr + 64 <= end) {
         __m512i data = _mm512_loadu_si512(reinterpret_cast<const __m512i*>(ptr));
         uint64_t mask = _mm512_cmpgt_epi8_mask(data, spaces);
-        count += count_ones(mask);
+        count += popcount(mask);
         ptr += 64;
     }
 
@@ -625,7 +625,7 @@ compress_decode_base64(char* dst, const chartype* src, size_t srclen,
         __m512i data = _mm512_maskz_loadu_epi8(
             input_mask, reinterpret_cast<const __m512i*>(ptr));
         uint64_t mask = _mm512_cmpgt_epi8_mask(data, spaces);
-        count += count_ones(mask);
+        count += popcount(mask);
         ptr += len;
     }
 

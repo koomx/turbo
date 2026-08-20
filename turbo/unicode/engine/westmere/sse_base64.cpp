@@ -443,18 +443,18 @@ public:
         uint64_t nmask = ~mask;
         compress(chunks[0], uint16_t(mask), output);
         compress(chunks[1], uint16_t(mask >> 16),
-            output + count_ones(nmask & 0xFFFF));
+            output + popcount(nmask & 0xFFFF));
         compress(chunks[2], uint16_t(mask >> 32),
-            output + count_ones(nmask & 0xFFFFFFFF));
+            output + popcount(nmask & 0xFFFFFFFF));
         compress(chunks[3], uint16_t(mask >> 48),
-            output + count_ones(nmask & 0xFFFFFFFFFFFFULL));
-        return count_ones(nmask);
+            output + popcount(nmask & 0xFFFFFFFFFFFFULL));
+        return popcount(nmask);
     }
 
 private:
     KUMO_FORCE_INLINE size_t compress_block_single(uint64_t mask,
         char* output) {
-        const size_t pos64 = trailing_zeroes(mask);
+        const size_t pos64 = countr_zero(mask);
         const int8_t pos = pos64 & 0xf;
         switch (pos64 >> 4) {
         case 0b00: {

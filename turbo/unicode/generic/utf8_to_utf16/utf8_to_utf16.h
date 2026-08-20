@@ -122,7 +122,7 @@ namespace turbo {
                         this->error |= check_multibyte_lengths(input, prev_input, sc);
                     }
 
-                    template <endianness endian>
+                    template <Endian endian>
                     KUMO_FORCE_INLINE size_t convert(const char* in, size_t size,
                         char16_t* utf16_output) {
                         size_t pos = 0;
@@ -209,7 +209,7 @@ namespace turbo {
                         return utf16_output - start;
                     }
 
-                    template <endianness endian>
+                    template <Endian endian>
                     KUMO_FORCE_INLINE UnicodeResult convert_with_errors(const char* in, size_t size,
                         char16_t* utf16_output) {
                         size_t pos = 0;

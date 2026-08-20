@@ -15,7 +15,7 @@ namespace turbo {
         public:
             KUMO_FORCE_INLINE implementation()
                 : turbo::implementation("lasx", "LOONGARCH ASX",
-                      internal::instruction_set::LSX | internal::instruction_set::LASX) { }
+                      InstructionSet::LSX | InstructionSet::LASX) { }
              [[nodiscard]] int detect_encodings(const char* input,
                 size_t length) const noexcept final;
              [[nodiscard]] bool validate_utf8(const char* buf,

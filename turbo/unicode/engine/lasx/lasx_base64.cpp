@@ -341,7 +341,7 @@ static inline uint64_t compress_block(block64* b, uint64_t mask, char* output) {
         output + count_ptr[0] + count_ptr[1]);
     compress(lasx_extracti128_hi(b->chunks[1]), uint16_t(mask >> 48),
         output + count_ptr[0] + count_ptr[1] + count_ptr[2]);
-    return count_ones(nmask);
+    return popcount(nmask);
 }
 
 template <typename T>
@@ -350,7 +350,7 @@ bool is_power_of_two(T x) {
 }
 
 inline size_t compress_block_single(block64* b, uint64_t mask, char* output) {
-    const size_t pos64 = trailing_zeroes(mask);
+    const size_t pos64 = countr_zero(mask);
     const int8_t pos = pos64 & 0xf;
 
     // Predefine the index vector
@@ -588,7 +588,7 @@ compress_decode_base64(char* dst, const chartype* src, size_t srclen,
             uint32_t triple = ((uint32_t(uint8_t(buffer_start[0])) << 3 * 6) + (uint32_t(uint8_t(buffer_start[1])) << 2 * 6) + (uint32_t(uint8_t(buffer_start[2])) << 1 * 6) + (uint32_t(uint8_t(buffer_start[3])) << 0 * 6))
                 << 8;
             // lasx is little-endian
-            triple = scalar::u32_swap_bytes(triple);
+            triple = u32_byteswap(triple);
             std::memcpy(dst, &triple, 4);
 
             dst += 3;
@@ -598,7 +598,7 @@ compress_decode_base64(char* dst, const chartype* src, size_t srclen,
             uint32_t triple = ((uint32_t(uint8_t(buffer_start[0])) << 3 * 6) + (uint32_t(uint8_t(buffer_start[1])) << 2 * 6) + (uint32_t(uint8_t(buffer_start[2])) << 1 * 6) + (uint32_t(uint8_t(buffer_start[3])) << 0 * 6))
                 << 8;
             // lasx is little-endian
-            triple = scalar::u32_swap_bytes(triple);
+            triple = u32_byteswap(triple);
             std::memcpy(dst, &triple, 3);
 
             dst += 3;

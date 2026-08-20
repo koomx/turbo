@@ -233,7 +233,7 @@ namespace turbo {
         implementation::validate_utf16le_as_ascii(const char16_t* buf,
             size_t len) const noexcept {
             return haswell::utf16::validate_utf16_as_ascii_with_errors<
-                       endianness::LITTLE>(buf, len)
+                       Endian::little>(buf, len)
                        .error
                 == SUCCESS;
         }
@@ -241,7 +241,7 @@ namespace turbo {
          [[nodiscard]] bool
         implementation::validate_utf16be_as_ascii(const char16_t* buf,
             size_t len) const noexcept {
-            return haswell::utf16::validate_utf16_as_ascii_with_errors<endianness::BIG>(
+            return haswell::utf16::validate_utf16_as_ascii_with_errors<Endian::big>(
                        buf, len)
                        .error
                 == SUCCESS;
@@ -255,7 +255,7 @@ namespace turbo {
                 // handling nullptr
                 return true;
             }
-            const auto res = haswell::utf16::validate_utf16_with_errors<endianness::LITTLE>(buf, len);
+            const auto res = haswell::utf16::validate_utf16_with_errors<Endian::little>(buf, len);
             if (res.is_err()) {
                 return false;
             }
@@ -264,7 +264,7 @@ namespace turbo {
                 return true;
             }
 
-            return scalar::utf16::validate<endianness::LITTLE>(buf + res.count,
+            return scalar::utf16::validate<Endian::little>(buf + res.count,
                 len - res.count);
         }
 
@@ -276,7 +276,7 @@ namespace turbo {
                 // handling nullptr
                 return true;
             }
-            const auto res = haswell::utf16::validate_utf16_with_errors<endianness::BIG>(buf, len);
+            const auto res = haswell::utf16::validate_utf16_with_errors<Endian::big>(buf, len);
             if (res.is_err()) {
                 return false;
             }
@@ -285,16 +285,16 @@ namespace turbo {
                 return true;
             }
 
-            return scalar::utf16::validate<endianness::BIG>(buf + res.count,
+            return scalar::utf16::validate<Endian::big>(buf + res.count,
                 len - res.count);
         }
 
          [[nodiscard]] UnicodeResult implementation::validate_utf16le_with_errors(
             const char16_t* buf, size_t len) const noexcept {
 
-            const UnicodeResult res = haswell::utf16::validate_utf16_with_errors<endianness::LITTLE>(buf, len);
+            const UnicodeResult res = haswell::utf16::validate_utf16_with_errors<Endian::little>(buf, len);
             if (res.count != len) {
-                const UnicodeResult scalar_res = scalar::utf16::validate_with_errors<endianness::LITTLE>(
+                const UnicodeResult scalar_res = scalar::utf16::validate_with_errors<Endian::little>(
                     buf + res.count, len - res.count);
                 return UnicodeResult(scalar_res.error, res.count + scalar_res.count);
             } else {
@@ -304,9 +304,9 @@ namespace turbo {
 
          [[nodiscard]] UnicodeResult implementation::validate_utf16be_with_errors(
             const char16_t* buf, size_t len) const noexcept {
-            const UnicodeResult res = haswell::utf16::validate_utf16_with_errors<endianness::BIG>(buf, len);
+            const UnicodeResult res = haswell::utf16::validate_utf16_with_errors<Endian::big>(buf, len);
             if (res.count != len) {
-                const UnicodeResult scalar_res = scalar::utf16::validate_with_errors<endianness::BIG>(buf + res.count,
+                const UnicodeResult scalar_res = scalar::utf16::validate_with_errors<Endian::big>(buf + res.count,
                     len - res.count);
                 return UnicodeResult(scalar_res.error, res.count + scalar_res.count);
             } else {
@@ -316,12 +316,12 @@ namespace turbo {
 
         void implementation::to_well_formed_utf16le(const char16_t* input, size_t len,
             char16_t* output) const noexcept {
-            return utf16fix_avx<endianness::LITTLE>(input, len, output);
+            return utf16fix_avx<Endian::little>(input, len, output);
         }
 
         void implementation::to_well_formed_utf16be(const char16_t* input, size_t len,
             char16_t* output) const noexcept {
-            return utf16fix_avx<endianness::BIG>(input, len, output);
+            return utf16fix_avx<Endian::big>(input, len, output);
         }
 
          [[nodiscard]] bool
@@ -350,13 +350,13 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_latin1_to_utf16le(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
-            std::pair<const char*, char16_t*> ret = avx2_convert_latin1_to_utf16<endianness::LITTLE>(buf, len, utf16_output);
+            std::pair<const char*, char16_t*> ret = avx2_convert_latin1_to_utf16<Endian::little>(buf, len, utf16_output);
             if (ret.first == nullptr) {
                 return 0;
             }
             size_t converted_chars = ret.second - utf16_output;
             if (ret.first != buf + len) {
-                const size_t scalar_converted_chars = scalar::latin1_to_utf16::convert<endianness::LITTLE>(
+                const size_t scalar_converted_chars = scalar::latin1_to_utf16::convert<Endian::little>(
                     ret.first, len - (ret.first - buf), ret.second);
                 if (scalar_converted_chars == 0) {
                     return 0;
@@ -368,13 +368,13 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_latin1_to_utf16be(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
-            std::pair<const char*, char16_t*> ret = avx2_convert_latin1_to_utf16<endianness::BIG>(buf, len, utf16_output);
+            std::pair<const char*, char16_t*> ret = avx2_convert_latin1_to_utf16<Endian::big>(buf, len, utf16_output);
             if (ret.first == nullptr) {
                 return 0;
             }
             size_t converted_chars = ret.second - utf16_output;
             if (ret.first != buf + len) {
-                const size_t scalar_converted_chars = scalar::latin1_to_utf16::convert<endianness::BIG>(
+                const size_t scalar_converted_chars = scalar::latin1_to_utf16::convert<Endian::big>(
                     ret.first, len - (ret.first - buf), ret.second);
                 if (scalar_converted_chars == 0) {
                     return 0;
@@ -422,37 +422,37 @@ namespace turbo {
          [[nodiscard]] size_t implementation::convert_utf8_to_utf16le(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
             utf8_to_utf16::validating_transcoder converter;
-            return converter.convert<endianness::LITTLE>(buf, len, utf16_output);
+            return converter.convert<Endian::little>(buf, len, utf16_output);
         }
 
          [[nodiscard]] size_t implementation::convert_utf8_to_utf16be(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
             utf8_to_utf16::validating_transcoder converter;
-            return converter.convert<endianness::BIG>(buf, len, utf16_output);
+            return converter.convert<Endian::big>(buf, len, utf16_output);
         }
 
          [[nodiscard]] UnicodeResult implementation::convert_utf8_to_utf16le_with_errors(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
             utf8_to_utf16::validating_transcoder converter;
-            return converter.convert_with_errors<endianness::LITTLE>(buf, len,
+            return converter.convert_with_errors<Endian::little>(buf, len,
                 utf16_output);
         }
 
          [[nodiscard]] UnicodeResult implementation::convert_utf8_to_utf16be_with_errors(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
             utf8_to_utf16::validating_transcoder converter;
-            return converter.convert_with_errors<endianness::BIG>(buf, len, utf16_output);
+            return converter.convert_with_errors<Endian::big>(buf, len, utf16_output);
         }
 
          [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf16le(
             const char* input, size_t size, char16_t* utf16_output) const noexcept {
-            return utf8_to_utf16::convert_valid<endianness::LITTLE>(input, size,
+            return utf8_to_utf16::convert_valid<Endian::little>(input, size,
                 utf16_output);
         }
 
          [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf16be(
             const char* input, size_t size, char16_t* utf16_output) const noexcept {
-            return utf8_to_utf16::convert_valid<endianness::BIG>(input, size,
+            return utf8_to_utf16::convert_valid<Endian::big>(input, size,
                 utf16_output);
         }
 
@@ -475,14 +475,14 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_utf16le_to_latin1(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
-            std::pair<const char16_t*, char*> ret = haswell::avx2_convert_utf16_to_latin1<endianness::LITTLE>(buf, len,
+            std::pair<const char16_t*, char*> ret = haswell::avx2_convert_utf16_to_latin1<Endian::little>(buf, len,
                 latin1_output);
             if (ret.first == nullptr) {
                 return 0;
             }
             size_t saved_bytes = ret.second - latin1_output;
             if (ret.first != buf + len) {
-                const size_t scalar_saved_bytes = scalar::utf16_to_latin1::convert<endianness::LITTLE>(
+                const size_t scalar_saved_bytes = scalar::utf16_to_latin1::convert<Endian::little>(
                     ret.first, len - (ret.first - buf), ret.second);
                 if (scalar_saved_bytes == 0) {
                     return 0;
@@ -494,14 +494,14 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_utf16be_to_latin1(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
-            std::pair<const char16_t*, char*> ret = haswell::avx2_convert_utf16_to_latin1<endianness::BIG>(buf, len,
+            std::pair<const char16_t*, char*> ret = haswell::avx2_convert_utf16_to_latin1<Endian::big>(buf, len,
                 latin1_output);
             if (ret.first == nullptr) {
                 return 0;
             }
             size_t saved_bytes = ret.second - latin1_output;
             if (ret.first != buf + len) {
-                const size_t scalar_saved_bytes = scalar::utf16_to_latin1::convert<endianness::BIG>(
+                const size_t scalar_saved_bytes = scalar::utf16_to_latin1::convert<Endian::big>(
                     ret.first, len - (ret.first - buf), ret.second);
                 if (scalar_saved_bytes == 0) {
                     return 0;
@@ -514,14 +514,14 @@ namespace turbo {
          [[nodiscard]] UnicodeResult
         implementation::convert_utf16le_to_latin1_with_errors(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
-            std::pair<UnicodeResult, char*> ret = avx2_convert_utf16_to_latin1_with_errors<endianness::LITTLE>(
+            std::pair<UnicodeResult, char*> ret = avx2_convert_utf16_to_latin1_with_errors<Endian::little>(
                 buf, len, latin1_output);
             if (ret.first.error) {
                 return ret.first;
             } // Can return directly since scalar fallback already found correct
               // ret.first.count
             if (ret.first.count != len) { // All good so far, but not finished
-                UnicodeResult scalar_res = scalar::utf16_to_latin1::convert_with_errors<endianness::LITTLE>(
+                UnicodeResult scalar_res = scalar::utf16_to_latin1::convert_with_errors<Endian::little>(
                     buf + ret.first.count, len - ret.first.count, ret.second);
                 if (scalar_res.error) {
                     scalar_res.count += ret.first.count;
@@ -537,14 +537,14 @@ namespace turbo {
          [[nodiscard]] UnicodeResult
         implementation::convert_utf16be_to_latin1_with_errors(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
-            std::pair<UnicodeResult, char*> ret = avx2_convert_utf16_to_latin1_with_errors<endianness::BIG>(buf, len,
+            std::pair<UnicodeResult, char*> ret = avx2_convert_utf16_to_latin1_with_errors<Endian::big>(buf, len,
                 latin1_output);
             if (ret.first.error) {
                 return ret.first;
             } // Can return directly since scalar fallback already found correct
               // ret.first.count
             if (ret.first.count != len) { // All good so far, but not finished
-                UnicodeResult scalar_res = scalar::utf16_to_latin1::convert_with_errors<endianness::BIG>(
+                UnicodeResult scalar_res = scalar::utf16_to_latin1::convert_with_errors<Endian::big>(
                     buf + ret.first.count, len - ret.first.count, ret.second);
                 if (scalar_res.error) {
                     scalar_res.count += ret.first.count;
@@ -571,14 +571,14 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_utf16le_to_utf8(
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
-            std::pair<const char16_t*, char*> ret = haswell::avx2_convert_utf16_to_utf8<endianness::LITTLE>(buf, len,
+            std::pair<const char16_t*, char*> ret = haswell::avx2_convert_utf16_to_utf8<Endian::little>(buf, len,
                 utf8_output);
             if (ret.first == nullptr) {
                 return 0;
             }
             size_t saved_bytes = ret.second - utf8_output;
             if (ret.first != buf + len) {
-                const size_t scalar_saved_bytes = scalar::utf16_to_utf8::convert<endianness::LITTLE>(
+                const size_t scalar_saved_bytes = scalar::utf16_to_utf8::convert<Endian::little>(
                     ret.first, len - (ret.first - buf), ret.second);
                 if (scalar_saved_bytes == 0) {
                     return 0;
@@ -590,14 +590,14 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_utf16be_to_utf8(
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
-            std::pair<const char16_t*, char*> ret = haswell::avx2_convert_utf16_to_utf8<endianness::BIG>(buf, len,
+            std::pair<const char16_t*, char*> ret = haswell::avx2_convert_utf16_to_utf8<Endian::big>(buf, len,
                 utf8_output);
             if (ret.first == nullptr) {
                 return 0;
             }
             size_t saved_bytes = ret.second - utf8_output;
             if (ret.first != buf + len) {
-                const size_t scalar_saved_bytes = scalar::utf16_to_utf8::convert<endianness::BIG>(
+                const size_t scalar_saved_bytes = scalar::utf16_to_utf8::convert<Endian::big>(
                     ret.first, len - (ret.first - buf), ret.second);
                 if (scalar_saved_bytes == 0) {
                     return 0;
@@ -611,14 +611,14 @@ namespace turbo {
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
-            std::pair<UnicodeResult, char*> ret = haswell::avx2_convert_utf16_to_utf8_with_errors<endianness::LITTLE>(
+            std::pair<UnicodeResult, char*> ret = haswell::avx2_convert_utf16_to_utf8_with_errors<Endian::little>(
                 buf, len, utf8_output);
             if (ret.first.error) {
                 return ret.first;
             } // Can return directly since scalar fallback already found correct
               // ret.first.count
             if (ret.first.count != len) { // All good so far, but not finished
-                UnicodeResult scalar_res = scalar::utf16_to_utf8::convert_with_errors<endianness::LITTLE>(
+                UnicodeResult scalar_res = scalar::utf16_to_utf8::convert_with_errors<Endian::little>(
                     buf + ret.first.count, len - ret.first.count, ret.second);
                 if (scalar_res.error) {
                     scalar_res.count += ret.first.count;
@@ -635,14 +635,14 @@ namespace turbo {
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
-            std::pair<UnicodeResult, char*> ret = haswell::avx2_convert_utf16_to_utf8_with_errors<endianness::BIG>(
+            std::pair<UnicodeResult, char*> ret = haswell::avx2_convert_utf16_to_utf8_with_errors<Endian::big>(
                 buf, len, utf8_output);
             if (ret.first.error) {
                 return ret.first;
             } // Can return directly since scalar fallback already found correct
               // ret.first.count
             if (ret.first.count != len) { // All good so far, but not finished
-                UnicodeResult scalar_res = scalar::utf16_to_utf8::convert_with_errors<endianness::BIG>(
+                UnicodeResult scalar_res = scalar::utf16_to_utf8::convert_with_errors<Endian::big>(
                     buf + ret.first.count, len - ret.first.count, ret.second);
                 if (scalar_res.error) {
                     scalar_res.count += ret.first.count;
@@ -746,14 +746,14 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_utf16le_to_utf32(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
-            std::pair<const char16_t*, char32_t*> ret = haswell::avx2_convert_utf16_to_utf32<endianness::LITTLE>(buf, len,
+            std::pair<const char16_t*, char32_t*> ret = haswell::avx2_convert_utf16_to_utf32<Endian::little>(buf, len,
                 utf32_output);
             if (ret.first == nullptr) {
                 return 0;
             }
             size_t saved_bytes = ret.second - utf32_output;
             if (ret.first != buf + len) {
-                const size_t scalar_saved_bytes = scalar::utf16_to_utf32::convert<endianness::LITTLE>(
+                const size_t scalar_saved_bytes = scalar::utf16_to_utf32::convert<Endian::little>(
                     ret.first, len - (ret.first - buf), ret.second);
                 if (scalar_saved_bytes == 0) {
                     return 0;
@@ -765,14 +765,14 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_utf16be_to_utf32(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
-            std::pair<const char16_t*, char32_t*> ret = haswell::avx2_convert_utf16_to_utf32<endianness::BIG>(buf, len,
+            std::pair<const char16_t*, char32_t*> ret = haswell::avx2_convert_utf16_to_utf32<Endian::big>(buf, len,
                 utf32_output);
             if (ret.first == nullptr) {
                 return 0;
             }
             size_t saved_bytes = ret.second - utf32_output;
             if (ret.first != buf + len) {
-                const size_t scalar_saved_bytes = scalar::utf16_to_utf32::convert<endianness::BIG>(
+                const size_t scalar_saved_bytes = scalar::utf16_to_utf32::convert<Endian::big>(
                     ret.first, len - (ret.first - buf), ret.second);
                 if (scalar_saved_bytes == 0) {
                     return 0;
@@ -786,14 +786,14 @@ namespace turbo {
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
-            std::pair<UnicodeResult, char32_t*> ret = haswell::avx2_convert_utf16_to_utf32_with_errors<endianness::LITTLE>(
+            std::pair<UnicodeResult, char32_t*> ret = haswell::avx2_convert_utf16_to_utf32_with_errors<Endian::little>(
                 buf, len, utf32_output);
             if (ret.first.error) {
                 return ret.first;
             } // Can return directly since scalar fallback already found correct
               // ret.first.count
             if (ret.first.count != len) { // All good so far, but not finished
-                UnicodeResult scalar_res = scalar::utf16_to_utf32::convert_with_errors<endianness::LITTLE>(
+                UnicodeResult scalar_res = scalar::utf16_to_utf32::convert_with_errors<Endian::little>(
                     buf + ret.first.count, len - ret.first.count, ret.second);
                 if (scalar_res.error) {
                     scalar_res.count += ret.first.count;
@@ -810,14 +810,14 @@ namespace turbo {
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
-            std::pair<UnicodeResult, char32_t*> ret = haswell::avx2_convert_utf16_to_utf32_with_errors<endianness::BIG>(
+            std::pair<UnicodeResult, char32_t*> ret = haswell::avx2_convert_utf16_to_utf32_with_errors<Endian::big>(
                 buf, len, utf32_output);
             if (ret.first.error) {
                 return ret.first;
             } // Can return directly since scalar fallback already found correct
               // ret.first.count
             if (ret.first.count != len) { // All good so far, but not finished
-                UnicodeResult scalar_res = scalar::utf16_to_utf32::convert_with_errors<endianness::BIG>(
+                UnicodeResult scalar_res = scalar::utf16_to_utf32::convert_with_errors<Endian::big>(
                     buf + ret.first.count, len - ret.first.count, ret.second);
                 if (scalar_res.error) {
                     scalar_res.count += ret.first.count;
@@ -837,13 +837,13 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_utf32_to_utf16le(
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
-            std::pair<const char32_t*, char16_t*> ret = avx2_convert_utf32_to_utf16<endianness::LITTLE>(buf, len, utf16_output);
+            std::pair<const char32_t*, char16_t*> ret = avx2_convert_utf32_to_utf16<Endian::little>(buf, len, utf16_output);
             if (ret.first == nullptr) {
                 return 0;
             }
             size_t saved_bytes = ret.second - utf16_output;
             if (ret.first != buf + len) {
-                const size_t scalar_saved_bytes = scalar::utf32_to_utf16::convert<endianness::LITTLE>(
+                const size_t scalar_saved_bytes = scalar::utf32_to_utf16::convert<Endian::little>(
                     ret.first, len - (ret.first - buf), ret.second);
                 if (scalar_saved_bytes == 0) {
                     return 0;
@@ -855,13 +855,13 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::convert_utf32_to_utf16be(
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
-            std::pair<const char32_t*, char16_t*> ret = avx2_convert_utf32_to_utf16<endianness::BIG>(buf, len, utf16_output);
+            std::pair<const char32_t*, char16_t*> ret = avx2_convert_utf32_to_utf16<Endian::big>(buf, len, utf16_output);
             if (ret.first == nullptr) {
                 return 0;
             }
             size_t saved_bytes = ret.second - utf16_output;
             if (ret.first != buf + len) {
-                const size_t scalar_saved_bytes = scalar::utf32_to_utf16::convert<endianness::BIG>(
+                const size_t scalar_saved_bytes = scalar::utf32_to_utf16::convert<Endian::big>(
                     ret.first, len - (ret.first - buf), ret.second);
                 if (scalar_saved_bytes == 0) {
                     return 0;
@@ -875,10 +875,10 @@ namespace turbo {
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
-            std::pair<UnicodeResult, char16_t*> ret = haswell::avx2_convert_utf32_to_utf16_with_errors<endianness::LITTLE>(
+            std::pair<UnicodeResult, char16_t*> ret = haswell::avx2_convert_utf32_to_utf16_with_errors<Endian::little>(
                 buf, len, utf16_output);
             if (ret.first.count != len) {
-                UnicodeResult scalar_res = scalar::utf32_to_utf16::convert_with_errors<endianness::LITTLE>(
+                UnicodeResult scalar_res = scalar::utf32_to_utf16::convert_with_errors<Endian::little>(
                     buf + ret.first.count, len - ret.first.count, ret.second);
                 if (scalar_res.error) {
                     scalar_res.count += ret.first.count;
@@ -895,10 +895,10 @@ namespace turbo {
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
-            std::pair<UnicodeResult, char16_t*> ret = haswell::avx2_convert_utf32_to_utf16_with_errors<endianness::BIG>(
+            std::pair<UnicodeResult, char16_t*> ret = haswell::avx2_convert_utf32_to_utf16_with_errors<Endian::big>(
                 buf, len, utf16_output);
             if (ret.first.count != len) {
-                UnicodeResult scalar_res = scalar::utf32_to_utf16::convert_with_errors<endianness::BIG>(
+                UnicodeResult scalar_res = scalar::utf32_to_utf16::convert_with_errors<Endian::big>(
                     buf + ret.first.count, len - ret.first.count, ret.second);
                 if (scalar_res.error) {
                     scalar_res.count += ret.first.count;
@@ -939,12 +939,12 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::count_utf16le(
             const char16_t* input, size_t length) const noexcept {
-            return utf16::count_code_points<endianness::LITTLE>(input, length);
+            return utf16::count_code_points<Endian::little>(input, length);
         }
 
          [[nodiscard]] size_t implementation::count_utf16be(
             const char16_t* input, size_t length) const noexcept {
-            return utf16::count_code_points<endianness::BIG>(input, length);
+            return utf16::count_code_points<Endian::big>(input, length);
         }
 
          [[nodiscard]] size_t
@@ -959,23 +959,23 @@ namespace turbo {
 
          [[nodiscard]] size_t implementation::utf8_length_from_utf16le(
             const char16_t* input, size_t length) const noexcept {
-            return utf16::utf8_length_from_utf16_bytemask<endianness::LITTLE>(input,
+            return utf16::utf8_length_from_utf16_bytemask<Endian::little>(input,
                 length);
         }
 
          [[nodiscard]] size_t implementation::utf8_length_from_utf16be(
             const char16_t* input, size_t length) const noexcept {
-            return utf16::utf8_length_from_utf16_bytemask<endianness::BIG>(input, length);
+            return utf16::utf8_length_from_utf16_bytemask<Endian::big>(input, length);
         }
 
          [[nodiscard]] size_t implementation::utf32_length_from_utf16le(
             const char16_t* input, size_t length) const noexcept {
-            return utf16::utf32_length_from_utf16<endianness::LITTLE>(input, length);
+            return utf16::utf32_length_from_utf16<Endian::little>(input, length);
         }
 
          [[nodiscard]] size_t implementation::utf32_length_from_utf16be(
             const char16_t* input, size_t length) const noexcept {
-            return utf16::utf32_length_from_utf16<endianness::BIG>(input, length);
+            return utf16::utf32_length_from_utf16<Endian::big>(input, length);
         }
 
          [[nodiscard]] size_t implementation::utf16_length_from_utf8(
@@ -985,14 +985,14 @@ namespace turbo {
          [[nodiscard]] UnicodeResult
         implementation::utf8_length_from_utf16le_with_replacement(
             const char16_t* input, size_t length) const noexcept {
-            return utf16::utf8_length_from_utf16_with_replacement<endianness::LITTLE>(
+            return utf16::utf8_length_from_utf16_with_replacement<Endian::little>(
                 input, length);
         }
 
          [[nodiscard]] UnicodeResult
         implementation::utf8_length_from_utf16be_with_replacement(
             const char16_t* input, size_t length) const noexcept {
-            return utf16::utf8_length_from_utf16_with_replacement<endianness::BIG>(
+            return utf16::utf8_length_from_utf16_with_replacement<Endian::big>(
                 input, length);
         }
 
@@ -1065,7 +1065,7 @@ namespace turbo {
                 for (; i + sizeof(__m256i) <= len; i += sizeof(__m256i)) {
                     __m256i latin = _mm256_loadu_si256((const __m256i*)(data + i));
                     uint32_t non_ascii = _mm256_movemask_epi8(latin);
-                    answer += count_ones(non_ascii);
+                    answer += popcount(non_ascii);
                 }
             }
             return answer + scalar::latin1::utf8_length_from_latin1(reinterpret_cast<const char*>(data + i), len - i);
@@ -1086,7 +1086,7 @@ namespace turbo {
                 __m256i in = _mm256_loadu_si256((__m256i*)(input + pos));
                 const __m256i surrogate_bytemask = _mm256_cmpeq_epi32(_mm256_and_si256(in, v_ffff0000), v_00000000);
                 const uint32_t surrogate_bitmask = static_cast<uint32_t>(_mm256_movemask_epi8(surrogate_bytemask));
-                size_t surrogate_count = (32 - count_ones(surrogate_bitmask)) / 4;
+                size_t surrogate_count = (32 - popcount(surrogate_bitmask)) / 4;
                 count += 8 + surrogate_count;
             }
             return count + scalar::utf32::utf16_length_from_utf32(input + pos, length - pos);

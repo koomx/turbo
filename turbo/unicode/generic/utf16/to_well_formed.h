@@ -13,13 +13,13 @@ namespace turbo {
                  * character before the beginning of the buffer as a lookback.
                  * If that character is illsequenced, it too is overwritten.
                  */
-                template <endianness big_endian, bool in_place>
+                template <Endian big_endian, bool in_place>
                 KUMO_FORCE_INLINE void utf16fix_block(char16_t* out, const char16_t* in) {
                     const char16_t replacement = scalar::utf16::replacement<big_endian>();
 
                     using vector_u16 = simd16<uint16_t>;
                     auto swap_if_needed = [](uint16_t x) constexpr -> uint16_t {
-                        return scalar::utf16::swap_if_needed<big_endian>(x);
+                        return u16_byteswap_if_needed<big_endian>(x);
                     };
 
                     const auto lookback = vector_u16::load(in - 1);
@@ -49,7 +49,7 @@ namespace turbo {
                     }
                 }
 
-                template <endianness big_endian>
+                template <Endian big_endian>
                 void to_well_formed(const char16_t* in, size_t n, char16_t* out) {
                     using vector_u16 = simd16<uint16_t>;
                     constexpr size_t N = vector_u16::ELEMENTS;

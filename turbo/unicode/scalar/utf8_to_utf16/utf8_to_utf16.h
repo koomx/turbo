@@ -8,7 +8,7 @@ namespace turbo {
         namespace {
             namespace utf8_to_utf16 {
 
-                template <endianness big_endian, typename InputPtr>
+                template <Endian big_endian, typename InputPtr>
                  size_t convert(InputPtr data, size_t len,
                     char16_t* utf16_output) {
                     size_t pos = 0;
@@ -27,7 +27,7 @@ namespace turbo {
                                     size_t final_pos = pos + 16;
                                     while (pos < final_pos) {
                                         *utf16_output++ = !match_system(big_endian)
-                                            ? char16_t(u16_swap_bytes(data[pos]))
+                                            ? char16_t(u16_byteswap(data[pos]))
                                             : char16_t(data[pos]);
                                         pos++;
                                     }
@@ -40,7 +40,7 @@ namespace turbo {
                         if (leading_byte < 0b10000000) {
                             // converting one ASCII byte !!!
                             *utf16_output++ = !match_system(big_endian)
-                                ? char16_t(u16_swap_bytes(leading_byte))
+                                ? char16_t(u16_byteswap(leading_byte))
                                 : char16_t(leading_byte);
                             pos++;
                         } else if ((leading_byte & 0b11100000) == 0b11000000) {
@@ -58,7 +58,7 @@ namespace turbo {
                                 return 0;
                             }
                             if constexpr (!match_system(big_endian)) {
-                                code_point = uint32_t(u16_swap_bytes(uint16_t(code_point)));
+                                code_point = uint32_t(u16_byteswap(code_point));
                             }
                             *utf16_output++ = char16_t(code_point);
                             pos += 2;
@@ -81,7 +81,7 @@ namespace turbo {
                                 return 0;
                             }
                             if constexpr (!match_system(big_endian)) {
-                                code_point = uint32_t(u16_swap_bytes(uint16_t(code_point)));
+                                code_point = uint32_t(u16_byteswap(code_point));
                             }
                             *utf16_output++ = char16_t(code_point);
                             pos += 3;
@@ -109,8 +109,8 @@ namespace turbo {
                             uint16_t high_surrogate = uint16_t(0xD800 + (code_point >> 10));
                             uint16_t low_surrogate = uint16_t(0xDC00 + (code_point & 0x3FF));
                             if constexpr (!match_system(big_endian)) {
-                                high_surrogate = u16_swap_bytes(high_surrogate);
-                                low_surrogate = u16_swap_bytes(low_surrogate);
+                                high_surrogate = u16_byteswap(high_surrogate);
+                                low_surrogate = u16_byteswap(low_surrogate);
                             }
                             *utf16_output++ = char16_t(high_surrogate);
                             *utf16_output++ = char16_t(low_surrogate);
@@ -122,7 +122,7 @@ namespace turbo {
                     return utf16_output - start;
                 }
 
-                template <endianness big_endian, typename InputPtr>
+                template <Endian big_endian, typename InputPtr>
                  UnicodeResult convert_with_errors(InputPtr data, size_t len,
                     char16_t* utf16_output) {
                     size_t pos = 0;
@@ -141,7 +141,7 @@ namespace turbo {
                                     size_t final_pos = pos + 16;
                                     while (pos < final_pos) {
                                         const char16_t byte = uint8_t(data[pos]);
-                                        *utf16_output++ = !match_system(big_endian) ? u16_swap_bytes(byte) : byte;
+                                        *utf16_output++ = !match_system(big_endian) ? u16_byteswap(byte) : byte;
                                         pos++;
                                     }
                                     continue;
@@ -153,7 +153,7 @@ namespace turbo {
                         if (leading_byte < 0b10000000) {
                             // converting one ASCII byte !!!
                             *utf16_output++ = !match_system(big_endian)
-                                ? char16_t(u16_swap_bytes(leading_byte))
+                                ? char16_t(u16_byteswap(leading_byte))
                                 : char16_t(leading_byte);
                             pos++;
                         } else if ((leading_byte & 0b11100000) == 0b11000000) {
@@ -171,7 +171,7 @@ namespace turbo {
                                 return UnicodeResult(UnicodeError::OVERLONG, pos);
                             }
                             if constexpr (!match_system(big_endian)) {
-                                code_point = uint32_t(u16_swap_bytes(uint16_t(code_point)));
+                                code_point = uint32_t(u16_byteswap(code_point));
                             }
                             *utf16_output++ = char16_t(code_point);
                             pos += 2;
@@ -197,7 +197,7 @@ namespace turbo {
                                 return UnicodeResult(UnicodeError::SURROGATE, pos);
                             }
                             if constexpr (!match_system(big_endian)) {
-                                code_point = uint32_t(u16_swap_bytes(uint16_t(code_point)));
+                                code_point = uint32_t(u16_byteswap(code_point));
                             }
                             *utf16_output++ = char16_t(code_point);
                             pos += 3;
@@ -228,8 +228,8 @@ namespace turbo {
                             uint16_t high_surrogate = uint16_t(0xD800 + (code_point >> 10));
                             uint16_t low_surrogate = uint16_t(0xDC00 + (code_point & 0x3FF));
                             if constexpr (!match_system(big_endian)) {
-                                high_surrogate = u16_swap_bytes(high_surrogate);
-                                low_surrogate = u16_swap_bytes(low_surrogate);
+                                high_surrogate = u16_byteswap(high_surrogate);
+                                low_surrogate = u16_byteswap(low_surrogate);
                             }
                             *utf16_output++ = char16_t(high_surrogate);
                             *utf16_output++ = char16_t(low_surrogate);
@@ -259,7 +259,7 @@ namespace turbo {
                 ///
                 /// If the error is believed to have occurred prior to 'buf', the count value
                 /// contain in the UnicodeResult will be SIZE_T - 1, SIZE_T - 2, or SIZE_T - 3.
-                template <endianness endian>
+                template <Endian endian>
                 inline UnicodeResult rewind_and_convert_with_errors(size_t prior_bytes,
                     const char* buf, size_t len,
                     char16_t* utf16_output) {

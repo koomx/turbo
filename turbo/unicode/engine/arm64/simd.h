@@ -343,7 +343,7 @@ namespace turbo {
                     //      mov   v0.16b, value[1]
                     //    st2   {v0.16b, v1.16b}, [ptr], #32
                     //    ...
-                    template <endianness big_endian>
+                    template <Endian big_endian>
                     KUMO_FORCE_INLINE void store_ascii_as_utf16(char16_t* p) const {
                         constexpr auto matches = match_system(big_endian);
                         const int8x16x2_t pair = matches
@@ -499,7 +499,7 @@ namespace turbo {
 
                     KUMO_FORCE_INLINE bool is_ascii() const { return reduce_or().is_ascii(); }
 
-                    template <endianness endian>
+                    template <Endian endian>
                     KUMO_FORCE_INLINE void store_ascii_as_utf16(char16_t* ptr) const {
                         this->chunks[0].template store_ascii_as_utf16<endian>(ptr + sizeof(simd8<T>) * 0);
                         this->chunks[1].template store_ascii_as_utf16<endian>(ptr + sizeof(simd8<T>) * 1);

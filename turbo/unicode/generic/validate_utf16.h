@@ -45,7 +45,7 @@ namespace turbo {
                                                   the last bit can be zero, we just consume 7
                    code units and recheck this word in the next iteration
                 */
-                template <endianness big_endian>
+                template <Endian big_endian>
                 const UnicodeResult validate_utf16_with_errors(const char16_t* input, size_t size) {
                     if (KUMO_UNLIKELY(size == 0)) {
                         return UnicodeResult(UnicodeError::SUCCESS, 0);
@@ -123,7 +123,7 @@ namespace turbo {
                     return UnicodeResult(UnicodeError::SUCCESS, input - start);
                 }
 
-                template <endianness big_endian>
+                template <Endian big_endian>
                 const UnicodeResult validate_utf16_as_ascii_with_errors(const char16_t* input,
                     size_t size) {
                     if (KUMO_UNLIKELY(size == 0)) {
@@ -139,7 +139,7 @@ namespace turbo {
                         uint64_t matches = input_vec.lteq(uint16_t(0x7f));
                         if (~matches) {
                             // Found a match, return the first one
-                            int index = trailing_zeroes(~matches) / 2;
+                            int index = countr_zero(~matches) / 2;
                             return UnicodeResult(UnicodeError::TOO_LARGE, pos + index);
                         }
                     }
@@ -147,7 +147,7 @@ namespace turbo {
                     // Scalar tail
                     while (pos < size) {
 
-                        char16_t v = scalar::utf16::swap_if_needed<big_endian>(input[pos]);
+                        char16_t v = u16_byteswap_if_needed<big_endian>(input[pos]);
                         if (v > 0x7F) {
                             return UnicodeResult(UnicodeError::TOO_LARGE, pos);
                         }

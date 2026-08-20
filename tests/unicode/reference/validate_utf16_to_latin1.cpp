@@ -5,7 +5,7 @@ namespace turbo {
         namespace reference {
 
              [[nodiscard]] bool
-            validate_utf16_to_latin1(turbo::endianness utf16_endianness,
+            validate_utf16_to_latin1(turbo::Endian utf16_endianness,
                 const char16_t* buf, size_t len) noexcept {
                 const char16_t* curr = buf;
                 const char16_t* end = buf + len;

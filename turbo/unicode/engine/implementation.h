@@ -7,12 +7,12 @@
 #include <turbo/unicode/text_encoding.h>
 #include <turbo/unicode/error.h>
 #include <turbo/arch/isadetection.h>
-
+#include <turbo/bits/bits.h>
 #include <string_view>
 
 // these includes are needed for constexpr support. they are
 // not part of the public api.
-#include <turbo/unicode/scalar/swap_bytes.h>
+#include <turbo/bits/bits.h>
 #include <turbo/unicode/scalar/ascii.h>
 #include <turbo/unicode/scalar/latin1.h>
 #include <turbo/unicode/scalar/latin1_to_utf16/latin1_to_utf16.h>

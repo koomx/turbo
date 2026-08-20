@@ -6,7 +6,7 @@ namespace turbo {
         namespace {
             namespace utf16_to_latin1 {
 
-                template <endianness big_endian, class InputIterator, class OutputIterator>
+                template <Endian big_endian, class InputIterator, class OutputIterator>
                  inline size_t
                 convert_valid_impl(InputIterator data, size_t len,
                     OutputIterator latin_output) {
@@ -18,7 +18,7 @@ namespace turbo {
                     uint16_t word = 0;
 
                     while (pos < len) {
-                        word = !match_system(big_endian) ? u16_swap_bytes(data[pos]) : data[pos];
+                        word = !match_system(big_endian) ? u16_byteswap(data[pos]) : data[pos];
                         *latin_output++ = char(word);
                         pos++;
                     }
@@ -26,7 +26,7 @@ namespace turbo {
                     return latin_output - start;
                 }
 
-                template <endianness big_endian>
+                template <Endian big_endian>
                 KUMO_FORCE_INLINE size_t convert_valid(const char16_t* buf, size_t len,
                     char* latin_output) {
                     return convert_valid_impl<big_endian>(reinterpret_cast<const uint16_t*>(buf),

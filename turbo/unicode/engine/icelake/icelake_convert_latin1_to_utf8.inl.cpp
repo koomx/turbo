@@ -4,7 +4,7 @@ static inline size_t latin1_to_utf8_avx512_vec(__m512i input, size_t input_len,
     char* utf8_output,
     int mask_output) {
     __mmask64 nonascii = _mm512_movepi8_mask(input);
-    size_t output_size = input_len + (size_t)count_ones(nonascii);
+    size_t output_size = input_len + (size_t)popcount(nonascii);
 
     // Mask to denote whether the byte is a leading byte that is not ascii
     __mmask64 sixth = _mm512_cmpge_epu8_mask(
@@ -48,7 +48,7 @@ static inline size_t latin1_to_utf8_avx512_vec(__m512i input, size_t input_len,
     outputA = _mm512_maskz_compress_epi8(maskA, outputA);
     outputB = _mm512_maskz_compress_epi8(maskB, outputB);
 
-    size_t output_sizeA = (size_t)count_ones((uint32_t)nonascii) + 32;
+    size_t output_sizeA = (size_t)popcount((uint32_t)nonascii) + 32;
 
     if (mask_output) {
         if (input_len > 32) { // is the second half of the input vector used?

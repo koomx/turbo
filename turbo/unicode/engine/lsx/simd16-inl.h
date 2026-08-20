@@ -144,7 +144,7 @@ struct simd16<uint16_t> : base16_numeric<uint16_t> {
         return pack_shifted_right<0>(v0, v1);
     }
 
-    // Change the endianness
+    // Change the Endian
     KUMO_FORCE_INLINE simd16<uint16_t> swap_bytes() const {
         return __lsx_vshuf4i_b(this->value, 0b10110001);
     }

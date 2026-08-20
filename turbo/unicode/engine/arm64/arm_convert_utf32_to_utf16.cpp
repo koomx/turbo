@@ -31,7 +31,7 @@ KUMO_FORCE_INLINE uint64_t fast_invalid_utf32(const uint32x4x2_t in) {
     return vget_lane_u64(vreinterpret_u64_u8(vshrn_n_u16(err, 8)), 0);
 }
 
-template <endianness byte_order>
+template <Endian byte_order>
 KUMO_FORCE_INLINE expansion_result_t
 neon_expand_surrogate(const uint32x4_t in) {
     const uint32x4_t v_ffff0000 = vdupq_n_u32(0xffff0000);
@@ -50,7 +50,7 @@ neon_expand_surrogate(const uint32x4_t in) {
     const uint8x16_t merged = vreinterpretq_u8_u32(vbslq_u32(non_surrogate_mask, in, surrogates));
 
     const uint8x16_t shuffle_v = vld1q_u8(reinterpret_cast<const uint8_t*>(
-        (byte_order == endianness::LITTLE)
+        (byte_order == Endian::little)
             ? tables::utf32_to_utf16::pack_utf32_to_utf16le[mask]
             : tables::utf32_to_utf16::pack_utf32_to_utf16be[mask]));
 
@@ -60,7 +60,7 @@ neon_expand_surrogate(const uint32x4_t in) {
     return { u16count, compressed_v };
 }
 
-template <endianness big_endian>
+template <Endian big_endian>
 std::pair<const char32_t*, char16_t*>
 arm_convert_utf32_to_utf16(const char32_t* buf, size_t len,
     char16_t* utf16_out) {
@@ -114,7 +114,7 @@ arm_convert_utf32_to_utf16(const char32_t* buf, size_t len,
     return std::make_pair(buf, reinterpret_cast<char16_t*>(utf16_output));
 }
 
-template <endianness big_endian>
+template <Endian big_endian>
 std::pair<UnicodeResult, char16_t*>
 arm_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
     char16_t* utf16_out) {
@@ -151,7 +151,7 @@ arm_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
         } else {
             const uint64_t err = max_val <= 0x10ffff ? fast_invalid_utf32(in) : invalid_utf32(in);
             if (KUMO_UNLIKELY(err)) {
-                const size_t pos = trailing_zeroes(err) / 8;
+                const size_t pos = countr_zero(err) / 8;
                 for (size_t k = 0; k < pos; k++) {
                     uint32_t word = buf[k];
                     if ((word & 0xFFFF0000) == 0) {

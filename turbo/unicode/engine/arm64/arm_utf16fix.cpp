@@ -17,7 +17,7 @@ KUMO_FORCE_INLINE bool veq_non_zero(uint8x16_t v) {
  * character before the beginning of the buffer as a lookback.
  * If that character is illsequenced, it too is overwritten.
  */
-template <endianness big_endian, bool inplace>
+template <Endian big_endian, bool inplace>
 void utf16fix_block(char16_t* out, const char16_t* in) {
     const char16_t replacement = scalar::utf16::replacement<big_endian>();
     uint8x16x2_t lb, block;
@@ -65,7 +65,7 @@ void utf16fix_block(char16_t* out, const char16_t* in) {
     }
 }
 
-template <endianness big_endian, bool inplace>
+template <Endian big_endian, bool inplace>
 uint8x16_t get_mismatch_copy(const char16_t* in, char16_t* out) {
     constexpr int idx = !match_system(big_endian) ? 0 : 1;
     uint8x16x2_t lb = vld2q_u8((const uint8_t*)(in - 1));
@@ -101,7 +101,7 @@ KUMO_FORCE_INLINE uint64_t get_mask(uint8x16_t illse0, uint8x16_t illse1,
 // we can fix it with a bit of scalar code. When the input is correct, this
 // function might be faster than alternative implementations working on small
 // blocks of input.
-template <endianness big_endian, bool inplace>
+template <Endian big_endian, bool inplace>
 bool utf16fix_block64(char16_t* out, const char16_t* in) {
     const char16_t replacement = scalar::utf16::replacement<big_endian>();
 
@@ -125,7 +125,7 @@ bool utf16fix_block64(char16_t* out, const char16_t* in) {
         // but it might require more instructions.
 
         while (matches != 0) {
-            int r = trailing_zeroes(matches); // generates rbit + clz
+            int r = countr_zero(matches); // generates rbit + clz
             // Either we have a high surrogate followed by a non-low surrogate
             // or we have a low surrogate not preceded by a high surrogate.
             bool is_high = scalar::utf16::is_high_surrogate<big_endian>(in[r - 1]);
@@ -137,7 +137,7 @@ bool utf16fix_block64(char16_t* out, const char16_t* in) {
     return true;
 }
 
-template <endianness big_endian>
+template <Endian big_endian>
 void utf16fix_neon_64bits(const char16_t* in, size_t n, char16_t* out) {
     size_t i;
     const char16_t replacement = scalar::utf16::replacement<big_endian>();

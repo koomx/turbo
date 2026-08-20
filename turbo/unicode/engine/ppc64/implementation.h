@@ -20,7 +20,7 @@ namespace turbo {
         public:
             KUMO_FORCE_INLINE implementation()
                 : turbo::implementation("ppc64", "PPC64 ALTIVEC",
-                      internal::instruction_set::ALTIVEC) { }
+                      InstructionSet::ALTIVEC) { }
 
              [[nodiscard]] int detect_encodings(const char* input,
                 size_t length) const noexcept final;

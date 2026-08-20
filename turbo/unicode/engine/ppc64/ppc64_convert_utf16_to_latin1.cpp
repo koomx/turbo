@@ -4,7 +4,7 @@ struct utf16_to_latin1_t {
     char* output;
 };
 
-template <endianness big_endian>
+template <Endian big_endian>
 utf16_to_latin1_t ppc64_convert_utf16_to_latin1(const char16_t* buf, size_t len,
     char* latin1_output) {
     const char16_t* end = buf + len;

@@ -2,7 +2,7 @@
 
 // File contains conversion procedure from possibly invalid UTF-8 strings.
 
-template <endianness big_endian, typename OUTPUT>
+template <Endian big_endian, typename OUTPUT>
 // todo: replace with the utf-8 to utf-16 routine adapted to utf-32. This code
 // is legacy.
 std::pair<const char*, OUTPUT*>
@@ -129,7 +129,7 @@ validating_utf8_to_fixed_length(const char* str, size_t len, OUTPUT* dwords) {
 // Like validating_utf8_to_fixed_length but returns as soon as an error is
 // identified todo: replace with the utf-8 to utf-16 routine adapted to utf-32.
 // This code is legacy.
-template <endianness big_endian, typename OUTPUT>
+template <Endian big_endian, typename OUTPUT>
 std::tuple<const char*, OUTPUT*, bool>
 validating_utf8_to_fixed_length_with_constant_checks(const char* str,
     size_t len,

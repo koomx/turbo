@@ -381,7 +381,7 @@ TEST_LOOP(no_utf8_bytes_no_surrogates) {
 
   for (size_t size : input_size) {
     auto generated = generate_u32(random, size / 4);
-    if (!turbo::match_system(turbo::endianness::LITTLE)) {
+    if (!turbo::match_system(turbo::Endian::little)) {
         for (auto& val: generated) {
             val = ((val & 0xff) << 8) | (val >> 8);
         }

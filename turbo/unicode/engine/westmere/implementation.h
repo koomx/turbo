@@ -16,7 +16,7 @@ namespace turbo {
         public:
             KUMO_FORCE_INLINE implementation()
                 : turbo::implementation("westmere", "Intel/AMD SSE4.2",
-                      internal::instruction_set::SSE42) { }
+                      InstructionSet::SSE42) { }
 
              [[nodiscard]] int detect_encodings(const char* input,
                 size_t length) const noexcept final;

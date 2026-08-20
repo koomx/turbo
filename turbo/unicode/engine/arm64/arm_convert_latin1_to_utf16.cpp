@@ -1,4 +1,4 @@
-template <endianness big_endian>
+template <Endian big_endian>
 std::pair<const char*, char16_t*>
 arm_convert_latin1_to_utf16(const char* buf, size_t len,
     char16_t* utf16_output) {

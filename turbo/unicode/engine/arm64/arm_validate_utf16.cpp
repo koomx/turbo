@@ -1,4 +1,4 @@
-template <endianness big_endian>
+template <Endian big_endian>
 const char16_t* arm_validate_utf16(const char16_t* input, size_t size) {
     const char16_t* end = input + size;
     const auto v_d8 = simd8<uint8_t>::splat(0xd8);
@@ -65,7 +65,7 @@ const char16_t* arm_validate_utf16(const char16_t* input, size_t size) {
     return input;
 }
 
-template <endianness big_endian>
+template <Endian big_endian>
 const char16_t* arm_validate_utf16_as_ascii(const char16_t* input,
     size_t size) {
     const char16_t* end = input + size;
@@ -87,7 +87,7 @@ const char16_t* arm_validate_utf16_as_ascii(const char16_t* input,
     return input;
 }
 
-template <endianness big_endian>
+template <Endian big_endian>
 const UnicodeResult arm_validate_utf16_with_errors(const char16_t* input,
     size_t size) {
     const char16_t* start = input;

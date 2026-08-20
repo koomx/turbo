@@ -57,7 +57,7 @@ struct base8 {
         return move_mask_u8(value);
     }
 
-    template <endianness big_endian>
+    template <Endian big_endian>
     KUMO_FORCE_INLINE void store_bytes_as_utf16(char16_t* p) const {
         const vector_type zero = vec_splats(T(0));
 
@@ -96,7 +96,7 @@ struct base8 {
         }
     }
 
-    template <endianness big_endian>
+    template <Endian big_endian>
     KUMO_FORCE_INLINE void store_ascii_as_utf16(char16_t* p) const {
         store_bytes_as_utf16<big_endian>(p);
     }
@@ -582,7 +582,7 @@ struct simd8x64 {
         return this->reduce_or().is_ascii();
     }
 
-    template <endianness endian>
+    template <Endian endian>
     KUMO_FORCE_INLINE void store_ascii_as_utf16(char16_t* ptr) const {
         this->chunks[0].template store_ascii_as_utf16<endian>(ptr + sizeof(simd8<T>) * 0);
         this->chunks[1].template store_ascii_as_utf16<endian>(ptr + sizeof(simd8<T>) * 1);

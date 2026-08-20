@@ -17,10 +17,6 @@ namespace turbo {
 
 
 
-#ifndef UNICODE_NEED_TRAILING_ZEROES
-#define UNICODE_NEED_TRAILING_ZEROES 1
-#endif
-
     /// An implementation of simdutf for a particular CPU architecture.
     ///
     /// Also used to maintain the currently active implementation. The active
@@ -74,7 +70,7 @@ namespace turbo {
         ///
         /// The instruction sets this implementation is compiled against.
         ///
-        /// @return a mask of all required `internal::instruction_set::` values
+        /// @return a mask of all required `InstructionSet::` values
         virtual uint32_t required_instruction_sets() const {
             return _required_instruction_sets;
         }
@@ -1268,7 +1264,7 @@ namespace turbo {
             char16_t* utf16_buffer) const noexcept
             = 0;
 
-        /// Change the endianness of the input. Can be used to go from UTF-16LE to
+        /// Change the Endian of the input. Can be used to go from UTF-16LE to
         /// UTF-16BE or from UTF-16BE to UTF-16LE.
         ///
         /// This function does not validate the input.

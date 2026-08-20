@@ -8,7 +8,7 @@ namespace turbo {
         namespace {
             namespace utf16_to_latin1 {
 
-                template <endianness big_endian, typename InputPtr, typename OutputPtr>
+                template <Endian big_endian, typename InputPtr, typename OutputPtr>
                  size_t convert(InputPtr data, size_t len,
                     OutputPtr latin_output) {
                     if (len == 0) {
@@ -20,7 +20,7 @@ namespace turbo {
                     uint16_t too_large = 0;
 
                     while (pos < len) {
-                        word = !match_system(big_endian) ? u16_swap_bytes(data[pos]) : data[pos];
+                        word = !match_system(big_endian) ? u16_byteswap(data[pos]) : data[pos];
                         too_large |= word;
                         *latin_output++ = char(word & 0xFF);
                         pos++;
@@ -32,7 +32,7 @@ namespace turbo {
                     return latin_output - latin_output_start;
                 }
 
-                template <endianness big_endian, typename InputPtr, typename OutputPtr>
+                template <Endian big_endian, typename InputPtr, typename OutputPtr>
                  UnicodeResult convert_with_errors(InputPtr data, size_t len,
                     OutputPtr latin_output) {
                     if (len == 0) {
@@ -69,7 +69,7 @@ namespace turbo {
                                     size_t final_pos = pos + 16;
                                     while (pos < final_pos) {
                                         *latin_output++ = !match_system(big_endian)
-                                            ? char(u16_swap_bytes(data[pos]))
+                                            ? char(u16_byteswap(data[pos]))
                                             : char(data[pos]);
                                         pos++;
                                     }
@@ -78,7 +78,7 @@ namespace turbo {
                             }
                         }
 
-                        word = !match_system(big_endian) ? u16_swap_bytes(data[pos]) : data[pos];
+                        word = !match_system(big_endian) ? u16_byteswap(data[pos]) : data[pos];
                         if ((word & 0xFF00) == 0) {
                             *latin_output++ = char(word & 0xFF);
                             pos++;

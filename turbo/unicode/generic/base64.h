@@ -77,7 +77,7 @@ namespace turbo {
                             const uint64_t badcharmask = b.to_base64_mask<base64_url, ignore_garbage, default_or_url>(&error);
                             if (!ignore_garbage && error) {
                                 src -= 64;
-                                const size_t error_offset = trailing_zeroes(error);
+                                const size_t error_offset = countr_zero(error);
                                 return { UnicodeError::INVALID_BASE64_CHARACTER,
                                     size_t(src - srcinit + error_offset), size_t(dst - dstinit) };
                             }
@@ -143,7 +143,7 @@ namespace turbo {
                             uint32_t triple = ((uint32_t(uint8_t(buffer_start[0])) << 3 * 6) + (uint32_t(uint8_t(buffer_start[1])) << 2 * 6) + (uint32_t(uint8_t(buffer_start[2])) << 1 * 6) + (uint32_t(uint8_t(buffer_start[3])) << 0 * 6))
                                 << 8;
 #if !KUMO_ENDIAN_BIG
-                            triple = scalar::u32_swap_bytes(triple);
+                            triple = u32_byteswap(triple);
 #endif
                             std::memcpy(dst, &triple, 3);
 
@@ -154,7 +154,7 @@ namespace turbo {
                             uint32_t triple = ((uint32_t(uint8_t(buffer_start[0])) << 3 * 6) + (uint32_t(uint8_t(buffer_start[1])) << 2 * 6) + (uint32_t(uint8_t(buffer_start[2])) << 1 * 6) + (uint32_t(uint8_t(buffer_start[3])) << 0 * 6))
                                 << 8;
 #if !KUMO_ENDIAN_BIG
-                            triple = scalar::u32_swap_bytes(triple);
+                            triple = u32_byteswap(triple);
 #endif
                             std::memcpy(dst, &triple, 3);
 

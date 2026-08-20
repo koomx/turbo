@@ -15,8 +15,8 @@ namespace turbo {
         public:
             KUMO_FORCE_INLINE implementation()
                 : turbo::implementation("rvv", "RISC-V Vector Extension",
-                      internal::instruction_set::RVV)
-                , _supports_zvbb(internal::detect_supported_architectures() & internal::instruction_set::ZVBB) { }
+                      InstructionSet::RVV)
+                , _supports_zvbb(internal::detect_supported_architectures() & InstructionSet::ZVBB) { }
              [[nodiscard]] int detect_encodings(const char* input,
                 size_t length) const noexcept final;
              [[nodiscard]] bool validate_utf8(const char* buf,

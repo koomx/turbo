@@ -339,7 +339,7 @@ TEST(convert_utf16be_to_utf8_with_replacement_c) {
 }
 
 TEST(convert_utf16_to_utf8_with_replacement_c) {
-  // Native endianness: agrees with the plain converter on valid input.
+  // Native Endian: agrees with the plain converter on valid input.
   char16_t valid[5] = {u'h', u'e', u'l', u'l', u'o'};
   char out[16] = {0};
   size_t n = unicode_convert_utf16_to_utf8_with_replacement(valid, 5, out);

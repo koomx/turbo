@@ -15,7 +15,7 @@ namespace turbo {
                 };
 
                 template <typename CONSUMER, typename ERROR_HANDLER>
-                bool decode(endianness utf16_endianness, const char16_t* codepoints,
+                bool decode(Endian utf16_endianness, const char16_t* codepoints,
                     size_t size, CONSUMER consumer, ERROR_HANDLER error_handler) {
                     const char16_t* curr = codepoints;
                     const char16_t* end = codepoints + size;

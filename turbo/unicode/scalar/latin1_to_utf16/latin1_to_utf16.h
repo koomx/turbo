@@ -6,7 +6,7 @@ namespace turbo {
         namespace {
             namespace latin1_to_utf16 {
 
-                template <endianness big_endian, typename InputPtr>
+                template <Endian big_endian, typename InputPtr>
                  size_t convert(InputPtr data, size_t len,
                     char16_t* utf16_output) {
                     size_t pos = 0;
@@ -14,14 +14,14 @@ namespace turbo {
 
                     while (pos < len) {
                         uint16_t word = uint8_t(data[pos]); // extend Latin-1 char to 16-bit Unicode code point
-                        *utf16_output++ = char16_t(match_system(big_endian) ? word : u16_swap_bytes(word));
+                        *utf16_output++ = char16_t(match_system(big_endian) ? word : u16_byteswap(word));
                         pos++;
                     }
 
                     return utf16_output - start;
                 }
 
-                template <endianness big_endian>
+                template <Endian big_endian>
                 inline UnicodeResult convert_with_errors(const char* buf, size_t len,
                     char16_t* utf16_output) {
                     const uint8_t* data = reinterpret_cast<const uint8_t*>(buf);
@@ -30,7 +30,7 @@ namespace turbo {
 
                     while (pos < len) {
                         uint16_t word = uint16_t(data[pos]); // extend Latin-1 char to 16-bit Unicode code point
-                        *utf16_output++ = char16_t(match_system(big_endian) ? word : u16_swap_bytes(word));
+                        *utf16_output++ = char16_t(match_system(big_endian) ? word : u16_byteswap(word));
                         pos++;
                     }
 

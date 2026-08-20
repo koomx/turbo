@@ -1,5 +1,5 @@
 // file included directly
-template <endianness big_endian>
+template <Endian big_endian>
 size_t icelake_convert_utf16_to_latin1(const char16_t* buf, size_t len,
     char* latin1_output) {
     const char16_t* end = buf + len;
@@ -42,7 +42,7 @@ size_t icelake_convert_utf16_to_latin1(const char16_t* buf, size_t len,
     return len;
 }
 
-template <endianness big_endian>
+template <Endian big_endian>
 std::pair<UnicodeResult, char*>
 icelake_convert_utf16_to_latin1_with_errors(const char16_t* buf, size_t len,
     char* latin1_output) {
@@ -64,7 +64,7 @@ icelake_convert_utf16_to_latin1_with_errors(const char16_t* buf, size_t len,
         }
         if (_mm512_cmpgt_epu16_mask(in, v_0xFF)) {
             uint16_t word;
-            while ((word = scalar::utf16::swap_if_needed<big_endian>(
+            while ((word = u16_byteswap_if_needed<big_endian>(
                         uint16_t(*buf)))
                 <= 0xff) {
                 *latin1_output++ = uint8_t(word);
@@ -88,7 +88,7 @@ icelake_convert_utf16_to_latin1_with_errors(const char16_t* buf, size_t len,
         if (_mm512_cmpgt_epu16_mask(in, v_0xFF)) {
 
             uint16_t word;
-            while ((word = scalar::utf16::swap_if_needed<big_endian>(
+            while ((word = u16_byteswap_if_needed<big_endian>(
                         uint16_t(*buf)))
                 <= 0xff) {
                 *latin1_output++ = uint8_t(word);

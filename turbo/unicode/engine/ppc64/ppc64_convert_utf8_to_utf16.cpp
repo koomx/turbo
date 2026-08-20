@@ -4,7 +4,7 @@
 // end of the code points. Only the least significant 12 bits of the mask
 // are accessed.
 // It returns how many bytes were consumed (up to 12).
-template <endianness big_endian>
+template <Endian big_endian>
 size_t convert_masked_utf8_to_utf16(const char* input,
     uint64_t utf8_end_of_code_point_mask,
     char16_t*& utf16_output) {
@@ -182,8 +182,8 @@ size_t convert_masked_utf8_to_utf16(const char* input,
                 const auto ch0 = uint16_t(surrogate_buffer[i] & 0xffff);
                 const auto ch1 = uint16_t(surrogate_buffer[i] >> 16);
                 if (match_system(big_endian)) {
-                    utf16_output[1] = scalar::u16_swap_bytes(ch0);
-                    utf16_output[0] = scalar::u16_swap_bytes(ch1);
+                    utf16_output[1] = u16_byteswap(ch0);
+                    utf16_output[0] = u16_byteswap(ch1);
                 } else {
                     utf16_output[1] = ch0;
                     utf16_output[0] = ch1;
@@ -191,7 +191,7 @@ size_t convert_masked_utf8_to_utf16(const char* input,
                 utf16_output += 2;
             } else {
                 const auto chr = uint16_t(basic_buffer[i]);
-                utf16_output[0] = scalar::utf16::swap_if_needed<big_endian>(chr);
+                utf16_output[0] = u16_byteswap_if_needed<big_endian>(chr);
                 utf16_output++;
             }
         }

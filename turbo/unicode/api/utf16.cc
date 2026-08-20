@@ -22,12 +22,12 @@ namespace turbo {
 
      [[nodiscard]] size_t trim_partial_utf16be(const char16_t* input,
         size_t length) {
-        return scalar::utf16::trim_partial_utf16<BIG>(input, length);
+        return scalar::utf16::trim_partial_utf16<Endian::big>(input, length);
     }
 
      [[nodiscard]] size_t trim_partial_utf16le(const char16_t* input,
         size_t length) {
-        return scalar::utf16::trim_partial_utf16<LITTLE>(input, length);
+        return scalar::utf16::trim_partial_utf16<Endian::little>(input, length);
     }
 
      [[nodiscard]] size_t trim_partial_utf16(const char16_t* input,
@@ -158,10 +158,10 @@ namespace turbo {
             len -= read_len;
         }
 #if KUMO_ENDIAN_BIG
-        full_result r = scalar::utf16_to_utf8::convert_with_errors<endianness::BIG, true>(
+        full_result r = scalar::utf16_to_utf8::convert_with_errors<Endian::big, true>(
             buf, len, utf8_output, utf8_len);
 #else
-        full_result r = scalar::utf16_to_utf8::convert_with_errors<endianness::LITTLE, true>(
+        full_result r = scalar::utf16_to_utf8::convert_with_errors<Endian::little, true>(
             buf, len, utf8_output, utf8_len);
 #endif
         if (r.error != UnicodeError::SUCCESS && r.error != UnicodeError::OUTPUT_BUFFER_TOO_SMALL) {

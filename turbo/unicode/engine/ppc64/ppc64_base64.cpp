@@ -439,12 +439,12 @@ public:
         uint64_t nmask = ~mask;
         compress(b.chunks[0], uint16_t(mask), output);
         compress(b.chunks[1], uint16_t(mask >> 16),
-            output + count_ones(nmask & 0xFFFF));
+            output + popcount(nmask & 0xFFFF));
         compress(b.chunks[2], uint16_t(mask >> 32),
-            output + count_ones(nmask & 0xFFFFFFFF));
+            output + popcount(nmask & 0xFFFFFFFF));
         compress(b.chunks[3], uint16_t(mask >> 48),
-            output + count_ones(nmask & 0xFFFFFFFFFFFFULL));
-        return count_ones(nmask);
+            output + popcount(nmask & 0xFFFFFFFFFFFFULL));
+        return popcount(nmask);
     }
 
     KUMO_FORCE_INLINE void base64_decode_block(char* out) {

@@ -8,7 +8,7 @@ namespace turbo {
         namespace {
             namespace utf16_to_utf8 {
 
-                template <endianness big_endian, typename InputPtr, typename OutputPtr>
+                template <Endian big_endian, typename InputPtr, typename OutputPtr>
                  size_t convert_valid(InputPtr data, size_t len,
                     OutputPtr utf8_output) {
                     size_t pos = 0;
@@ -27,7 +27,7 @@ namespace turbo {
                                     size_t final_pos = pos + 4;
                                     while (pos < final_pos) {
                                         *utf8_output++ = !match_system(big_endian)
-                                            ? char(u16_swap_bytes(data[pos]))
+                                            ? char(u16_byteswap(data[pos]))
                                             : char(data[pos]);
                                         pos++;
                                     }
@@ -36,7 +36,7 @@ namespace turbo {
                             }
                         }
 
-                        uint16_t word = !match_system(big_endian) ? u16_swap_bytes(data[pos]) : data[pos];
+                        uint16_t word = !match_system(big_endian) ? u16_byteswap(data[pos]) : data[pos];
                         if ((word & 0xFF80) == 0) {
                             // will generate one UTF-8 bytes
                             *utf8_output++ = char(word);
@@ -61,7 +61,7 @@ namespace turbo {
                                 return 0;
                             } // minimal bound checking
                             uint16_t next_word = !match_system(big_endian)
-                                ? u16_swap_bytes(data[pos + 1])
+                                ? u16_byteswap(data[pos + 1])
                                 : data[pos + 1];
                             uint16_t diff2 = uint16_t(next_word - 0xDC00);
                             uint32_t value = (diff << 10) + diff2 + 0x10000;

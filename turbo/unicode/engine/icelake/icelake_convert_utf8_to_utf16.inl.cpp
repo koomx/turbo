@@ -7,7 +7,7 @@
 /// Returns the position of the input and output after the processing is
 /// completed. Upon error, the output is set to null.
 
-template <endianness big_endian>
+template <Endian big_endian>
 utf8_to_utf16_result
 fast_avx512_convert_utf8_to_utf16(const char* in, size_t len, char16_t* out) {
     const char* const final_in = in + len;
@@ -29,7 +29,7 @@ fast_avx512_convert_utf8_to_utf16(const char* in, size_t len, char16_t* out) {
     return std::make_pair(in, out);
 }
 
-template <endianness big_endian>
+template <Endian big_endian>
 turbo::UnicodeResult fast_avx512_convert_utf8_to_utf16_with_errors(const char* in,
     size_t len,
     char16_t* out) {

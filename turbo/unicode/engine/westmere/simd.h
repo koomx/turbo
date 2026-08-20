@@ -19,7 +19,7 @@ namespace turbo {
                         : value(_value) { }
                     // Conversion to SIMD register
                     KUMO_FORCE_INLINE operator const __m128i&() const { return this->value; }
-                    template <endianness big_endian>
+                    template <Endian big_endian>
                     KUMO_FORCE_INLINE void store_ascii_as_utf16(char16_t* p) const {
                         __m128i first = _mm_cvtepu8_epi16(*this);
                         __m128i second = _mm_cvtepu8_epi16(_mm_srli_si128(*this, 8));
@@ -317,7 +317,7 @@ namespace turbo {
                         return this->reduce_or().is_ascii();
                     }
 
-                    template <endianness endian>
+                    template <Endian endian>
                     KUMO_FORCE_INLINE void store_ascii_as_utf16(char16_t* ptr) const {
                         this->chunks[0].template store_ascii_as_utf16<endian>(ptr + sizeof(simd8<T>) * 0);
                         this->chunks[1].template store_ascii_as_utf16<endian>(ptr + sizeof(simd8<T>) * 1);

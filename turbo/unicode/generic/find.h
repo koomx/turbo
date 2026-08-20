@@ -29,7 +29,7 @@ namespace turbo {
                         uint64_t matches = input.eq(uint8_t(character));
                         if (matches != 0) {
                             // Found a match, return the first one
-                            int index = trailing_zeroes(matches);
+                            int index = countr_zero(matches);
                             return start + index;
                         }
                     }
@@ -68,7 +68,7 @@ namespace turbo {
                         uint64_t matches = input.eq(uint16_t(character));
                         if (matches != 0) {
                             // Found a match, return the first one
-                            int index = trailing_zeroes(matches) / 2;
+                            int index = countr_zero(matches) / 2;
                             return start + index;
                         }
                     }

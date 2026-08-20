@@ -4,7 +4,7 @@
 /// UTF16 (little endian) into UTF-8 (to outbuf). The number of code units
 /// written is written to 'outlen' and the function reports the number of input
 /// word consumed.
-template <endianness big_endian>
+template <Endian big_endian>
 size_t utf16_to_utf8_avx512i(const char16_t* inbuf, size_t inlen,
     unsigned char* outbuf, size_t* outlen) {
     __m512i in;
