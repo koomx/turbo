@@ -14,7 +14,7 @@
 //
 
 #include <turbo/unicode/api/latin1.h>
-#include <turbo/unicode/engine/backend_select.h>
+#include <turbo/unicode/engine/isa_select.h>
 #include <turbo/unicode/scalar/latin1_to_utf8/latin1_to_utf8.h>
 #include <algorithm>
 
@@ -22,30 +22,30 @@ namespace turbo {
 
      [[nodiscard]] size_t convert_latin1_to_utf8(const char* buf, size_t len,
     char* utf8_output) noexcept {
-        return get_default_implementation()->convert_latin1_to_utf8(buf, len,
+        return UnicodeRegistry::get_best_isa()->convert_latin1_to_utf8(buf, len,
             utf8_output);
     }
 
      [[nodiscard]] size_t convert_latin1_to_utf16le(
         const char* buf, size_t len, char16_t* utf16_output) noexcept {
-        return get_default_implementation()->convert_latin1_to_utf16le(buf, len,
+        return UnicodeRegistry::get_best_isa()->convert_latin1_to_utf16le(buf, len,
             utf16_output);
     }
      [[nodiscard]] size_t convert_latin1_to_utf16be(
         const char* buf, size_t len, char16_t* utf16_output) noexcept {
-        return get_default_implementation()->convert_latin1_to_utf16be(buf, len,
+        return UnicodeRegistry::get_best_isa()->convert_latin1_to_utf16be(buf, len,
             utf16_output);
     }
 
      [[nodiscard]] size_t convert_latin1_to_utf32(
      const char* buf, size_t len, char32_t* latin1_output) noexcept {
-        return get_default_implementation()->convert_latin1_to_utf32(buf, len,
+        return UnicodeRegistry::get_best_isa()->convert_latin1_to_utf32(buf, len,
             latin1_output);
     }
 
      [[nodiscard]] size_t utf8_length_from_latin1(const char* buf,
         size_t len) noexcept {
-        return get_default_implementation()->utf8_length_from_latin1(buf, len);
+        return UnicodeRegistry::get_best_isa()->utf8_length_from_latin1(buf, len);
     }
 
      [[nodiscard]] size_t convert_latin1_to_utf8_safe(

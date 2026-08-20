@@ -2,6 +2,7 @@
 #define UNICODE_ICELAKE_H
 
 #include <turbo/unicode/engine/portability.h>
+#include <turbo/arch/isa.h>
 
 #ifdef __has_include
 // How do we detect that a compiler supports vbmi2?
@@ -43,6 +44,10 @@
 #else
 #define UNICODE_CAN_ALWAYS_RUN_ICELAKE 0
 #endif
+
+namespace turbo {
+    IsaInfo get_icelake_info();
+} // namespace turbo
 
 #if UNICODE_IMPLEMENTATION_ICELAKE
 #if UNICODE_CAN_ALWAYS_RUN_ICELAKE

@@ -2,6 +2,7 @@
 #define UNICODE_FALLBACK_H
 
 #include <turbo/unicode/engine/portability.h>
+#include <turbo/arch/isa.h>
 
 // Note that fallback.h is always imported last.
 
@@ -16,6 +17,10 @@
 #endif
 
 #define UNICODE_CAN_ALWAYS_RUN_FALLBACK (UNICODE_IMPLEMENTATION_FALLBACK)
+
+namespace turbo {
+    IsaInfo get_fallback_info();
+} // namespace turbo
 
 #if UNICODE_IMPLEMENTATION_FALLBACK
 

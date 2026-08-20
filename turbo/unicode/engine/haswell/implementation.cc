@@ -1,5 +1,6 @@
 
 #include <turbo/unicode/engine/haswell.h>
+#include <turbo/unicode/engine/implementation.h>
 #if UNICODE_IMPLEMENTATION_HASWELL
 #include <turbo/unicode/tables/utf8_to_utf16_tables.h>
 #include <turbo/unicode/tables/utf16_to_utf8_tables.h>
@@ -1260,8 +1261,32 @@ namespace turbo {
         }
 
     } // namespace UNICODE_IMPLEMENTATION
+
+    static turbo::implementation *get_haswell_instance() {
+        static haswell::implementation ins;
+        return &ins;
+    }
 } // namespace turbo
 
 #include <turbo/unicode/engine/haswell/end.h>
+#else
+namespace turbo {
+    static turbo::implementation *get_haswell_instance() {
+        return nullptr;
+    }
+}
 #endif
+
+namespace turbo {
+    IsaInfo get_haswell_info() {
+        static IsaInfo ins = {
+            .compiled = UNICODE_IMPLEMENTATION_HASWELL,
+            .failback = false,
+            .required_isa = static_cast<uint32_t>(InstructionSet::AVX2 | InstructionSet::BMI1 | InstructionSet::BMI2),
+            .isa_name = "haswell",
+            .engine = get_haswell_instance(),
+        };
+        return ins;
+    }
+} // namespace turbo
 

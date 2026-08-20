@@ -6,6 +6,7 @@
 #endif
 
 #include <turbo/unicode/engine/portability.h>
+#include <turbo/arch/isa.h>
 
 #ifndef UNICODE_IMPLEMENTATION_ARM64
 #define UNICODE_IMPLEMENTATION_ARM64 (KUMO_ARCH_ARM64)
@@ -17,6 +18,11 @@
 #endif
 
 #include <turbo/arch/isadetection.h>
+
+namespace turbo {
+    IsaInfo get_arm64_info();
+} // namespace turbo
+
 
 #if UNICODE_IMPLEMENTATION_ARM64
 
@@ -35,6 +41,8 @@ namespace turbo {
 #include <turbo/unicode/engine/arm64/simd.h>
 
 #include <turbo/unicode/engine/arm64/end.h>
+
+
 
 #endif // UNICODE_IMPLEMENTATION_ARM64
 

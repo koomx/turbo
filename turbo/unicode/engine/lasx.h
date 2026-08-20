@@ -6,6 +6,7 @@
 #endif
 
 #include <turbo/unicode/engine/portability.h>
+#include <turbo/arch/isa.h>
 
 #ifndef UNICODE_IMPLEMENTATION_LASX
 #if KUMO_SIMD_LASX
@@ -30,6 +31,10 @@
 
 #define UNICODE_CAN_ALWAYS_RUN_FALLBACK (UNICODE_IMPLEMENTATION_FALLBACK)
 #include <turbo/arch/isadetection.h>
+
+namespace turbo {
+    IsaInfo get_lasx_info();
+} // namespace turbo
 
 #if UNICODE_IMPLEMENTATION_LASX
 #define UNICODE_TARGET_LASX UNICODE_TARGET_REGION("lasx,lsx")

@@ -11,6 +11,7 @@
 #endif
 
 #include <turbo/unicode/engine/portability.h>
+#include <turbo/arch/isa.h>
 
 #ifndef UNICODE_IMPLEMENTATION_LSX
 #if UNICODE_CAN_ALWAYS_RUN_LASX
@@ -27,6 +28,10 @@
 
 #define UNICODE_CAN_ALWAYS_RUN_FALLBACK (UNICODE_IMPLEMENTATION_FALLBACK)
 #include <turbo/arch/isadetection.h>
+
+namespace turbo {
+    IsaInfo get_lsx_info();
+} // namespace turbo
 
 #if UNICODE_IMPLEMENTATION_LSX
 

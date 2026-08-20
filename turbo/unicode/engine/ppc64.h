@@ -6,6 +6,7 @@
 #endif
 
 #include <turbo/unicode/engine/portability.h>
+#include <turbo/arch/isa.h>
 
 #ifndef UNICODE_IMPLEMENTATION_PPC64
 #define UNICODE_IMPLEMENTATION_PPC64 (KUMO_ARCH_PPC64 && KUMO_SIMD_ALTIVEC)
@@ -14,6 +15,10 @@
     UNICODE_IMPLEMENTATION_PPC64 && KUMO_ARCH_PPC64 && KUMO_SIMD_ALTIVEC
 
 #include <turbo/arch/isadetection.h>
+
+namespace turbo {
+    IsaInfo get_ppc64_info();
+} // namespace turbo
 
 #if UNICODE_IMPLEMENTATION_PPC64
 

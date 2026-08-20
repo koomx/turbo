@@ -9,6 +9,7 @@
 #endif
 
 #include <turbo/unicode/engine/portability.h>
+#include <turbo/arch/isa.h>
 
 // Default Haswell to on if this is x86-64. Even if we are not compiled for it,
 // it could be selected at runtime.
@@ -31,6 +32,10 @@
 #else
 #define UNICODE_CAN_ALWAYS_RUN_HASWELL 0
 #endif
+
+namespace turbo {
+    IsaInfo get_haswell_info();
+} // namespace turbo
 
 #if UNICODE_IMPLEMENTATION_HASWELL
 

@@ -16,7 +16,7 @@
 #include <turbo/unicode/api/utf16.h>
 #include <turbo/unicode/scalar/utf16.h>
 #include <turbo/unicode/scalar/utf16_to_utf8/utf16_to_utf8.h>
-#include <turbo/unicode/engine/backend_select.h>
+#include <turbo/unicode/engine/isa_select.h>
 
 namespace turbo {
 
@@ -41,11 +41,11 @@ namespace turbo {
 
      [[nodiscard]] bool validate_utf16le_as_ascii(const char16_t* buf,
         size_t len) noexcept {
-        return get_default_implementation()->validate_utf16le_as_ascii(buf, len);
+        return UnicodeRegistry::get_best_isa()->validate_utf16le_as_ascii(buf, len);
     }
      [[nodiscard]] bool validate_utf16be_as_ascii(const char16_t* buf,
         size_t len) noexcept {
-        return get_default_implementation()->validate_utf16be_as_ascii(buf, len);
+        return UnicodeRegistry::get_best_isa()->validate_utf16be_as_ascii(buf, len);
     }
      [[nodiscard]] bool validate_utf16_as_ascii(const char16_t* input,
         size_t length) noexcept {
@@ -66,12 +66,12 @@ namespace turbo {
     }
     void to_well_formed_utf16be(const char16_t* input, size_t len,
         char16_t* output) noexcept {
-        return get_default_implementation()->to_well_formed_utf16be(input, len,
+        return UnicodeRegistry::get_best_isa()->to_well_formed_utf16be(input, len,
             output);
     }
     void to_well_formed_utf16le(const char16_t* input, size_t len,
         char16_t* output) noexcept {
-        return get_default_implementation()->to_well_formed_utf16le(input, len,
+        return UnicodeRegistry::get_best_isa()->to_well_formed_utf16le(input, len,
             output);
     }
     void to_well_formed_utf16(const char16_t* input, size_t len,
@@ -85,12 +85,12 @@ namespace turbo {
 
      [[nodiscard]] bool validate_utf16le(const char16_t* buf,
     size_t len) noexcept {
-        return get_default_implementation()->validate_utf16le(buf, len);
+        return UnicodeRegistry::get_best_isa()->validate_utf16le(buf, len);
     }
 
      [[nodiscard]] bool validate_utf16be(const char16_t* buf,
         size_t len) noexcept {
-        return get_default_implementation()->validate_utf16be(buf, len);
+        return UnicodeRegistry::get_best_isa()->validate_utf16be(buf, len);
     }
      [[nodiscard]] UnicodeResult validate_utf16_with_errors(const char16_t* buf,
         size_t len) noexcept {
@@ -102,11 +102,11 @@ namespace turbo {
     }
      [[nodiscard]] UnicodeResult validate_utf16le_with_errors(const char16_t* buf,
         size_t len) noexcept {
-        return get_default_implementation()->validate_utf16le_with_errors(buf, len);
+        return UnicodeRegistry::get_best_isa()->validate_utf16le_with_errors(buf, len);
     }
      [[nodiscard]] UnicodeResult validate_utf16be_with_errors(const char16_t* buf,
         size_t len) noexcept {
-        return get_default_implementation()->validate_utf16be_with_errors(buf, len);
+        return UnicodeRegistry::get_best_isa()->validate_utf16be_with_errors(buf, len);
     }
 
      [[nodiscard]] size_t convert_utf16_to_utf8(const char16_t* buf,
@@ -182,45 +182,45 @@ namespace turbo {
 
      [[nodiscard]] size_t convert_utf16be_to_latin1(
         const char16_t* buf, size_t len, char* latin1_buffer) noexcept {
-        return get_default_implementation()->convert_utf16be_to_latin1(buf, len,
+        return UnicodeRegistry::get_best_isa()->convert_utf16be_to_latin1(buf, len,
             latin1_buffer);
     }
      [[nodiscard]] size_t convert_utf16le_to_latin1(
         const char16_t* buf, size_t len, char* latin1_buffer) noexcept {
-        return get_default_implementation()->convert_utf16le_to_latin1(buf, len,
+        return UnicodeRegistry::get_best_isa()->convert_utf16le_to_latin1(buf, len,
             latin1_buffer);
     }
      [[nodiscard]] size_t convert_valid_utf16be_to_latin1(
         const char16_t* buf, size_t len, char* latin1_buffer) noexcept {
-        return get_default_implementation()->convert_valid_utf16be_to_latin1(
+        return UnicodeRegistry::get_best_isa()->convert_valid_utf16be_to_latin1(
             buf, len, latin1_buffer);
     }
      [[nodiscard]] size_t convert_valid_utf16le_to_latin1(
         const char16_t* buf, size_t len, char* latin1_buffer) noexcept {
-        return get_default_implementation()->convert_valid_utf16le_to_latin1(
+        return UnicodeRegistry::get_best_isa()->convert_valid_utf16le_to_latin1(
             buf, len, latin1_buffer);
     }
      [[nodiscard]] UnicodeResult convert_utf16le_to_latin1_with_errors(
         const char16_t* buf, size_t len, char* latin1_buffer) noexcept {
-        return get_default_implementation()->convert_utf16le_to_latin1_with_errors(
+        return UnicodeRegistry::get_best_isa()->convert_utf16le_to_latin1_with_errors(
             buf, len, latin1_buffer);
     }
      [[nodiscard]] UnicodeResult convert_utf16be_to_latin1_with_errors(
         const char16_t* buf, size_t len, char* latin1_buffer) noexcept {
-        return get_default_implementation()->convert_utf16be_to_latin1_with_errors(
+        return UnicodeRegistry::get_best_isa()->convert_utf16be_to_latin1_with_errors(
             buf, len, latin1_buffer);
     }
 
      [[nodiscard]] size_t convert_utf16le_to_utf8(const char16_t* buf,
         size_t len,
         char* utf8_buffer) noexcept {
-        return get_default_implementation()->convert_utf16le_to_utf8(buf, len,
+        return UnicodeRegistry::get_best_isa()->convert_utf16le_to_utf8(buf, len,
             utf8_buffer);
     }
      [[nodiscard]] size_t convert_utf16be_to_utf8(const char16_t* buf,
         size_t len,
         char* utf8_buffer) noexcept {
-        return get_default_implementation()->convert_utf16be_to_utf8(buf, len,
+        return UnicodeRegistry::get_best_isa()->convert_utf16be_to_utf8(buf, len,
             utf8_buffer);
     }
      [[nodiscard]] UnicodeResult convert_utf16_to_utf8_with_errors(
@@ -244,12 +244,12 @@ namespace turbo {
 
      [[nodiscard]] UnicodeResult convert_utf16le_to_utf8_with_errors(
         const char16_t* buf, size_t len, char* utf8_buffer) noexcept {
-        return get_default_implementation()->convert_utf16le_to_utf8_with_errors(
+        return UnicodeRegistry::get_best_isa()->convert_utf16le_to_utf8_with_errors(
             buf, len, utf8_buffer);
     }
      [[nodiscard]] UnicodeResult convert_utf16be_to_utf8_with_errors(
         const char16_t* buf, size_t len, char* utf8_buffer) noexcept {
-        return get_default_implementation()->convert_utf16be_to_utf8_with_errors(
+        return UnicodeRegistry::get_best_isa()->convert_utf16be_to_utf8_with_errors(
             buf, len, utf8_buffer);
     }
      [[nodiscard]] size_t convert_valid_utf16_to_utf8(
@@ -272,18 +272,18 @@ namespace turbo {
 
      [[nodiscard]] size_t convert_valid_utf16le_to_utf8(
         const char16_t* buf, size_t len, char* utf8_buffer) noexcept {
-        return get_default_implementation()->convert_valid_utf16le_to_utf8(
+        return UnicodeRegistry::get_best_isa()->convert_valid_utf16le_to_utf8(
             buf, len, utf8_buffer);
     }
      [[nodiscard]] size_t convert_valid_utf16be_to_utf8(
         const char16_t* buf, size_t len, char* utf8_buffer) noexcept {
-        return get_default_implementation()->convert_valid_utf16be_to_utf8(
+        return UnicodeRegistry::get_best_isa()->convert_valid_utf16be_to_utf8(
             buf, len, utf8_buffer);
     }
 
      [[nodiscard]] size_t convert_utf32_to_utf16le(
         const char32_t* buf, size_t len, char16_t* utf16_buffer) noexcept {
-        return get_default_implementation()->convert_utf32_to_utf16le(buf, len,
+        return UnicodeRegistry::get_best_isa()->convert_utf32_to_utf16le(buf, len,
             utf16_buffer);
     }
 
@@ -297,12 +297,12 @@ namespace turbo {
     }
      [[nodiscard]] size_t convert_utf16le_to_utf32(
         const char16_t* buf, size_t len, char32_t* utf32_buffer) noexcept {
-        return get_default_implementation()->convert_utf16le_to_utf32(buf, len,
+        return UnicodeRegistry::get_best_isa()->convert_utf16le_to_utf32(buf, len,
             utf32_buffer);
     }
      [[nodiscard]] size_t convert_utf16be_to_utf32(
         const char16_t* buf, size_t len, char32_t* utf32_buffer) noexcept {
-        return get_default_implementation()->convert_utf16be_to_utf32(buf, len,
+        return UnicodeRegistry::get_best_isa()->convert_utf16be_to_utf32(buf, len,
             utf32_buffer);
     }
      [[nodiscard]] UnicodeResult convert_utf16_to_utf32_with_errors(
@@ -315,12 +315,12 @@ namespace turbo {
     }
      [[nodiscard]] UnicodeResult convert_utf16le_to_utf32_with_errors(
         const char16_t* buf, size_t len, char32_t* utf32_buffer) noexcept {
-        return get_default_implementation()->convert_utf16le_to_utf32_with_errors(
+        return UnicodeRegistry::get_best_isa()->convert_utf16le_to_utf32_with_errors(
             buf, len, utf32_buffer);
     }
      [[nodiscard]] UnicodeResult convert_utf16be_to_utf32_with_errors(
         const char16_t* buf, size_t len, char32_t* utf32_buffer) noexcept {
-        return get_default_implementation()->convert_utf16be_to_utf32_with_errors(
+        return UnicodeRegistry::get_best_isa()->convert_utf16be_to_utf32_with_errors(
             buf, len, utf32_buffer);
     }
      [[nodiscard]] size_t convert_valid_utf16_to_utf32(
@@ -333,18 +333,18 @@ namespace turbo {
     }
      [[nodiscard]] size_t convert_valid_utf16le_to_utf32(
         const char16_t* buf, size_t len, char32_t* utf32_buffer) noexcept {
-        return get_default_implementation()->convert_valid_utf16le_to_utf32(
+        return UnicodeRegistry::get_best_isa()->convert_valid_utf16le_to_utf32(
             buf, len, utf32_buffer);
     }
      [[nodiscard]] size_t convert_valid_utf16be_to_utf32(
         const char16_t* buf, size_t len, char32_t* utf32_buffer) noexcept {
-        return get_default_implementation()->convert_valid_utf16be_to_utf32(
+        return UnicodeRegistry::get_best_isa()->convert_valid_utf16be_to_utf32(
             buf, len, utf32_buffer);
     }
 
     void change_endianness_utf16(const char16_t* input, size_t length,
         char16_t* output) noexcept {
-        get_default_implementation()->change_endianness_utf16(input, length, output);
+        UnicodeRegistry::get_best_isa()->change_endianness_utf16(input, length, output);
     }
      [[nodiscard]] size_t count_utf16(const char16_t* input,
         size_t length) noexcept {
@@ -356,11 +356,11 @@ namespace turbo {
     }
      [[nodiscard]] size_t count_utf16le(const char16_t* input,
         size_t length) noexcept {
-        return get_default_implementation()->count_utf16le(input, length);
+        return UnicodeRegistry::get_best_isa()->count_utf16le(input, length);
     }
      [[nodiscard]] size_t count_utf16be(const char16_t* input,
         size_t length) noexcept {
-        return get_default_implementation()->count_utf16be(input, length);
+        return UnicodeRegistry::get_best_isa()->count_utf16be(input, length);
     }
 
      [[nodiscard]] size_t utf8_length_from_utf16(const char16_t* input,
@@ -381,11 +381,11 @@ namespace turbo {
     }
      [[nodiscard]] size_t utf8_length_from_utf16le(const char16_t* input,
         size_t length) noexcept {
-        return get_default_implementation()->utf8_length_from_utf16le(input, length);
+        return UnicodeRegistry::get_best_isa()->utf8_length_from_utf16le(input, length);
     }
      [[nodiscard]] size_t utf8_length_from_utf16be(const char16_t* input,
         size_t length) noexcept {
-        return get_default_implementation()->utf8_length_from_utf16be(input, length);
+        return UnicodeRegistry::get_best_isa()->utf8_length_from_utf16be(input, length);
     }
 
      [[nodiscard]] size_t utf32_length_from_utf16(const char16_t* input,
@@ -398,26 +398,26 @@ namespace turbo {
     }
      [[nodiscard]] size_t utf32_length_from_utf16le(const char16_t* input,
         size_t length) noexcept {
-        return get_default_implementation()->utf32_length_from_utf16le(input, length);
+        return UnicodeRegistry::get_best_isa()->utf32_length_from_utf16le(input, length);
     }
      [[nodiscard]] size_t utf32_length_from_utf16be(const char16_t* input,
         size_t length) noexcept {
-        return get_default_implementation()->utf32_length_from_utf16be(input, length);
+        return UnicodeRegistry::get_best_isa()->utf32_length_from_utf16be(input, length);
     }
 
      [[nodiscard]] size_t utf16_length_from_utf8(const char* input,
         size_t length) noexcept {
-        return get_default_implementation()->utf16_length_from_utf8(input, length);
+        return UnicodeRegistry::get_best_isa()->utf16_length_from_utf8(input, length);
     }
      [[nodiscard]] UnicodeResult utf8_length_from_utf16le_with_replacement(
         const char16_t* input, size_t length) noexcept {
-        return get_default_implementation()
+        return UnicodeRegistry::get_best_isa()
             ->utf8_length_from_utf16le_with_replacement(input, length);
     }
 
      [[nodiscard]] UnicodeResult utf8_length_from_utf16be_with_replacement(
         const char16_t* input, size_t length) noexcept {
-        return get_default_implementation()
+        return UnicodeRegistry::get_best_isa()
             ->utf8_length_from_utf16be_with_replacement(input, length);
     }
 
@@ -432,13 +432,13 @@ namespace turbo {
 
      [[nodiscard]] size_t convert_utf16le_to_utf8_with_replacement(
         const char16_t* input, size_t length, char* utf8_buffer) noexcept {
-        return get_default_implementation()->convert_utf16le_to_utf8_with_replacement(
+        return UnicodeRegistry::get_best_isa()->convert_utf16le_to_utf8_with_replacement(
             input, length, utf8_buffer);
     }
 
      [[nodiscard]] size_t convert_utf16be_to_utf8_with_replacement(
         const char16_t* input, size_t length, char* utf8_buffer) noexcept {
-        return get_default_implementation()->convert_utf16be_to_utf8_with_replacement(
+        return UnicodeRegistry::get_best_isa()->convert_utf16be_to_utf8_with_replacement(
             input, length, utf8_buffer);
     }
 

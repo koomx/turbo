@@ -1,4 +1,5 @@
-#include <turbo/unicode/engine/rvv.h>
+#include <turbo/unicode/engine/westmere.h>
+#include <turbo/unicode/engine/implementation.h>
 #if UNICODE_IMPLEMENTATION_WESTMERE
 
 #include <turbo/unicode/tables/utf8_to_utf16_tables.h>
@@ -1280,7 +1281,31 @@ namespace turbo {
         }
 
     } // namespace UNICODE_IMPLEMENTATION
+
+    static turbo::implementation *get_westmere_instance() {
+        static westmere::implementation ins;
+        return &ins;
+    }
 } // namespace turbo
 
 #include <turbo/unicode/engine/westmere/end.h>
+#else
+namespace turbo {
+    static turbo::implementation *get_westmere_instance() {
+        return nullptr;
+    }
+}
 #endif
+
+namespace turbo {
+    IsaInfo get_westmere_info() {
+        static IsaInfo ins = {
+            .compiled = UNICODE_IMPLEMENTATION_WESTMERE,
+            .failback = false,
+            .required_isa = static_cast<uint32_t>(InstructionSet::SSE42),
+            .isa_name = "westmere",
+            .engine = get_westmere_instance(),
+        };
+        return ins;
+    }
+} // namespace turbo

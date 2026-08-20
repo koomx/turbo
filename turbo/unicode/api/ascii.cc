@@ -14,16 +14,16 @@
 //
 
 #include <turbo/unicode/api/ascii.h>
-#include <turbo/unicode/engine/backend_select.h>
+#include <turbo/unicode/engine/isa_select.h>
 
 namespace turbo {
 
      [[nodiscard]] bool validate_ascii(const char* buf, size_t len) noexcept {
-        return get_default_implementation()->validate_ascii(buf, len);
+        return UnicodeRegistry::get_best_isa()->validate_ascii(buf, len);
     }
      [[nodiscard]] UnicodeResult validate_ascii_with_errors(const char* buf,
         size_t len) noexcept {
-        return get_default_implementation()->validate_ascii_with_errors(buf, len);
+        return UnicodeRegistry::get_best_isa()->validate_ascii_with_errors(buf, len);
     }
 
 }  // namespace turbo

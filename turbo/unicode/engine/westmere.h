@@ -6,6 +6,7 @@
 #endif
 
 #include <turbo/unicode/engine/portability.h>
+#include <turbo/arch/isa.h>
 
 // Default Westmere to on if this is x86-64, unless we'll always select Haswell.
 #ifndef UNICODE_IMPLEMENTATION_WESTMERE
@@ -26,6 +27,10 @@
 #else
 #define UNICODE_CAN_ALWAYS_RUN_WESTMERE 0
 #endif
+
+namespace turbo {
+    IsaInfo get_westmere_info();
+} // namespace turbo
 
 #if UNICODE_IMPLEMENTATION_WESTMERE
 

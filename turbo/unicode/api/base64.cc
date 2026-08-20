@@ -14,58 +14,58 @@
 //
 
 #include <turbo/unicode/api/base64.h>
-#include <turbo/unicode/engine/backend_select.h>
+#include <turbo/unicode/engine/isa_select.h>
 #include <turbo/unicode/api/base64_implementation.h>
 
 namespace turbo {
 
      [[nodiscard]] size_t
     maximal_binary_length_from_base64(const char* input, size_t length) noexcept {
-        return get_default_implementation()->maximal_binary_length_from_base64(
+        return UnicodeRegistry::get_best_isa()->maximal_binary_length_from_base64(
             input, length);
     }
 
      [[nodiscard]] UnicodeResult base64_to_binary(
         const char* input, size_t length, char* output, Base64Options options,
         last_chunk_handling_options last_chunk_handling_options) noexcept {
-        return get_default_implementation()->base64_to_binary(
+        return UnicodeRegistry::get_best_isa()->base64_to_binary(
             input, length, output, options, last_chunk_handling_options);
     }
 
      [[nodiscard]] size_t maximal_binary_length_from_base64(
         const char16_t* input, size_t length) noexcept {
-        return get_default_implementation()->maximal_binary_length_from_base64(
+        return UnicodeRegistry::get_best_isa()->maximal_binary_length_from_base64(
             input, length);
     }
 
      [[nodiscard]] size_t binary_length_from_base64(const char* input,
         size_t length) noexcept {
-        return get_default_implementation()->binary_length_from_base64(input, length);
+        return UnicodeRegistry::get_best_isa()->binary_length_from_base64(input, length);
     }
 
      [[nodiscard]] size_t binary_length_from_base64(const char16_t* input,
         size_t length) noexcept {
-        return get_default_implementation()->binary_length_from_base64(input, length);
+        return UnicodeRegistry::get_best_isa()->binary_length_from_base64(input, length);
     }
 
      [[nodiscard]] UnicodeResult base64_to_binary(
         const char16_t* input, size_t length, char* output, Base64Options options,
         last_chunk_handling_options last_chunk_handling_options) noexcept {
-        return get_default_implementation()->base64_to_binary(
+        return UnicodeRegistry::get_best_isa()->base64_to_binary(
             input, length, output, options, last_chunk_handling_options);
     }
 
      [[nodiscard]] full_result base64_to_binary_details(
         const char* input, size_t length, char* output, Base64Options options,
         last_chunk_handling_options last_chunk_handling_options) noexcept {
-        return get_default_implementation()->base64_to_binary_details(
+        return UnicodeRegistry::get_best_isa()->base64_to_binary_details(
             input, length, output, options, last_chunk_handling_options);
     }
 
      [[nodiscard]] full_result base64_to_binary_details(
         const char16_t* input, size_t length, char* output, Base64Options options,
         last_chunk_handling_options last_chunk_handling_options) noexcept {
-        return get_default_implementation()->base64_to_binary_details(
+        return UnicodeRegistry::get_best_isa()->base64_to_binary_details(
             input, length, output, options, last_chunk_handling_options);
     }
 
@@ -90,14 +90,14 @@ namespace turbo {
 
     size_t binary_to_base64(const char* input, size_t length, char* output,
         Base64Options options) noexcept {
-        return get_default_implementation()->binary_to_base64(input, length, output,
+        return UnicodeRegistry::get_best_isa()->binary_to_base64(input, length, output,
             options);
     }
 
     size_t binary_to_base64_with_lines(const char* input, size_t length,
         char* output, size_t line_length,
         Base64Options options) noexcept {
-        return get_default_implementation()->binary_to_base64_with_lines(
+        return UnicodeRegistry::get_best_isa()->binary_to_base64_with_lines(
             input, length, output, line_length, options);
     }
 

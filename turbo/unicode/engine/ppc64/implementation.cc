@@ -1,5 +1,6 @@
 
 #include <turbo/unicode/engine/ppc64.h>
+#include <turbo/unicode/engine/implementation.h>
 #if UNICODE_IMPLEMENTATION_PPC64
 
 #include <turbo/unicode/tables/utf8_to_utf16_tables.h>
@@ -897,7 +898,31 @@ namespace turbo {
 #endif
 
     } // namespace UNICODE_IMPLEMENTATION
+
+    static turbo::implementation *get_ppc64_instance() {
+        static ppc64::implementation ins;
+        return &ins;
+    }
 } // namespace turbo
 
 #include <turbo/unicode/engine/ppc64/end.h>
+#else
+namespace turbo {
+    static turbo::implementation *get_ppc64_instance() {
+        return nullptr;
+    }
+}
 #endif
+
+namespace turbo {
+    IsaInfo get_ppc64_info() {
+        static IsaInfo ins = {
+            .compiled = UNICODE_IMPLEMENTATION_PPC64,
+            .failback = false,
+            .required_isa = static_cast<uint32_t>(InstructionSet::ALTIVEC),
+            .isa_name = "ppc64",
+            .engine = get_ppc64_instance(),
+        };
+        return ins;
+    }
+} // namespace turbo

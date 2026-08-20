@@ -6,7 +6,7 @@
 #include <type_traits> // for is_same
 #include <algorithm>
 #include <turbo/macros/macros/assert.h>
-#include <turbo/unicode/engine/backend_select.h>
+#include <turbo/unicode/engine/isa_select.h>
 
 namespace turbo {
 
@@ -78,7 +78,7 @@ namespace turbo {
         turbo::full_result r;
 
         {
-            r = get_active_implementation()->base64_to_binary_details(
+            r = UnicodeRegistry::get_best_isa()->base64_to_binary_details(
                 input + input_position, safe_input, output + output_position, options,
                 done_with_partial
                     ? last_chunk_handling_options

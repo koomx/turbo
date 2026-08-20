@@ -13,19 +13,18 @@
 // limitations under the License.
 //
 
-#include <turbo/unicode/api/detect.h>
-#include <turbo/unicode/engine/isa_select.h>
+#pragma once
+
+#include <turbo/unicode/engine/interface.h>
+#include <turbo/arch/isa.h>
 
 namespace turbo {
 
-     [[nodiscard]] turbo::TextEncoding
-    autodetect_encoding(const char* buf, size_t length) noexcept {
-        return UnicodeRegistry::get_best_isa()->autodetect_encoding(buf, length);
-    }
+    class UnicodeRegistry : public IsaRegister<UnicodeRegistry, implementation> {
+        friend class IsaRegister<UnicodeRegistry, implementation>;
+    protected:
+        UnicodeRegistry();
+    };
 
-     [[nodiscard]] int detect_encodings(const char* buf,
-        size_t length) noexcept {
-        return UnicodeRegistry::get_best_isa()->detect_encodings(buf, length);
-    }
-
+    static_assert(std::is_base_of_v<IsaRegister<UnicodeRegistry,implementation>, UnicodeRegistry>, "must");
 }  // namespace turbo

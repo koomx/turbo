@@ -48,7 +48,6 @@
 #include <turbo/unicode/api/latin1.h>
 #include <turbo/unicode/api/base64.h>
 #include <turbo/unicode/engine/interface.h>
-#include <turbo/unicode/engine/backend_select.h>
 
 
 #endif // UNICODE_IMPLEMENTATION_H

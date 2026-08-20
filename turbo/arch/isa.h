@@ -90,16 +90,17 @@ namespace turbo {
         bool failback{false};
 
         uint32_t required_isa{0};
+        const char* isa_name{""};
+
+        void *engine{nullptr};
+
+        /////////////////////////////////////////
+        /// user no need fill below, by framework
         /// this should init in a header, to touch
         /// the current defines
         uint32_t current_compiled{0};
         /// by current detect_supported_architectures
         uint32_t current_isa{0};
-
-        const char* isa_name{""};
-
-        void *engine{nullptr};
-
         /// 0 means no rank no available
         /// 1 mean no simd
         /// users no need care it
@@ -109,42 +110,23 @@ namespace turbo {
 
     uint32_t make_isa_rank(const IsaInfo& info);
 
-    /// no need
-    /*
-    class IsaDetector {
-    public:
-        ///
-       virtual  bool get_compiled_architectures() = 0;
-
-        IsaInfo get_isa_info() {
-            IsaInfo info;
-            info.current_compiled = make_compiled_architectures();
-            info.compiled = get_compiled_architectures();
-            info.current_isa = internal::detect_supported_architectures();
-            return info;
-        }
-    };
-    */
-
-    template <typename T>
+    template <typename Sub, typename T>
     class IsaRegister {
+    public:
+       // static_assert(std::is_base_of_v<Sub, IsaRegister<Sub,T>>, "must");
     public:
        virtual  ~IsaRegister() = default;
 
         static T* get_best_isa() {
-            return get_isa()->_isa_best;
-        }
-
-        static T* get_default_isa() {
-            return static_cast<T*>(get_isa()->_isa_default.engine);
+            return static_cast<T*>(get_isa()->_isa_best.engine);
         }
 
         static T* get_failback_isa() {
-            return static_cast<T*>(get_isa()->_isa_default);
+            return static_cast<T*>(get_isa()->_isa_failback.engine);
         }
 
         static std::vector<IsaInfo> get_avail_isa_info() {
-            return static_cast<T*>(get_isa()->_avail_isa_info);
+            return get_isa()->_avail_isa_info;
         }
 
         static std::vector<T*> get_avail_isa() {
@@ -157,7 +139,7 @@ namespace turbo {
         }
 
         static std::vector<IsaInfo> get_all_isa_info() {
-            return get_isa()->_avail_all_info;
+            return get_isa()->_all_isa_info;
         }
 
         static std::vector<T*> get_all_isa() {
@@ -169,14 +151,14 @@ namespace turbo {
             return ret;
         }
 
-        static T* get_isa() {
-            static T ins;
+        static Sub* get_isa() {
+            static Sub ins;
             return &ins;
         }
 
     protected:
-        IsaRegister(const std::vector<IsaInfo> &engines)
-            :_all_isa_info(engines) {
+       explicit IsaRegister(std::vector<IsaInfo> engines)
+            :_all_isa_info(std::move(engines)) {
             initialize();
         }
 
@@ -205,7 +187,6 @@ namespace turbo {
             }
         }
     protected:
-        std::mutex _isa_mutex;
         bool _isa_detected{false};
         IsaInfo _isa_failback;
         IsaInfo _isa_best;

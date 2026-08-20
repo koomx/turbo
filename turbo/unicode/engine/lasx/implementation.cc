@@ -1,4 +1,5 @@
 #include <turbo/unicode/engine/lasx.h>
+#include <turbo/unicode/engine/implementation.h>
 #if UNICODE_IMPLEMENTATION_LASX
 
 #include <turbo/unicode/tables/utf8_to_utf16_tables.h>
@@ -1341,7 +1342,31 @@ namespace turbo {
         }
 
     } // namespace UNICODE_IMPLEMENTATION
+
+    static turbo::implementation *get_lasx_instance() {
+        static lasx::implementation ins;
+        return &ins;
+    }
 } // namespace turbo
 
 #include <turbo/unicode/engine/lasx/end.h>
+#else
+namespace turbo {
+    static turbo::implementation *get_lasx_instance() {
+        return nullptr;
+    }
+}
 #endif
+
+namespace turbo {
+    IsaInfo get_lasx_info() {
+        static IsaInfo ins = {
+            .compiled = UNICODE_IMPLEMENTATION_LASX,
+            .failback = false,
+            .required_isa = static_cast<uint32_t>(InstructionSet::LSX | InstructionSet::LASX),
+            .isa_name = "lasx",
+            .engine = get_lasx_instance(),
+        };
+        return ins;
+    }
+} // namespace turbo

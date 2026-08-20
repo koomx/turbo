@@ -6,13 +6,18 @@
 #endif
 
 #include <turbo/unicode/engine/portability.h>
+#include <turbo/arch/isa.h>
 
 #define UNICODE_CAN_ALWAYS_RUN_RVV UNICODE_IS_RVV
 
 #ifndef UNICODE_IMPLEMENTATION_RVV
 #define UNICODE_IMPLEMENTATION_RVV \
-    (UNICODE_CAN_ALWAYS_RUN_RVV || (KUMO_ARCH_RISCV64 && UNICODE_HAS_RVV_INTRINSICS && UNICODE_HAS_RVV_TARGET_REGION))
+    (UNICODE_CAN_ALWAYS_RUN_RVV || (KUMO_ARCH_RISCV64 && UNICODE_HAS_RVV_INTRINSICS))
 #endif
+
+namespace turbo {
+    IsaInfo get_rvv_info();
+} // namespace turbo
 
 #if UNICODE_IMPLEMENTATION_RVV
 

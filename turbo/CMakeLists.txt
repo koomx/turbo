@@ -241,6 +241,7 @@ set(UNICODE_SRC
         unicode/api/utf16.cc
         unicode/api/utf32.cc
         unicode/engine/backend_select.cc
+        unicode/engine/isa_select.cc
         unicode/engine/interface.cc
         unicode/engine/arm64/implementation.cc
         unicode/engine/fallback/implementation.cc

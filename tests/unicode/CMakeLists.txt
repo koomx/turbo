@@ -146,6 +146,21 @@ foreach (case IN LISTS UNICODE_TESTS)
 endforeach ()
 
 kmcmake_cc_test(
+        NAME registry_test
+        MODULE unicode
+        SOURCES
+        registry_test.cc
+        CXXOPTS
+        ${KMCMAKE_CXX_OPTIONS}
+        LINKS
+        GTest::gtest
+        GTest::gmock
+        GTest::gtest_main
+        turbo::turbo_static
+        ${KMCMAKE_DEPS_LINK}
+)
+
+kmcmake_cc_test(
         NAME straight_c_test
         MODULE unicode
         SOURCES

@@ -14,7 +14,7 @@
 //
 
 #include <turbo/unicode/api/base64.h>
-#include <turbo/unicode/engine/backend_select.h>
+#include <turbo/unicode/engine/isa_select.h>
 #include <turbo/unicode/api/base64_implementation.h>
 
 namespace turbo {
@@ -31,12 +31,12 @@ namespace turbo {
 
      [[nodiscard]] const char* detail::find(const char* start, const char* end,
         char character) noexcept {
-        return get_default_implementation()->find(start, end, character);
+        return UnicodeRegistry::get_best_isa()->find(start, end, character);
     }
      [[nodiscard]] const char16_t* detail::find(const char16_t* start,
         const char16_t* end,
         char16_t character) noexcept {
-        return get_default_implementation()->find(start, end, character);
+        return UnicodeRegistry::get_best_isa()->find(start, end, character);
     }
 
 }  // namespace turbo

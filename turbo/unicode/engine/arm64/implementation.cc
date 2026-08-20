@@ -1,5 +1,6 @@
 
 #include <turbo/unicode/engine/arm64.h>
+#include <turbo/unicode/engine/implementation.h>
 #if UNICODE_IMPLEMENTATION_ARM64
 
 #include <turbo/unicode/tables/utf8_to_utf16_tables.h>
@@ -7,7 +8,7 @@
 #include <turbo/unicode/tables/utf32_to_utf16_tables.h>
 
 #include <turbo/unicode/engine/arm64/begin.h>
-#include <turbo/unicode/engine/implementation.h>
+
 namespace turbo {
     namespace UNICODE_IMPLEMENTATION {
         namespace {
@@ -1251,7 +1252,31 @@ namespace turbo {
         }
 
     } // namespace UNICODE_IMPLEMENTATION
+
+    static turbo::implementation *get_arm64_instance() {
+        static arm64::implementation ins;
+        return &ins;
+    }
 } // namespace turbo
 
 #include <turbo/unicode/engine/arm64/end.h>
+#else
+namespace turbo {
+    static turbo::implementation *get_arm64_instance() {
+        return nullptr;
+    }
+}
 #endif
+
+namespace turbo {
+    IsaInfo get_arm64_info() {
+        static IsaInfo ins = {
+            .compiled = UNICODE_IMPLEMENTATION_ARM64,
+            .failback = false,
+            .required_isa = static_cast<uint32_t>(InstructionSet::NEON),
+            .isa_name ="arm64",
+            .engine = get_arm64_instance(),
+       };
+        return ins;
+    }
+} // namespace turbo
