@@ -116,7 +116,7 @@ namespace turbo {
             }
         }
 
-        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_POPCOUNT inline int
+        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_POPCOUNT int
         Popcount32(uint32_t x) noexcept {
 #if TURBO_NUMERIC_INTERNAL_HAVE_BUILTIN_OR_GCC(__builtin_popcount)
             static_assert(sizeof(unsigned int) == sizeof(x),
@@ -129,7 +129,7 @@ namespace turbo {
 #endif
         }
 
-        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_POPCOUNT inline int
+        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_POPCOUNT int
         Popcount64(uint64_t x) noexcept {
 #if TURBO_NUMERIC_INTERNAL_HAVE_BUILTIN_OR_GCC(__builtin_popcountll)
             static_assert(sizeof(unsigned long long) == sizeof(x), // NOLINT(runtime/int)
@@ -144,7 +144,7 @@ namespace turbo {
         }
 
         template<class T>
-        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_POPCOUNT inline int
+        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_POPCOUNT int
         Popcount(T x) noexcept {
             static_assert(std::is_unsigned_v<T>, "T must be unsigned");
             static_assert(IsPowerOf2(std::numeric_limits<T>::digits),
@@ -157,7 +157,7 @@ namespace turbo {
             }
         }
 
-        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_CLZ inline int
+        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_CLZ int
         CountLeadingZeroes32(uint32_t x) {
 #if TURBO_NUMERIC_INTERNAL_HAVE_BUILTIN_OR_GCC(__builtin_clz)
             // Use __builtin_clz, which uses the following instructions:
@@ -193,7 +193,7 @@ namespace turbo {
 #endif
         }
 
-        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_CLZ inline int
+        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_CLZ int
         CountLeadingZeroes16(uint16_t x) {
 #if KUMO_HAVE_BUILTIN(__builtin_clzg)
             return x == 0 ? 16 : __builtin_clzg(x);
@@ -206,7 +206,7 @@ namespace turbo {
 #endif
         }
 
-        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_CLZ inline int
+        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_CLZ int
         CountLeadingZeroes64(uint64_t x) {
 #if TURBO_NUMERIC_INTERNAL_HAVE_BUILTIN_OR_GCC(__builtin_clzll)
             // Use __builtin_clzll, which uses the following instructions:
@@ -260,7 +260,7 @@ namespace turbo {
         }
 
         template<typename T>
-        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_CLZ inline int
+        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_CLZ int
         CountLeadingZeroes(T x) {
             static_assert(std::is_unsigned_v<T>, "T must be unsigned");
             static_assert(IsPowerOf2(std::numeric_limits<T>::digits),
@@ -277,7 +277,7 @@ namespace turbo {
                               : CountLeadingZeroes64(x));
         }
 
-        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_CTZ inline int
+        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_CTZ int
         CountTrailingZeroesNonzero32(uint32_t x) {
 #if TURBO_NUMERIC_INTERNAL_HAVE_BUILTIN_OR_GCC(__builtin_ctz)
             static_assert(sizeof(unsigned int) == sizeof(x),
@@ -299,7 +299,7 @@ namespace turbo {
 #endif
         }
 
-        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_CTZ inline int
+        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_CTZ int
         CountTrailingZeroesNonzero64(uint64_t x) {
 #if TURBO_NUMERIC_INTERNAL_HAVE_BUILTIN_OR_GCC(__builtin_ctzll)
             static_assert(sizeof(unsigned long long) == sizeof(x), // NOLINT(runtime/int)
@@ -331,7 +331,7 @@ namespace turbo {
 #endif
         }
 
-        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_CTZ inline int
+        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_CTZ int
         CountTrailingZeroesNonzero16(uint16_t x) {
 #if KUMO_HAVE_BUILTIN(__builtin_ctzg)
             return __builtin_ctzg(x);
@@ -345,7 +345,7 @@ namespace turbo {
         }
 
         template<class T>
-        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_CTZ inline int
+        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_CTZ int
         CountTrailingZeroes(T x) noexcept {
             static_assert(std::is_unsigned_v<T>, "T must be unsigned");
             static_assert(IsPowerOf2(std::numeric_limits<T>::digits),
@@ -365,8 +365,7 @@ namespace turbo {
         // want to force it to wraparound so that bit_ceil of an invalid value are not
         // core constant expressions.
         template<class T>
-        KUMO_FORCE_INLINE
-        TURBO_INTERNAL_CONSTEXPR_CLZ inline std::enable_if_t<std::is_unsigned_v<T>,
+        KUMO_FORCE_INLINE TURBO_INTERNAL_CONSTEXPR_CLZ std::enable_if_t<std::is_unsigned_v<T>,
             T>
         BitCeilPromotionHelper(T x, T promotion) {
             return (T{1} << (x + promotion)) >> promotion;
@@ -374,7 +373,7 @@ namespace turbo {
 
         template<class T>
         KUMO_FORCE_INLINE
-        TURBO_INTERNAL_CONSTEXPR_CLZ inline std::enable_if_t<std::is_unsigned_v<T>,
+        TURBO_INTERNAL_CONSTEXPR_CLZ std::enable_if_t<std::is_unsigned_v<T>,
             T>
         BitCeilNonPowerOf2(T x) {
             // If T is narrower than unsigned, it undergoes promotion to unsigned when we
