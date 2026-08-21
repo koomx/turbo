@@ -14,7 +14,6 @@ jobs:
     uses: koomx/x-ci/.github/workflows/vcpkg-template.yml@main
     with:
       enable-std20-ubuntu24-amd64: true
-      enable-std20-ubuntu24-arm64: true
       enable-macos-arm64: true
       enable-windows: true
       # Windows: scripts/ci_configure.py forces MSVC (cl) via vcvarsall and
