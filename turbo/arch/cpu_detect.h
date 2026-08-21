@@ -15,6 +15,7 @@
 #pragma once
 
 #include <turbo/macros/config.h>
+#include <cstdint>
 
 namespace turbo {
 
