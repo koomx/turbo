@@ -49,13 +49,13 @@ namespace turbo {
 #if defined(__AVX2__)
     static std::string avxEncode32(std::string_view src) {
         uint8_t buf[BASE58_ENCODED_32_LEN];
-        size_t len = base58_encode32_fd(reinterpret_cast<const uint8_t*>(src.data()), buf);
+        size_t len = turbo::encoding_internal::base58_encode32_fd(reinterpret_cast<const uint8_t*>(src.data()), buf);
         return std::string(reinterpret_cast<const char*>(buf), len);
     }
 
     static std::string avxEncode64(std::string_view src) {
         uint8_t buf[BASE58_ENCODED_64_LEN];
-        size_t len = base58_encode64_fd(reinterpret_cast<const uint8_t*>(src.data()), buf);
+        size_t len = turbo::encoding_internal::base58_encode64_fd(reinterpret_cast<const uint8_t*>(src.data()), buf);
         return std::string(reinterpret_cast<const char*>(buf), len);
     }
 #endif
