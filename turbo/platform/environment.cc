@@ -19,6 +19,7 @@
 #endif
 
 #include <cstdlib>
+#include <turbo/base/internal/raw_logging.h>
 
 namespace turbo {
 
@@ -33,7 +34,7 @@ namespace turbo {
         // Windows version
         char* buffer = nullptr;
         std::size_t sz = 0;
-        if (_dupenv_s(&buffer, &sz, var_name) == 0 || buffer != nullptr) {
+        if (_dupenv_s(&buffer, &sz, var_name) == 0 && buffer != nullptr) {
             ename_string = std::string(buffer);
             free(buffer);
             return ename_string;
@@ -54,7 +55,7 @@ namespace turbo {
 
     void set_environment(const char* var_name, const char* new_value) {
 #ifdef _WIN32
-        SetEnvironmentVariableA(name, value);
+        SetEnvironmentVariableA(var_name, new_value);
 #else
         if (new_value == nullptr) {
             ::unsetenv(var_name);
