@@ -727,7 +727,7 @@ namespace turbo {
             turbo::SourceLocation loc);
 
         // Same as above but for rvalue string.
-        static uintptr_t MakeRepFromStringRvalue(uintptr_t inlined_rep,
+        static uintptr_t make_rep_from_string_rvalue(uintptr_t inlined_rep,
             std::string&& msg,
             turbo::SourceLocation loc);
 
@@ -968,7 +968,7 @@ namespace turbo {
     template <typename String, typename>
     inline Status::Status(turbo::StatusCode code, String&& msg,
         turbo::SourceLocation loc)
-        : Status(MakeRepFromStringRvalue(code_to_inlined_rep(code),
+        : Status(make_rep_from_string_rvalue(code_to_inlined_rep(code),
               std::forward<String>(msg), loc)) {
     }
 

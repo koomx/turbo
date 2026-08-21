@@ -128,7 +128,7 @@ namespace turbo {
         return make_status_rep_impl<std::string_view>(inlined_rep, msg, loc);
     }
 
-    uintptr_t Status::MakeRepFromStringRvalue(uintptr_t inlined_rep,
+    uintptr_t Status::make_rep_from_string_rvalue(uintptr_t inlined_rep,
                                               std::string &&msg,
                                               turbo::SourceLocation loc) {
         return make_status_rep_impl<std::string &&>(inlined_rep, std::move(msg), loc);
