@@ -288,15 +288,15 @@ TEST_F(ConsumeUnboundConversionTest, Flags) {
       SCOPED_TRACE(fmt);
       EXPECT_TRUE(Run(fmt.c_str()));
       EXPECT_EQ(fmt.find('-') == std::string::npos,
-                !FlagsContains(o.flags, Flags::kLeft));
+                !flags_contains(o.flags, Flags::kLeft));
       EXPECT_EQ(fmt.find('+') == std::string::npos,
-                !FlagsContains(o.flags, Flags::kShowPos));
+                !flags_contains(o.flags, Flags::kShowPos));
       EXPECT_EQ(fmt.find(' ') == std::string::npos,
-                !FlagsContains(o.flags, Flags::kSignCol));
+                !flags_contains(o.flags, Flags::kSignCol));
       EXPECT_EQ(fmt.find('#') == std::string::npos,
-                !FlagsContains(o.flags, Flags::kAlt));
+                !flags_contains(o.flags, Flags::kAlt));
       EXPECT_EQ(fmt.find('0') == std::string::npos,
-                !FlagsContains(o.flags, Flags::kZero));
+                !flags_contains(o.flags, Flags::kZero));
     }
   }
 }
@@ -344,7 +344,7 @@ struct SummarizeConsumer {
   std::string* out;
   explicit SummarizeConsumer(std::string* out) : out(out) {}
 
-  bool Append(std::string_view s) {
+  bool append(std::string_view s) {
     *out += "[" + std::string(s) + "]";
     return true;
   }

@@ -7,7 +7,7 @@
 #include <turbo/cli/cli.h>
 
 #include "app_helper.hpp"
-
+#include <turbo/version.h>
 #include "catch.hpp"
 #include <fstream>
 #include <set>
@@ -1584,7 +1584,7 @@ TEST_CASE("TVersion: simple_flag", "[help]") {
 
     xcli::App app;
 
-    app.set_version_flag("-v,--version", "VERSION " XCLI_VERSION);
+    app.set_version_flag("-v,--version", "VERSION " TURBO_VERSION_STRING);
 
     auto vers = app.version();
     CHECK_THAT(vers, Contains("VERSION"));
@@ -1597,12 +1597,12 @@ TEST_CASE("TVersion: callback_flag", "[help]") {
 
     xcli::App app;
 
-    app.set_version_flag("-v,--version", []() { return std::string("VERSION " XCLI_VERSION); });
+    app.set_version_flag("-v,--version", []() { return std::string("VERSION " TURBO_VERSION_STRING); });
 
     auto vers = app.version();
     CHECK_THAT(vers, Contains("VERSION"));
 
-    app.set_version_flag("-v", []() { return std::string("VERSION2 " XCLI_VERSION); });
+    app.set_version_flag("-v", []() { return std::string("VERSION2 " TURBO_VERSION_STRING); });
     vers = app.version();
     CHECK_THAT(vers, Contains("VERSION"));
 }
@@ -1616,7 +1616,7 @@ TEST_CASE("TVersion: help", "[help]") {
     auto hvers = app.help();
     CHECK_THAT(hvers, Contains("help_for_version"));
 
-    app.set_version_flag("-v", []() { return std::string("VERSION2 " XCLI_VERSION); }, "help_for_version2");
+    app.set_version_flag("-v", []() { return std::string("VERSION2 " TURBO_VERSION_STRING); }, "help_for_version2");
     hvers = app.help();
     CHECK_THAT(hvers, Contains("help_for_version2"));
 }
@@ -1625,7 +1625,7 @@ TEST_CASE("TVersion: parse_throw", "[help]") {
 
     xcli::App app;
 
-    app.set_version_flag("--version", XCLI_VERSION);
+    app.set_version_flag("--version", TURBO_VERSION_STRING);
 
     CHECK_THROWS_AS(app.parse("--version"), xcli::CallForVersion);
     CHECK_THROWS_AS(app.parse("--version --arg2 5"), xcli::CallForVersion);
@@ -1636,7 +1636,7 @@ TEST_CASE("TVersion: parse_throw", "[help]") {
     try {
         app.parse("--Version");
     } catch(const xcli::CallForVersion &v) {
-        CHECK_THAT(XCLI_VERSION, Equals(v.what()));
+        CHECK_THAT(TURBO_VERSION_STRING, Equals(v.what()));
         CHECK(0 == v.get_exit_code());
         const auto &appc = app;
         const auto *cptr = appc.get_version_ptr();
@@ -1648,14 +1648,14 @@ TEST_CASE("TVersion: exit", "[help]") {
 
     xcli::App app;
 
-    app.set_version_flag("--version", XCLI_VERSION);
+    app.set_version_flag("--version", TURBO_VERSION_STRING);
 
     try {
         app.parse("--version");
     } catch(const xcli::CallForVersion &v) {
         std::ostringstream out;
         auto ret = app.exit(v, out);
-        CHECK_THAT(out.str(), Contains(XCLI_VERSION));
+        CHECK_THAT(out.str(), Contains(TURBO_VERSION_STRING));
         CHECK(0 == ret);
     }
 }
@@ -1664,7 +1664,7 @@ TEST_CASE("TVersion: exit_with_required", "[help]") {
     // test that the version flag works even if there are required options
     xcli::App app;
 
-    app.set_version_flag("--version", XCLI_VERSION);
+    app.set_version_flag("--version", TURBO_VERSION_STRING);
     app.add_option("--req")->required();
 
     try {
@@ -1672,7 +1672,7 @@ TEST_CASE("TVersion: exit_with_required", "[help]") {
     } catch(const xcli::CallForVersion &v) {
         std::ostringstream out;
         auto ret = app.exit(v, out);
-        CHECK_THAT(out.str(), Contains(XCLI_VERSION));
+        CHECK_THAT(out.str(), Contains(TURBO_VERSION_STRING));
         CHECK(0 == ret);
     }
 }

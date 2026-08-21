@@ -16,7 +16,7 @@
 // File: endian.h
 // -----------------------------------------------------------------------------
 //
-// Compile-time endianness.  Do not guess from OS; match turbo/macros/config.h:
+// Compile-time Endianness.  Do not guess from OS; match turbo/macros/config.h:
 // prefer __BYTE_ORDER__, else _WIN32 => little, else #error.
 
 #pragma once

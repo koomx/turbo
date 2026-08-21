@@ -43,7 +43,7 @@ namespace turbo {
         // Parse the format string provided in 'src' and pass the identified items into
         // 'consumer'.
         // Text runs will be passed by calling
-        //   Consumer::Append(std::string_view);
+        //   Consumer::append(std::string_view);
         // ConversionItems will be passed by calling
         //   Consumer::ConvertOne(UnboundConversion, std::string_view);
         // In the case of ConvertOne, the std::string_view that is passed is the
@@ -51,7 +51,7 @@ namespace turbo {
         // the leading %. On success, it returns true. On failure, it stops and returns
         // false.
         template<typename Consumer>
-        bool ParseFormatString(std::string_view src, Consumer consumer) {
+        bool parse_format_string(std::string_view src, Consumer consumer) {
             int next_arg = 0;
             const char *p = src.data();
             const char *const end = p + src.size();
@@ -60,10 +60,10 @@ namespace turbo {
                         static_cast<const char *>(memchr(p, '%', static_cast<size_t>(end - p)));
                 if (!percent) {
                     // We found the last substring.
-                    return consumer.Append(std::string_view(p, static_cast<size_t>(end - p)));
+                    return consumer.append(std::string_view(p, static_cast<size_t>(end - p)));
                 }
                 // We found a percent, so push the text run then process the percent.
-                if (KUMO_UNLIKELY(!consumer.Append(
+                if (KUMO_UNLIKELY(!consumer.append(
                     std::string_view(p, static_cast<size_t>(percent - p))))) {
                     return false;
                 }
@@ -100,7 +100,7 @@ namespace turbo {
                         return false;
                     }
                 } else {
-                    if (KUMO_UNLIKELY(!consumer.Append("%"))) return false;
+                    if (KUMO_UNLIKELY(!consumer.append("%"))) return false;
                     p = percent + 2;
                     continue;
                 }
@@ -157,7 +157,7 @@ namespace turbo {
                     if (item.is_conversion) {
                         if (!consumer.ConvertOne(item.conv, text)) return false;
                     } else {
-                        if (!consumer.Append(text)) return false;
+                        if (!consumer.append(text)) return false;
                     }
                 }
                 return !has_error_;

@@ -28,24 +28,24 @@ namespace turbo {
     namespace strings_internal {
         class StringifySink {
         public:
-            void Append(size_t count, char ch);
+            void append(size_t count, char ch);
 
-            void Append(std::string_view v);
+            void append(std::string_view v);
 
             // Support `turbo::str_printf_to(&sink, format, args...)`.
-            friend void TurboFormatFlush(StringifySink* sink, std::string_view v) {
-                sink->Append(v);
+            friend void turbo_format_flush(StringifySink* sink, std::string_view v) {
+                sink->append(v);
             }
 
         private:
             template <typename T>
-            friend std::string_view ExtractStringification(StringifySink& sink, const T& v);
+            friend std::string_view extract_stringification(StringifySink& sink, const T& v);
 
             std::string buffer_;
         };
 
         template <typename T>
-        std::string_view ExtractStringification(StringifySink& sink, const T& v) {
+        std::string_view extract_stringification(StringifySink& sink, const T& v) {
             turbo_stringify(sink, v);
             return sink.buffer_;
         }
@@ -53,11 +53,11 @@ namespace turbo {
 
     template <typename Sink>
     void turbo_stringify(Sink& sink, turbo::SourceLocation l) {
-        sink.Append(l.file_name());
-        sink.Append(":");
+        sink.append(l.file_name());
+        sink.append(":");
         std::array<char, format_internal::kFastToBufferSize> buffer;
         format_internal::fast_int_to_buffer(l.line(), buffer.data());
-        sink.Append(buffer.data());
+        sink.append(buffer.data());
     }
 } // namespace turbo
 

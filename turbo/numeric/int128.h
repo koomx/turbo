@@ -224,7 +224,7 @@ class
   // Support for turbo::str_cat() etc.
   template <typename Sink>
   friend void turbo_stringify(Sink& sink, uint128 v) {
-    sink.Append(v.ToString());
+    sink.append(v.ToString());
   }
 
  private:
@@ -272,9 +272,9 @@ class numeric_limits<turbo::uint128> {
   static constexpr bool has_infinity = false;
   static constexpr bool has_quiet_NaN = false;
   static constexpr bool has_signaling_NaN = false;
-  KUMO_INTERNAL_DISABLE_DEPRECATED_DECLARATION_WARNING
+  KUMO_DISABLE_DEPRECATED_DECLARATION_WARNING
   static constexpr float_denorm_style has_denorm = denorm_absent;
-  KUMO_INTERNAL_RESTORE_DEPRECATED_DECLARATION_WARNING
+  KUMO_RESTORE_DEPRECATED_DECLARATION_WARNING
   static constexpr bool has_denorm_loss = false;
   static constexpr float_round_style round_style = round_toward_zero;
   static constexpr bool is_iec559 = false;
@@ -474,7 +474,7 @@ class int128 {
   // Support for turbo::str_cat() etc.
   template <typename Sink>
   friend void turbo_stringify(Sink& sink, int128 v) {
-    sink.Append(v.ToString());
+    sink.append(v.ToString());
   }
 
  private:
@@ -525,9 +525,9 @@ class numeric_limits<turbo::int128> {
   static constexpr bool has_infinity = false;
   static constexpr bool has_quiet_NaN = false;
   static constexpr bool has_signaling_NaN = false;
-  KUMO_INTERNAL_DISABLE_DEPRECATED_DECLARATION_WARNING
+  KUMO_DISABLE_DEPRECATED_DECLARATION_WARNING
   static constexpr float_denorm_style has_denorm = denorm_absent;
-  KUMO_INTERNAL_RESTORE_DEPRECATED_DECLARATION_WARNING
+  KUMO_RESTORE_DEPRECATED_DECLARATION_WARNING
   static constexpr bool has_denorm_loss = false;
   static constexpr float_round_style round_style = round_toward_zero;
   static constexpr bool is_iec559 = false;

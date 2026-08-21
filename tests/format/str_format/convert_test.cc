@@ -1301,7 +1301,7 @@ TEST_F(FormatConvertTest, LongDoubleRoundA) {
 // We don't actually store the results. This is just to exercise the rest of the
 // machinery.
 struct NullSink {
-  friend void TurboFormatFlush(NullSink *, std::string_view) {}
+  friend void turbo_format_flush(NullSink *, std::string_view) {}
 };
 
 template <typename... T>

@@ -16,56 +16,65 @@
 #ifndef TURBO_STRINGS_INTERNAL_STR_FORMAT_EXTENSION_H_
 #define TURBO_STRINGS_INTERNAL_STR_FORMAT_EXTENSION_H_
 
-
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <ostream>
 #include <string>
 
-#include <turbo/macros/config.h>
-#include <turbo/format/str_format/output.h>
 #include <string_view>
+#include <turbo/format/str_format/output.h>
+#include <turbo/macros/config.h>
 
 namespace turbo {
     enum class FormatConversionChar : uint8_t;
     enum class FormatConversionCharSet : uint64_t;
 
-    enum class LengthMod : std::uint8_t { h, hh, l, ll, L, j, z, t, q, none };
+    enum class LengthMod : std::uint8_t { h,
+        hh,
+        l,
+        ll,
+        L,
+        j,
+        z,
+        t,
+        q,
+        none };
 
     namespace str_format_internal {
         class FormatRawSinkImpl {
         public:
             // Implicitly convert from any type that provides the hook function as
             // described above.
-            template<typename T, decltype(str_format_internal::InvokeFlush(
-                std::declval<T *>(), std::string_view()))* = nullptr>
-            FormatRawSinkImpl(T *raw) // NOLINT
-                : sink_(raw), write_(&FormatRawSinkImpl::Flush<T>) {
+            template <typename T, decltype(str_format_internal::InvokeFlush(std::declval<T*>(), std::string_view()))* = nullptr>
+            FormatRawSinkImpl(T* raw) // NOLINT
+                : sink_(raw)
+                , write_(&FormatRawSinkImpl::Flush<T>) {
             }
 
             void Write(std::string_view s) { write_(sink_, s); }
 
-            template<typename T>
+            template <typename T>
             static FormatRawSinkImpl Extract(T s) {
                 return s.sink_;
             }
 
         private:
-            template<typename T>
-            static void Flush(void *r, std::string_view s) {
-                str_format_internal::InvokeFlush(static_cast<T *>(r), s);
+            template <typename T>
+            static void Flush(void* r, std::string_view s) {
+                str_format_internal::InvokeFlush(static_cast<T*>(r), s);
             }
 
-            void *sink_;
+            void* sink_;
 
-            void (*write_)(void *, std::string_view);
+            void (*write_)(void*, std::string_view);
         };
 
         // An abstraction to which conversions write their string data.
         class FormatSinkImpl {
         public:
-            explicit FormatSinkImpl(FormatRawSinkImpl raw) : raw_(raw) {
+            explicit FormatSinkImpl(FormatRawSinkImpl raw)
+                : raw_(raw) {
             }
 
             ~FormatSinkImpl() { Flush(); }
@@ -75,8 +84,9 @@ namespace turbo {
                 pos_ = buf_;
             }
 
-            void Append(size_t n, char c) {
-                if (n == 0) return;
+            void append(size_t n, char c) {
+                if (n == 0)
+                    return;
                 size_ += n;
                 auto raw_append = [&](size_t count) {
                     memset(pos_, c, count);
@@ -92,9 +102,10 @@ namespace turbo {
                 raw_append(n);
             }
 
-            void Append(std::string_view v) {
+            void append(std::string_view v) {
                 size_t n = v.size();
-                if (n == 0) return;
+                if (n == 0)
+                    return;
                 size_ += n;
                 if (n >= Avail()) {
                     Flush();
@@ -108,15 +119,15 @@ namespace turbo {
             size_t size() const { return size_; }
 
             // Put 'v' to 'sink' with specified width, precision, and left flag.
-            bool PutPaddedString(std::string_view v, int width, int precision, bool left);
+            bool put_padded_string(std::string_view v, int width, int precision, bool left);
 
-            template<typename T>
+            template <typename T>
             T Wrap() {
                 return T(this);
             }
 
-            template<typename T>
-            static FormatSinkImpl *Extract(T *s) {
+            template <typename T>
+            static FormatSinkImpl* Extract(T* s) {
                 return s->sink_;
             }
 
@@ -127,7 +138,7 @@ namespace turbo {
 
             FormatRawSinkImpl raw_;
             size_t size_ = 0;
-            char *pos_ = buf_;
+            char* pos_ = buf_;
             char buf_[1024];
         };
 
@@ -148,18 +159,17 @@ namespace turbo {
             return static_cast<Flags>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
         }
 
-        constexpr bool FlagsContains(Flags haystack, Flags needle) {
-            return (static_cast<uint8_t>(haystack) & static_cast<uint8_t>(needle)) ==
-                   static_cast<uint8_t>(needle);
+        constexpr bool flags_contains(Flags haystack, Flags needle) {
+            return (static_cast<uint8_t>(haystack) & static_cast<uint8_t>(needle)) == static_cast<uint8_t>(needle);
         }
 
-        std::string FlagsToString(Flags v);
+        std::string flags_to_string(Flags v);
 
-        inline std::ostream &operator<<(std::ostream &os, Flags v) {
-            return os << FlagsToString(v);
+        inline std::ostream& operator<<(std::ostream& os, Flags v) {
+            return os << flags_to_string(v);
         }
 
-// clang-format off
+        // clang-format off
 #define TURBO_INTERNAL_CONVERSION_CHARS_EXPAND_(X_VAL, X_SEP) \
   /* text */ \
   X_VAL(c) X_SEP X_VAL(s) X_SEP \
@@ -187,7 +197,7 @@ namespace turbo {
             FormatConversionCharInternal() = delete;
 
         private:
-  // clang-format off
+            // clang-format off
   enum class Enum : uint8_t {
     c, s,                    // text
     d, i, o, u, x, X,        // int
@@ -197,13 +207,11 @@ namespace turbo {
   };
             // clang-format on
         public:
-#define TURBO_INTERNAL_X_VAL(id)              \
-  static constexpr FormatConversionChar id = \
-      static_cast<FormatConversionChar>(Enum::id);
-            TURBO_INTERNAL_CONVERSION_CHARS_EXPAND_(TURBO_INTERNAL_X_VAL,)
+#define TURBO_INTERNAL_X_VAL(id) \
+    static constexpr FormatConversionChar id = static_cast<FormatConversionChar>(Enum::id);
+            TURBO_INTERNAL_CONVERSION_CHARS_EXPAND_(TURBO_INTERNAL_X_VAL, )
 #undef TURBO_INTERNAL_X_VAL
-            static constexpr FormatConversionChar kNone =
-                    static_cast<FormatConversionChar>(Enum::kNone);
+            static constexpr FormatConversionChar kNone = static_cast<FormatConversionChar>(Enum::kNone);
         };
 
         // clang-format on
@@ -211,20 +219,16 @@ namespace turbo {
         inline FormatConversionChar FormatConversionCharFromChar(char c) {
             switch (c) {
 #define TURBO_INTERNAL_X_VAL(id) \
-  case #id[0]:                  \
-    return FormatConversionCharInternal::id;
-                TURBO_INTERNAL_CONVERSION_CHARS_EXPAND_(TURBO_INTERNAL_X_VAL,)
+    case #id[0]:                 \
+        return FormatConversionCharInternal::id;
+                TURBO_INTERNAL_CONVERSION_CHARS_EXPAND_(TURBO_INTERNAL_X_VAL, )
 #undef TURBO_INTERNAL_X_VAL
             }
             return FormatConversionCharInternal::kNone;
         }
 
         inline bool FormatConversionCharIsUpper(FormatConversionChar c) {
-            if (c == FormatConversionCharInternal::X ||
-                c == FormatConversionCharInternal::F ||
-                c == FormatConversionCharInternal::E ||
-                c == FormatConversionCharInternal::G ||
-                c == FormatConversionCharInternal::A) {
+            if (c == FormatConversionCharInternal::X || c == FormatConversionCharInternal::F || c == FormatConversionCharInternal::E || c == FormatConversionCharInternal::G || c == FormatConversionCharInternal::A) {
                 return true;
             } else {
                 return false;
@@ -232,14 +236,7 @@ namespace turbo {
         }
 
         inline bool FormatConversionCharIsFloat(FormatConversionChar c) {
-            if (c == FormatConversionCharInternal::a ||
-                c == FormatConversionCharInternal::e ||
-                c == FormatConversionCharInternal::f ||
-                c == FormatConversionCharInternal::g ||
-                c == FormatConversionCharInternal::A ||
-                c == FormatConversionCharInternal::E ||
-                c == FormatConversionCharInternal::F ||
-                c == FormatConversionCharInternal::G) {
+            if (c == FormatConversionCharInternal::a || c == FormatConversionCharInternal::e || c == FormatConversionCharInternal::f || c == FormatConversionCharInternal::g || c == FormatConversionCharInternal::A || c == FormatConversionCharInternal::E || c == FormatConversionCharInternal::F || c == FormatConversionCharInternal::G) {
                 return true;
             } else {
                 return false;
@@ -250,12 +247,13 @@ namespace turbo {
             if (c == FormatConversionCharInternal::kNone) {
                 return '\0';
 
-#define TURBO_INTERNAL_X_VAL(e)                       \
-  } else if (c == FormatConversionCharInternal::e) { \
-    return #e[0];
+#define TURBO_INTERNAL_X_VAL(e)                      \
+    }                                                \
+    else if (c == FormatConversionCharInternal::e) { \
+        return #e[0];
 #define TURBO_INTERNAL_X_SEP
-            TURBO_INTERNAL_CONVERSION_CHARS_EXPAND_(TURBO_INTERNAL_X_VAL,
-                                                        TURBO_INTERNAL_X_SEP)
+                TURBO_INTERNAL_CONVERSION_CHARS_EXPAND_(TURBO_INTERNAL_X_VAL,
+                    TURBO_INTERNAL_X_SEP)
             } else {
                 return '\0';
             }
@@ -265,9 +263,10 @@ namespace turbo {
         }
 
         // The associated char.
-        inline std::ostream &operator<<(std::ostream &os, FormatConversionChar v) {
+        inline std::ostream& operator<<(std::ostream& os, FormatConversionChar v) {
             char c = FormatConversionCharToChar(v);
-            if (!c) c = '?';
+            if (!c)
+                c = '?';
             return os << c;
         }
 
@@ -277,18 +276,18 @@ namespace turbo {
         public:
             // Width and precision are not specified, no flags are set.
             bool is_basic() const { return flags_ == Flags::kBasic; }
-            bool has_left_flag() const { return FlagsContains(flags_, Flags::kLeft); }
+            bool has_left_flag() const { return flags_contains(flags_, Flags::kLeft); }
 
             bool has_show_pos_flag() const {
-                return FlagsContains(flags_, Flags::kShowPos);
+                return flags_contains(flags_, Flags::kShowPos);
             }
 
             bool has_sign_col_flag() const {
-                return FlagsContains(flags_, Flags::kSignCol);
+                return flags_contains(flags_, Flags::kSignCol);
             }
 
-            bool has_alt_flag() const { return FlagsContains(flags_, Flags::kAlt); }
-            bool has_zero_flag() const { return FlagsContains(flags_, Flags::kZero); }
+            bool has_alt_flag() const { return flags_contains(flags_, Flags::kAlt); }
+            bool has_zero_flag() const { return flags_contains(flags_, Flags::kZero); }
 
             LengthMod length_mod() const { return length_mod_; }
 
@@ -308,7 +307,7 @@ namespace turbo {
             // negative value.
             int precision() const { return precision_; }
 
-            template<typename T>
+            template <typename T>
             T Wrap() {
                 return T(*this);
             }
@@ -323,29 +322,29 @@ namespace turbo {
         };
 
         struct FormatConversionSpecImplFriend final {
-            static void SetFlags(Flags f, FormatConversionSpecImpl *conv) {
+            static void SetFlags(Flags f, FormatConversionSpecImpl* conv) {
                 conv->flags_ = f;
             }
 
-            static void SetLengthMod(LengthMod l, FormatConversionSpecImpl *conv) {
+            static void SetLengthMod(LengthMod l, FormatConversionSpecImpl* conv) {
                 conv->length_mod_ = l;
             }
 
             static void SetConversionChar(FormatConversionChar c,
-                                          FormatConversionSpecImpl *conv) {
+                FormatConversionSpecImpl* conv) {
                 conv->conv_ = c;
             }
 
-            static void SetWidth(int w, FormatConversionSpecImpl *conv) {
+            static void SetWidth(int w, FormatConversionSpecImpl* conv) {
                 conv->width_ = w;
             }
 
-            static void SetPrecision(int p, FormatConversionSpecImpl *conv) {
+            static void SetPrecision(int p, FormatConversionSpecImpl* conv) {
                 conv->precision_ = p;
             }
 
-            static std::string FlagsToString(const FormatConversionSpecImpl &spec) {
-                return str_format_internal::FlagsToString(spec.flags_);
+            static std::string flags_to_string(const FormatConversionSpecImpl& spec) {
+                return str_format_internal::flags_to_string(spec.flags_);
             }
         };
 
@@ -359,31 +358,29 @@ namespace turbo {
             return a;
         }
 
-        template<typename... CharSet>
+        template <typename... CharSet>
         constexpr FormatConversionCharSet FormatConversionCharSetUnion(
             FormatConversionCharSet a, CharSet... rest) {
             return static_cast<FormatConversionCharSet>(
-                static_cast<uint64_t>(a) |
-                static_cast<uint64_t>(FormatConversionCharSetUnion(rest...)));
+                static_cast<uint64_t>(a) | static_cast<uint64_t>(FormatConversionCharSetUnion(rest...)));
         }
 
         constexpr uint64_t FormatConversionCharToConvInt(FormatConversionChar c) {
-            return uint64_t{1} << (1 + static_cast<uint8_t>(c));
+            return uint64_t { 1 } << (1 + static_cast<uint8_t>(c));
         }
 
         constexpr uint64_t FormatConversionCharToConvInt(char conv) {
             return
-#define TURBO_INTERNAL_CHAR_SET_CASE(c)                                 \
-  conv == #c[0]                                                        \
-      ? FormatConversionCharToConvInt(FormatConversionCharInternal::c) \
-      :
-                    TURBO_INTERNAL_CONVERSION_CHARS_EXPAND_(TURBO_INTERNAL_CHAR_SET_CASE,)
+#define TURBO_INTERNAL_CHAR_SET_CASE(c)                                  \
+    conv == #c[0]                                                        \
+        ? FormatConversionCharToConvInt(FormatConversionCharInternal::c) \
+        :
+                TURBO_INTERNAL_CONVERSION_CHARS_EXPAND_(TURBO_INTERNAL_CHAR_SET_CASE, )
 #undef TURBO_INTERNAL_CHAR_SET_CASE
-                            conv
-                            ==
-                            '*'
-                                ? 1
-                                : 0;
+                        conv
+                    == '*'
+                ? 1
+                : 0;
         }
 
         constexpr FormatConversionCharSet FormatConversionCharToConvValue(char conv) {
@@ -392,22 +389,17 @@ namespace turbo {
         }
 
         struct FormatConversionCharSetInternal {
-#define TURBO_INTERNAL_CHAR_SET_CASE(c)         \
-  static constexpr FormatConversionCharSet c = \
-      FormatConversionCharToConvValue(#c[0]);
-            TURBO_INTERNAL_CONVERSION_CHARS_EXPAND_(TURBO_INTERNAL_CHAR_SET_CASE,)
+#define TURBO_INTERNAL_CHAR_SET_CASE(c) \
+    static constexpr FormatConversionCharSet c = FormatConversionCharToConvValue(#c[0]);
+            TURBO_INTERNAL_CONVERSION_CHARS_EXPAND_(TURBO_INTERNAL_CHAR_SET_CASE, )
 #undef TURBO_INTERNAL_CHAR_SET_CASE
 
             // Used for width/precision '*' specification.
-            static constexpr FormatConversionCharSet kStar =
-                    FormatConversionCharToConvValue('*');
+            static constexpr FormatConversionCharSet kStar = FormatConversionCharToConvValue('*');
 
-            static constexpr FormatConversionCharSet kIntegral =
-                    FormatConversionCharSetUnion(d, i, u, o, x, X);
-            static constexpr FormatConversionCharSet kFloating =
-                    FormatConversionCharSetUnion(a, e, f, g, A, E, F, G);
-            static constexpr FormatConversionCharSet kNumeric =
-                    FormatConversionCharSetUnion(kIntegral, kFloating);
+            static constexpr FormatConversionCharSet kIntegral = FormatConversionCharSetUnion(d, i, u, o, x, X);
+            static constexpr FormatConversionCharSet kFloating = FormatConversionCharSetUnion(a, e, f, g, A, E, F, G);
+            static constexpr FormatConversionCharSet kNumeric = FormatConversionCharSetUnion(kIntegral, kFloating);
             static constexpr FormatConversionCharSet kPointer = p;
         };
 
@@ -417,7 +409,7 @@ namespace turbo {
         //     integer. We need the result to stay as an enum.
         //  2. We use "enum class" which would not work even if we accepted the decay.
         constexpr FormatConversionCharSet operator|(FormatConversionCharSet a,
-                                                    FormatConversionCharSet b) {
+            FormatConversionCharSet b) {
             return FormatConversionCharSetUnion(a, b);
         }
 
@@ -434,20 +426,18 @@ namespace turbo {
             return c;
         }
 
-        template<typename T>
+        template <typename T>
         void ToFormatConversionCharSet(T) = delete;
 
         // Checks whether `c` exists in `set`.
         constexpr bool Contains(FormatConversionCharSet set, char c) {
-            return (static_cast<uint64_t>(set) &
-                    static_cast<uint64_t>(FormatConversionCharToConvValue(c))) != 0;
+            return (static_cast<uint64_t>(set) & static_cast<uint64_t>(FormatConversionCharToConvValue(c))) != 0;
         }
 
         // Checks whether all the characters in `c` are contained in `set`
         constexpr bool Contains(FormatConversionCharSet set,
-                                FormatConversionCharSet c) {
-            return (static_cast<uint64_t>(set) & static_cast<uint64_t>(c)) ==
-                   static_cast<uint64_t>(c);
+            FormatConversionCharSet c) {
+            return (static_cast<uint64_t>(set) & static_cast<uint64_t>(c)) == static_cast<uint64_t>(c);
         }
 
         // Checks whether all the characters in `c` are contained in `set`
@@ -462,4 +452,4 @@ namespace turbo {
     } // namespace str_format_internal
 } // namespace turbo
 
-#endif  // TURBO_STRINGS_INTERNAL_STR_FORMAT_EXTENSION_H_
+#endif // TURBO_STRINGS_INTERNAL_STR_FORMAT_EXTENSION_H_

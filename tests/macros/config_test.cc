@@ -37,7 +37,7 @@ TEST(ConfigTest, Endianness) {
 #elif KUMO_ENDIAN_BIG
   EXPECT_EQ(UINT32_C(0x00010203), number.value);
 #else
-#error Unknown endianness
+#error Unknown Endianness
 #endif
 }
 

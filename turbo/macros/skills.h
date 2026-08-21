@@ -104,6 +104,8 @@
 /// @brief KUMO_ARCH_32_BIT / KUMO_ARCH_64_BIT
 /// @brief KUMO_SIMD_SSE / SSE2 / SSE3 / SSSE3 / SSE4_1 / SSE4_2
 /// @brief KUMO_SIMD_AVX / AVX2 / AVX512F / AVX512BW / AVX512VL / AVX512DQ
+/// @brief KUMO_SIMD_AVX512IFMA / AVX512CD / AVX512VBMI / AVX512VBMI2
+/// @brief KUMO_SIMD_AVX512VNNI / AVX512BITALG / AVX512VPOPCNTDQ
 /// @brief KUMO_SIMD_FMA / BMI1 / BMI2 / POPCNT / LZCNT
 /// @brief KUMO_SIMD_NEON / SVE / SVE2 / AES / PCLMUL / RVV / LSX / LASX
 /// @brief KUMO_SIMD_ALTIVEC / VSX / CRYPTO — PowerPC
@@ -115,7 +117,9 @@
 /// @{
 /// @brief KUMO_COMPILER_GNUC     — 1 if GCC
 /// @brief KUMO_COMPILER_CLANG    — 1 if Clang (or AppleClang)
-/// @brief KUMO_COMPILER_MSVC     — 1 if MSVC
+/// @brief KUMO_COMPILER_MSVC     — 1 if MSVC (cl, not clang-cl)
+/// @brief KUMO_COMPILER_MSVC_CLANG — 1 if clang-cl
+/// @brief KUMO_COMPILER_MSVC_ENV — 1 if MSVC || MSVC_CLANG
 /// @brief KUMO_COMPILER_INTEL    — 1 if Intel Classic ICC
 /// @brief KUMO_COMPILER_ICC      — alias for KUMO_COMPILER_INTEL
 /// @brief KUMO_COMPILER_GCC      — alias for KUMO_COMPILER_GNUC
@@ -307,11 +311,17 @@
 
 /// @defgroup pragma Pragma Wrappers
 /// @{
+/// @brief KUMO_TARGET_REGION(T) — compiler target-ISA region (Clang attribute / GCC target); empty on MSVC
+/// @brief KUMO_UNTARGET_REGION  — end target-ISA region
 /// @brief KUMO_PRAGMA_DIAG_PUSH           — save diagnostic state
 /// @brief KUMO_PRAGMA_DIAG_POP            — restore diagnostic state
 /// @brief KUMO_PRAGMA_DIAG_IGNORED(str)   — suppress warning by string
 /// @brief KUMO_DISABLE_DEPRECATED_WARNINGS — push + ignore deprecation warnings
 /// @brief KUMO_RESTORE_DEPRECATED_WARNINGS — pop diagnostics
+/// @brief KUMO_DISABLE_UNUSED_WARNING      — push + ignore unused-function/const
+/// @brief KUMO_RESTORE_UNUSED_WARNING      — pop unused-warning diagnostics
+/// @brief KUMO_DISABLE_UNDESIRED_WARNINGS  — push + ignore IntelliSense/clang-cl noise
+/// @brief KUMO_RESTORE_UNDESIRED_WARNINGS  — pop undesired-warning diagnostics
 /// @brief KUMO_PRAGMA_GCC诊断_PUSH  — GCC-specific push
 /// @brief KUMO_PRAGMA_GCC诊断_POP   — GCC-specific pop
 /// @brief KUMO_PRAGMA_GCC诊断_IGNORED(x) — GCC-specific ignore

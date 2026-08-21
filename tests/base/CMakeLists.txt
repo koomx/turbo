@@ -35,6 +35,7 @@ set(BASE_TESTS
         throw_delegate_test
         log_severity_test
         raw_logging_test
+        resize_and_overwrite_test
         nullability_default_nonnull_test
         exception_safety_testing_test
         nullability_test

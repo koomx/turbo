@@ -1,0 +1,73 @@
+#ifndef UNICODE_ASCII_H
+#define UNICODE_ASCII_H
+
+#include <cstring>
+
+namespace turbo {
+    namespace scalar {
+        namespace {
+            namespace ascii {
+
+                template <class InputPtr>
+                 [[nodiscard]]  bool validate(InputPtr data,
+                    size_t len) noexcept {
+                    uint64_t pos = 0;
+                    // process in blocks of 16 bytes when possible
+                    {
+                        for (; pos + 16 <= len; pos += 16) {
+                            uint64_t v1;
+                            std::memcpy(&v1, data + pos, sizeof(uint64_t));
+                            uint64_t v2;
+                            std::memcpy(&v2, data + pos + sizeof(uint64_t), sizeof(uint64_t));
+                            uint64_t v { v1 | v2 };
+                            if ((v & 0x8080808080808080) != 0) {
+                                return false;
+                            }
+                        }
+                    }
+
+                    // process the tail byte-by-byte
+                    for (; pos < len; pos++) {
+                        if (static_cast<std::uint8_t>(data[pos]) >= 0b10000000) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+                template <class InputPtr>
+                 [[nodiscard]]  UnicodeResult
+                validate_with_errors(InputPtr data, size_t len) noexcept {
+                    size_t pos = 0;
+                    {
+                        // process in blocks of 16 bytes when possible
+                        for (; pos + 16 <= len; pos += 16) {
+                            uint64_t v1;
+                            std::memcpy(&v1, data + pos, sizeof(uint64_t));
+                            uint64_t v2;
+                            std::memcpy(&v2, data + pos + sizeof(uint64_t), sizeof(uint64_t));
+                            uint64_t v { v1 | v2 };
+                            if ((v & 0x8080808080808080) != 0) {
+                                for (; pos < len; pos++) {
+                                    if (static_cast<std::uint8_t>(data[pos]) >= 0b10000000) {
+                                        return UnicodeResult(UnicodeError::TOO_LARGE, pos);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // process the tail byte-by-byte
+                    for (; pos < len; pos++) {
+                        if (static_cast<std::uint8_t>(data[pos]) >= 0b10000000) {
+                            return UnicodeResult(UnicodeError::TOO_LARGE, pos);
+                        }
+                    }
+                    return UnicodeResult(UnicodeError::SUCCESS, pos);
+                }
+
+            } // namespace ascii
+        } // unnamed namespace
+    } // namespace scalar
+} // namespace turbo
+
+#endif

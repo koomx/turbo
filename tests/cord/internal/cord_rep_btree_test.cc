@@ -769,21 +769,21 @@ TEST(CordRepBtreeTest, MergeFuzzTest) {
   }
 }
 
-TEST_P(CordRepBtreeTest, RemoveSuffix) {
+TEST_P(CordRepBtreeTest, remove_suffix) {
   // Create tree of 1, 2 and 3 levels high
   constexpr size_t max_cap = CordRepBtree::kMaxCapacity;
   for (size_t cap : {max_cap - 1, max_cap * 2, max_cap * max_cap * 2}) {
     const std::string data = CreateRandomString(cap * 512);
 
     {
-      // Verify RemoveSuffix(<all>)
+      // Verify remove_suffix(<all>)
       AutoUnref refs;
       CordRepBtree* node = refs.RefIf(shared(), CreateTree(data, 512));
-      EXPECT_THAT(CordRepBtree::RemoveSuffix(node, data.length()), Eq(nullptr));
+      EXPECT_THAT(CordRepBtree::remove_suffix(node, data.length()), Eq(nullptr));
 
-      // Verify RemoveSuffix(<none>)
+      // Verify remove_suffix(<none>)
       node = refs.RefIf(shared(), CreateTree(data, 512));
-      EXPECT_THAT(CordRepBtree::RemoveSuffix(node, 0), Eq(node));
+      EXPECT_THAT(CordRepBtree::remove_suffix(node, 0), Eq(node));
       CordRep::Unref(node);
     }
 
@@ -791,7 +791,7 @@ TEST_P(CordRepBtreeTest, RemoveSuffix) {
       AutoUnref refs;
       auto flats = CreateFlatsFromString(data, 512);
       CordRepBtree* node = refs.RefIf(shared(), CreateTree(flats));
-      CordRep* rep = refs.Add(CordRepBtree::RemoveSuffix(node, n));
+      CordRep* rep = refs.Add(CordRepBtree::remove_suffix(node, n));
       EXPECT_THAT(CordToString(rep), Eq(data.substr(0, data.length() - n)));
 
       // Collect all flats
@@ -1083,7 +1083,7 @@ TEST(CordRepBtreeTest, IsFlatMultiFlat) {
 TEST_P(CordRepBtreeHeightTest, GetAppendBufferNotPrivate) {
   CordRepBtree* tree = CordRepBtree::Create(MakeExternal("Foo"));
   CordRepBtree::Ref(tree);
-  EXPECT_DEATH(tree->GetAppendBuffer(1), ".*");
+  EXPECT_DEATH(tree->get_append_buffer(1), ".*");
   CordRepBtree::Unref(tree);
   CordRepBtree::Unref(tree);
 }
@@ -1095,7 +1095,7 @@ TEST_P(CordRepBtreeHeightTest, GetAppendBufferNotFlat) {
   for (int i = 1; i <= height(); ++i) {
     tree = CordRepBtree::New(tree);
   }
-  EXPECT_THAT(tree->GetAppendBuffer(1), SizeIs(0u));
+  EXPECT_THAT(tree->get_append_buffer(1), SizeIs(0u));
   CordRepBtree::Unref(tree);
 }
 
@@ -1105,7 +1105,7 @@ TEST_P(CordRepBtreeHeightTest, GetAppendBufferFlatNotPrivate) {
   for (int i = 1; i <= height(); ++i) {
     tree = CordRepBtree::New(tree);
   }
-  EXPECT_THAT(tree->GetAppendBuffer(1), SizeIs(0u));
+  EXPECT_THAT(tree->get_append_buffer(1), SizeIs(0u));
   CordRepBtree::Unref(tree);
   CordRep::Unref(flat);
 }
@@ -1119,7 +1119,7 @@ TEST_P(CordRepBtreeHeightTest, GetAppendBufferTreeNotPrivate) {
     if (i == (height() + 1) / 2) refs.Ref(tree);
     tree = CordRepBtree::New(tree);
   }
-  EXPECT_THAT(tree->GetAppendBuffer(1), SizeIs(0u));
+  EXPECT_THAT(tree->get_append_buffer(1), SizeIs(0u));
   CordRepBtree::Unref(tree);
   CordRep::Unref(flat);
 }
@@ -1131,7 +1131,7 @@ TEST_P(CordRepBtreeHeightTest, GetAppendBufferFlatNoCapacity) {
   for (int i = 1; i <= height(); ++i) {
     tree = CordRepBtree::New(tree);
   }
-  EXPECT_THAT(tree->GetAppendBuffer(1), SizeIs(0u));
+  EXPECT_THAT(tree->get_append_buffer(1), SizeIs(0u));
   CordRepBtree::Unref(tree);
 }
 
@@ -1141,13 +1141,13 @@ TEST_P(CordRepBtreeHeightTest, GetAppendBufferFlatWithCapacity) {
   for (int i = 1; i <= height(); ++i) {
     tree = CordRepBtree::New(tree);
   }
-  turbo::Span<char> span = tree->GetAppendBuffer(2);
+  turbo::Span<char> span = tree->get_append_buffer(2);
   EXPECT_THAT(span, SizeIs(2u));
   EXPECT_THAT(span.data(), TypedEq<void*>(flat->Data() + 3));
   EXPECT_THAT(tree->length, Eq(5u));
 
   size_t avail = flat->Capacity() - 5;
-  span = tree->GetAppendBuffer(avail + 100);
+  span = tree->get_append_buffer(avail + 100);
   EXPECT_THAT(span, SizeIs(avail));
   EXPECT_THAT(span.data(), TypedEq<void*>(flat->Data() + 5));
   EXPECT_THAT(tree->length, Eq(5 + avail));

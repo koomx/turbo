@@ -52,6 +52,7 @@
 #include <turbo/bits/internal/bits.h>
 
 namespace turbo {
+
     // https://github.com/llvm/llvm-project/issues/64544
     // libc++ had the wrong signature for std::rotl and std::rotr
     // prior to libc++ 18.0.
@@ -188,17 +189,17 @@ namespace turbo {
 
     // https://en.cppreference.com/w/cpp/types/endian
     //
-    // Indicates the endianness of all scalar types:
-    //   * If all scalar types are little-endian, `turbo::endian::native` equals
-    //     turbo::endian::little.
-    //   * If all scalar types are big-endian, `turbo::endian::native` equals
-    //     `turbo::endian::big`.
+    // Indicates the Endianness of all scalar types:
+    //   * If all scalar types are little-endian, `turbo::Endian::native` equals
+    //     turbo::Endian::little.
+    //   * If all scalar types are big-endian, `turbo::Endian::native` equals
+    //     `turbo::Endian::big`.
     //   * Platforms that use anything else are unsupported.
-    using std::endian;
+    using Endian = std::endian;
 
 #else
 
-    enum class endian {
+    enum class Endian {
         little,
         big,
 #if KUMO_ENDIAN_LITTLE
@@ -211,6 +212,10 @@ namespace turbo {
     };
 
 #endif  // defined(__cpp_lib_endian) && __cpp_lib_endian >= 201907L
+
+    KUMO_MUST_USE_RESULT KUMO_FORCE_INLINE constexpr bool match_system(Endian e) {
+        return e == Endian::native;
+    }
 
 #if defined(__cpp_lib_byteswap) && __cpp_lib_byteswap >= 202110L
 
@@ -244,4 +249,38 @@ namespace turbo {
     }
 
 #endif  // defined(__cpp_lib_byteswap) && __cpp_lib_byteswap >= 202110L
+
+    // Fixed-width byteswap. The argument is converted to uint16_t / uint32_t /
+    // uint64_t (zero-extend if narrower, truncate if wider), then those bytes
+    // are reversed. `byteswap(T)` follows sizeof(T) and is a no-op for 8-bit
+    // values; use these when the swap width must be 16/32/64 regardless of the
+    // source type (e.g. ASCII byte -> UTF-16BE).
+    [[nodiscard]] constexpr uint16_t u16_byteswap(uint16_t x) noexcept {
+        return byteswap(x);
+    }
+
+    [[nodiscard]] constexpr uint32_t u32_byteswap(uint32_t x) noexcept {
+        return byteswap(x);
+    }
+
+    [[nodiscard]] constexpr uint64_t u64_byteswap(uint64_t x) noexcept {
+        return byteswap(x);
+    }
+
+    // Same conversion as u16/u32/u64_byteswap, then swap only if `big_endian`
+    // is not the host endian.
+    template <Endian big_endian>
+    constexpr uint16_t u16_byteswap_if_needed(uint16_t c) {
+        return !match_system(big_endian) ? byteswap(c) : c;
+    }
+
+    template <Endian big_endian>
+    constexpr uint32_t u32_byteswap_if_needed(uint32_t c) {
+        return !match_system(big_endian) ? byteswap(c) : c;
+    }
+
+    template <Endian big_endian>
+    constexpr uint64_t u64_byteswap_if_needed(uint64_t c) {
+        return !match_system(big_endian) ? byteswap(c) : c;
+    }
 } // namespace turbo

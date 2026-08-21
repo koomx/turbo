@@ -109,7 +109,7 @@
 // `char` Size Check
 // -----------------------------------------------------------------------------
 
-// Abseil currently assumes CHAR_BIT == 8. If you would like to use Abseil on a
+// library currently assumes CHAR_BIT == 8. If you would like to use library on a
 // platform where this is not the case, please provide us with the details about
 // your platform so we can consider relaxing this requirement.
 #if CHAR_BIT != 8
@@ -120,11 +120,11 @@
 // `int` Size Check
 // -----------------------------------------------------------------------------
 
-// Abseil currently assumes that an int is 4 bytes. If you would like to use
-// Abseil on a platform where this is not the case, please provide us with the
+// library currently assumes that an int is 4 bytes. If you would like to use
+// library on a platform where this is not the case, please provide us with the
 // details about your platform so we can consider relaxing this requirement.
 #if INT_MAX < 2147483647
-#error "Abseil assumes that int is at least 4 bytes. "
+#error "library assumes that int is at least 4 bytes. "
 #endif
 
 

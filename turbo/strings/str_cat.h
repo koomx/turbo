@@ -113,7 +113,7 @@
 #include <turbo/meta/type_traits.h>
 #include <turbo/strings/internal/stringify_sink.h>
 #include <turbo/strings/numbers.h>
-#include <turbo/strings/resize_and_overwrite.h>
+#include <turbo/base/resize_and_overwrite.h>
 #include <turbo/strings/string_view.h>
 
 namespace turbo {
@@ -228,14 +228,14 @@ namespace turbo {
             char* const end = &buffer[format_internal::kFastToBufferSize];
             auto real_width = turbo::numbers_internal::FastHexToBufferZeroPad16(hex.value, end - 16);
             if (real_width >= hex.width) {
-                sink.Append(std::string_view(end - real_width, real_width));
+                sink.append(std::string_view(end - real_width, real_width));
             } else {
                 // Pad first 16 chars because FastHexToBufferZeroPad16 pads only to 16 and
                 // max pad width can be up to 20.
                 std::memset(end - 32, hex.fill, 16);
                 // Patch up everything else up to the real_width.
                 std::memset(end - real_width - 16, hex.fill, 16);
-                sink.Append(std::string_view(end - hex.width, hex.width));
+                sink.append(std::string_view(end - hex.width, hex.width));
             }
         }
 
@@ -311,7 +311,7 @@ namespace turbo {
                     *--writer = '-';
             }
 
-            sink.Append(std::string_view(writer, static_cast<size_t>(end - writer)));
+            sink.append(std::string_view(writer, static_cast<size_t>(end - writer)));
         }
     };
 
@@ -414,7 +414,7 @@ namespace turbo {
         AlphaNum( // NOLINT(runtime/explicit)
             const T& v KUMO_ATTRIBUTE_LIFETIME_BOUND,
             strings_internal::StringifySink&& sink KUMO_ATTRIBUTE_LIFETIME_BOUND = { })
-            : piece_(strings_internal::ExtractStringification(sink, v)) {
+            : piece_(strings_internal::extract_stringification(sink, v)) {
         }
 
         template <typename Allocator>

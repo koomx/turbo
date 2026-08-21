@@ -68,7 +68,7 @@ namespace turbo {
             // Inlining the function yields a ~3x performance improvement at the cost of a
             // 1.5x code size increase at the call site.
             // Takes locks but does not allocate memory.
-            KUMO_ATTRIBUTE_ALWAYS_INLINE
+            KUMO_FORCE_INLINE
             bool is_enabled(int level) {
                 int stale_v = v_.load(std::memory_order_relaxed);
                 if (KUMO_LIKELY(level > stale_v)) {

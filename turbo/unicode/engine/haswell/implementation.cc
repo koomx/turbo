@@ -1,0 +1,1292 @@
+
+#include <turbo/unicode/engine/haswell.h>
+#include <turbo/unicode/engine/implementation.h>
+#if UNICODE_IMPLEMENTATION_HASWELL
+#include <turbo/unicode/tables/utf8_to_utf16_tables.h>
+#include <turbo/unicode/tables/utf16_to_utf8_tables.h>
+#include <turbo/unicode/tables/utf32_to_utf16_tables.h>
+
+#include <turbo/unicode/engine/haswell/begin.h>
+
+namespace turbo {
+    namespace UNICODE_IMPLEMENTATION {
+        namespace {
+#ifndef UNICODE_HASWELL_H
+#error "haswell.h must be included"
+#endif
+            using namespace simd;
+
+            KUMO_FORCE_INLINE bool is_ascii(const simd8x64<uint8_t>& input) {
+                return input.reduce_or().is_ascii();
+            }
+
+
+            KUMO_FORCE_INLINE simd8<bool>
+            must_be_2_3_continuation(const simd8<uint8_t> prev2,
+                const simd8<uint8_t> prev3) {
+                simd8<uint8_t> is_third_byte = prev2.saturating_sub(0xe0u - 0x80); // Only 111_____ will be > 0x80
+                simd8<uint8_t> is_fourth_byte = prev3.saturating_sub(0xf0u - 0x80); // Only 1111____ will be > 0x80
+                return simd8<bool>(is_third_byte | is_fourth_byte);
+            }
+
+            namespace utf16 {
+#include <turbo/unicode/engine/haswell/avx2_validate_utf16.cpp>
+            }
+
+#include <turbo/unicode/engine/haswell/avx2_utf16fix.cpp>
+#include <turbo/unicode/engine/haswell/avx2_convert_latin1_to_utf8.cpp>
+
+#include <turbo/unicode/engine/haswell/avx2_convert_latin1_to_utf16.cpp>
+
+#include <turbo/unicode/engine/haswell/avx2_convert_latin1_to_utf32.cpp>
+
+#include <turbo/unicode/engine/haswell/avx2_convert_utf8_to_utf16.cpp>
+
+#include <turbo/unicode/engine/haswell/avx2_convert_utf8_to_utf32.cpp>
+
+#include <turbo/unicode/engine/haswell/avx2_convert_utf16_to_latin1.cpp>
+
+#include <turbo/unicode/engine/haswell/avx2_convert_utf16_to_utf8.cpp>
+
+#include <turbo/unicode/engine/haswell/avx2_convert_utf16_to_utf32.cpp>
+
+#include <turbo/unicode/engine/haswell/avx2_convert_utf32_to_latin1.cpp>
+
+#include <turbo/unicode/engine/haswell/avx2_convert_utf32_to_utf8.cpp>
+
+#include <turbo/unicode/engine/haswell/avx2_convert_utf32_to_utf16.cpp>
+
+#include <turbo/unicode/engine/haswell/avx2_convert_utf8_to_latin1.cpp>
+
+#include <turbo/unicode/engine/haswell/avx2_base64.cpp>
+
+        } // unnamed namespace
+    } // namespace UNICODE_IMPLEMENTATION
+} // namespace turbo
+
+#include <turbo/unicode/generic/buf_block_reader.h>
+#include <turbo/unicode/generic/utf8_validation/utf8_lookup4_algorithm.h>
+#include <turbo/unicode/generic/utf8_validation/utf8_validator.h>
+
+#include <turbo/unicode/generic/ascii_validation.h>
+
+  // transcoding from UTF-8 to UTF-16
+#include <turbo/unicode/generic/utf8_to_utf16/valid_utf8_to_utf16.h>
+#include <turbo/unicode/generic/utf8_to_utf16/utf8_to_utf16.h>
+#include <turbo/unicode/generic/utf8/utf16_length_from_utf8_bytemask.h>
+  // transcoding from UTF-16 to UTF-8
+#include <turbo/unicode/generic/utf16_to_utf8/utf16_to_utf8_with_replacement.h>
+
+  // transcoding from UTF-8 to UTF-32
+#include <turbo/unicode/generic/utf8_to_utf32/valid_utf8_to_utf32.h>
+#include <turbo/unicode/generic/utf8_to_utf32/utf8_to_utf32.h>
+#include <turbo/unicode/generic/utf32.h>
+
+// other functions
+#include <turbo/unicode/generic/utf8.h>
+
+#include <turbo/unicode/generic/utf16.h>
+#include <turbo/unicode/generic/utf16/utf8_length_from_utf16_bytemask.h>
+#include <turbo/unicode/generic/validate_utf16.h>
+
+  // transcoding from UTF-8 to Latin 1
+#include <turbo/unicode/generic/utf8_to_latin1/utf8_to_latin1.h>
+#include <turbo/unicode/generic/utf8_to_latin1/valid_utf8_to_latin1.h>
+
+#include <turbo/unicode/generic/validate_utf32.h>
+
+#include <turbo/unicode/generic/base64.h>
+#include <turbo/unicode/generic/find.h>
+
+namespace turbo {
+    namespace UNICODE_IMPLEMENTATION {
+
+         [[nodiscard]] int
+        UnicodeImplementHaswell::detect_encodings(const char* input,
+            size_t length) const noexcept {
+            // If there is a BOM, then we trust it.
+            auto bom_encoding = turbo::BOM::check_bom(input, length);
+            if (bom_encoding != TextEncoding::unspecified) {
+                return bom_encoding;
+            }
+
+            int out = 0;
+            uint32_t utf16_err = (length % 2);
+            uint32_t utf32_err = (length % 4);
+            uint32_t ends_with_high = 0;
+            const auto v_d8 = simd8<uint8_t>::splat(0xd8);
+            const auto v_f8 = simd8<uint8_t>::splat(0xf8);
+            const auto v_fc = simd8<uint8_t>::splat(0xfc);
+            const auto v_dc = simd8<uint8_t>::splat(0xdc);
+            const __m256i standardmax = _mm256_set1_epi32(0x10ffff);
+            const __m256i offset = _mm256_set1_epi32(0xffff2000);
+            const __m256i standardoffsetmax = _mm256_set1_epi32(0xfffff7ff);
+            __m256i currentmax = _mm256_setzero_si256();
+            __m256i currentoffsetmax = _mm256_setzero_si256();
+
+            utf8_checker c {};
+            buf_block_reader<64> reader(reinterpret_cast<const uint8_t*>(input), length);
+            while (reader.has_full_block()) {
+                simd::simd8x64<uint8_t> in(reader.full_block());
+                // utf8 checks
+                c.check_next_input(in);
+
+                // utf16le checks
+                auto in0 = simd16<uint16_t>(in.chunks[0]);
+                auto in1 = simd16<uint16_t>(in.chunks[1]);
+                const auto t0 = in0.shr<8>();
+                const auto t1 = in1.shr<8>();
+                const auto in2 = simd16<uint16_t>::pack(t0, t1);
+                const auto surrogates_wordmask = (in2 & v_f8) == v_d8;
+                const uint32_t surrogates_bitmask = surrogates_wordmask.to_bitmask();
+                const auto vL = (in2 & v_fc) == v_dc;
+                const uint32_t L = vL.to_bitmask();
+                const uint32_t H = L ^ surrogates_bitmask;
+                utf16_err |= (((H << 1) | ends_with_high) != L);
+                ends_with_high = (H & 0x80000000) != 0;
+
+                // utf32le checks
+                currentmax = _mm256_max_epu32(in.chunks[0], currentmax);
+                currentoffsetmax = _mm256_max_epu32(_mm256_add_epi32(in.chunks[0], offset),
+                    currentoffsetmax);
+                currentmax = _mm256_max_epu32(in.chunks[1], currentmax);
+                currentoffsetmax = _mm256_max_epu32(_mm256_add_epi32(in.chunks[1], offset),
+                    currentoffsetmax);
+
+                reader.advance();
+            }
+
+            uint8_t block[64] {};
+            size_t idx = reader.block_index();
+            std::memcpy(block, &input[idx], length - idx);
+            simd::simd8x64<uint8_t> in(block);
+            c.check_next_input(in);
+
+            // utf16le last block check
+            auto in0 = simd16<uint16_t>(in.chunks[0]);
+            auto in1 = simd16<uint16_t>(in.chunks[1]);
+            const auto t0 = in0.shr<8>();
+            const auto t1 = in1.shr<8>();
+            const auto in2 = simd16<uint16_t>::pack(t0, t1);
+            const auto surrogates_wordmask = (in2 & v_f8) == v_d8;
+            const uint32_t surrogates_bitmask = surrogates_wordmask.to_bitmask();
+            const auto vL = (in2 & v_fc) == v_dc;
+            const uint32_t L = vL.to_bitmask();
+            const uint32_t H = L ^ surrogates_bitmask;
+            utf16_err |= (((H << 1) | ends_with_high) != L);
+            // this is required to check for last byte ending in high and end of input
+            // is reached
+            ends_with_high = (H & 0x80000000) != 0;
+            utf16_err |= ends_with_high;
+
+            // utf32le last block check
+            currentmax = _mm256_max_epu32(in.chunks[0], currentmax);
+            currentoffsetmax = _mm256_max_epu32(_mm256_add_epi32(in.chunks[0], offset),
+                currentoffsetmax);
+            currentmax = _mm256_max_epu32(in.chunks[1], currentmax);
+            currentoffsetmax = _mm256_max_epu32(_mm256_add_epi32(in.chunks[1], offset),
+                currentoffsetmax);
+
+            reader.advance();
+
+            c.check_eof();
+            bool is_valid_utf8 = !c.errors();
+            __m256i is_zero = _mm256_xor_si256(_mm256_max_epu32(currentmax, standardmax), standardmax);
+            utf32_err |= (_mm256_testz_si256(is_zero, is_zero) == 0);
+
+            is_zero = _mm256_xor_si256(
+                _mm256_max_epu32(currentoffsetmax, standardoffsetmax), standardoffsetmax);
+            utf32_err |= (_mm256_testz_si256(is_zero, is_zero) == 0);
+            if (is_valid_utf8) {
+                out |= TextEncoding::UTF8;
+            }
+            if (utf16_err == 0) {
+                out |= TextEncoding::UTF16_LE;
+            }
+            if (utf32_err == 0) {
+                out |= TextEncoding::UTF32_LE;
+            }
+            return out;
+        }
+
+         [[nodiscard]] bool
+        UnicodeImplementHaswell::validate_utf8(const char* buf, size_t len) const noexcept {
+            return haswell::utf8_validation::generic_validate_utf8(buf, len);
+        }
+
+         [[nodiscard]] UnicodeResult UnicodeImplementHaswell::validate_utf8_with_errors(
+            const char* buf, size_t len) const noexcept {
+            return haswell::utf8_validation::generic_validate_utf8_with_errors(buf, len);
+        }
+
+         [[nodiscard]] bool
+        UnicodeImplementHaswell::validate_ascii(const char* buf, size_t len) const noexcept {
+            return haswell::ascii_validation::generic_validate_ascii(buf, len);
+        }
+
+         [[nodiscard]] UnicodeResult UnicodeImplementHaswell::validate_ascii_with_errors(
+            const char* buf, size_t len) const noexcept {
+            return haswell::ascii_validation::generic_validate_ascii_with_errors(buf,
+                len);
+        }
+
+         [[nodiscard]] bool
+        UnicodeImplementHaswell::validate_utf16le_as_ascii(const char16_t* buf,
+            size_t len) const noexcept {
+            return haswell::utf16::validate_utf16_as_ascii_with_errors<
+                       Endian::little>(buf, len)
+                       .error
+                == SUCCESS;
+        }
+
+         [[nodiscard]] bool
+        UnicodeImplementHaswell::validate_utf16be_as_ascii(const char16_t* buf,
+            size_t len) const noexcept {
+            return haswell::utf16::validate_utf16_as_ascii_with_errors<Endian::big>(
+                       buf, len)
+                       .error
+                == SUCCESS;
+        }
+
+         [[nodiscard]] bool
+        UnicodeImplementHaswell::validate_utf16le(const char16_t* buf,
+            size_t len) const noexcept {
+            if (KUMO_UNLIKELY(len == 0)) {
+                // empty input is valid UTF-16. protect the implementation from
+                // handling nullptr
+                return true;
+            }
+            const auto res = haswell::utf16::validate_utf16_with_errors<Endian::little>(buf, len);
+            if (res.is_err()) {
+                return false;
+            }
+
+            if (res.count == len) {
+                return true;
+            }
+
+            return scalar::utf16::validate<Endian::little>(buf + res.count,
+                len - res.count);
+        }
+
+         [[nodiscard]] bool
+        UnicodeImplementHaswell::validate_utf16be(const char16_t* buf,
+            size_t len) const noexcept {
+            if (KUMO_UNLIKELY(len == 0)) {
+                // empty input is valid UTF-16. protect the implementation from
+                // handling nullptr
+                return true;
+            }
+            const auto res = haswell::utf16::validate_utf16_with_errors<Endian::big>(buf, len);
+            if (res.is_err()) {
+                return false;
+            }
+
+            if (res.count == len) {
+                return true;
+            }
+
+            return scalar::utf16::validate<Endian::big>(buf + res.count,
+                len - res.count);
+        }
+
+         [[nodiscard]] UnicodeResult UnicodeImplementHaswell::validate_utf16le_with_errors(
+            const char16_t* buf, size_t len) const noexcept {
+
+            const UnicodeResult res = haswell::utf16::validate_utf16_with_errors<Endian::little>(buf, len);
+            if (res.count != len) {
+                const UnicodeResult scalar_res = scalar::utf16::validate_with_errors<Endian::little>(
+                    buf + res.count, len - res.count);
+                return UnicodeResult(scalar_res.error, res.count + scalar_res.count);
+            } else {
+                return res;
+            }
+        }
+
+         [[nodiscard]] UnicodeResult UnicodeImplementHaswell::validate_utf16be_with_errors(
+            const char16_t* buf, size_t len) const noexcept {
+            const UnicodeResult res = haswell::utf16::validate_utf16_with_errors<Endian::big>(buf, len);
+            if (res.count != len) {
+                const UnicodeResult scalar_res = scalar::utf16::validate_with_errors<Endian::big>(buf + res.count,
+                    len - res.count);
+                return UnicodeResult(scalar_res.error, res.count + scalar_res.count);
+            } else {
+                return res;
+            }
+        }
+
+        void UnicodeImplementHaswell::to_well_formed_utf16le(const char16_t* input, size_t len,
+            char16_t* output) const noexcept {
+            return utf16fix_avx<Endian::little>(input, len, output);
+        }
+
+        void UnicodeImplementHaswell::to_well_formed_utf16be(const char16_t* input, size_t len,
+            char16_t* output) const noexcept {
+            return utf16fix_avx<Endian::big>(input, len, output);
+        }
+
+         [[nodiscard]] bool
+        UnicodeImplementHaswell::validate_utf32(const char32_t* buf, size_t len) const noexcept {
+            return utf32::validate(buf, len);
+        }
+
+         [[nodiscard]] UnicodeResult UnicodeImplementHaswell::validate_utf32_with_errors(
+            const char32_t* buf, size_t len) const noexcept {
+            return utf32::validate_with_errors(buf, len);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_latin1_to_utf8(
+            const char* buf, size_t len, char* utf8_output) const noexcept {
+            std::pair<const char*, char*> ret = avx2_convert_latin1_to_utf8(buf, len, utf8_output);
+            size_t converted_chars = ret.second - utf8_output;
+
+            if (ret.first != buf + len) {
+                const size_t scalar_converted_chars = scalar::latin1_to_utf8::convert(
+                    ret.first, len - (ret.first - buf), ret.second);
+                converted_chars += scalar_converted_chars;
+            }
+
+            return converted_chars;
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_latin1_to_utf16le(
+            const char* buf, size_t len, char16_t* utf16_output) const noexcept {
+            std::pair<const char*, char16_t*> ret = avx2_convert_latin1_to_utf16<Endian::little>(buf, len, utf16_output);
+            if (ret.first == nullptr) {
+                return 0;
+            }
+            size_t converted_chars = ret.second - utf16_output;
+            if (ret.first != buf + len) {
+                const size_t scalar_converted_chars = scalar::latin1_to_utf16::convert<Endian::little>(
+                    ret.first, len - (ret.first - buf), ret.second);
+                if (scalar_converted_chars == 0) {
+                    return 0;
+                }
+                converted_chars += scalar_converted_chars;
+            }
+            return converted_chars;
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_latin1_to_utf16be(
+            const char* buf, size_t len, char16_t* utf16_output) const noexcept {
+            std::pair<const char*, char16_t*> ret = avx2_convert_latin1_to_utf16<Endian::big>(buf, len, utf16_output);
+            if (ret.first == nullptr) {
+                return 0;
+            }
+            size_t converted_chars = ret.second - utf16_output;
+            if (ret.first != buf + len) {
+                const size_t scalar_converted_chars = scalar::latin1_to_utf16::convert<Endian::big>(
+                    ret.first, len - (ret.first - buf), ret.second);
+                if (scalar_converted_chars == 0) {
+                    return 0;
+                }
+                converted_chars += scalar_converted_chars;
+            }
+            return converted_chars;
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_latin1_to_utf32(
+            const char* buf, size_t len, char32_t* utf32_output) const noexcept {
+            std::pair<const char*, char32_t*> ret = avx2_convert_latin1_to_utf32(buf, len, utf32_output);
+            if (ret.first == nullptr) {
+                return 0;
+            }
+            size_t converted_chars = ret.second - utf32_output;
+            if (ret.first != buf + len) {
+                const size_t scalar_converted_chars = scalar::latin1_to_utf32::convert(
+                    ret.first, len - (ret.first - buf), ret.second);
+                if (scalar_converted_chars == 0) {
+                    return 0;
+                }
+                converted_chars += scalar_converted_chars;
+            }
+            return converted_chars;
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_utf8_to_latin1(
+            const char* buf, size_t len, char* latin1_output) const noexcept {
+            utf8_to_latin1::validating_transcoder converter;
+            return converter.convert(buf, len, latin1_output);
+        }
+
+         [[nodiscard]] UnicodeResult UnicodeImplementHaswell::convert_utf8_to_latin1_with_errors(
+            const char* buf, size_t len, char* latin1_output) const noexcept {
+            utf8_to_latin1::validating_transcoder converter;
+            return converter.convert_with_errors(buf, len, latin1_output);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_valid_utf8_to_latin1(
+            const char* input, size_t size, char* latin1_output) const noexcept {
+            return utf8_to_latin1::convert_valid(input, size, latin1_output);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_utf8_to_utf16le(
+            const char* buf, size_t len, char16_t* utf16_output) const noexcept {
+            utf8_to_utf16::validating_transcoder converter;
+            return converter.convert<Endian::little>(buf, len, utf16_output);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_utf8_to_utf16be(
+            const char* buf, size_t len, char16_t* utf16_output) const noexcept {
+            utf8_to_utf16::validating_transcoder converter;
+            return converter.convert<Endian::big>(buf, len, utf16_output);
+        }
+
+         [[nodiscard]] UnicodeResult UnicodeImplementHaswell::convert_utf8_to_utf16le_with_errors(
+            const char* buf, size_t len, char16_t* utf16_output) const noexcept {
+            utf8_to_utf16::validating_transcoder converter;
+            return converter.convert_with_errors<Endian::little>(buf, len,
+                utf16_output);
+        }
+
+         [[nodiscard]] UnicodeResult UnicodeImplementHaswell::convert_utf8_to_utf16be_with_errors(
+            const char* buf, size_t len, char16_t* utf16_output) const noexcept {
+            utf8_to_utf16::validating_transcoder converter;
+            return converter.convert_with_errors<Endian::big>(buf, len, utf16_output);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_valid_utf8_to_utf16le(
+            const char* input, size_t size, char16_t* utf16_output) const noexcept {
+            return utf8_to_utf16::convert_valid<Endian::little>(input, size,
+                utf16_output);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_valid_utf8_to_utf16be(
+            const char* input, size_t size, char16_t* utf16_output) const noexcept {
+            return utf8_to_utf16::convert_valid<Endian::big>(input, size,
+                utf16_output);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_utf8_to_utf32(
+            const char* buf, size_t len, char32_t* utf32_output) const noexcept {
+            utf8_to_utf32::validating_transcoder converter;
+            return converter.convert(buf, len, utf32_output);
+        }
+
+         [[nodiscard]] UnicodeResult UnicodeImplementHaswell::convert_utf8_to_utf32_with_errors(
+            const char* buf, size_t len, char32_t* utf32_output) const noexcept {
+            utf8_to_utf32::validating_transcoder converter;
+            return converter.convert_with_errors(buf, len, utf32_output);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_valid_utf8_to_utf32(
+            const char* input, size_t size, char32_t* utf32_output) const noexcept {
+            return utf8_to_utf32::convert_valid(input, size, utf32_output);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_utf16le_to_latin1(
+            const char16_t* buf, size_t len, char* latin1_output) const noexcept {
+            std::pair<const char16_t*, char*> ret = haswell::avx2_convert_utf16_to_latin1<Endian::little>(buf, len,
+                latin1_output);
+            if (ret.first == nullptr) {
+                return 0;
+            }
+            size_t saved_bytes = ret.second - latin1_output;
+            if (ret.first != buf + len) {
+                const size_t scalar_saved_bytes = scalar::utf16_to_latin1::convert<Endian::little>(
+                    ret.first, len - (ret.first - buf), ret.second);
+                if (scalar_saved_bytes == 0) {
+                    return 0;
+                }
+                saved_bytes += scalar_saved_bytes;
+            }
+            return saved_bytes;
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_utf16be_to_latin1(
+            const char16_t* buf, size_t len, char* latin1_output) const noexcept {
+            std::pair<const char16_t*, char*> ret = haswell::avx2_convert_utf16_to_latin1<Endian::big>(buf, len,
+                latin1_output);
+            if (ret.first == nullptr) {
+                return 0;
+            }
+            size_t saved_bytes = ret.second - latin1_output;
+            if (ret.first != buf + len) {
+                const size_t scalar_saved_bytes = scalar::utf16_to_latin1::convert<Endian::big>(
+                    ret.first, len - (ret.first - buf), ret.second);
+                if (scalar_saved_bytes == 0) {
+                    return 0;
+                }
+                saved_bytes += scalar_saved_bytes;
+            }
+            return saved_bytes;
+        }
+
+         [[nodiscard]] UnicodeResult
+        UnicodeImplementHaswell::convert_utf16le_to_latin1_with_errors(
+            const char16_t* buf, size_t len, char* latin1_output) const noexcept {
+            std::pair<UnicodeResult, char*> ret = avx2_convert_utf16_to_latin1_with_errors<Endian::little>(
+                buf, len, latin1_output);
+            if (ret.first.error) {
+                return ret.first;
+            } // Can return directly since scalar fallback already found correct
+              // ret.first.count
+            if (ret.first.count != len) { // All good so far, but not finished
+                UnicodeResult scalar_res = scalar::utf16_to_latin1::convert_with_errors<Endian::little>(
+                    buf + ret.first.count, len - ret.first.count, ret.second);
+                if (scalar_res.error) {
+                    scalar_res.count += ret.first.count;
+                    return scalar_res;
+                } else {
+                    ret.second += scalar_res.count;
+                }
+            }
+            ret.first.count = ret.second - latin1_output; // Set count to the number of 8-bit code units written
+            return ret.first;
+        }
+
+         [[nodiscard]] UnicodeResult
+        UnicodeImplementHaswell::convert_utf16be_to_latin1_with_errors(
+            const char16_t* buf, size_t len, char* latin1_output) const noexcept {
+            std::pair<UnicodeResult, char*> ret = avx2_convert_utf16_to_latin1_with_errors<Endian::big>(buf, len,
+                latin1_output);
+            if (ret.first.error) {
+                return ret.first;
+            } // Can return directly since scalar fallback already found correct
+              // ret.first.count
+            if (ret.first.count != len) { // All good so far, but not finished
+                UnicodeResult scalar_res = scalar::utf16_to_latin1::convert_with_errors<Endian::big>(
+                    buf + ret.first.count, len - ret.first.count, ret.second);
+                if (scalar_res.error) {
+                    scalar_res.count += ret.first.count;
+                    return scalar_res;
+                } else {
+                    ret.second += scalar_res.count;
+                }
+            }
+            ret.first.count = ret.second - latin1_output; // Set count to the number of 8-bit code units written
+            return ret.first;
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_valid_utf16be_to_latin1(
+            const char16_t* buf, size_t len, char* latin1_output) const noexcept {
+            // optimization opportunity: implement a custom function
+            return convert_utf16be_to_latin1(buf, len, latin1_output);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_valid_utf16le_to_latin1(
+            const char16_t* buf, size_t len, char* latin1_output) const noexcept {
+            // optimization opportunity: implement a custom function
+            return convert_utf16le_to_latin1(buf, len, latin1_output);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_utf16le_to_utf8(
+            const char16_t* buf, size_t len, char* utf8_output) const noexcept {
+            std::pair<const char16_t*, char*> ret = haswell::avx2_convert_utf16_to_utf8<Endian::little>(buf, len,
+                utf8_output);
+            if (ret.first == nullptr) {
+                return 0;
+            }
+            size_t saved_bytes = ret.second - utf8_output;
+            if (ret.first != buf + len) {
+                const size_t scalar_saved_bytes = scalar::utf16_to_utf8::convert<Endian::little>(
+                    ret.first, len - (ret.first - buf), ret.second);
+                if (scalar_saved_bytes == 0) {
+                    return 0;
+                }
+                saved_bytes += scalar_saved_bytes;
+            }
+            return saved_bytes;
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_utf16be_to_utf8(
+            const char16_t* buf, size_t len, char* utf8_output) const noexcept {
+            std::pair<const char16_t*, char*> ret = haswell::avx2_convert_utf16_to_utf8<Endian::big>(buf, len,
+                utf8_output);
+            if (ret.first == nullptr) {
+                return 0;
+            }
+            size_t saved_bytes = ret.second - utf8_output;
+            if (ret.first != buf + len) {
+                const size_t scalar_saved_bytes = scalar::utf16_to_utf8::convert<Endian::big>(
+                    ret.first, len - (ret.first - buf), ret.second);
+                if (scalar_saved_bytes == 0) {
+                    return 0;
+                }
+                saved_bytes += scalar_saved_bytes;
+            }
+            return saved_bytes;
+        }
+
+         [[nodiscard]] UnicodeResult UnicodeImplementHaswell::convert_utf16le_to_utf8_with_errors(
+            const char16_t* buf, size_t len, char* utf8_output) const noexcept {
+            // ret.first.count is always the position in the buffer, not the number of
+            // code units written even if finished
+            std::pair<UnicodeResult, char*> ret = haswell::avx2_convert_utf16_to_utf8_with_errors<Endian::little>(
+                buf, len, utf8_output);
+            if (ret.first.error) {
+                return ret.first;
+            } // Can return directly since scalar fallback already found correct
+              // ret.first.count
+            if (ret.first.count != len) { // All good so far, but not finished
+                UnicodeResult scalar_res = scalar::utf16_to_utf8::convert_with_errors<Endian::little>(
+                    buf + ret.first.count, len - ret.first.count, ret.second);
+                if (scalar_res.error) {
+                    scalar_res.count += ret.first.count;
+                    return scalar_res;
+                } else {
+                    ret.second += scalar_res.count;
+                }
+            }
+            ret.first.count = ret.second - utf8_output; // Set count to the number of 8-bit code units written
+            return ret.first;
+        }
+
+         [[nodiscard]] UnicodeResult UnicodeImplementHaswell::convert_utf16be_to_utf8_with_errors(
+            const char16_t* buf, size_t len, char* utf8_output) const noexcept {
+            // ret.first.count is always the position in the buffer, not the number of
+            // code units written even if finished
+            std::pair<UnicodeResult, char*> ret = haswell::avx2_convert_utf16_to_utf8_with_errors<Endian::big>(
+                buf, len, utf8_output);
+            if (ret.first.error) {
+                return ret.first;
+            } // Can return directly since scalar fallback already found correct
+              // ret.first.count
+            if (ret.first.count != len) { // All good so far, but not finished
+                UnicodeResult scalar_res = scalar::utf16_to_utf8::convert_with_errors<Endian::big>(
+                    buf + ret.first.count, len - ret.first.count, ret.second);
+                if (scalar_res.error) {
+                    scalar_res.count += ret.first.count;
+                    return scalar_res;
+                } else {
+                    ret.second += scalar_res.count;
+                }
+            }
+            ret.first.count = ret.second - utf8_output; // Set count to the number of 8-bit code units written
+            return ret.first;
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_valid_utf16le_to_utf8(
+            const char16_t* buf, size_t len, char* utf8_output) const noexcept {
+            return convert_utf16le_to_utf8(buf, len, utf8_output);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_valid_utf16be_to_utf8(
+            const char16_t* buf, size_t len, char* utf8_output) const noexcept {
+            return convert_utf16be_to_utf8(buf, len, utf8_output);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_utf32_to_utf8(
+            const char32_t* buf, size_t len, char* utf8_output) const noexcept {
+            std::pair<const char32_t*, char*> ret = avx2_convert_utf32_to_utf8(buf, len, utf8_output);
+            if (ret.first == nullptr) {
+                return 0;
+            }
+            size_t saved_bytes = ret.second - utf8_output;
+            if (ret.first != buf + len) {
+                const size_t scalar_saved_bytes = scalar::utf32_to_utf8::convert(
+                    ret.first, len - (ret.first - buf), ret.second);
+                if (scalar_saved_bytes == 0) {
+                    return 0;
+                }
+                saved_bytes += scalar_saved_bytes;
+            }
+            return saved_bytes;
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_utf32_to_latin1(
+            const char32_t* buf, size_t len, char* latin1_output) const noexcept {
+            std::pair<const char32_t*, char*> ret = avx2_convert_utf32_to_latin1(buf, len, latin1_output);
+            if (ret.first == nullptr) {
+                return 0;
+            }
+            size_t saved_bytes = ret.second - latin1_output;
+            if (ret.first != buf + len) {
+                const size_t scalar_saved_bytes = scalar::utf32_to_latin1::convert(
+                    ret.first, len - (ret.first - buf), ret.second);
+                if (scalar_saved_bytes == 0) {
+                    return 0;
+                }
+                saved_bytes += scalar_saved_bytes;
+            }
+            return saved_bytes;
+        }
+
+         [[nodiscard]] UnicodeResult UnicodeImplementHaswell::convert_utf32_to_latin1_with_errors(
+            const char32_t* buf, size_t len, char* latin1_output) const noexcept {
+            // ret.first.count is always the position in the buffer, not the number of
+            // code units written even if finished
+            std::pair<UnicodeResult, char*> ret = avx2_convert_utf32_to_latin1_with_errors(buf, len, latin1_output);
+            if (ret.first.count != len) {
+                UnicodeResult scalar_res = scalar::utf32_to_latin1::convert_with_errors(
+                    buf + ret.first.count, len - ret.first.count, ret.second);
+                if (scalar_res.error) {
+                    scalar_res.count += ret.first.count;
+                    return scalar_res;
+                } else {
+                    ret.second += scalar_res.count;
+                }
+            }
+            ret.first.count = ret.second - latin1_output; // Set count to the number of 8-bit code units written
+            return ret.first;
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_valid_utf32_to_latin1(
+            const char32_t* buf, size_t len, char* latin1_output) const noexcept {
+            return convert_utf32_to_latin1(buf, len, latin1_output);
+        }
+
+         [[nodiscard]] UnicodeResult UnicodeImplementHaswell::convert_utf32_to_utf8_with_errors(
+            const char32_t* buf, size_t len, char* utf8_output) const noexcept {
+            // ret.first.count is always the position in the buffer, not the number of
+            // code units written even if finished
+            std::pair<UnicodeResult, char*> ret = haswell::avx2_convert_utf32_to_utf8_with_errors(buf, len, utf8_output);
+            if (ret.first.count != len) {
+                UnicodeResult scalar_res = scalar::utf32_to_utf8::convert_with_errors(
+                    buf + ret.first.count, len - ret.first.count, ret.second);
+                if (scalar_res.error) {
+                    scalar_res.count += ret.first.count;
+                    return scalar_res;
+                } else {
+                    ret.second += scalar_res.count;
+                }
+            }
+            ret.first.count = ret.second - utf8_output; // Set count to the number of 8-bit code units written
+            return ret.first;
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_utf16le_to_utf32(
+            const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
+            std::pair<const char16_t*, char32_t*> ret = haswell::avx2_convert_utf16_to_utf32<Endian::little>(buf, len,
+                utf32_output);
+            if (ret.first == nullptr) {
+                return 0;
+            }
+            size_t saved_bytes = ret.second - utf32_output;
+            if (ret.first != buf + len) {
+                const size_t scalar_saved_bytes = scalar::utf16_to_utf32::convert<Endian::little>(
+                    ret.first, len - (ret.first - buf), ret.second);
+                if (scalar_saved_bytes == 0) {
+                    return 0;
+                }
+                saved_bytes += scalar_saved_bytes;
+            }
+            return saved_bytes;
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_utf16be_to_utf32(
+            const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
+            std::pair<const char16_t*, char32_t*> ret = haswell::avx2_convert_utf16_to_utf32<Endian::big>(buf, len,
+                utf32_output);
+            if (ret.first == nullptr) {
+                return 0;
+            }
+            size_t saved_bytes = ret.second - utf32_output;
+            if (ret.first != buf + len) {
+                const size_t scalar_saved_bytes = scalar::utf16_to_utf32::convert<Endian::big>(
+                    ret.first, len - (ret.first - buf), ret.second);
+                if (scalar_saved_bytes == 0) {
+                    return 0;
+                }
+                saved_bytes += scalar_saved_bytes;
+            }
+            return saved_bytes;
+        }
+
+         [[nodiscard]] UnicodeResult UnicodeImplementHaswell::convert_utf16le_to_utf32_with_errors(
+            const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
+            // ret.first.count is always the position in the buffer, not the number of
+            // code units written even if finished
+            std::pair<UnicodeResult, char32_t*> ret = haswell::avx2_convert_utf16_to_utf32_with_errors<Endian::little>(
+                buf, len, utf32_output);
+            if (ret.first.error) {
+                return ret.first;
+            } // Can return directly since scalar fallback already found correct
+              // ret.first.count
+            if (ret.first.count != len) { // All good so far, but not finished
+                UnicodeResult scalar_res = scalar::utf16_to_utf32::convert_with_errors<Endian::little>(
+                    buf + ret.first.count, len - ret.first.count, ret.second);
+                if (scalar_res.error) {
+                    scalar_res.count += ret.first.count;
+                    return scalar_res;
+                } else {
+                    ret.second += scalar_res.count;
+                }
+            }
+            ret.first.count = ret.second - utf32_output; // Set count to the number of 8-bit code units written
+            return ret.first;
+        }
+
+         [[nodiscard]] UnicodeResult UnicodeImplementHaswell::convert_utf16be_to_utf32_with_errors(
+            const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
+            // ret.first.count is always the position in the buffer, not the number of
+            // code units written even if finished
+            std::pair<UnicodeResult, char32_t*> ret = haswell::avx2_convert_utf16_to_utf32_with_errors<Endian::big>(
+                buf, len, utf32_output);
+            if (ret.first.error) {
+                return ret.first;
+            } // Can return directly since scalar fallback already found correct
+              // ret.first.count
+            if (ret.first.count != len) { // All good so far, but not finished
+                UnicodeResult scalar_res = scalar::utf16_to_utf32::convert_with_errors<Endian::big>(
+                    buf + ret.first.count, len - ret.first.count, ret.second);
+                if (scalar_res.error) {
+                    scalar_res.count += ret.first.count;
+                    return scalar_res;
+                } else {
+                    ret.second += scalar_res.count;
+                }
+            }
+            ret.first.count = ret.second - utf32_output; // Set count to the number of 8-bit code units written
+            return ret.first;
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_valid_utf32_to_utf8(
+            const char32_t* buf, size_t len, char* utf8_output) const noexcept {
+            return convert_utf32_to_utf8(buf, len, utf8_output);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_utf32_to_utf16le(
+            const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
+            std::pair<const char32_t*, char16_t*> ret = avx2_convert_utf32_to_utf16<Endian::little>(buf, len, utf16_output);
+            if (ret.first == nullptr) {
+                return 0;
+            }
+            size_t saved_bytes = ret.second - utf16_output;
+            if (ret.first != buf + len) {
+                const size_t scalar_saved_bytes = scalar::utf32_to_utf16::convert<Endian::little>(
+                    ret.first, len - (ret.first - buf), ret.second);
+                if (scalar_saved_bytes == 0) {
+                    return 0;
+                }
+                saved_bytes += scalar_saved_bytes;
+            }
+            return saved_bytes;
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_utf32_to_utf16be(
+            const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
+            std::pair<const char32_t*, char16_t*> ret = avx2_convert_utf32_to_utf16<Endian::big>(buf, len, utf16_output);
+            if (ret.first == nullptr) {
+                return 0;
+            }
+            size_t saved_bytes = ret.second - utf16_output;
+            if (ret.first != buf + len) {
+                const size_t scalar_saved_bytes = scalar::utf32_to_utf16::convert<Endian::big>(
+                    ret.first, len - (ret.first - buf), ret.second);
+                if (scalar_saved_bytes == 0) {
+                    return 0;
+                }
+                saved_bytes += scalar_saved_bytes;
+            }
+            return saved_bytes;
+        }
+
+         [[nodiscard]] UnicodeResult UnicodeImplementHaswell::convert_utf32_to_utf16le_with_errors(
+            const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
+            // ret.first.count is always the position in the buffer, not the number of
+            // code units written even if finished
+            std::pair<UnicodeResult, char16_t*> ret = haswell::avx2_convert_utf32_to_utf16_with_errors<Endian::little>(
+                buf, len, utf16_output);
+            if (ret.first.count != len) {
+                UnicodeResult scalar_res = scalar::utf32_to_utf16::convert_with_errors<Endian::little>(
+                    buf + ret.first.count, len - ret.first.count, ret.second);
+                if (scalar_res.error) {
+                    scalar_res.count += ret.first.count;
+                    return scalar_res;
+                } else {
+                    ret.second += scalar_res.count;
+                }
+            }
+            ret.first.count = ret.second - utf16_output; // Set count to the number of 8-bit code units written
+            return ret.first;
+        }
+
+         [[nodiscard]] UnicodeResult UnicodeImplementHaswell::convert_utf32_to_utf16be_with_errors(
+            const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
+            // ret.first.count is always the position in the buffer, not the number of
+            // code units written even if finished
+            std::pair<UnicodeResult, char16_t*> ret = haswell::avx2_convert_utf32_to_utf16_with_errors<Endian::big>(
+                buf, len, utf16_output);
+            if (ret.first.count != len) {
+                UnicodeResult scalar_res = scalar::utf32_to_utf16::convert_with_errors<Endian::big>(
+                    buf + ret.first.count, len - ret.first.count, ret.second);
+                if (scalar_res.error) {
+                    scalar_res.count += ret.first.count;
+                    return scalar_res;
+                } else {
+                    ret.second += scalar_res.count;
+                }
+            }
+            ret.first.count = ret.second - utf16_output; // Set count to the number of 8-bit code units written
+            return ret.first;
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_valid_utf32_to_utf16le(
+            const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
+            return convert_utf32_to_utf16le(buf, len, utf16_output);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_valid_utf32_to_utf16be(
+            const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
+            return convert_utf32_to_utf16be(buf, len, utf16_output);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_valid_utf16le_to_utf32(
+            const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
+            return convert_utf16le_to_utf32(buf, len, utf32_output);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::convert_valid_utf16be_to_utf32(
+            const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
+            return convert_utf16be_to_utf32(buf, len, utf32_output);
+        }
+
+        void UnicodeImplementHaswell::change_endianness_utf16(const char16_t* input,
+            size_t length,
+            char16_t* output) const noexcept {
+            utf16::change_endianness_utf16(input, length, output);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::count_utf16le(
+            const char16_t* input, size_t length) const noexcept {
+            return utf16::count_code_points<Endian::little>(input, length);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::count_utf16be(
+            const char16_t* input, size_t length) const noexcept {
+            return utf16::count_code_points<Endian::big>(input, length);
+        }
+
+         [[nodiscard]] size_t
+        UnicodeImplementHaswell::count_utf8(const char* in, size_t size) const noexcept {
+            return utf8::count_code_points_bytemask(in, size);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::latin1_length_from_utf8(
+            const char* buf, size_t len) const noexcept {
+            return count_utf8(buf, len);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::utf8_length_from_utf16le(
+            const char16_t* input, size_t length) const noexcept {
+            return utf16::utf8_length_from_utf16_bytemask<Endian::little>(input,
+                length);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::utf8_length_from_utf16be(
+            const char16_t* input, size_t length) const noexcept {
+            return utf16::utf8_length_from_utf16_bytemask<Endian::big>(input, length);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::utf32_length_from_utf16le(
+            const char16_t* input, size_t length) const noexcept {
+            return utf16::utf32_length_from_utf16<Endian::little>(input, length);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::utf32_length_from_utf16be(
+            const char16_t* input, size_t length) const noexcept {
+            return utf16::utf32_length_from_utf16<Endian::big>(input, length);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::utf16_length_from_utf8(
+            const char* input, size_t length) const noexcept {
+            return utf8::utf16_length_from_utf8_bytemask(input, length);
+        }
+         [[nodiscard]] UnicodeResult
+        UnicodeImplementHaswell::utf8_length_from_utf16le_with_replacement(
+            const char16_t* input, size_t length) const noexcept {
+            return utf16::utf8_length_from_utf16_with_replacement<Endian::little>(
+                input, length);
+        }
+
+         [[nodiscard]] UnicodeResult
+        UnicodeImplementHaswell::utf8_length_from_utf16be_with_replacement(
+            const char16_t* input, size_t length) const noexcept {
+            return utf16::utf8_length_from_utf16_with_replacement<Endian::big>(
+                input, length);
+        }
+
+         [[nodiscard]] size_t
+        UnicodeImplementHaswell::convert_utf16le_to_utf8_with_replacement(
+            const char16_t* input, size_t length, char* utf8_buffer) const noexcept {
+            return utf16_to_utf8::convert_with_replacement_via(
+                [this](const char16_t* b, size_t l, char* o) {
+                    return this->convert_utf16le_to_utf8_with_errors(b, l, o);
+                },
+                [this](const char16_t* b, size_t l) {
+                    return this->utf8_length_from_utf16le(b, l);
+                },
+                input, length, utf8_buffer);
+        }
+
+         [[nodiscard]] size_t
+        UnicodeImplementHaswell::convert_utf16be_to_utf8_with_replacement(
+            const char16_t* input, size_t length, char* utf8_buffer) const noexcept {
+            return utf16_to_utf8::convert_with_replacement_via(
+                [this](const char16_t* b, size_t l, char* o) {
+                    return this->convert_utf16be_to_utf8_with_errors(b, l, o);
+                },
+                [this](const char16_t* b, size_t l) {
+                    return this->utf8_length_from_utf16be(b, l);
+                },
+                input, length, utf8_buffer);
+        }
+
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::utf8_length_from_latin1(
+            const char* input, size_t len) const noexcept {
+            const uint8_t* data = reinterpret_cast<const uint8_t*>(input);
+            size_t answer = len / sizeof(__m256i) * sizeof(__m256i);
+            size_t i = 0;
+            if (answer >= 2048) { // long strings optimization
+                __m256i four_64bits = _mm256_setzero_si256();
+                while (i + sizeof(__m256i) <= len) {
+                    __m256i runner = _mm256_setzero_si256();
+                    // We can do up to 255 loops without overflow.
+                    size_t iterations = (len - i) / sizeof(__m256i);
+                    if (iterations > 255) {
+                        iterations = 255;
+                    }
+                    size_t max_i = i + iterations * sizeof(__m256i) - sizeof(__m256i);
+                    for (; i + 4 * sizeof(__m256i) <= max_i; i += 4 * sizeof(__m256i)) {
+                        __m256i input1 = _mm256_loadu_si256((const __m256i*)(data + i));
+                        __m256i input2 = _mm256_loadu_si256((const __m256i*)(data + i + sizeof(__m256i)));
+                        __m256i input3 = _mm256_loadu_si256(
+                            (const __m256i*)(data + i + 2 * sizeof(__m256i)));
+                        __m256i input4 = _mm256_loadu_si256(
+                            (const __m256i*)(data + i + 3 * sizeof(__m256i)));
+                        __m256i input12 = _mm256_add_epi8(_mm256_cmpgt_epi8(_mm256_setzero_si256(), input1),
+                            _mm256_cmpgt_epi8(_mm256_setzero_si256(), input2));
+                        __m256i input23 = _mm256_add_epi8(_mm256_cmpgt_epi8(_mm256_setzero_si256(), input3),
+                            _mm256_cmpgt_epi8(_mm256_setzero_si256(), input4));
+                        __m256i input1234 = _mm256_add_epi8(input12, input23);
+                        runner = _mm256_sub_epi8(runner, input1234);
+                    }
+                    for (; i <= max_i; i += sizeof(__m256i)) {
+                        __m256i input_256_chunk = _mm256_loadu_si256((const __m256i*)(data + i));
+                        runner = _mm256_sub_epi8(
+                            runner, _mm256_cmpgt_epi8(_mm256_setzero_si256(), input_256_chunk));
+                    }
+                    four_64bits = _mm256_add_epi64(
+                        four_64bits, _mm256_sad_epu8(runner, _mm256_setzero_si256()));
+                }
+                answer += _mm256_extract_epi64(four_64bits, 0) + _mm256_extract_epi64(four_64bits, 1) + _mm256_extract_epi64(four_64bits, 2) + _mm256_extract_epi64(four_64bits, 3);
+            } else if (answer > 0) {
+                for (; i + sizeof(__m256i) <= len; i += sizeof(__m256i)) {
+                    __m256i latin = _mm256_loadu_si256((const __m256i*)(data + i));
+                    uint32_t non_ascii = _mm256_movemask_epi8(latin);
+                    answer += popcount(non_ascii);
+                }
+            }
+            return answer + scalar::latin1::utf8_length_from_latin1(reinterpret_cast<const char*>(data + i), len - i);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::utf8_length_from_utf32(
+            const char32_t* input, size_t length) const noexcept {
+            return utf32::utf8_length_from_utf32(input, length);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::utf16_length_from_utf32(
+            const char32_t* input, size_t length) const noexcept {
+            const __m256i v_00000000 = _mm256_setzero_si256();
+            const __m256i v_ffff0000 = _mm256_set1_epi32((uint32_t)0xffff0000);
+            size_t pos = 0;
+            size_t count = 0;
+            for (; pos + 8 <= length; pos += 8) {
+                __m256i in = _mm256_loadu_si256((__m256i*)(input + pos));
+                const __m256i surrogate_bytemask = _mm256_cmpeq_epi32(_mm256_and_si256(in, v_ffff0000), v_00000000);
+                const uint32_t surrogate_bitmask = static_cast<uint32_t>(_mm256_movemask_epi8(surrogate_bytemask));
+                size_t surrogate_count = (32 - popcount(surrogate_bitmask)) / 4;
+                count += 8 + surrogate_count;
+            }
+            return count + scalar::utf32::utf16_length_from_utf32(input + pos, length - pos);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::utf32_length_from_utf8(
+            const char* input, size_t length) const noexcept {
+            return utf8::count_code_points(input, length);
+        }
+
+         [[nodiscard]] UnicodeResult UnicodeImplementHaswell::base64_to_binary(
+            const char* input, size_t length, char* output, Base64Options options,
+            last_chunk_handling_options last_chunk_options) const noexcept {
+            if (options & base64_default_or_url) {
+                if (options == Base64Options::base64_default_or_url_accept_garbage) {
+                    return base64::compress_decode_base64<false, true, true>(
+                        output, input, length, options, last_chunk_options);
+                } else {
+                    return base64::compress_decode_base64<false, false, true>(
+                        output, input, length, options, last_chunk_options);
+                }
+            } else if (options & base64_url) {
+                if (options == Base64Options::base64_url_accept_garbage) {
+                    return base64::compress_decode_base64<true, true, false>(
+                        output, input, length, options, last_chunk_options);
+                } else {
+                    return base64::compress_decode_base64<true, false, false>(
+                        output, input, length, options, last_chunk_options);
+                }
+            } else {
+                if (options == Base64Options::base64_default_accept_garbage) {
+                    return base64::compress_decode_base64<false, true, false>(
+                        output, input, length, options, last_chunk_options);
+                } else {
+                    return base64::compress_decode_base64<false, false, false>(
+                        output, input, length, options, last_chunk_options);
+                }
+            }
+        }
+
+         [[nodiscard]] full_result UnicodeImplementHaswell::base64_to_binary_details(
+            const char* input, size_t length, char* output, Base64Options options,
+            last_chunk_handling_options last_chunk_options) const noexcept {
+            if (options & base64_default_or_url) {
+                if (options == Base64Options::base64_default_or_url_accept_garbage) {
+                    return base64::compress_decode_base64<false, true, true>(
+                        output, input, length, options, last_chunk_options);
+                } else {
+                    return base64::compress_decode_base64<false, false, true>(
+                        output, input, length, options, last_chunk_options);
+                }
+            } else if (options & base64_url) {
+                if (options == Base64Options::base64_url_accept_garbage) {
+                    return base64::compress_decode_base64<true, true, false>(
+                        output, input, length, options, last_chunk_options);
+                } else {
+                    return base64::compress_decode_base64<true, false, false>(
+                        output, input, length, options, last_chunk_options);
+                }
+            } else {
+                if (options == Base64Options::base64_default_accept_garbage) {
+                    return base64::compress_decode_base64<false, true, false>(
+                        output, input, length, options, last_chunk_options);
+                } else {
+                    return base64::compress_decode_base64<false, false, false>(
+                        output, input, length, options, last_chunk_options);
+                }
+            }
+        }
+
+         [[nodiscard]] UnicodeResult UnicodeImplementHaswell::base64_to_binary(
+            const char16_t* input, size_t length, char* output, Base64Options options,
+            last_chunk_handling_options last_chunk_options) const noexcept {
+            if (options & base64_default_or_url) {
+                if (options == Base64Options::base64_default_or_url_accept_garbage) {
+                    return base64::compress_decode_base64<false, true, true>(
+                        output, input, length, options, last_chunk_options);
+                } else {
+                    return base64::compress_decode_base64<false, false, true>(
+                        output, input, length, options, last_chunk_options);
+                }
+            } else if (options & base64_url) {
+                if (options == Base64Options::base64_url_accept_garbage) {
+                    return base64::compress_decode_base64<true, true, false>(
+                        output, input, length, options, last_chunk_options);
+                } else {
+                    return base64::compress_decode_base64<true, false, false>(
+                        output, input, length, options, last_chunk_options);
+                }
+            } else {
+                if (options == Base64Options::base64_default_accept_garbage) {
+                    return base64::compress_decode_base64<false, true, false>(
+                        output, input, length, options, last_chunk_options);
+                } else {
+                    return base64::compress_decode_base64<false, false, false>(
+                        output, input, length, options, last_chunk_options);
+                }
+            }
+        }
+
+         [[nodiscard]] full_result UnicodeImplementHaswell::base64_to_binary_details(
+            const char16_t* input, size_t length, char* output, Base64Options options,
+            last_chunk_handling_options last_chunk_options) const noexcept {
+            if (options & base64_default_or_url) {
+                if (options == Base64Options::base64_default_or_url_accept_garbage) {
+                    return base64::compress_decode_base64<false, true, true>(
+                        output, input, length, options, last_chunk_options);
+                } else {
+                    return base64::compress_decode_base64<false, false, true>(
+                        output, input, length, options, last_chunk_options);
+                }
+            } else if (options & base64_url) {
+                if (options == Base64Options::base64_url_accept_garbage) {
+                    return base64::compress_decode_base64<true, true, false>(
+                        output, input, length, options, last_chunk_options);
+                } else {
+                    return base64::compress_decode_base64<true, false, false>(
+                        output, input, length, options, last_chunk_options);
+                }
+            } else {
+                if (options == Base64Options::base64_default_accept_garbage) {
+                    return base64::compress_decode_base64<false, true, false>(
+                        output, input, length, options, last_chunk_options);
+                } else {
+                    return base64::compress_decode_base64<false, false, false>(
+                        output, input, length, options, last_chunk_options);
+                }
+            }
+        }
+
+        size_t UnicodeImplementHaswell::binary_to_base64(const char* input, size_t length,
+            char* output,
+            Base64Options options) const noexcept {
+            if (options & base64_url) {
+                return encode_base64<true>(output, input, length, options);
+            } else {
+                return encode_base64<false>(output, input, length, options);
+            }
+        }
+
+        size_t UnicodeImplementHaswell::binary_to_base64_with_lines(
+            const char* input, size_t length, char* output, size_t line_length,
+            Base64Options options) const noexcept {
+            if (options & base64_url) {
+                return avx2_encode_base64_impl<true, true>(output, input, length, options,
+                    line_length);
+            } else {
+                return avx2_encode_base64_impl<false, true>(output, input, length, options,
+                    line_length);
+            }
+        }
+
+        const char* UnicodeImplementHaswell::find(const char* start, const char* end,
+            char character) const noexcept {
+            return util::find(start, end, character);
+        }
+
+        const char16_t* UnicodeImplementHaswell::find(const char16_t* start, const char16_t* end,
+            char16_t character) const noexcept {
+            return util::find(start, end, character);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::binary_length_from_base64(
+            const char* input, size_t length) const noexcept {
+            return avx2_binary_length_from_base64(input, length);
+        }
+
+         [[nodiscard]] size_t UnicodeImplementHaswell::binary_length_from_base64(
+            const char16_t* input, size_t length) const noexcept {
+            return avx2_binary_length_from_base64(input, length);
+        }
+
+    } // namespace UNICODE_IMPLEMENTATION
+
+    static turbo::UnicodeImplement *get_haswell_instance() {
+        static haswell::UnicodeImplementHaswell ins;
+        return &ins;
+    }
+} // namespace turbo
+
+#include <turbo/unicode/engine/haswell/end.h>
+#else
+namespace turbo {
+    static turbo::UnicodeImplement *get_haswell_instance() {
+        return nullptr;
+    }
+}
+#endif
+
+namespace turbo {
+    IsaInfo get_haswell_info() {
+        static IsaInfo ins = {
+            .compiled = UNICODE_IMPLEMENTATION_HASWELL,
+            .failback = false,
+            .required_isa = static_cast<uint32_t>(InstructionSet::AVX2 | InstructionSet::BMI1 | InstructionSet::BMI2),
+            .isa_name = "haswell",
+            .engine = get_haswell_instance(),
+        };
+        return ins;
+    }
+} // namespace turbo
+

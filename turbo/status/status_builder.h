@@ -559,7 +559,7 @@ namespace turbo {
         // is, `rep_ == nullptr`.
         // A `false` return does not necessarily indicate that it has a rep. It just
         // can't prove it doesn't.
-        KUMO_ATTRIBUTE_ALWAYS_INLINE bool IsKnownToBeEmpty() const {
+        KUMO_FORCE_INLINE bool IsKnownToBeEmpty() const {
 #if KUMO_HAVE_BUILTIN(__builtin_constant_p)
             // __builtin_constant_p does not like it when it has non trivial expressions
             // in it, and `rep_==nullptr` is a user-defined operator.

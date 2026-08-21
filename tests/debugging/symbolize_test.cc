@@ -440,7 +440,7 @@ TEST(Symbolize, ForEachSection) {
 
 // x86 specific tests.  Uses some inline assembler.
 extern "C" {
-inline void *KUMO_ATTRIBUTE_ALWAYS_INLINE inline_func() {
+KUMO_FORCE_INLINE void *inline_func() {
   void *pc = nullptr;
 #if defined(__i386__)
   __asm__ __volatile__("call 1f;\n 1: pop %[PC]" : [PC] "=r"(pc));

@@ -72,7 +72,7 @@ typedef int (*Unwinder)(void**, int*, int, int, const void*, int*);
 std::atomic<Unwinder> custom;
 
 template <bool IS_STACK_FRAMES, bool IS_WITH_CONTEXT>
-KUMO_ATTRIBUTE_ALWAYS_INLINE inline int Unwind(void** result, uintptr_t* frames,
+KUMO_FORCE_INLINE int Unwind(void** result, uintptr_t* frames,
                                                int* sizes, size_t max_depth,
                                                int skip_count, const void* uc,
                                                int* min_dropped_frames,

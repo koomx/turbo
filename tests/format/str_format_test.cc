@@ -682,7 +682,7 @@ struct SummarizeConsumer {
   std::string* out;
   explicit SummarizeConsumer(std::string* out) : out(out) {}
 
-  bool Append(std::string_view s) {
+  bool append(std::string_view s) {
     *out += "[" + std::string(s) + "]";
     return true;
   }
@@ -1103,9 +1103,9 @@ struct Point {
   turbo_format_convert(const Point& p, const turbo::FormatConversionSpec& spec,
                     turbo::FormatSink* s) {
     if (spec.conversion_char() == turbo::FormatConversionChar::s) {
-      s->Append(turbo::str_cat("x=", p.x, " y=", p.y));
+      s->append(turbo::str_cat("x=", p.x, " y=", p.y));
     } else {
-      s->Append(turbo::str_cat(p.x, ",", p.y));
+      s->append(turbo::str_cat(p.x, ",", p.y));
     }
     return {true};
   }
@@ -1131,7 +1131,7 @@ TEST_F(FormatExtensionTest, TurboFormatConvertExample) {
 struct PointStringify {
   template <typename FormatSink>
   friend void turbo_stringify(FormatSink& sink, const PointStringify& p) {
-    sink.Append(turbo::str_cat("(", p.x, ", ", p.y, ")"));
+    sink.append(turbo::str_cat("(", p.x, ", ", p.y, ")"));
   }
 
   double x = 10.0;

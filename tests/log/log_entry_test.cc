@@ -67,7 +67,7 @@ class LogEntryTestPeer {
     entry_.severity_ = severity;
     std::string time_err;
     EXPECT_THAT(
-        turbo::ParseTime("%Y-%m-%d%ET%H:%M:%E*S", timestamp,
+        turbo::parse_time("%Y-%m-%d%ET%H:%M:%E*S", timestamp,
                         turbo::LocalTimeZone(), &entry_.timestamp_, &time_err),
         IsTrue())
         << "Failed to parse time " << timestamp << ": " << time_err;

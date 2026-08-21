@@ -60,7 +60,7 @@
 #include <string_view>
 #include <turbo/base/nullability.h>
 #include <turbo/macros/config.h>
-#include <turbo/strings/resize_and_overwrite.h>
+#include <turbo/base/resize_and_overwrite.h>
 
 namespace turbo {
 
@@ -237,6 +237,28 @@ namespace turbo {
         std::string result = std::move(s);
         turbo::str_to_upper(&result);
         return result;
+    }
+
+
+    inline bool is_octal_digit(char c) {
+        return ('0' <= c) && (c <= '7');
+    }
+
+    inline unsigned int hex_digit_to_int(char c) {
+        static_assert('0' == 0x30 && 'A' == 0x41 && 'a' == 0x61,
+            "Character set must be ASCII.");
+        assert(turbo::ascii_isxdigit(static_cast<unsigned char>(c)));
+        unsigned int x = static_cast<unsigned char>(c);
+        if (x > '9') {
+            x += 9;
+        }
+        return x & 0xf;
+    }
+
+    inline char int_to_hex_digit(int i) {
+        assert(i >= 0 && i <= 15);
+        return ((i < 10) ? (static_cast<char>(i) + '0')
+                         : (static_cast<char>(i - 10) + 'A'));
     }
 
 } // namespace turbo

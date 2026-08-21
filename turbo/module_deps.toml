@@ -35,7 +35,7 @@ base = "macros"
 meta = "macros"
 utility = "macros"
 cctz = "macros"
-
+arch= "macros"
 #######################################
 # L2 — low-level helpers
 #######################################
@@ -51,7 +51,7 @@ functional = "base, macros, meta, utility"
 numeric = "algorithm, bits, macros"
 debugging = "base, bits, macros"
 hash = "bits, functional, macros, meta, numeric, utility"
-
+unicode = "bits, arch, macros"
 #######################################
 # L4 — vocabulary types
 #######################################

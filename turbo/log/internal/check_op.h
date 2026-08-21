@@ -333,11 +333,11 @@ KUMO_ATTRIBUTE_PURE_FUNCTION const char * turbo_nonnull make_check_fail_string(
             public:
                 explicit StringifySink(std::ostream & os KUMO_ATTRIBUTE_LIFETIME_BOUND);
 
-                void Append(std::string_view text);
+                void append(std::string_view text);
 
-                void Append(size_t length, char ch);
+                void append(size_t length, char ch);
 
-                friend void TurboFormatFlush(StringifySink * turbo_nonnull sink,
+                friend void turbo_format_flush(StringifySink * turbo_nonnull sink,
                                              std::string_view text);
 
             private:

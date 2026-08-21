@@ -97,7 +97,7 @@
 
 // KUMO_DLL
 //
-// When building Abseil as a DLL, this macro expands to `__declspec(dllexport)`
+// When building library as a DLL, this macro expands to `__declspec(dllexport)`
 // so we can annotate symbols appropriately as being exported. When used in
 // headers consuming a DLL, this macro expands to `__declspec(dllimport)` so
 // that consumers know the symbol is defined inside the DLL. In all other cases,

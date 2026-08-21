@@ -1,10 +1,10 @@
-// Copyright 2026 The Abseil Authors.
+// Copyright (C) 2026 Kumo inc. and its affiliates. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      https://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
 // -----------------------------------------------------------------------------
 // File: internal/any_span.h
 // -----------------------------------------------------------------------------
@@ -28,7 +29,7 @@
 
 #include <turbo/base/internal/raw_logging.h>
 #include <turbo/macros/config.h>
-#include <turbo/meta/type_traits.h>
+#include <turbo/meta/container_traits.h>
 
 namespace turbo {
 
@@ -41,7 +42,6 @@ namespace turbo {
     } // namespace any_span_transform
 
     namespace any_span_internal {
-
         //
         // IsAnySpan inherits from true_type if T is an instance of AnySpan.
         //
@@ -51,6 +51,9 @@ namespace turbo {
 
         template <typename T>
         struct IsAnySpan<AnySpan<T>> : public std::true_type { };
+
+        template <typename T>
+        struct IsFlatSpan : public std::false_type { };
 
         // A type suitable for storing any function pointer. The standard allows
         // function pointers to round-trip through other function pointers, but void* is
@@ -123,7 +126,7 @@ namespace turbo {
         // result. Does some validity checking to make sure the result is not a
         // temporary (proxy containers are not allowed).
         template <typename T, typename Transform, typename U>
-        T& ApplyTransform(TransformPtr transform, U& u) { // NOLINT(runtime/references)
+        T& apply_transform(TransformPtr transform, U& u) { // NOLINT(runtime/references)
             const auto t = transform.get<Transform>();
             TURBO_RAW_DCHECK(t != nullptr, "pointer cannot be null");
 
@@ -160,82 +163,49 @@ namespace turbo {
 
         // A GetterFunction that works on arrays.
         template <typename T, typename Element, typename Transform>
-        GetterFunctionResult<T> GetFromArray(const TransformedContainer& container,
+        GetterFunctionResult<T> get_from_array(const TransformedContainer& container,
             std::size_t i) {
             TURBO_RAW_DCHECK(container.ptr != nullptr, "cannot dereference null pointer");
             auto* array = static_cast<Element*>(container.ptr);
             return const_cast<GetterFunctionResult<T>>(
-                ApplyTransform<T, Transform>(container.transform, array[i]));
+                apply_transform<T, Transform>(container.transform, array[i]));
         }
 
         // A GetterFunction that works on containers.
         template <typename T, typename Container, typename Transform>
-        GetterFunctionResult<T> GetFromContainer(const TransformedContainer& container,
+        GetterFunctionResult<T> get_from_container(const TransformedContainer& container,
             std::size_t i) {
             TURBO_RAW_DCHECK(container.ptr != nullptr, "cannot dereference null pointer");
             Container& c = *static_cast<Container*>(container.ptr);
             return const_cast<GetterFunctionResult<T>>(
-                ApplyTransform<T, Transform>(container.transform, c[i]));
+                apply_transform<T, Transform>(container.transform, c[i]));
         }
 
         // A GetterFunction that crashes, indicating an invalid AnySpan has been
         // accessed..
         template <typename T>
-        GetterFunctionResult<T> GetFromUninitialized(const TransformedContainer&,
+        GetterFunctionResult<T> get_from_uninitialized(const TransformedContainer&,
             std::size_t) {
             TURBO_RAW_LOG(FATAL, "Uninitialized AnySpan access.");
         }
 
         //
-        // ArrayTag and PtrArrayTag are GetterFunctions that are never called. They are
+        // array_tag and ptr_array_tag are GetterFunctions that are never called. They are
         // used as a tag so Getter::Get can access flat arrays without a function
         // pointer.
         //
 
         template <typename T>
-        GetterFunctionResult<T> ArrayTag(const TransformedContainer&, std::size_t) {
-            TURBO_RAW_LOG(FATAL, "ArrayTag should never be called.");
+        GetterFunctionResult<T> array_tag(const TransformedContainer&, std::size_t) {
+            TURBO_RAW_LOG(FATAL, "array_tag should never be called.");
         }
 
         template <typename T>
-        GetterFunctionResult<T> PtrArrayTag(const TransformedContainer&, std::size_t) {
-            TURBO_RAW_LOG(FATAL, "PtrArrayTag should never be called.");
+        GetterFunctionResult<T> ptr_array_tag(const TransformedContainer&, std::size_t) {
+            TURBO_RAW_LOG(FATAL, "ptr_array_tag should never be called.");
         }
 
-        //
-        // HasSize<Container> inherets from true_type if Container has a size() member.
-        // false_type otherwise.
-        //
 
-        template <typename, typename = void>
-        struct HasSize : public std::false_type { };
-
-        template <class Container>
-        struct HasSize<Container,
-            std::void_t<decltype(std::declval<Container&>().size())>>
-            : public std::true_type { };
-
-        //
-        // TypeOfData<Container>::type is the return type of data() if Container has a
-        // data() member. It is NoData otherwise.
-        //
-
-        struct NoData { };
-
-        template <typename, typename = void>
-        struct TypeOfData {
-            using type = NoData;
-        };
-
-        template <class Container>
-        struct TypeOfData<Container,
-            std::void_t<decltype(std::declval<Container&>().data())>> {
-            using type = decltype(std::declval<Container&>().data());
-        };
-
-        // Element type of container based on operator[].
-        template <class Container>
-        using ElementType = std::remove_reference_t<decltype(std::declval<Container&>()[0])>;
 
         // Element type of container when elements are dereferenced.
         template <class Container>
@@ -257,14 +227,14 @@ namespace turbo {
                 typename = std::enable_if_t<std::is_const_v<LazyT>>>
             explicit Getter(const Getter<std::remove_const_t<T>>& other) {
                 using MutableT = std::remove_const_t<T>;
-                if (other.fun == &ArrayTag<MutableT>) {
+                if (other.fun == &array_tag<MutableT>) {
                     TURBO_RAW_DCHECK(other.offset == 0u, "offset must be zero");
-                    fun = &ArrayTag<T>;
+                    fun = &array_tag<T>;
                     array = other.array;
                     offset = 0;
-                } else if (other.fun == &PtrArrayTag<MutableT>) {
+                } else if (other.fun == &ptr_array_tag<MutableT>) {
                     TURBO_RAW_DCHECK(other.offset == 0u, "offset must be zero");
-                    fun = &PtrArrayTag<T>;
+                    fun = &ptr_array_tag<T>;
                     ptr_array = other.ptr_array;
                     offset = 0;
                 } else {
@@ -277,11 +247,11 @@ namespace turbo {
             // Returns the element at the given index.
             T& Get(std::size_t index) const {
                 TURBO_RAW_DCHECK(fun != nullptr, "pointer cannot be null");
-                if (KUMO_LIKELY(fun == &ArrayTag<T>)) {
+                if (KUMO_LIKELY(fun == &array_tag<T>)) {
                     TURBO_RAW_DCHECK(array != nullptr, "pointer cannot be null");
                     return array[index];
                 }
-                if (fun == &PtrArrayTag<T>) {
+                if (fun == &ptr_array_tag<T>) {
                     TURBO_RAW_DCHECK(ptr_array != nullptr, "pointer cannot be null");
                     return *ptr_array[index];
                 }
@@ -298,12 +268,12 @@ namespace turbo {
                 TURBO_RAW_DCHECK(fun != nullptr, "pointer cannot be null");
                 Getter result;
                 result.fun = fun;
-                if (fun == &ArrayTag<T>) {
+                if (fun == &array_tag<T>) {
                     TURBO_RAW_DCHECK(array != nullptr, "pointer cannot be null");
                     TURBO_RAW_DCHECK(offset == 0u, "offset must be zero");
                     result.array = array + pos;
                     result.offset = 0;
-                } else if (fun == &PtrArrayTag<T>) {
+                } else if (fun == &ptr_array_tag<T>) {
                     TURBO_RAW_DCHECK(ptr_array != nullptr, "pointer cannot be null");
                     TURBO_RAW_DCHECK(offset == 0u, "offset must be zero");
                     result.ptr_array = ptr_array + pos;
@@ -318,11 +288,11 @@ namespace turbo {
 
             // A pointer to a function (or tag function) that specifies how to get an
             // element from the array or container.
-            GetterFunction<T> fun = &GetFromUninitialized<T>;
+            GetterFunction<T> fun = &get_from_uninitialized<T>;
 
             union {
-                T* array; // Active if fun == ArrayTag<T>.
-                T* const* ptr_array; // Active if fun == PtrArrayTag<T>.
+                T* array; // Active if fun == array_tag<T>.
+                T* const* ptr_array; // Active if fun == ptr_array_tag<T>.
                 TransformedContainer container; // Active for all other fun.
             };
 
@@ -331,10 +301,10 @@ namespace turbo {
         };
 
         //
-        // MakeArrayGetter returns a Getter for an array.
+        // make_array_getter returns a Getter for an array.
         //
-        // MakeArrayGetterImpl is specialised to use ArrayTag<T> when Element == T and
-        // Transform == IdentityT, and to use PtrArrayTag<T> when Element == T* and
+        // MakeArrayGetterImpl is specialised to use array_tag<T> when Element == T and
+        // Transform == IdentityT, and to use ptr_array_tag<T> when Element == T* and
         // Transform == DerefT.
         //
 
@@ -343,7 +313,7 @@ namespace turbo {
             template <typename U>
             static Getter<U> Make(ArrayElement* array, const Transform& transform) {
                 Getter<U> result;
-                result.fun = &GetFromArray<U, ArrayElement, Transform>;
+                result.fun = &get_from_array<U, ArrayElement, Transform>;
                 result.container.ptr = const_cast<void*>(static_cast<const void*>(array));
                 result.container.transform = TransformPtr(transform, IsTransformCopied<Transform> { });
                 return result;
@@ -356,7 +326,7 @@ namespace turbo {
             template <typename U>
             static Getter<U> Make(T* array, const any_span_transform::IdentityT&) {
                 Getter<U> result;
-                result.fun = &ArrayTag<U>;
+                result.fun = &array_tag<U>;
                 result.array = array;
                 return result;
             }
@@ -376,7 +346,7 @@ namespace turbo {
             static Getter<U> Make(T* const* ptr_array,
                 const any_span_transform::DerefT&) {
                 Getter<U> result;
-                result.fun = &PtrArrayTag<U>;
+                result.fun = &ptr_array_tag<U>;
                 result.ptr_array = ptr_array;
                 return result;
             }
@@ -400,14 +370,14 @@ namespace turbo {
                   any_span_transform::DerefT> { };
 
         template <typename T, typename Element, typename Transform>
-        Getter<T> MakeArrayGetter(Element* array, const Transform& transform) {
+        Getter<T> make_array_getter(Element* array, const Transform& transform) {
             return MakeArrayGetterImpl<T, Element, Transform>::template Make<T>(
                 array, transform);
         }
 
         //
-        // MakeContainerGetter returns a Getter for a given container. It will pass
-        // container.data() to MakeArrayGetter if possible, which allows element access
+        // make_container_getter returns a Getter for a given container. It will pass
+        // container.data() to make_array_getter if possible, which allows element access
         // to be inline.
         //
         // The first argument to MakeArrayGetterImpl is expected to be of type
@@ -415,21 +385,21 @@ namespace turbo {
         //
 
         template <typename T, typename Container, typename Transform>
-        Getter<T> MakeContainerGetterImpl(
+        Getter<T> make_container_getter_impl(
             std::true_type /* DataIsValid<Container> */,
             Container& container, // NOLINT(runtime/references)
             const Transform& transform) {
-            return MakeArrayGetter<T, ElementType<Container>, Transform>(container.data(),
+            return make_array_getter<T, ElementType<Container>, Transform>(container.data(),
                 transform);
         }
 
         template <typename T, typename Container, typename Transform>
-        Getter<T> MakeContainerGetterImpl(
+        Getter<T> make_container_getter_impl(
             std::false_type /* DataIsValid<Container> */,
             Container& container, // NOLINT(runtime/references)
             const Transform& transform) {
             Getter<T> result;
-            result.fun = &GetFromContainer<T, Container, Transform>;
+            result.fun = &get_from_container<T, Container, Transform>;
             result.container.ptr = const_cast<void*>(static_cast<const void*>(&container));
             result.container.transform = TransformPtr(transform, IsTransformCopied<Transform> { });
 
@@ -437,13 +407,13 @@ namespace turbo {
         }
 
         template <typename T, typename Container, typename Transform>
-        Getter<T> MakeContainerGetter(
+        Getter<T> make_container_getter(
             Container& container, // NOLINT(runtime/references)
             const Transform& transform) {
             static_assert(std::is_reference_v<decltype(container[0])>,
                 "AnySpan only works with containers that return a reference "
                 "(no vector<bool>, or containers that return by value).");
-            return MakeContainerGetterImpl<T>(DataIsValid<Container>(), container,
+            return make_container_getter_impl<T>(DataIsValid<Container>(), container,
                 transform);
         }
 
@@ -451,8 +421,9 @@ namespace turbo {
         // access.
         template <typename T>
         bool IsCheap(AnySpan<T> s) {
-            return s.getter_.fun == &ArrayTag<T> || s.getter_.fun == &PtrArrayTag<T>;
+            return s.getter_.fun == &array_tag<T> || s.getter_.fun == &ptr_array_tag<T>;
         }
+
 
         template <typename T>
         bool EqualImpl(AnySpan<T> a, AnySpan<T> b) {

@@ -49,12 +49,12 @@
 #include <turbo/macros/macros.h>
 
 #ifdef __cpp_lib_span
-#include <span>  // NOLINT(build/c++20)
+#include <span> // NOLINT(build/c++20)
 #endif
 
 namespace turbo {
     namespace type_traits_internal {
-        template<typename... Ts>
+        template <typename... Ts>
         struct VoidTImpl {
             using type = void;
         };
@@ -73,52 +73,52 @@ namespace turbo {
         // way that the standard traits are (this "defect" of the detection idiom
         // specifications has been reported).
 
-        template<class Enabler, template <class...> class Op, class... Args>
+        template <class Enabler, template <class...> class Op, class... Args>
         struct is_detected_impl {
             using type = std::false_type;
         };
 
-        template<template <class...> class Op, class... Args>
-        struct is_detected_impl<typename VoidTImpl<Op<Args...> >::type, Op, Args...> {
+        template <template <class...> class Op, class... Args>
+        struct is_detected_impl<typename VoidTImpl<Op<Args...>>::type, Op, Args...> {
             using type = std::true_type;
         };
 
-        template<template <class...> class Op, class... Args>
+        template <template <class...> class Op, class... Args>
         struct is_detected : is_detected_impl<void, Op, Args...>::type {
         };
     } // namespace type_traits_internal
 
 #if defined(__cpp_lib_remove_cvref) && __cpp_lib_remove_cvref >= 201711L
-    template<typename T>
+    template <typename T>
     using remove_cvref = std::remove_cvref<T>;
 
-    template<typename T>
+    template <typename T>
     using remove_cvref_t = std::remove_cvref_t<T>;
 #else
     // remove_cvref()
     //
     // C++11 compatible implementation of std::remove_cvref which was added in
     // C++20.
-    template<typename T>
+    template <typename T>
     struct remove_cvref {
-        using type = std::remove_cv_t<std::remove_reference_t<T> >;
+        using type = std::remove_cv_t<std::remove_reference_t<T>>;
     };
 
-    template<typename T>
+    template <typename T>
     using remove_cvref_t = typename remove_cvref<T>::type;
 #endif
 
 #if defined(__cpp_lib_type_identity) && __cpp_lib_type_identity >= 201806L
-    template<typename T>
+    template <typename T>
     using type_identity = std::type_identity<T>;
 
-    template<typename T>
+    template <typename T>
     using type_identity_t = std::type_identity_t<T>;
 #else
     // type_identity
     //
     // Back-fill of C++20's `std::type_identity`.
-    template<typename T>
+    template <typename T>
     struct type_identity {
         typedef T type;
     };
@@ -126,40 +126,39 @@ namespace turbo {
     // type_identity_t
     //
     // Back-fill of C++20's `std::type_identity_t`.
-    template<typename T>
+    template <typename T>
     using type_identity_t = typename type_identity<T>::type;
 #endif
 
     namespace type_traits_internal {
-#if (defined(__cpp_lib_is_invocable) && __cpp_lib_is_invocable >= 201703L) || \
-    (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+#if (defined(__cpp_lib_is_invocable) && __cpp_lib_is_invocable >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
         // std::result_of is deprecated (C++17) or removed (C++20)
-        template<typename>
+        template <typename>
         struct result_of;
 
-        template<typename F, typename... Args>
+        template <typename F, typename... Args>
         struct result_of<F(Args...)> : std::invoke_result<F, Args...> {
         };
 #else
-        template<typename F>
+        template <typename F>
         using result_of = std::result_of<F>;
 #endif
     } // namespace type_traits_internal
 
-    template<typename F>
+    template <typename F>
     using result_of_t = typename type_traits_internal::result_of<F>::type;
 
     namespace type_traits_internal {
-        template<typename Key, typename = void>
+        template <typename Key, typename = void>
         struct IsHashable : std::false_type {
         };
 
-        template<typename Key>
+        template <typename Key>
         struct IsHashable<
-                    Key,
-                    std::enable_if_t<std::is_convertible_v<
-                        decltype(std::declval<std::hash<Key> &>()(std::declval<Key const &>())),
-                        std::size_t> > > : std::true_type {
+            Key,
+            std::enable_if_t<std::is_convertible_v<
+                decltype(std::declval<std::hash<Key>&>()(std::declval<Key const&>())),
+                std::size_t>>> : std::true_type {
         };
 
         struct AssertHashEnabledHelper {
@@ -170,25 +169,25 @@ namespace turbo {
             struct NAT {
             };
 
-            template<class Key>
+            template <class Key>
             static auto GetReturnType(int)
-                -> decltype(std::declval<std::hash<Key> >()(std::declval<Key const &>()));
+                -> decltype(std::declval<std::hash<Key>>()(std::declval<Key const&>()));
 
-            template<class Key>
+            template <class Key>
             static NAT GetReturnType(...);
 
-            template<class Key>
+            template <class Key>
             static std::nullptr_t DoIt() {
                 static_assert(IsHashable<Key>::value,
-                              "std::hash<Key> does not provide a call operator");
+                    "std::hash<Key> does not provide a call operator");
                 static_assert(
-                    std::is_default_constructible_v<std::hash<Key> >,
+                    std::is_default_constructible_v<std::hash<Key>>,
                     "std::hash<Key> must be default constructible when it is enabled");
                 static_assert(
-                    std::is_copy_constructible_v<std::hash<Key> >,
+                    std::is_copy_constructible_v<std::hash<Key>>,
                     "std::hash<Key> must be copy constructible when it is enabled");
-                static_assert(std::is_copy_assignable_v<std::hash<Key> >,
-                              "std::hash<Key> must be copy assignable when it is enabled");
+                static_assert(std::is_copy_assignable_v<std::hash<Key>>,
+                    "std::hash<Key> must be copy assignable when it is enabled");
                 // is_destructible is unchecked as it's implied by each of the
                 // is_constructible checks.
                 using ReturnType = decltype(GetReturnType<Key>(0));
@@ -198,11 +197,11 @@ namespace turbo {
                 return nullptr;
             }
 
-            template<class... Ts>
+            template <class... Ts>
             friend void AssertHashEnabled();
         };
 
-        template<class... Ts>
+        template <class... Ts>
         inline void AssertHashEnabled() {
             using Helper = AssertHashEnabledHelper;
             Helper::Sink(Helper::DoIt<Ts>()...);
@@ -219,38 +218,37 @@ namespace turbo {
         // considered unless ADL picks them up.
         void swap();
 
-        template<class T>
-        using IsSwappableImpl = decltype(swap(std::declval<T &>(), std::declval<T &>()));
+        template <class T>
+        using IsSwappableImpl = decltype(swap(std::declval<T&>(), std::declval<T&>()));
 
         // NOTE: This dance with the default template parameter is for MSVC.
-        template<class T, class IsNoexcept = std::bool_constant<noexcept(
-            swap(std::declval<T &>(), std::declval<T &>()))> >
+        template <class T, class IsNoexcept = std::bool_constant<noexcept(swap(std::declval<T&>(), std::declval<T&>()))>>
         using IsNothrowSwappableImpl = std::enable_if_t<IsNoexcept::value>;
 
         // IsSwappable
         //
         // Determines whether the standard swap idiom is a valid expression for
         // arguments of type `T`.
-        template<class T>
+        template <class T>
         struct IsSwappable
-                : turbo::type_traits_internal::is_detected<IsSwappableImpl, T> {
+            : turbo::type_traits_internal::is_detected<IsSwappableImpl, T> {
         };
 
         // IsNothrowSwappable
         //
         // Determines whether the standard swap idiom is a valid expression for
         // arguments of type `T` and is noexcept.
-        template<class T>
+        template <class T>
         struct IsNothrowSwappable
-                : turbo::type_traits_internal::is_detected<IsNothrowSwappableImpl, T> {
+            : turbo::type_traits_internal::is_detected<IsNothrowSwappableImpl, T> {
         };
 
         // Swap()
         //
         // Performs the swap idiom from a namespace where valid candidates may only be
         // found in `std` or via ADL.
-        template<class T, std::enable_if_t<IsSwappable<T>::value, int> = 0>
-        void Swap(T &lhs, T &rhs) noexcept(IsNothrowSwappable<T>::value) {
+        template <class T, std::enable_if_t<IsSwappable<T>::value, int> = 0>
+        void Swap(T& lhs, T& rhs) noexcept(IsNothrowSwappable<T>::value) {
             swap(lhs, rhs);
         }
 
@@ -331,28 +329,24 @@ namespace turbo {
     // only return true for types that are trivially relocatable according to the
     // standard. Notably, this means that marking a type [[clang::trivial_abi]] aka
     // TURBO_HAVE_ATTRIBUTE_TRIVIAL_ABI will have no effect on this trait.
-    template<class T>
+    template <class T>
     struct is_trivially_relocatable
-            : std::bool_constant<__builtin_is_cpp_trivially_relocatable(T)> {
+        : std::bool_constant<__builtin_is_cpp_trivially_relocatable(T)> {
     };
-#elif KUMO_HAVE_BUILTIN(__is_trivially_relocatable) && defined(__clang__) && \
-    !(defined(_WIN32) || defined(_WIN64)) && !defined(__APPLE__) &&          \
-    !defined(__NVCC__)
+#elif KUMO_HAVE_BUILTIN(__is_trivially_relocatable) && defined(__clang__) && !(defined(_WIN32) || defined(_WIN64)) && !defined(__APPLE__) && !defined(__NVCC__)
     // https://github.com/llvm/llvm-project/pull/139061
     //  __is_trivially_relocatable is deprecated.
     // TODO(b/325479096): Remove this case.
-    template<class T>
+    template <class T>
     struct is_trivially_relocatable
-            : std::integral_constant<bool,
-                std::is_trivially_copyable_v<T> ||
-                (__is_trivially_relocatable(T) &&
-                 std::is_trivially_move_assignable_v<T>)> {
+        : std::integral_constant<bool,
+              std::is_trivially_copyable_v<T> || (__is_trivially_relocatable(T) && std::is_trivially_move_assignable_v<T>)> {
     };
 #else
     // Otherwise we use a fallback that detects only those types we can feasibly
     // detect. Any type that is trivially copyable is by definition trivially
     // relocatable.
-    template<class T>
+    template <class T>
     struct is_trivially_relocatable : std::is_trivially_copyable<T> {
     };
 #endif
@@ -395,7 +389,7 @@ namespace turbo {
         return __builtin_is_constant_evaluated();
 #endif
     }
-#endif  // KUMO_HAVE_CONSTANT_EVALUATED
+#endif // KUMO_HAVE_CONSTANT_EVALUATED
 
     namespace type_traits_internal {
         // Detects if a class's definition has declared itself to be an owner by
@@ -406,16 +400,16 @@ namespace turbo {
         // (if e.g. inheriting from a base class) define the member to something that
         // isn't a Boolean trait class, such as `void`.
         // Do not specialize or use this directly. It's an implementation detail.
-        template<typename T, typename = void>
+        template <typename T, typename = void>
         struct IsOwnerImpl : std::false_type {
-            static_assert(std::is_same_v<T, turbo::remove_cvref_t<T> >,
-                          "type must lack qualifiers");
+            static_assert(std::is_same_v<T, turbo::remove_cvref_t<T>>,
+                "type must lack qualifiers");
         };
 
-        template<typename T>
+        template <typename T>
         struct IsOwnerImpl<
-                    T, std::enable_if_t<std::is_class_v<typename T::turbo_internal_is_view> > >
-                : std::negation<typename T::turbo_internal_is_view> {
+            T, std::enable_if_t<std::is_class_v<typename T::turbo_internal_is_view>>>
+            : std::negation<typename T::turbo_internal_is_view> {
         };
 
         // A trait to determine whether a type is an owner.
@@ -425,80 +419,80 @@ namespace turbo {
         // that it can be auto-detected, and to prevent ODR violations.
         // If it ever becomes possible to detect [[gsl::Owner]], we should leverage it:
         // https://wg21.link/p1179
-        template<typename T>
+        template <typename T>
         struct IsOwner : IsOwnerImpl<T> {
         };
 
-        template<typename T>
-        struct IsOwner<T &> : std::false_type {
+        template <typename T>
+        struct IsOwner<T&> : std::false_type {
         };
 
-        template<typename T>
-        struct IsOwner<T &&> : std::false_type {
+        template <typename T>
+        struct IsOwner<T&&> : std::false_type {
         };
 
-        template<typename T>
+        template <typename T>
         struct IsOwner<const T> : IsOwner<T> {
         };
 
-        template<typename T>
+        template <typename T>
         struct IsOwner<volatile T> : IsOwner<T> {
         };
 
-        template<typename T>
+        template <typename T>
         struct IsOwner<const volatile T> : IsOwner<T> {
         };
 
-        template<typename T>
-        struct IsOwner<std::reference_wrapper<T> > : std::false_type {
+        template <typename T>
+        struct IsOwner<std::reference_wrapper<T>> : std::false_type {
         };
 
-        template<typename T, std::size_t N>
-        struct IsOwner<std::array<T, N> >
-                : std::conditional_t<N != 0, IsOwner<T>, std::false_type> {
+        template <typename T, std::size_t N>
+        struct IsOwner<std::array<T, N>>
+            : std::conditional_t<N != 0, IsOwner<T>, std::false_type> {
         };
 
         // This allows incomplete types to be used for associative containers, and also
         // expands the set of types we can handle to include std::pair.
-        template<typename T1, typename T2>
-        struct IsOwner<std::pair<T1, T2> > : IsOwner<std::tuple<T1, T2> > {
+        template <typename T1, typename T2>
+        struct IsOwner<std::pair<T1, T2>> : IsOwner<std::tuple<T1, T2>> {
         };
 
-        template<typename T, typename Traits, typename Alloc>
-        struct IsOwner<std::basic_string<T, Traits, Alloc> > : std::true_type {
+        template <typename T, typename Traits, typename Alloc>
+        struct IsOwner<std::basic_string<T, Traits, Alloc>> : std::true_type {
         };
 
-        template<typename T, typename Alloc>
-        struct IsOwner<std::vector<T, Alloc> > : std::true_type {
+        template <typename T, typename Alloc>
+        struct IsOwner<std::vector<T, Alloc>> : std::true_type {
         };
 
-        template<typename... T>
-        struct IsOwner<std::tuple<T...> >
-                : std::bool_constant<(sizeof...(T) > 0) &&
-                                     // Uses a C++17 fold expression where '...' unpacks the
-                                     // parameter pack T, and 'true &&' provides the base
-                                     // case for the logical AND operation across all types.
-                                     (true && ... && IsOwner<T>::value)> {
+        template <typename... T>
+        struct IsOwner<std::tuple<T...>>
+            : std::bool_constant<(sizeof...(T) > 0) &&
+                  // Uses a C++17 fold expression where '...' unpacks the
+                  // parameter pack T, and 'true &&' provides the base
+                  // case for the logical AND operation across all types.
+                  (true && ... && IsOwner<T>::value)> {
         };
 
-        template<typename... T>
-        struct IsOwner<std::variant<T...> > : IsOwner<std::tuple<T...> > {
+        template <typename... T>
+        struct IsOwner<std::variant<T...>> : IsOwner<std::tuple<T...>> {
         };
 
         // Detects if a class's definition has declared itself to be a view by declaring
         //   using turbo_internal_is_view = std::true_type;
         // as a member.
         // Do not specialize or use this directly.
-        template<typename T, typename = void>
+        template <typename T, typename = void>
         struct IsViewImpl : std::false_type {
-            static_assert(std::is_same_v<T, turbo::remove_cvref_t<T> >,
-                          "type must lack qualifiers");
+            static_assert(std::is_same_v<T, turbo::remove_cvref_t<T>>,
+                "type must lack qualifiers");
         };
 
-        template<typename T>
+        template <typename T>
         struct IsViewImpl<
-                    T, std::enable_if_t<std::is_class_v<typename T::turbo_internal_is_view> > >
-                : T::turbo_internal_is_view {
+            T, std::enable_if_t<std::is_class_v<typename T::turbo_internal_is_view>>>
+            : T::turbo_internal_is_view {
         };
 
         // A trait to determine whether a type is a view.
@@ -509,66 +503,66 @@ namespace turbo {
         // in your class to allow its detection while preventing ODR violations.
         // If it ever becomes possible to detect [[gsl::Pointer]], we should leverage
         // it: https://wg21.link/p1179
-        template<typename T>
+        template <typename T>
         struct IsView
-                : std::bool_constant<std::is_pointer_v<T> || IsViewImpl<T>::value> {
+            : std::bool_constant<std::is_pointer_v<T> || IsViewImpl<T>::value> {
         };
 
-        template<typename T>
-        struct IsView<T &> : std::true_type {
+        template <typename T>
+        struct IsView<T&> : std::true_type {
         };
 
-        template<typename T>
-        struct IsView<T &&> : std::true_type {
+        template <typename T>
+        struct IsView<T&&> : std::true_type {
         };
 
-        template<typename T>
+        template <typename T>
         struct IsView<const T> : IsView<T> {
         };
 
-        template<typename T>
+        template <typename T>
         struct IsView<volatile T> : IsView<T> {
         };
 
-        template<typename T>
+        template <typename T>
         struct IsView<const volatile T> : IsView<T> {
         };
 
-        template<typename T>
-        struct IsView<std::reference_wrapper<T> > : std::true_type {
+        template <typename T>
+        struct IsView<std::reference_wrapper<T>> : std::true_type {
         };
 
-        template<typename T, std::size_t N>
-        struct IsView<std::array<T, N> >
-                : std::conditional_t<N != 0, IsView<T>, std::false_type> {
+        template <typename T, std::size_t N>
+        struct IsView<std::array<T, N>>
+            : std::conditional_t<N != 0, IsView<T>, std::false_type> {
         };
 
         // This allows incomplete types to be used for associative containers, and also
         // expands the set of types we can handle to include std::pair.
-        template<typename T1, typename T2>
-        struct IsView<std::pair<T1, T2> > : IsView<std::tuple<T1, T2> > {
+        template <typename T1, typename T2>
+        struct IsView<std::pair<T1, T2>> : IsView<std::tuple<T1, T2>> {
         };
 
-        template<typename Char, typename Traits>
-        struct IsView<std::basic_string_view<Char, Traits> > : std::true_type {
+        template <typename Char, typename Traits>
+        struct IsView<std::basic_string_view<Char, Traits>> : std::true_type {
         };
 
-        template<typename... T>
-        struct IsView<std::tuple<T...> >
-                : std::bool_constant<(sizeof...(T) > 0) &&
-                                     // Uses a C++17 fold expression where '...' unpacks the
-                                     // parameter pack T, and 'true &&' provides the base
-                                     // case for the logical AND operation across all types.
-                                     (true && ... && IsView<T>::value)> {
+        template <typename... T>
+        struct IsView<std::tuple<T...>>
+            : std::bool_constant<(sizeof...(T) > 0) &&
+                  // Uses a C++17 fold expression where '...' unpacks the
+                  // parameter pack T, and 'true &&' provides the base
+                  // case for the logical AND operation across all types.
+                  (true && ... && IsView<T>::value)> {
         };
 
-        template<typename... T>
-        struct IsView<std::variant<T...> > : IsView<std::tuple<T...> > {
+        template <typename... T>
+        struct IsView<std::variant<T...>> : IsView<std::tuple<T...>> {
         };
 
 #ifdef __cpp_lib_span
-        template<typename T>
-        struct IsView<std::span<T> > : std::true_type {
+        template <typename T>
+        struct IsView<std::span<T>> : std::true_type {
         };
 #endif
 
@@ -579,12 +573,12 @@ namespace turbo {
         // we should change the implementation to leverage that.
         // Until then, we consider an assignment from an "owner" (such as std::string)
         // to a "view" (such as std::string_view) to be a lifetime-bound assignment.
-        template<typename T, typename U>
-        using IsLifetimeBoundAssignment =
-        std::conjunction<std::bool_constant<!std::is_lvalue_reference_v<U>>,
-            IsOwner<turbo::remove_cvref_t<U> >,
-            IsView<turbo::remove_cvref_t<T> > >;
+        template <typename T, typename U>
+        using IsLifetimeBoundAssignment = std::conjunction<std::bool_constant<!std::is_lvalue_reference_v<U>>,
+            IsOwner<turbo::remove_cvref_t<U>>,
+            IsView<turbo::remove_cvref_t<T>>>;
     } // namespace type_traits_internal
+
 } // namespace turbo
 
-#endif  // TURBO_META_TYPE_TRAITS_H_
+#endif // TURBO_META_TYPE_TRAITS_H_

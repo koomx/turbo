@@ -20,9 +20,9 @@
 #include <cstdio>
 #include <limits>
 
-#include <turbo/macros/config.h>
 #include <turbo/base/const_init.h>
 #include <turbo/format/str_format/extension.h>
+#include <turbo/macros/config.h>
 
 namespace turbo {
     namespace str_format_internal {
@@ -36,7 +36,9 @@ namespace turbo {
             // This constructor is provided for the static checker. We don't want to do
             // the unnecessary initialization in the normal case.
             explicit constexpr UnboundConversion(turbo::ConstInitType)
-                : arg_position{}, width{}, precision{} {
+                : arg_position { }
+                , width { }
+                , precision { } {
             }
 
             class InputValue {
@@ -97,7 +99,8 @@ namespace turbo {
                 : tag_(0xc0 | static_cast<uint8_t>(flags)) {
             }
 
-            constexpr ConvTag() : tag_(0xFF) {
+            constexpr ConvTag()
+                : tag_(0xFF) {
             }
 
             constexpr bool is_conv() const { return (tag_ & 0x80) == 0; }
@@ -141,38 +144,262 @@ namespace turbo {
             static constexpr auto kFZero = Flags::kZero;
 
             static constexpr ConvTag value[256] = {
-                {}, {}, {}, {}, {}, {}, {}, {}, // 00-07
-                {}, {}, {}, {}, {}, {}, {}, {}, // 08-0f
-                {}, {}, {}, {}, {}, {}, {}, {}, // 10-17
-                {}, {}, {}, {}, {}, {}, {}, {}, // 18-1f
-                kFSign, {}, {}, kFAlt, {}, {}, {}, {}, //  !"#$%&'
-                {}, {}, {}, kFPos, {}, kFLeft, {}, {}, // ()*+,-./
-                kFZero, {}, {}, {}, {}, {}, {}, {}, // 01234567
-                {}, {}, {}, {}, {}, {}, {}, {}, // 89:;<=>?
-                {}, CC::A, {}, {}, {}, CC::E, CC::F, CC::G, // @ABCDEFG
-                {}, {}, {}, {}, LM::L, {}, {}, {}, // HIJKLMNO
-                {}, {}, {}, {}, {}, {}, {}, {}, // PQRSTUVW
-                CC::X, {}, {}, {}, {}, {}, {}, {}, // XYZ[\]^_
-                {}, CC::a, {}, CC::c, CC::d, CC::e, CC::f, CC::g, // `abcdefg
-                LM::h, CC::i, LM::j, {}, LM::l, {}, CC::n, CC::o, // hijklmno
-                CC::p, LM::q, {}, CC::s, LM::t, CC::u, CC::v, {}, // pqrstuvw
-                CC::x, {}, LM::z, {}, {}, {}, {}, {}, // xyz{|}!
-                {}, {}, {}, {}, {}, {}, {}, {}, // 80-87
-                {}, {}, {}, {}, {}, {}, {}, {}, // 88-8f
-                {}, {}, {}, {}, {}, {}, {}, {}, // 90-97
-                {}, {}, {}, {}, {}, {}, {}, {}, // 98-9f
-                {}, {}, {}, {}, {}, {}, {}, {}, // a0-a7
-                {}, {}, {}, {}, {}, {}, {}, {}, // a8-af
-                {}, {}, {}, {}, {}, {}, {}, {}, // b0-b7
-                {}, {}, {}, {}, {}, {}, {}, {}, // b8-bf
-                {}, {}, {}, {}, {}, {}, {}, {}, // c0-c7
-                {}, {}, {}, {}, {}, {}, {}, {}, // c8-cf
-                {}, {}, {}, {}, {}, {}, {}, {}, // d0-d7
-                {}, {}, {}, {}, {}, {}, {}, {}, // d8-df
-                {}, {}, {}, {}, {}, {}, {}, {}, // e0-e7
-                {}, {}, {}, {}, {}, {}, {}, {}, // e8-ef
-                {}, {}, {}, {}, {}, {}, {}, {}, // f0-f7
-                {}, {}, {}, {}, {}, {}, {}, {}, // f8-ff
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // 00-07
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // 08-0f
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // 10-17
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // 18-1f
+                kFSign,
+                { },
+                { },
+                kFAlt,
+                { },
+                { },
+                { },
+                { }, //  !"#$%&'
+                { },
+                { },
+                { },
+                kFPos,
+                { },
+                kFLeft,
+                { },
+                { }, // ()*+,-./
+                kFZero,
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // 01234567
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // 89:;<=>?
+                { },
+                CC::A,
+                { },
+                { },
+                { },
+                CC::E,
+                CC::F,
+                CC::G, // @ABCDEFG
+                { },
+                { },
+                { },
+                { },
+                LM::L,
+                { },
+                { },
+                { }, // HIJKLMNO
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // PQRSTUVW
+                CC::X,
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // XYZ[\]^_
+                { },
+                CC::a,
+                { },
+                CC::c,
+                CC::d,
+                CC::e,
+                CC::f,
+                CC::g, // `abcdefg
+                LM::h,
+                CC::i,
+                LM::j,
+                { },
+                LM::l,
+                { },
+                CC::n,
+                CC::o, // hijklmno
+                CC::p,
+                LM::q,
+                { },
+                CC::s,
+                LM::t,
+                CC::u,
+                CC::v,
+                { }, // pqrstuvw
+                CC::x,
+                { },
+                LM::z,
+                { },
+                { },
+                { },
+                { },
+                { }, // xyz{|}!
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // 80-87
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // 88-8f
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // 90-97
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // 98-9f
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // a0-a7
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // a8-af
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // b0-b7
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // b8-bf
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // c0-c7
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // c8-cf
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // d0-d7
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // d8-df
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // e0-e7
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // e8-ef
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // f0-f7
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { },
+                { }, // f8-ff
             };
         };
 
@@ -181,66 +408,71 @@ namespace turbo {
             return ConvTagHolder::value[static_cast<unsigned char>(c)];
         }
 
-        constexpr bool CheckFastPathSetting(const UnboundConversion &conv) {
-            bool width_precision_needed =
-                    conv.width.value() >= 0 || conv.precision.value() >= 0;
+        constexpr bool CheckFastPathSetting(const UnboundConversion& conv) {
+            bool width_precision_needed = conv.width.value() >= 0 || conv.precision.value() >= 0;
             if (width_precision_needed && conv.flags == Flags::kBasic) {
 #if defined(__clang__)
                 // Some compilers complain about this in constexpr even when not executed,
                 // so only enable the error dump in clang.
                 fprintf(stderr,
-                        "basic=%d left=%d show_pos=%d sign_col=%d alt=%d zero=%d "
-                        "width=%d precision=%d\n",
-                        conv.flags == Flags::kBasic ? 1 : 0,
-                        FlagsContains(conv.flags, Flags::kLeft) ? 1 : 0,
-                        FlagsContains(conv.flags, Flags::kShowPos) ? 1 : 0,
-                        FlagsContains(conv.flags, Flags::kSignCol) ? 1 : 0,
-                        FlagsContains(conv.flags, Flags::kAlt) ? 1 : 0,
-                        FlagsContains(conv.flags, Flags::kZero) ? 1 : 0, conv.width.value(),
-                        conv.precision.value());
-#endif  // defined(__clang__)
+                    "basic=%d left=%d show_pos=%d sign_col=%d alt=%d zero=%d "
+                    "width=%d precision=%d\n",
+                    conv.flags == Flags::kBasic ? 1 : 0,
+                    flags_contains(conv.flags, Flags::kLeft) ? 1 : 0,
+                    flags_contains(conv.flags, Flags::kShowPos) ? 1 : 0,
+                    flags_contains(conv.flags, Flags::kSignCol) ? 1 : 0,
+                    flags_contains(conv.flags, Flags::kAlt) ? 1 : 0,
+                    flags_contains(conv.flags, Flags::kZero) ? 1 : 0, conv.width.value(),
+                    conv.precision.value());
+#endif // defined(__clang__)
                 return false;
             }
             return true;
         }
 
-        constexpr int ParseDigits(char &c, const char *&pos, const char *const end) {
+        constexpr int ParseDigits(char& c, const char*& pos, const char* const end) {
             int digits = c - '0';
             // We do not want to overflow `digits` so we consume at most digits10
             // digits. If there are more digits the parsing will fail later on when the
             // digit doesn't match the expected characters.
             int num_digits = std::numeric_limits<int>::digits10;
             for (;;) {
-                if (KUMO_UNLIKELY(pos == end)) break;
+                if (KUMO_UNLIKELY(pos == end))
+                    break;
                 c = *pos++;
-                if ('0' > c || c > '9') break;
+                if ('0' > c || c > '9')
+                    break;
                 --num_digits;
-                if (KUMO_UNLIKELY(!num_digits)) break;
+                if (KUMO_UNLIKELY(!num_digits))
+                    break;
                 digits = 10 * digits + c - '0';
             }
             return digits;
         }
 
-        template<bool is_positional>
-        constexpr const char *ConsumeConversion(const char *pos, const char *const end,
-                                                UnboundConversion *conv,
-                                                int *next_arg) {
-            const char *const original_pos = pos;
+        template <bool is_positional>
+        constexpr const char* ConsumeConversion(const char* pos, const char* const end,
+            UnboundConversion* conv,
+            int* next_arg) {
+            const char* const original_pos = pos;
             char c = 0;
             // Read the next char into `c` and update `pos`. Returns false if there are
             // no more chars to read.
-#define TURBO_FORMAT_PARSER_INTERNAL_GET_CHAR()          \
-  do {                                                  \
-    if (KUMO_UNLIKELY(pos == end)) return nullptr; \
-    c = *pos++;                                         \
-  } while (0)
+#define TURBO_FORMAT_PARSER_INTERNAL_GET_CHAR() \
+    do {                                        \
+        if (KUMO_UNLIKELY(pos == end))          \
+            return nullptr;                     \
+        c = *pos++;                             \
+    } while (0)
 
             if (is_positional) {
                 TURBO_FORMAT_PARSER_INTERNAL_GET_CHAR();
-                if (KUMO_UNLIKELY(c < '1' || c > '9')) return nullptr;
+                if (KUMO_UNLIKELY(c < '1' || c > '9'))
+                    return nullptr;
                 conv->arg_position = ParseDigits(c, pos, end);
                 assert(conv->arg_position > 0);
-                if (KUMO_UNLIKELY(c != '$')) return nullptr;
+                if (KUMO_UNLIKELY(c != '$'))
+                    return nullptr;
             }
 
             TURBO_FORMAT_PARSER_INTERNAL_GET_CHAR();
@@ -266,7 +498,8 @@ namespace turbo {
                     if (c >= '0') {
                         int maybe_width = ParseDigits(c, pos, end);
                         if (!is_positional && c == '$') {
-                            if (KUMO_UNLIKELY(*next_arg != 0)) return nullptr;
+                            if (KUMO_UNLIKELY(*next_arg != 0))
+                                return nullptr;
                             // Positional conversion.
                             *next_arg = -1;
                             return ConsumeConversion<true>(original_pos, end, conv, next_arg);
@@ -277,9 +510,11 @@ namespace turbo {
                         conv->flags = conv->flags | Flags::kNonBasic;
                         TURBO_FORMAT_PARSER_INTERNAL_GET_CHAR();
                         if (is_positional) {
-                            if (KUMO_UNLIKELY(c < '1' || c > '9')) return nullptr;
+                            if (KUMO_UNLIKELY(c < '1' || c > '9'))
+                                return nullptr;
                             conv->width.set_from_arg(ParseDigits(c, pos, end));
-                            if (KUMO_UNLIKELY(c != '$')) return nullptr;
+                            if (KUMO_UNLIKELY(c != '$'))
+                                return nullptr;
                             TURBO_FORMAT_PARSER_INTERNAL_GET_CHAR();
                         } else {
                             conv->width.set_from_arg(++*next_arg);
@@ -295,9 +530,11 @@ namespace turbo {
                     } else if (c == '*') {
                         TURBO_FORMAT_PARSER_INTERNAL_GET_CHAR();
                         if (is_positional) {
-                            if (KUMO_UNLIKELY(c < '1' || c > '9')) return nullptr;
+                            if (KUMO_UNLIKELY(c < '1' || c > '9'))
+                                return nullptr;
                             conv->precision.set_from_arg(ParseDigits(c, pos, end));
-                            if (c != '$') return nullptr;
+                            if (c != '$')
+                                return nullptr;
                             TURBO_FORMAT_PARSER_INTERNAL_GET_CHAR();
                         } else {
                             conv->precision.set_from_arg(++*next_arg);
@@ -315,7 +552,8 @@ namespace turbo {
             }
 
             if (KUMO_UNLIKELY(!tag.is_conv())) {
-                if (KUMO_UNLIKELY(!tag.is_length())) return nullptr;
+                if (KUMO_UNLIKELY(!tag.is_length()))
+                    return nullptr;
 
                 // It is a length modifier.
                 LengthMod length_mod = tag.as_length();
@@ -331,8 +569,10 @@ namespace turbo {
                 }
                 tag = GetTagForChar(c);
 
-                if (KUMO_UNLIKELY(c == 'v')) return nullptr;
-                if (KUMO_UNLIKELY(!tag.is_conv())) return nullptr;
+                if (KUMO_UNLIKELY(c == 'v'))
+                    return nullptr;
+                if (KUMO_UNLIKELY(!tag.is_conv()))
+                    return nullptr;
 
                 // `wchar_t` args are marked non-basic so `Bind()` will copy the length mod.
                 if (conv->length_mod == LengthMod::l && c == 'c') {
@@ -342,10 +582,11 @@ namespace turbo {
 #undef TURBO_FORMAT_PARSER_INTERNAL_GET_CHAR
 
             assert(CheckFastPathSetting(*conv));
-            (void) (&CheckFastPathSetting);
+            (void)(&CheckFastPathSetting);
 
             conv->conv = tag.as_conv();
-            if (!is_positional) conv->arg_position = ++*next_arg;
+            if (!is_positional)
+                conv->arg_position = ++*next_arg;
             return pos;
         }
 
@@ -354,13 +595,14 @@ namespace turbo {
         // If valid, it returns the first character following the conversion spec,
         // and the spec part is broken down and returned in 'conv'.
         // If invalid, returns nullptr.
-        constexpr const char *ConsumeUnboundConversion(const char *p, const char *end,
-                                                       UnboundConversion *conv,
-                                                       int *next_arg) {
-            if (*next_arg < 0) return ConsumeConversion<true>(p, end, conv, next_arg);
+        constexpr const char* ConsumeUnboundConversion(const char* p, const char* end,
+            UnboundConversion* conv,
+            int* next_arg) {
+            if (*next_arg < 0)
+                return ConsumeConversion<true>(p, end, conv, next_arg);
             return ConsumeConversion<false>(p, end, conv, next_arg);
         }
     } // namespace str_format_internal
 } // namespace turbo
 
-#endif  // TURBO_STRINGS_INTERNAL_STR_FORMAT_CONSTEXPR_PARSER_H_
+#endif // TURBO_STRINGS_INTERNAL_STR_FORMAT_CONSTEXPR_PARSER_H_

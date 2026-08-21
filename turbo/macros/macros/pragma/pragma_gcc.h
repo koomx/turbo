@@ -23,3 +23,20 @@
 
 #define KUMO_RESTORE_DEPRECATED_WARNINGS    \
     KUMO_PRAGMA_DIAG_POP
+
+#define KUMO_DISABLE_UNUSED_WARNING         \
+    KUMO_PRAGMA_DIAG_PUSH                   \
+    KUMO_PRAGMA_DIAG_IGNORED("-Wunused-function") \
+    KUMO_PRAGMA_DIAG_IGNORED("-Wunused-const-variable")
+
+#define KUMO_RESTORE_UNUSED_WARNING         \
+    KUMO_PRAGMA_DIAG_POP
+
+#define KUMO_DISABLE_UNDESIRED_WARNINGS
+
+#define KUMO_RESTORE_UNDESIRED_WARNINGS
+
+#define KUMO_TARGET_REGION(T) \
+    _Pragma("GCC push_options") _Pragma(KUMO_STRINGIFY(GCC target(T)))
+#define KUMO_UNTARGET_REGION _Pragma("GCC pop_options")
+

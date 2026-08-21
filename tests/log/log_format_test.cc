@@ -1319,8 +1319,8 @@ TEST(LogFormatTest, TurboStringifyStreamsNothing) {
 struct PointMultipleAppend {
   template <typename Sink>
   friend void turbo_stringify(Sink& sink, const PointMultipleAppend& p) {
-    sink.Append("(");
-    sink.Append(turbo::str_cat(p.x, ", ", p.y, ")"));
+    sink.append("(");
+    sink.append(turbo::str_cat(p.x, ", ", p.y, ")"));
   }
 
   int x = 10;

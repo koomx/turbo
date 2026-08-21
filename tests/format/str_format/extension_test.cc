@@ -31,11 +31,11 @@ class UserDefinedType {
  public:
   UserDefinedType() = default;
 
-  void Append(std::string_view str) { value_.append(str.data(), str.size()); }
+  void append(std::string_view str) { value_.append(str.data(), str.size()); }
   const std::string& Value() const { return value_; }
 
-  friend void TurboFormatFlush(UserDefinedType* x, std::string_view str) {
-    x->Append(str);
+  friend void turbo_format_flush(UserDefinedType* x, std::string_view str) {
+    x->append(str);
   }
 
  private:
@@ -62,7 +62,7 @@ TEST(FormatExtensionTest, SinkAppendSubstring) {
     for (size_t chunks = 0; chunks < 10; ++chunks) {
       std::string rand = MakeRandomString(chunk_size);
       expected += rand;
-      sink.Append(rand);
+      sink.append(rand);
     }
     sink.Flush();
     EXPECT_EQ(actual, expected);
@@ -76,7 +76,7 @@ TEST(FormatExtensionTest, SinkAppendChars) {
     for (size_t chunks = 0; chunks < 10; ++chunks) {
       std::string rand = MakeRandomString(1);
       expected.append(chunk_size, rand[0]);
-      sink.Append(chunk_size, rand[0]);
+      sink.append(chunk_size, rand[0]);
     }
     sink.Flush();
     EXPECT_EQ(actual, expected);

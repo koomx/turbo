@@ -813,7 +813,7 @@ TurboHashValue(H hash_state, const std::vector<T, Allocator>& vector) {
     for (size_t j = 0; j < 64; ++j) {
       word |= static_cast<uint64_t>(vector[i + j]) << j;
     }
-    if constexpr (turbo::endian::native == turbo::endian::big) {
+    if constexpr (turbo::Endian::native == turbo::Endian::big) {
       word = turbo::byteswap(word);
     }
     hash_state = combiner.add_buffer(
@@ -828,7 +828,7 @@ TurboHashValue(H hash_state, const std::vector<T, Allocator>& vector) {
     for (size_t j = 0; j < rem; ++j) {
       word |= static_cast<uint64_t>(vector[i + j]) << j;
     }
-    if constexpr (turbo::endian::native == turbo::endian::big) {
+    if constexpr (turbo::Endian::native == turbo::Endian::big) {
       word = turbo::byteswap(word);
     }
     hash_state = combiner.add_buffer(
@@ -998,7 +998,7 @@ H TurboHashValue(H hash_state, const std::bitset<N>& set) {
     for (size_t j = 0; j < 64; ++j) {
       word |= static_cast<uint64_t>(set[i + j]) << j;
     }
-    if constexpr (turbo::endian::native == turbo::endian::big) {
+    if constexpr (turbo::Endian::native == turbo::Endian::big) {
       word = turbo::byteswap(word);
     }
     hash_state = combiner.add_buffer(
@@ -1013,7 +1013,7 @@ H TurboHashValue(H hash_state, const std::bitset<N>& set) {
     for (size_t j = 0; j < rem; ++j) {
       word |= static_cast<uint64_t>(set[i + j]) << j;
     }
-    if constexpr (turbo::endian::native == turbo::endian::big) {
+    if constexpr (turbo::Endian::native == turbo::Endian::big) {
       word = turbo::byteswap(word);
     }
     hash_state = combiner.add_buffer(
@@ -1064,7 +1064,7 @@ inline uint64_t PrecombineLengthMix(uint64_t state, size_t len) {
   return state ^ data;
 }
 
-KUMO_ATTRIBUTE_ALWAYS_INLINE inline uint64_t Mix(uint64_t lhs, uint64_t rhs) {
+KUMO_FORCE_INLINE uint64_t Mix(uint64_t lhs, uint64_t rhs) {
   // Though the 128-bit product needs multiple instructions on non-x86-64
   // platforms, it is still a good balance between speed and hash quality.
   turbo::uint128 m = lhs;
@@ -1105,7 +1105,7 @@ inline uint64_t Read4To8(const unsigned char* p, size_t len) {
   // `ABCDEF` will be read as `CDEFABCD`.
   // `ABCDEFG` will be read as `DEFGABCD`.
   // `ABCDEFGH` will be read as `EFGHABCD`.
-  // We also do not care about endianness. On big-endian platforms, bytes will
+  // We also do not care about Endianness. On big-endian platforms, bytes will
   // be permuted differently. We always shift low memory by 32, because that
   // can be pipelined earlier. Reading high memory requires computing
   // `p + len - 4`.
@@ -1133,7 +1133,7 @@ inline uint32_t Read1To3(const unsigned char* p, size_t len) {
 
 #ifdef TURBO_HASH_INTERNAL_HAS_CRC32
 
-KUMO_ATTRIBUTE_ALWAYS_INLINE inline uint64_t CombineRawImpl(uint64_t state,
+KUMO_FORCE_INLINE uint64_t CombineRawImpl(uint64_t state,
                                                             uint64_t value) {
   // We use a union to access the high and low 32 bits of the state.
   union {
@@ -1171,7 +1171,7 @@ KUMO_ATTRIBUTE_ALWAYS_INLINE inline uint64_t CombineRawImpl(uint64_t state,
   return s.u64;
 }
 #else   // TURBO_HASH_INTERNAL_HAS_CRC32
-KUMO_ATTRIBUTE_ALWAYS_INLINE inline uint64_t CombineRawImpl(uint64_t state,
+KUMO_FORCE_INLINE uint64_t CombineRawImpl(uint64_t state,
                                                             uint64_t value) {
   return Mix(state ^ value, kMul);
 }
@@ -1187,7 +1187,7 @@ uint64_t CombineLargeContiguousImplOn64BitLengthGt32(uint64_t state,
                                                      const unsigned char* first,
                                                      size_t len);
 
-KUMO_ATTRIBUTE_ALWAYS_INLINE inline uint64_t CombineSmallContiguousImpl(
+KUMO_FORCE_INLINE uint64_t CombineSmallContiguousImpl(
     uint64_t state, const unsigned char* first, size_t len) {
   KUMO_ASSUME(len <= 8);
   uint64_t v;
@@ -1202,7 +1202,7 @@ KUMO_ATTRIBUTE_ALWAYS_INLINE inline uint64_t CombineSmallContiguousImpl(
   return CombineRawImpl(state, v);
 }
 
-KUMO_ATTRIBUTE_ALWAYS_INLINE inline uint64_t CombineContiguousImpl9to16(
+KUMO_FORCE_INLINE uint64_t CombineContiguousImpl9to16(
     uint64_t state, const unsigned char* first, size_t len) {
   KUMO_ASSUME(len >= 9);
   KUMO_ASSUME(len <= 16);
@@ -1215,7 +1215,7 @@ KUMO_ATTRIBUTE_ALWAYS_INLINE inline uint64_t CombineContiguousImpl9to16(
   return Mix(state ^ p.first, kMul ^ p.second);
 }
 
-KUMO_ATTRIBUTE_ALWAYS_INLINE inline uint64_t CombineContiguousImpl17to32(
+KUMO_FORCE_INLINE uint64_t CombineContiguousImpl17to32(
     uint64_t state, const unsigned char* first, size_t len) {
   KUMO_ASSUME(len >= 17);
   KUMO_ASSUME(len <= 32);
@@ -1553,7 +1553,7 @@ class KUMO_DLL MixingHashState : public HashStateBase<MixingHashState> {
   //
   // On other platforms this is still going to be non-deterministic but most
   // probably per-build and not per-process.
-  KUMO_ATTRIBUTE_ALWAYS_INLINE static size_t Seed() {
+  KUMO_FORCE_INLINE static size_t Seed() {
 #if (!defined(__clang__) || __clang_major__ > 11) && \
     (!defined(__apple_build_version__) ||            \
      __apple_build_version__ >= 19558921)  // Xcode 12

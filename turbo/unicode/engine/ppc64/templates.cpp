@@ -1,0 +1,91 @@
+/*
+    Template `convert_impl` implements generic conversion routine between
+    different encodings. Procedure returns the number of written elements,
+    or zero in the case of error.
+
+    Parameters:
+    * VectorizedConvert - vectorized procedure that returns structure having
+      three fields: UnicodeError (err), const Source* (input), Destination*
+   (output)
+    * ScalarConvert - scalar procedure that carries on conversion of tail
+    * Source - type of input char (like char16_t, char)
+    * Destination - type of input char
+*/
+template <typename VectorizedConvert, typename ScalarConvert, typename Source,
+    typename Destination>
+size_t convert_impl(VectorizedConvert vectorized_convert,
+    ScalarConvert scalar_convert, const Source* buf, size_t len,
+    Destination* output) {
+    const auto vr = vectorized_convert(buf, len, output);
+    const size_t consumed = vr.input - buf;
+    const size_t written = vr.output - output;
+    if (vr.err != turbo::UnicodeError::SUCCESS) {
+        if (vr.err == turbo::UnicodeError::OTHER) {
+            // Vectorized procedure detected an error, but does not know
+            // exact position. The scalar procedure rescan the portion of
+            // input and figure out where the error is located.
+            return scalar_convert(vr.input, len - consumed, vr.output);
+        }
+        return 0;
+    }
+
+    if (consumed == len) {
+        return written;
+    }
+
+    const auto ret = scalar_convert(vr.input, len - consumed, vr.output);
+    if (ret == 0) {
+        return 0;
+    }
+
+    return written + ret;
+}
+
+/*
+    Template `convert_with_errors_impl` implements generic conversion routine
+    between different encodings. Procedure returns a `result` instance ---
+    please refer to its documentation for details.
+
+    Parameters:
+    * VectorizedConvert - vectorized procedure that returns structure having
+      three fields: UnicodeError (err), const Source* (input), Destination*
+   (output)
+    * ScalarConvert - scalar procedure that carries on conversion of tail
+    * Source - type of input char (like char16_t, char)
+    * Destination - type of input char
+*/
+template <typename VectorizedConvert, typename ScalarConvert, typename Source,
+    typename Destination>
+turbo::UnicodeResult convert_with_errors_impl(VectorizedConvert vectorized_convert,
+    ScalarConvert scalar_convert,
+    const Source* buf, size_t len,
+    Destination* output) {
+
+    const auto vr = vectorized_convert(buf, len, output);
+    const size_t consumed = vr.input - buf;
+    const size_t written = vr.output - output;
+    if (vr.err != turbo::UnicodeError::SUCCESS) {
+        if (vr.err == turbo::UnicodeError::OTHER) {
+            // Vectorized procedure detected an error, but does not know
+            // exact position. The scalar procedure rescan the portion of
+            // input and figure out where the error is located.
+            auto sr = scalar_convert(vr.input, len - consumed, vr.output);
+            sr.count += consumed;
+            return sr;
+        }
+        return turbo::UnicodeResult(vr.err, consumed);
+    }
+
+    if (consumed == len) {
+        return turbo::UnicodeResult(turbo::UnicodeError::SUCCESS, written);
+    }
+
+    turbo::UnicodeResult sr = scalar_convert(vr.input, len - consumed, vr.output);
+    if (sr.is_ok()) {
+        sr.count += written;
+    } else {
+        sr.count += consumed;
+    }
+
+    return sr;
+}

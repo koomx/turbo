@@ -1,0 +1,38 @@
+// Copyright (C) 2026 Kumo inc. and its affiliates. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+#pragma once
+
+#include <cstring>
+
+#include <turbo/unicode/engine/portability.h>
+#include <turbo/unicode/text_encoding.h>
+#include <turbo/unicode/error.h>
+
+KUMO_DISABLE_UNDESIRED_WARNINGS
+
+// Public API
+#include <turbo/unicode/engine/implementation.h>
+
+// Implementation-internal files (must be included before the implementations
+// themselves, to keep amalgamation working--otherwise, the first time a file is
+// included, it might be put inside the #ifdef
+// UNICODE_IMPLEMENTATION_ARM64/FALLBACK/etc., which means the other
+// implementations can't compile unless that implementation is turned on).
+#include <turbo/arch/isadetection.h>
+
+KUMO_RESTORE_UNDESIRED_WARNINGS
+
+

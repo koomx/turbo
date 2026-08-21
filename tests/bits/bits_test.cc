@@ -660,12 +660,12 @@ static_assert(TURBO_INTERNAL_HAS_CONSTEXPR_CTZ, "ctz should be constexpr");
 
 TEST(Endian, Comparison) {
 #if KUMO_ENDIAN_LITTLE
-  static_assert(turbo::endian::native == turbo::endian::little);
-  static_assert(turbo::endian::native != turbo::endian::big);
+  static_assert(turbo::Endian::native == turbo::Endian::little);
+  static_assert(turbo::Endian::native != turbo::Endian::big);
 #endif
 #if KUMO_ENDIAN_BIG
-  static_assert(turbo::endian::native != turbo::endian::little);
-  static_assert(turbo::endian::native == turbo::endian::big);
+  static_assert(turbo::Endian::native != turbo::Endian::little);
+  static_assert(turbo::Endian::native == turbo::Endian::big);
 #endif
 }
 

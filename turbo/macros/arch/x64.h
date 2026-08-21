@@ -101,6 +101,41 @@
 #else
 #define KUMO_SIMD_AVX512DQ     0
 #endif
+#if defined(__AVX512IFMA__)
+#define KUMO_SIMD_AVX512IFMA   1
+#else
+#define KUMO_SIMD_AVX512IFMA   0
+#endif
+#if defined(__AVX512CD__)
+#define KUMO_SIMD_AVX512CD     1
+#else
+#define KUMO_SIMD_AVX512CD     0
+#endif
+#if defined(__AVX512VBMI__)
+#define KUMO_SIMD_AVX512VBMI   1
+#else
+#define KUMO_SIMD_AVX512VBMI   0
+#endif
+#if defined(__AVX512VBMI2__)
+#define KUMO_SIMD_AVX512VBMI2  1
+#else
+#define KUMO_SIMD_AVX512VBMI2  0
+#endif
+#if defined(__AVX512VNNI__)
+#define KUMO_SIMD_AVX512VNNI   1
+#else
+#define KUMO_SIMD_AVX512VNNI   0
+#endif
+#if defined(__AVX512BITALG__)
+#define KUMO_SIMD_AVX512BITALG 1
+#else
+#define KUMO_SIMD_AVX512BITALG 0
+#endif
+#if defined(__AVX512VPOPCNTDQ__)
+#define KUMO_SIMD_AVX512VPOPCNTDQ 1
+#else
+#define KUMO_SIMD_AVX512VPOPCNTDQ 0
+#endif
 #if defined(__FMA__)
 #define KUMO_SIMD_FMA          1
 #else

@@ -28,12 +28,12 @@
 
 namespace turbo {
     /// BITSET_WORD_COUNT
-///
-/// Defines the number of words we use, based on the number of bits.
-/// nBitCount refers to the number of bits in a Bitset.
-/// WordType refers to the type of integer word which stores bitet data. By default it is BitsetWordType.
-///
-/// Note: for nBitCount == 0, returns 1!
+    ///
+    /// Defines the number of words we use, based on the number of bits.
+    /// nBitCount refers to the number of bits in a Bitset.
+    /// WordType refers to the type of integer word which stores bitet data. By default it is BitsetWordType.
+    ///
+    /// Note: for nBitCount == 0, returns 1!
 #if !defined(__GNUC__) || (__GNUC__ >= 3) // GCC 2.x can't handle the simpler declaration below.
 #define BITSET_WORD_COUNT(nBitCount, WordType) (nBitCount == 0 ? 1 : ((nBitCount - 1) / (8 * sizeof(WordType)) + 1))
 #else

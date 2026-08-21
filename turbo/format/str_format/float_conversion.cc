@@ -564,10 +564,10 @@ namespace turbo {
                             std::string_view data_postfix) {
                 if (state.conv.width() < 0) {
                     // No width specified. Fast-path.
-                    if (state.sign_char != '\0') state.sink->Append(1, state.sign_char);
-                    state.sink->Append(data);
-                    state.sink->Append(trailing_zeros, '0');
-                    state.sink->Append(data_postfix);
+                    if (state.sign_char != '\0') state.sink->append(1, state.sign_char);
+                    state.sink->append(data);
+                    state.sink->append(trailing_zeros, '0');
+                    state.sink->append(data_postfix);
                     return;
                 }
 
@@ -576,15 +576,15 @@ namespace turbo {
                                             data_postfix.size() + trailing_zeros,
                                             state);
 
-                state.sink->Append(padding.left_spaces, ' ');
-                if (state.sign_char != '\0') state.sink->Append(1, state.sign_char);
+                state.sink->append(padding.left_spaces, ' ');
+                if (state.sign_char != '\0') state.sink->append(1, state.sign_char);
                 // Padding in general needs to be inserted somewhere in the middle of `data`.
-                state.sink->Append(data.substr(0, padding_offset));
-                state.sink->Append(padding.zeros, '0');
-                state.sink->Append(data.substr(padding_offset));
-                state.sink->Append(trailing_zeros, '0');
-                state.sink->Append(data_postfix);
-                state.sink->Append(padding.right_spaces, ' ');
+                state.sink->append(data.substr(0, padding_offset));
+                state.sink->append(padding.zeros, '0');
+                state.sink->append(data.substr(padding_offset));
+                state.sink->append(trailing_zeros, '0');
+                state.sink->append(data_postfix);
+                state.sink->append(padding.right_spaces, ' ');
             }
 
             // Fastpath %f formatter for when the shifted value fits in a simple integral
@@ -659,22 +659,22 @@ namespace turbo {
                     const auto padding = ExtraWidthToPadding(
                         total_digits + (state.sign_char != '\0' ? 1 : 0), state);
 
-                    state.sink->Append(padding.left_spaces, ' ');
+                    state.sink->append(padding.left_spaces, ' ');
                     if (state.sign_char != '\0')
-                        state.sink->Append(1, state.sign_char);
-                    state.sink->Append(padding.zeros, '0');
+                        state.sink->append(1, state.sign_char);
+                    state.sink->append(padding.zeros, '0');
 
                     do {
-                        state.sink->Append(btd.CurrentDigits());
+                        state.sink->append(btd.CurrentDigits());
                     } while (btd.AdvanceDigits());
 
                     if (state.ShouldPrintDot() && !strip_trailing_zeros) {
-                        state.sink->Append(1, '.');
+                        state.sink->append(1, '.');
                     }
                     if (!strip_trailing_zeros) {
-                        state.sink->Append(state.precision, '0');
+                        state.sink->append(state.precision, '0');
                     }
-                    state.sink->Append(padding.right_spaces, ' ');
+                    state.sink->append(padding.right_spaces, ' ');
                 });
             }
 
@@ -692,10 +692,10 @@ namespace turbo {
                 auto padding =
                         ExtraWidthToPadding(total_digits + (state.sign_char ? 1 : 0), state);
                 padding.zeros += 1;
-                state.sink->Append(padding.left_spaces, ' ');
-                if (state.sign_char != '\0') state.sink->Append(1, state.sign_char);
-                state.sink->Append(padding.zeros, '0');
-                if (print_dot) state.sink->Append(1, '.');
+                state.sink->append(padding.left_spaces, ' ');
+                if (state.sign_char != '\0') state.sink->append(1, state.sign_char);
+                state.sink->append(padding.zeros, '0');
+                if (print_dot) state.sink->append(1, '.');
                 // Print digits
                 size_t digits_to_go = state.precision - digits_to_trim;
 
@@ -714,8 +714,8 @@ namespace turbo {
                             // See if we can print them all.
                             if (digits.num_nines + 1 < digits_to_go) {
                                 // We don't have to round yet, so print them.
-                                state.sink->Append(1, digits.digit_before_nine + '0');
-                                state.sink->Append(digits.num_nines, '9');
+                                state.sink->append(1, digits.digit_before_nine + '0');
+                                state.sink->append(digits.num_nines, '9');
                                 digits_to_go -= digits.num_nines + 1;
                             } else {
                                 // We can't print all the nines, see where we have to truncate.
@@ -736,12 +736,12 @@ namespace turbo {
                                 }
 
                                 if (round_up) {
-                                    state.sink->Append(1, digits.digit_before_nine + '1');
+                                    state.sink->append(1, digits.digit_before_nine + '1');
                                     --digits_to_go;
                                     // The rest will be zeros.
                                 } else {
-                                    state.sink->Append(1, digits.digit_before_nine + '0');
-                                    state.sink->Append(digits_to_go - 1, '9');
+                                    state.sink->append(1, digits.digit_before_nine + '0');
+                                    state.sink->append(digits_to_go - 1, '9');
                                     digits_to_go = 0;
                                 }
                                 return;
@@ -749,8 +749,8 @@ namespace turbo {
                         }
                     });
 
-                state.sink->Append(digits_to_go, '0');
-                state.sink->Append(padding.right_spaces, ' ');
+                state.sink->append(digits_to_go, '0');
+                state.sink->append(padding.right_spaces, ' ');
             }
 
             template<typename Int>
@@ -1047,7 +1047,7 @@ namespace turbo {
                 {
                     char *fp = fmt;
                     *fp++ = '%';
-                    fp = CopyStringTo(FormatConversionSpecImplFriend::FlagsToString(conv), fp);
+                    fp = CopyStringTo(FormatConversionSpecImplFriend::flags_to_string(conv), fp);
                     fp = CopyStringTo("*.*", fp);
                     if (std::is_same<long double, Float>()) {
                         *fp++ = 'L';
@@ -1067,7 +1067,7 @@ namespace turbo {
                     }
                     space.resize(static_cast<size_t>(n) + 1);
                 }
-                sink->Append(result);
+                sink->append(result);
                 return true;
             }
 
@@ -1133,7 +1133,7 @@ namespace turbo {
                     return false;
                 }
 
-                return sink->PutPaddedString(
+                return sink->put_padded_string(
                     std::string_view(text, static_cast<size_t>(ptr - text)), conv.width(), -1,
                     conv.has_left_flag());
             }
@@ -1497,26 +1497,26 @@ namespace turbo {
 
                         const auto padding = ExtraWidthToPadding(
                             total_digits + (state.sign_char != '\0' ? 1 : 0), state);
-                        state.sink->Append(padding.left_spaces, ' ');
+                        state.sink->append(padding.left_spaces, ' ');
 
                         if (state.sign_char != '\0') {
-                            state.sink->Append(1, state.sign_char);
+                            state.sink->append(1, state.sign_char);
                         }
 
-                        state.sink->Append(1, static_cast<char>(first_digit + '0'));
+                        state.sink->append(1, static_cast<char>(first_digit + '0'));
                         if (precision > 0 || state.conv.has_alt_flag()) {
-                            state.sink->Append(1, '.');
+                            state.sink->append(1, '.');
                         }
                         size_t digits_to_go = precision;
                         size_t nines_to_print = std::min(nines, digits_to_go);
-                        state.sink->Append(nines_to_print, change_to_zeros ? '0' : '9');
+                        state.sink->append(nines_to_print, change_to_zeros ? '0' : '9');
                         digits_to_go -= nines_to_print;
                         while (digits_to_go > 0 && digit_gen.HasMoreDigits()) {
                             auto digits = digit_gen.GetDigits();
 
                             if (digits.num_nines + 1 < digits_to_go) {
-                                state.sink->Append(1, digits.digit_before_nine + '0');
-                                state.sink->Append(digits.num_nines, '9');
+                                state.sink->append(1, digits.digit_before_nine + '0');
+                                state.sink->append(digits.num_nines, '9');
                                 digits_to_go -= digits.num_nines + 1;
                             } else {
                                 bool round_up = false;
@@ -1529,21 +1529,21 @@ namespace turbo {
                                             digits.num_nines != 0 || digits.digit_before_nine % 2 == 1;
                                 }
                                 if (round_up) {
-                                    state.sink->Append(1, digits.digit_before_nine + '1');
+                                    state.sink->append(1, digits.digit_before_nine + '1');
                                     --digits_to_go;
                                 } else {
-                                    state.sink->Append(1, digits.digit_before_nine + '0');
-                                    state.sink->Append(digits_to_go - 1, '9');
+                                    state.sink->append(1, digits.digit_before_nine + '0');
+                                    state.sink->append(digits_to_go - 1, '9');
                                     digits_to_go = 0;
                                 }
                                 break;
                             }
                         }
-                        state.sink->Append(digits_to_go, '0');
-                        state.sink->Append(1, uppercase ? 'E' : 'e');
-                        state.sink->Append(std::string_view(
+                        state.sink->append(digits_to_go, '0');
+                        state.sink->append(1, uppercase ? 'E' : 'e');
+                        state.sink->append(std::string_view(
                             exp_buffer, static_cast<size_t>(exp_end - exp_buffer)));
-                        state.sink->Append(padding.right_spaces, ' ');
+                        state.sink->append(padding.right_spaces, ' ');
                     });
             }
 
@@ -1601,21 +1601,21 @@ namespace turbo {
                         const auto padding = ExtraWidthToPadding(
                             total_digits_out + (state.sign_char != '\0' ? 1 : 0), state);
 
-                        state.sink->Append(padding.left_spaces, ' ');
+                        state.sink->append(padding.left_spaces, ' ');
                         if (state.sign_char != '\0') {
-                            state.sink->Append(1, state.sign_char);
+                            state.sink->append(1, state.sign_char);
                         }
-                        state.sink->Append(1, static_cast<char>(first_digit + '0'));
+                        state.sink->append(1, static_cast<char>(first_digit + '0'));
                         --digits_to_go;
                         if (print_dot) {
-                            state.sink->Append(1, '.');
+                            state.sink->append(1, '.');
                         }
 
                         size_t remaining_to_print = state.precision - digits_to_trim;
                         auto append_with_trim = [&](size_t count, char c) {
                             size_t to_append = std::min(count, remaining_to_print);
                             if (to_append > 0) {
-                                state.sink->Append(to_append, c);
+                                state.sink->append(to_append, c);
                                 remaining_to_print -= to_append;
                             }
                         };
@@ -1654,14 +1654,14 @@ namespace turbo {
                             append_with_trim(digits_to_go, '0');
                         }
 
-                        state.sink->Append(1, uppercase ? 'E' : 'e');
-                        state.sink->Append(1, scientific_exp >= 0 ? '+' : '-');
+                        state.sink->append(1, uppercase ? 'E' : 'e');
+                        state.sink->append(1, scientific_exp >= 0 ? '+' : '-');
                         if (scientific_exp < 10) {
-                            state.sink->Append(1, '0');
+                            state.sink->append(1, '0');
                         }
-                        state.sink->Append(std::string_view(
+                        state.sink->append(std::string_view(
                             exp_buffer, static_cast<size_t>(exp_buffer_end - exp_buffer)));
-                        state.sink->Append(padding.right_spaces, ' ');
+                        state.sink->append(padding.right_spaces, ' ');
                     });
             }
 

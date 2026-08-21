@@ -141,14 +141,14 @@ namespace turbo {
             StringifySink::StringifySink(std::ostream &os) : os_(os) {
             }
 
-            void StringifySink::Append(std::string_view text) { os_ << text; }
+            void StringifySink::append(std::string_view text) { os_ << text; }
 
-            void StringifySink::Append(size_t length, char ch) {
+            void StringifySink::append(size_t length, char ch) {
                 for (size_t i = 0; i < length; ++i) os_.put(ch);
             }
 
-            void TurboFormatFlush(StringifySink *sink, std::string_view text) {
-                sink->Append(text);
+            void turbo_format_flush(StringifySink *sink, std::string_view text) {
+                sink->append(text);
             }
         } // namespace detect_specialization
     } // namespace log_internal

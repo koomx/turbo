@@ -76,7 +76,7 @@ using ::testing::MatchesRegex;
 struct TurboStringifiable {
   template <typename S>
   friend void turbo_stringify(S& sink, const TurboStringifiable&) {
-    sink.Append("TurboStringifiable!");
+    sink.append("TurboStringifiable!");
   }
 };
 
@@ -661,13 +661,13 @@ template <typename Sink>
 void turbo_stringify(Sink& sink, CStyleEnumWithStringify e) {
   switch (e) {
     case CStyleEnumWithStringify::kValueA:
-      sink.Append("A");
+      sink.append("A");
       return;
     case CStyleEnumWithStringify::kValueB:
-      sink.Append("B");
+      sink.append("B");
       return;
   }
-  sink.Append("??");
+  sink.append("??");
 }
 TEST(GenericPrinterTest, CStyleEnumWithStringify) {
   EXPECT_EQ("A", GenericPrintToString(CStyleEnumWithStringify::kValueA));
@@ -680,16 +680,16 @@ template <typename Sink>
 void turbo_stringify(Sink& sink, CppStyleEnumWithStringify e) {
   switch (e) {
     case CppStyleEnumWithStringify::kValueA:
-      sink.Append("A");
+      sink.append("A");
       return;
     case CppStyleEnumWithStringify::kValueB:
-      sink.Append("B");
+      sink.append("B");
       return;
     case CppStyleEnumWithStringify::kValueC:
-      sink.Append("C");
+      sink.append("C");
       return;
   }
-  sink.Append("??");
+  sink.append("??");
 }
 TEST(GenericPrinterTest, CppStyleEnumWithStringify) {
   EXPECT_EQ("A", GenericPrintToString(CppStyleEnumWithStringify::kValueA));
@@ -702,13 +702,13 @@ template <typename Sink>
 void turbo_stringify(Sink& sink, CharBasedEnumWithStringify e) {
   switch (e) {
     case CharBasedEnumWithStringify::kValueA:
-      sink.Append("charA");
+      sink.append("charA");
       return;
     case CharBasedEnumWithStringify::kValueB:
-      sink.Append("charB");
+      sink.append("charB");
       return;
   }
-  sink.Append("??");
+  sink.append("??");
 }
 TEST(GenericPrinterTest, CharBasedEnumWithStringify) {
   EXPECT_EQ("charA", GenericPrintToString(CharBasedEnumWithStringify::kValueA));

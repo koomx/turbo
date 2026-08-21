@@ -263,7 +263,7 @@ namespace turbo {
 
             template<typename Sink>
             friend void turbo_stringify(Sink &sink, const StringifiableType &o) {
-                sink.Append(o.message);
+                sink.append(o.message);
             }
         };
 

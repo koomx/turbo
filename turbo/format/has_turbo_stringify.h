@@ -18,8 +18,8 @@
 #include <type_traits>
 #include <utility>
 
-#include <turbo/macros/config.h>
 #include <string_view>
+#include <turbo/macros/config.h>
 
 namespace turbo {
     namespace strings_internal {
@@ -28,12 +28,12 @@ namespace turbo {
         // copied for each new sink.
         class UnimplementedSink {
         public:
-            void Append(size_t count, char ch);
+            void append(size_t count, char ch);
 
-            void Append(std::string_view v);
+            void append(std::string_view v);
 
             // Support `turbo::str_printf_to(&sink, format, args...)`.
-            friend void TurboFormatFlush(UnimplementedSink *sink, std::string_view v);
+            friend void turbo_format_flush(UnimplementedSink* sink, std::string_view v);
         };
     } // namespace strings_internal
 
@@ -45,16 +45,14 @@ namespace turbo {
     // Note that there are types that can be `str_cat`-ed that do not use the
     // `turbo_stringify` customization point (for example, `int`).
 
-    template<typename T, typename = void>
+    template <typename T, typename = void>
     struct HasTurboStringify : std::false_type {
     };
 
-    template<typename T>
+    template <typename T>
     struct HasTurboStringify<
-                T, std::enable_if_t<std::is_void_v<decltype(turbo_stringify(
-                    std::declval<strings_internal::UnimplementedSink &>(),
-                    std::declval<const T &>()))> > > : std::true_type {
+        T, std::enable_if_t<std::is_void_v<decltype(turbo_stringify(std::declval<strings_internal::UnimplementedSink&>(), std::declval<const T&>()))>>> : std::true_type {
     };
 } // namespace turbo
 
-#endif  // TURBO_STRINGS_HAS_TURBO_STRINGIFY_H_
+#endif // TURBO_STRINGS_HAS_TURBO_STRINGIFY_H_

@@ -718,7 +718,7 @@ TEST(CHECKDeathTest, TestStreamingPreferredOverTurboStringify) {
 struct PointerIsStringifiable {};
 template <typename Sink>
 void turbo_stringify(Sink& sink, const PointerIsStringifiable* var) {
-  sink.Append("PointerIsStringifiable");
+  sink.append("PointerIsStringifiable");
 }
 
 // Verifies that a pointer is printed as a number despite having turbo_stringify
@@ -937,13 +937,13 @@ template <typename Sink>
 void turbo_stringify(Sink& sink, ScopedEnumWithTurboStringify v) {
   switch (v) {
     case ScopedEnumWithTurboStringify::kValue1:
-      sink.Append("turbo_stringify: kValue1");
+      sink.append("turbo_stringify: kValue1");
       break;
     case ScopedEnumWithTurboStringify::kValue2:
-      sink.Append("turbo_stringify: kValue2");
+      sink.append("turbo_stringify: kValue2");
       break;
     case ScopedEnumWithTurboStringify::kValue3:
-      sink.Append("turbo_stringify: kValue3");
+      sink.append("turbo_stringify: kValue3");
       break;
   }
 }
@@ -992,10 +992,10 @@ template <typename Sink>
 void turbo_stringify(Sink& sink, ScopedEnumWithTurboStringifyAndOutputOperator v) {
   switch (v) {
     case ScopedEnumWithTurboStringifyAndOutputOperator::kValue1:
-      sink.Append("turbo_stringify: kValue1");
+      sink.append("turbo_stringify: kValue1");
       break;
     case ScopedEnumWithTurboStringifyAndOutputOperator::kValue2:
-      sink.Append("turbo_stringify: kValue2");
+      sink.append("turbo_stringify: kValue2");
       break;
   }
 }

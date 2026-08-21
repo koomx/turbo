@@ -487,11 +487,11 @@ namespace turbo {
     // FormatRawSink is a type erased wrapper around arbitrary sink objects
     // specifically used as an argument to `str_printf_to()`.
     //
-    // All the object has to do define an overload of `TurboFormatFlush()` for the
+    // All the object has to do define an overload of `turbo_format_flush()` for the
     // sink, usually by adding a ADL-based free function in the same namespace as
     // the sink:
     //
-    //   void TurboFormatFlush(MySink* dest, std::string_view part);
+    //   void turbo_format_flush(MySink* dest, std::string_view part);
     //
     // where `dest` is the pointer passed to `turbo::str_printf_to()`. The function should
     // append `part` to `dest`.
@@ -843,29 +843,29 @@ enum class FormatConversionChar : uint8_t {
     //
     class FormatSink {
     public:
-        // FormatSink::Append()
+        // FormatSink::append()
         //
         // Appends `count` copies of `ch` to the format sink.
-        void Append(size_t count, char ch) { sink_->Append(count, ch); }
+        void append(size_t count, char ch) { sink_->append(count, ch); }
 
-        // Overload of FormatSink::Append() for appending the characters of a string
+        // Overload of FormatSink::append() for appending the characters of a string
         // view to a format sink.
-        void Append(std::string_view v) { sink_->Append(v); }
+        void append(std::string_view v) { sink_->append(v); }
 
-        // FormatSink::PutPaddedString()
+        // FormatSink::put_padded_string()
         //
         // Appends `precision` number of bytes of `v` to the format sink. If this is
         // less than `width`, spaces will be appended first (if `left` is false), or
         // after (if `left` is true) to ensure the total amount appended is
         // at least `width`.
-        bool PutPaddedString(std::string_view v, int width, int precision, bool left) {
-            return sink_->PutPaddedString(v, width, precision, left);
+        bool put_padded_string(std::string_view v, int width, int precision, bool left) {
+            return sink_->put_padded_string(v, width, precision, left);
         }
 
         // Support `turbo::str_printf_to(&sink, format, args...)`.
-        friend void TurboFormatFlush(FormatSink * turbo_nonnull sink,
+        friend void turbo_format_flush(FormatSink * turbo_nonnull sink,
                                      std::string_view v) {
-            sink->Append(v);
+            sink->append(v);
         }
 
     private:

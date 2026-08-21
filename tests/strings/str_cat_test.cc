@@ -655,11 +655,11 @@ TEST(Numbers, TestFunctionsMovedOverFromNumbersMain) {
 struct PointStringify {
   template <typename FormatSink>
   friend void turbo_stringify(FormatSink& sink, const PointStringify& p) {
-    sink.Append("(");
-    sink.Append(turbo::str_cat(p.x));
-    sink.Append(", ");
-    sink.Append(turbo::str_cat(p.y));
-    sink.Append(")");
+    sink.append("(");
+    sink.append(turbo::str_cat(p.x));
+    sink.append(", ");
+    sink.append(turbo::str_cat(p.y));
+    sink.append(")");
   }
 
   double x = 10.0;

@@ -23,7 +23,7 @@
 #include <utility>
 
 #include <turbo/macros/config.h>
-#include <turbo/strings/resize_and_overwrite.h>
+#include <turbo/base/resize_and_overwrite.h>
 
 namespace turbo {
 

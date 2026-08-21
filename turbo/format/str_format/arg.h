@@ -281,22 +281,22 @@ namespace turbo {
 
             space_remaining = Excess(to_write, space_remaining);
 
-            if (space_remaining > 0 && !is_left) sink->Append(space_remaining, ' ');
+            if (space_remaining > 0 && !is_left) sink->append(space_remaining, ' ');
 
-            for (std::string_view piece: value.Chunks()) {
+            for (std::string_view piece: value.chunks()) {
                 if (piece.size() > to_write) {
                     piece.remove_suffix(piece.size() - to_write);
                     to_write = 0;
                 } else {
                     to_write -= piece.size();
                 }
-                sink->Append(piece);
+                sink->append(piece);
                 if (to_write == 0) {
                     break;
                 }
             }
 
-            if (space_remaining > 0 && is_left) sink->Append(space_remaining, ' ');
+            if (space_remaining > 0 && is_left) sink->append(space_remaining, ' ');
             return {true};
         }
 

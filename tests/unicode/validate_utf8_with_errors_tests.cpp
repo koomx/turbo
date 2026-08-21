@@ -1,0 +1,199 @@
+#include <turbo/unicode/utf.h>
+
+#include <tests/unicode/helpers/fixed_string.h>
+#include <tests/unicode/helpers/random_utf8.h>
+#include <tests/unicode/helpers/test.h>
+
+TEST(too_short_at_end_of_chunk) {
+    // This test checks the special case that the error is discovered only when
+    // checking the next chunk. The rewind function has to go in reverse and
+    // actually return an underflowed unsigned integer to decrease the previously
+    // calculated valid length.
+    const unsigned char data[] = {
+        0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+        0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+        0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+        0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+        0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+        0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+        0x20, 0x20, 0x20, 0x20, 0b11110010, 0x80, 0x80
+    };
+    constexpr std::size_t data_len_bytes = sizeof(data);
+    constexpr std::size_t data_len = data_len_bytes / sizeof(char);
+    for (int i = 0; i < 5; i++) {
+        const auto res = implementation.validate_utf8_with_errors(
+            (const char*)data + i, data_len - i);
+        ASSERT_EQUAL(res.count, 64 - i);
+        ASSERT_EQUAL(res.error, turbo::UnicodeError::TOO_SHORT);
+    }
+}
+
+TEST(validate_utf8_with_errors_cbf29ce4842223f0) {
+    const unsigned char data[] = {
+        0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+        0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+        0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+        0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+        0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+        0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0xff
+    };
+    constexpr std::size_t data_len_bytes = sizeof(data);
+    constexpr std::size_t data_len = data_len_bytes / sizeof(char);
+    const auto validation1 = implementation.validate_utf8_with_errors((const char*)data, data_len);
+    /*
+    got return [count=64, error=SUCCESS] from implementation icelake
+    got return [count=63, error=HEADER_BITS] from implementation haswell
+    got return [count=63, error=HEADER_BITS] from implementation westmere
+    got return [count=63, error=HEADER_BITS] from implementation fallback
+    */
+    ASSERT_EQUAL(validation1.count, 63);
+    ASSERT_EQUAL(validation1.error, turbo::UnicodeError::HEADER_BITS);
+}
+
+// https://github.com/nodejs/node/issues/48995
+TEST(node48995) {
+    const char bad[1] = { (char)0x80 };
+    size_t length = 1;
+    turbo::UnicodeResult res = implementation.validate_utf8_with_errors(bad, length);
+    ASSERT_TRUE(res.error);
+}
+
+TEST(copyright) {
+    const char good[2] = { '\xC2', '\xA9' };
+    size_t length = 2;
+    turbo::UnicodeResult res = implementation.validate_utf8_with_errors(good, length);
+    ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
+}
+
+TEST_LOOP(no_error) {
+    turbo::tests::helpers::random_utf8 generator { seed, 1, 1, 1, 1 };
+    const auto utf8 { generator.generate(512, seed) };
+    turbo::UnicodeResult res = implementation.validate_utf8_with_errors(
+        reinterpret_cast<const char*>(utf8.data()), utf8.size());
+    ASSERT_EQUAL(res.error, turbo::UnicodeError::SUCCESS);
+    ASSERT_EQUAL(res.count, utf8.size());
+}
+
+TEST_LOOP(header_bits_error) {
+    turbo::tests::helpers::random_utf8 generator { seed, 1, 1, 1, 1 };
+    auto utf8 { generator.generate(512, seed) };
+
+    for (unsigned int i = 0; i < 512; i++) {
+        if ((utf8[i] & 0b11000000) != 0b10000000) { // Only process leading bytes
+            const unsigned char old = utf8[i];
+            utf8[i] = uint8_t(0b11111000);
+            turbo::UnicodeResult res = implementation.validate_utf8_with_errors(
+                reinterpret_cast<const char*>(utf8.data()), utf8.size());
+            ASSERT_EQUAL(res.error, turbo::UnicodeError::HEADER_BITS);
+            ASSERT_EQUAL(res.count, i);
+            utf8[i] = old;
+        }
+    }
+}
+
+TEST_LOOP(too_short_error) {
+    turbo::tests::helpers::random_utf8 generator { seed, 1, 1, 1, 1 };
+    auto utf8 { generator.generate(512, seed) };
+    int leading_byte_pos = 0;
+    for (int i = 0; i < 512; i++) {
+        if ((utf8[i] & 0b11000000) == 0b10000000) { // Only process continuation bytes by making them leading
+                                                    // bytes
+            const unsigned char old = utf8[i];
+            utf8[i] = uint8_t(0b11100000);
+            turbo::UnicodeResult res = implementation.validate_utf8_with_errors(
+                reinterpret_cast<const char*>(utf8.data()), utf8.size());
+            ASSERT_EQUAL(res.error, turbo::UnicodeError::TOO_SHORT);
+            ASSERT_EQUAL(res.count, static_cast<unsigned>(leading_byte_pos));
+            utf8[i] = old;
+        } else {
+            leading_byte_pos = i;
+        }
+    }
+}
+
+TEST_LOOP(too_long_error) {
+    turbo::tests::helpers::random_utf8 generator { seed, 1, 1, 1, 1 };
+    auto utf8 { generator.generate(512, seed) };
+    for (unsigned int i = 1; i < 512; i++) {
+        if (((utf8[i] & 0b11000000) != 0b10000000)) { // Only process leading bytes by making them
+                                                      // continuation bytes
+            const unsigned char old = utf8[i];
+            utf8[i] = uint8_t(0b10000000);
+            turbo::UnicodeResult res = implementation.validate_utf8_with_errors(
+                reinterpret_cast<const char*>(utf8.data()), utf8.size());
+            ASSERT_EQUAL(res.error, turbo::UnicodeError::TOO_LONG);
+            ASSERT_EQUAL(res.count, i);
+            utf8[i] = old;
+        }
+    }
+}
+
+TEST_LOOP(overlong_error) {
+    turbo::tests::helpers::random_utf8 generator { seed, 1, 1, 1, 1 };
+    auto utf8 { generator.generate(512, seed) };
+    for (unsigned int i = 1; i < 512; i++) {
+        if (utf8[i] >= 0b11000000) { // Only non-ASCII leading bytes can be overlong
+            const unsigned char old = utf8[i];
+            const unsigned char second_old = utf8[i + 1];
+            if ((old & 0b11100000) == 0b11000000) { // two-bytes case, change to a
+                                                    // value less or equal than 0x7f
+                utf8[i] = 0b11000000;
+            } else if ((old & 0b11110000) == 0b11100000) { // three-bytes case, change to a value less or
+                                                           // equal than 0x7ff
+                utf8[i] = 0b11100000;
+                utf8[i + 1] = utf8[i + 1] & 0b11011111;
+            } else { // four-bytes case, change to a value less or equal than 0xffff
+                utf8[i] = 0b11110000;
+                utf8[i + 1] = utf8[i + 1] & 0b11001111;
+            }
+            turbo::UnicodeResult res = implementation.validate_utf8_with_errors(
+                reinterpret_cast<const char*>(utf8.data()), utf8.size());
+            ASSERT_EQUAL(res.error, turbo::UnicodeError::OVERLONG);
+            ASSERT_EQUAL(res.count, i);
+            utf8[i] = old;
+            utf8[i + 1] = second_old;
+        }
+    }
+}
+
+TEST_LOOP(too_large_error) {
+    turbo::tests::helpers::random_utf8 generator { seed, 1, 1, 1, 1 };
+    auto utf8 { generator.generate(512, seed) };
+    for (unsigned int i = 1; i < 512; i++) {
+        if ((utf8[i] & 0b11111000) == 0b11110000) { // Can only have too large error in 4-bytes case
+            utf8[i] += ((utf8[i] & 0b100) == 0b100)
+                ? 0b10
+                : 0b100; // Make sure we get too large error and not header
+                         // bits error
+            turbo::UnicodeResult res = implementation.validate_utf8_with_errors(
+                reinterpret_cast<const char*>(utf8.data()), utf8.size());
+            ASSERT_EQUAL(res.error, turbo::UnicodeError::TOO_LARGE);
+            ASSERT_EQUAL(res.count, i);
+            utf8[i] -= 0b100;
+        }
+    }
+}
+
+TEST_LOOP(surrogate_error) {
+    turbo::tests::helpers::random_utf8 generator { seed, 1, 1, 1, 1 };
+    auto utf8 { generator.generate(512, seed) };
+    for (unsigned int i = 1; i < 512; i++) {
+        if ((utf8[i] & 0b11110000) == 0b11100000) { // Can only have surrogate error in 3-bytes case
+            const unsigned char old = utf8[i];
+            const unsigned char second_old = utf8[i + 1];
+            utf8[i] = 0b11101101; // Leading byte is always the same
+            for (int s = 0x8; s < 0xf;
+                s++) { // Modify second byte to create a surrogate codepoint
+                utf8[i + 1] = (utf8[i + 1] & 0b11000011) | (s << 2);
+                turbo::UnicodeResult res = implementation.validate_utf8_with_errors(
+                    reinterpret_cast<const char*>(utf8.data()), utf8.size());
+                ASSERT_EQUAL(res.error, turbo::UnicodeError::SURROGATE);
+                ASSERT_EQUAL(res.count, i);
+            }
+            utf8[i] = old;
+            utf8[i + 1] = second_old;
+        }
+    }
+}
+
+TEST_MAIN

@@ -55,7 +55,7 @@
 //   if (!turbo::LoadTimeZone("Australia/Sydney", &syd)) {
 //      // handle error case
 //   }
-//   std::string s = turbo::FormatTime(
+//   std::string s = turbo::format_time(
 //       "My flight will land in Sydney on %Y-%m-%d at %H:%M:%S",
 //       landing, syd);
 
@@ -300,7 +300,7 @@ namespace turbo {
             // Notes:
             //  - Ideally we would use a `char[]` and `std::bitcast`, but the latter
             //    does not exist (and is not constexpr in `turbo`) before c++20.
-            //  - Order is optimized depending on endianness so that the compiler can
+            //  - Order is optimized depending on Endianness so that the compiler can
             //    turn `Get()` (resp. `operator=()`) into a single 8-byte load (resp.
             //    store).
 #if KUMO_ENDIAN_BIG
@@ -707,7 +707,7 @@ namespace turbo {
     // Support for str_sprintf(), str_cat() etc.
     template <typename Sink>
     void turbo_stringify(Sink& sink, Duration d) {
-        sink.Append(FormatDuration(d));
+        sink.append(FormatDuration(d));
     }
 
     // ParseDuration()
@@ -1014,7 +1014,7 @@ namespace turbo {
     // turbo_unparse_flag()
     //
     // Unparses a Time value into a command-line string representation using
-    // the format specified by `turbo::ParseTime()`.
+    // the format specified by `turbo::parse_time()`.
     std::string turbo_unparse_flag(Time t);
 
     // TimeZone
@@ -1072,7 +1072,7 @@ namespace turbo {
             // Note: The following fields exist for backward compatibility
             // with older APIs.  Accessing these fields directly is a sign of
             // imprudent logic in the calling code.  Modern time-related code
-            // should only access this data indirectly by way of FormatTime().
+            // should only access this data indirectly by way of format_time().
             // These fields are undefined for InfiniteFuture() and InfinitePast().
             int offset; // seconds east of UTC
             bool is_dst; // is offset non-standard?
@@ -1327,7 +1327,7 @@ namespace turbo {
     // RFC3339_full
     // RFC3339_sec
     //
-    // FormatTime()/ParseTime() format specifiers for RFC3339 date/time strings,
+    // format_time()/parse_time() format specifiers for RFC3339 date/time strings,
     // with trailing zeros trimmed or with fractional seconds omitted altogether.
     //
     // Note that RFC3339_sec[] matches an ISO 8601 extended format for date and
@@ -1340,11 +1340,11 @@ namespace turbo {
     // RFC1123_full
     // RFC1123_no_wday
     //
-    // FormatTime()/ParseTime() format specifiers for RFC1123 date/time strings.
+    // format_time()/parse_time() format specifiers for RFC1123 date/time strings.
     KUMO_DLL extern const char RFC1123_full[]; // %a, %d %b %E4Y %H:%M:%S %z
     KUMO_DLL extern const char RFC1123_no_wday[]; // %d %b %E4Y %H:%M:%S %z
 
-    // FormatTime()
+    // format_time()
     //
     // Formats the given `turbo::Time` in the `turbo::TimeZone` according to the
     // provided format string. Uses strftime()-like formatting options, with
@@ -1373,39 +1373,39 @@ namespace turbo {
     //
     //   turbo::CivilSecond cs(2013, 1, 2, 3, 4, 5);
     //   turbo::Time t = turbo::FromCivil(cs, lax);
-    //   std::string f = turbo::FormatTime("%H:%M:%S", t, lax);  // "03:04:05"
-    //   f = turbo::FormatTime("%H:%M:%E3S", t, lax);  // "03:04:05.000"
+    //   std::string f = turbo::format_time("%H:%M:%S", t, lax);  // "03:04:05"
+    //   f = turbo::format_time("%H:%M:%E3S", t, lax);  // "03:04:05.000"
     //
     // Note: If the given `turbo::Time` is `turbo::InfiniteFuture()`, the returned
     // string will be exactly "infinite-future". If the given `turbo::Time` is
     // `turbo::InfinitePast()`, the returned string will be exactly "infinite-past".
     // In both cases the given format string and `turbo::TimeZone` are ignored.
     //
-    KUMO_ATTRIBUTE_PURE_FUNCTION std::string FormatTime(std::string_view format,
+    KUMO_ATTRIBUTE_PURE_FUNCTION std::string format_time(std::string_view format,
         Time t, TimeZone tz);
 
     // Convenience functions that format the given time using the RFC3339_full
     // format.  The first overload uses the provided TimeZone, while the second
     // uses LocalTimeZone().
-    KUMO_ATTRIBUTE_PURE_FUNCTION std::string FormatTime(Time t, TimeZone tz);
-    KUMO_ATTRIBUTE_PURE_FUNCTION std::string FormatTime(Time t);
+    KUMO_ATTRIBUTE_PURE_FUNCTION std::string format_time(Time t, TimeZone tz);
+    KUMO_ATTRIBUTE_PURE_FUNCTION std::string format_time(Time t);
 
     // Output stream operator.
     inline std::ostream& operator<<(std::ostream& os, Time t) {
-        return os << FormatTime(t);
+        return os << format_time(t);
     }
 
     // Support for str_sprintf(), str_cat() etc.
     template <typename Sink>
     void turbo_stringify(Sink& sink, Time t) {
-        sink.Append(FormatTime(t));
+        sink.append(format_time(t));
     }
 
-    // ParseTime()
+    // parse_time()
     //
     // Parses an input string according to the provided format string and
     // returns the corresponding `turbo::Time`. Uses strftime()-like formatting
-    // options, with the same extensions as FormatTime(), but with the
+    // options, with the same extensions as format_time(), but with the
     // exceptions that %E#S is interpreted as %E*S, and %E#f as %E*f.  %Ez
     // and %E*z also accept the same inputs, which (along with %z) includes
     // 'z' and 'Z' as synonyms for +00:00.  %ET accepts either 'T' or 't'.
@@ -1421,11 +1421,11 @@ namespace turbo {
     // For example, parsing a string of "15:45" (%H:%M) will return an turbo::Time
     // that represents "1970-01-01 15:45:00.0 +0000".
     //
-    // Note that since ParseTime() returns time instants, it makes the most sense
+    // Note that since parse_time() returns time instants, it makes the most sense
     // to parse fully-specified date/time strings that include a UTC offset (%z,
     // %Ez, or %E*z).
     //
-    // Note also that `turbo::ParseTime()` only heeds the fields year, month, day,
+    // Note also that `turbo::parse_time()` only heeds the fields year, month, day,
     // hour, minute, (fractional) second, and UTC offset.  Other fields, like
     // weekday (%a or %A), while parsed for syntactic validity, are ignored
     // in the conversion.
@@ -1450,17 +1450,17 @@ namespace turbo {
     // If the input string is "infinite-past", the returned `turbo::Time` will be
     // `turbo::InfinitePast()` and `true` will be returned.
     //
-    bool ParseTime(std::string_view format, std::string_view input, Time* time,
+    bool parse_time(std::string_view format, std::string_view input, Time* time,
         std::string* err);
 
-    // Like ParseTime() above, but if the format string does not contain a UTC
+    // Like parse_time() above, but if the format string does not contain a UTC
     // offset specification (%z/%Ez/%E*z) then the input is interpreted in the
     // given TimeZone.  This means that the input, by itself, does not identify a
     // unique instant.  Being time-zone dependent, it also admits the possibility
     // of ambiguity or non-existence, in which case the "pre" time (as defined
     // by TimeZone::TimeInfo) is returned.  For these reasons we recommend that
     // all date/time strings include a UTC offset so they're context independent.
-    bool ParseTime(std::string_view format, std::string_view input, TimeZone tz,
+    bool parse_time(std::string_view format, std::string_view input, TimeZone tz,
         Time* time, std::string* err);
 
     // ============================================================================

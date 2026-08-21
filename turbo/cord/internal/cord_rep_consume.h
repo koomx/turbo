@@ -17,31 +17,31 @@
 
 #include <functional>
 
-#include <turbo/functional/function_ref.h>
 #include <turbo/cord/internal/cord_internal.h>
+#include <turbo/functional/function_ref.h>
 
 namespace turbo {
 
-namespace cord_internal {
+    namespace cord_internal {
 
-// Consume() and ReverseConsume() consume CONCAT based trees and invoke the
-// provided functor with the contained nodes in the proper forward or reverse
-// order, which is used to convert CONCAT trees into other tree or cord data.
-// All CONCAT and SUBSTRING nodes are processed internally. The 'offset`
-// parameter of the functor is non-zero for any nodes below SUBSTRING nodes.
-// It's up to the caller to form these back into SUBSTRING nodes or otherwise
-// store offset / prefix information. These functions are intended to be used
-// only for migration / transitional code where due to factors such as ODR
-// violations, we can not 100% guarantee that all code respects 'new format'
-// settings and flags, so we need to be able to parse old data on the fly until
-// all old code is deprecated / no longer the default format.
-void Consume(CordRep* rep,
-             FunctionRef<void(CordRep*, size_t, size_t)> consume_fn);
-void ReverseConsume(CordRep* rep,
-                    FunctionRef<void(CordRep*, size_t, size_t)> consume_fn);
+        // Consume() and ReverseConsume() consume CONCAT based trees and invoke the
+        // provided functor with the contained nodes in the proper forward or reverse
+        // order, which is used to convert CONCAT trees into other tree or cord data.
+        // All CONCAT and SUBSTRING nodes are processed internally. The 'offset`
+        // parameter of the functor is non-zero for any nodes below SUBSTRING nodes.
+        // It's up to the caller to form these back into SUBSTRING nodes or otherwise
+        // store offset / prefix information. These functions are intended to be used
+        // only for migration / transitional code where due to factors such as ODR
+        // violations, we can not 100% guarantee that all code respects 'new format'
+        // settings and flags, so we need to be able to parse old data on the fly until
+        // all old code is deprecated / no longer the default format.
+        void Consume(CordRep* rep,
+            FunctionRef<void(CordRep*, size_t, size_t)> consume_fn);
+        void ReverseConsume(CordRep* rep,
+            FunctionRef<void(CordRep*, size_t, size_t)> consume_fn);
 
-}  // namespace cord_internal
+    } // namespace cord_internal
 
-}  // namespace turbo
+} // namespace turbo
 
-#endif  // TURBO_STRINGS_INTERNAL_CORD_REP_CONSUME_H_
+#endif // TURBO_STRINGS_INTERNAL_CORD_REP_CONSUME_H_

@@ -1821,7 +1821,7 @@ struct PrintTestStruct {
 
   template <typename Sink>
   friend void turbo_stringify(Sink& sink, const PrintTestStruct&) {
-    sink.Append("stringify");
+    sink.append("stringify");
   }
 };
 

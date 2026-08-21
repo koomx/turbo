@@ -17,6 +17,9 @@
 ###########################################################################
 ###kmcmake_example
 
+set(ARCH_SRC
+        arch/isa.cc
+)
 set(BASE_SRC
         base/log_severity.cc
         base/throw_delegate.cc
@@ -85,6 +88,14 @@ set(DBG_SRC
         debugging/symbolize_unimplemented.inc
         debugging/symbolize_win32.inc
 )
+
+
+set(ENCODING_SRC
+        encoding/base58.cc
+        encoding/base64.cc
+        encoding/url.cc
+)
+
 set(FLAGS_SRC
         flags/commandlineflag.cc
         flags/internal/commandlineflag.cc
@@ -154,7 +165,6 @@ set(STRINGS_SRC
         strings/internal/charconv_bigint.cc
         strings/internal/charconv_parse.cc
         strings/internal/damerau_levenshtein_distance.cc
-        strings/internal/escaping.cc
         log/internal/generic_printer.cc
         strings/internal/memutil.cc
         strings/internal/pow10_helper.cc
@@ -218,12 +228,39 @@ set(TYPES_SRC
         types/source_location.cc
 )
 
+set(UNICODE_SRC
+        unicode/text_encoding.cc
+        unicode/utf.cc
+        unicode/utf_c.cc
+        unicode/api/ascii.cc
+        unicode/api/base64.cc
+        unicode/api/detect.cc
+        unicode/api/find.cc
+        unicode/api/latin1.cc
+        unicode/api/utf8.cc
+        unicode/api/utf16.cc
+        unicode/api/utf32.cc
+        unicode/engine/isa_select.cc
+        unicode/engine/interface.cc
+        unicode/engine/arm64/implementation.cc
+        unicode/engine/fallback/implementation.cc
+        unicode/engine/icelake/implementation.cc
+        unicode/engine/haswell/implementation.cc
+        unicode/engine/ppc64/implementation.cc
+        unicode/engine/rvv/implementation.cc
+        unicode/engine/westmere/implementation.cc
+        unicode/engine/lasx/implementation.cc
+        unicode/engine/lsx/implementation.cc
+)
+
 set(TURBO_SRC
+        ${ARCH_SRC}
         ${BASE_SRC}
         ${BITS_SRC}
         ${CORD_SRC}
         ${CRC_SRC}
         ${DBG_SRC}
+        ${ENCODING_SRC}
         ${FLAGS_SRC}
         ${FORMAT_SRC}
         ${HASH_SRC}
@@ -234,6 +271,7 @@ set(TURBO_SRC
         ${TIME_SRC}
         ${CCTZ_SRC}
         ${TYPES_SRC}
+        ${UNICODE_SRC}
 )
 
 kmcmake_cc_library(

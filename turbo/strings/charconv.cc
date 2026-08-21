@@ -30,7 +30,7 @@
 #include <turbo/strings/internal/charconv_parse.h>
 
 // The macro TURBO_BIT_PACK_FLOATS is defined on x86-64, where IEEE floating
-// point numbers have the same endianness in memory as a bitfield struct
+// point numbers have the same Endianness in memory as a bitfield struct
 // containing the corresponding parts.
 //
 // When set, we replace calls to ldexp() with manual bit packing, which is

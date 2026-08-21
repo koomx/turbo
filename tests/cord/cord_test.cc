@@ -134,10 +134,10 @@ static void DeleteExternalString(std::string_view data, void* arg) {
     delete s;
 }
 
-// Add "s" to *dst via `MakeCordFromExternal`
+// Add "s" to *dst via `make_cord_from_external`
 static void AddExternalMemory(std::string_view s, turbo::Cord* dst) {
     std::string* str = new std::string(s.data(), s.size());
-    dst->Append(turbo::MakeCordFromExternal(*str, [str](std::string_view data) {
+    dst->append(turbo::make_cord_from_external(*str, [str](std::string_view data) {
         DeleteExternalString(data, str);
     }));
 }
@@ -146,7 +146,7 @@ static void DumpGrowth() {
     turbo::Cord str;
     for (int i = 0; i < 1000; i++) {
         char c = 'a' + i % 26;
-        str.Append(std::string_view(&c, 1));
+        str.append(std::string_view(&c, 1));
     }
 }
 
@@ -171,7 +171,7 @@ static size_t AppendWithFragments(const std::string& s, RandomEngine* rng,
             // Grow by adding an external-memory.
             AddExternalMemory(std::string_view(s.data() + j, N), cord);
         } else {
-            cord->Append(std::string_view(s.data() + j, N));
+            cord->append(std::string_view(s.data() + j, N));
         }
         j += N;
     }
@@ -182,7 +182,7 @@ static size_t AppendWithFragments(const std::string& s, RandomEngine* rng,
 static void AddNewStringBlock(const std::string& str, turbo::Cord* dst) {
     char* data = new char[str.size()];
     memcpy(data, str.data(), str.size());
-    dst->Append(turbo::MakeCordFromExternal(
+    dst->append(turbo::make_cord_from_external(
         std::string_view(data, str.size()),
         [](std::string_view s) { delete[] s.data(); }));
 }
@@ -190,19 +190,19 @@ static void AddNewStringBlock(const std::string& str, turbo::Cord* dst) {
 // Make a Cord out of many different types of nodes.
 static turbo::Cord MakeComposite() {
     turbo::Cord cord;
-    cord.Append("the");
+    cord.append("the");
     AddExternalMemory(" quick brown", &cord);
     AddExternalMemory(" fox jumped", &cord);
 
     turbo::Cord full(" over");
     AddExternalMemory(" the lazy", &full);
     AddNewStringBlock(" dog slept the whole day away", &full);
-    turbo::Cord substring = full.Subcord(0, 18);
+    turbo::Cord substring = full.subcord(0, 18);
 
-    // Make substring long enough to defeat the copying fast path in Append.
-    substring.Append(std::string(1000, '.'));
-    cord.Append(substring);
-    cord = cord.Subcord(0, cord.size() - 998); // Remove most of extra junk
+    // Make substring long enough to defeat the copying fast path in append.
+    substring.append(std::string(1000, '.'));
+    cord.append(substring);
+    cord = cord.subcord(0, cord.size() - 998); // Remove most of extra junk
 
     return cord;
 }
@@ -211,9 +211,9 @@ namespace turbo {
 
     class CordTestPeer {
     public:
-        static void ForEachChunk(
+        static void for_each_chunk(
             const Cord& c, turbo::FunctionRef<void(std::string_view)> callback) {
-            c.ForEachChunk(callback);
+            c.for_each_chunk(callback);
         }
 
         static bool IsTree(const Cord& c) { return c.contents_.is_tree(); }
@@ -356,7 +356,7 @@ TEST_P(CordTest, GigabyteCordFromExternal) {
 
     size_t length = 128 * 1024;
     char* data = new char[length];
-    turbo::Cord from = turbo::MakeCordFromExternal(
+    turbo::Cord from = turbo::make_cord_from_external(
         std::string_view(data, length),
         [](std::string_view sv) { delete[] sv.data(); });
 
@@ -366,18 +366,18 @@ TEST_P(CordTest, GigabyteCordFromExternal) {
     // caused crashes in production.  We grow exponentially so that the code will
     // execute in a reasonable amount of time.
     turbo::Cord c;
-    c.Append(from);
+    c.append(from);
     while (c.size() < max_size) {
-        c.Append(c);
-        c.Append(from);
-        c.Append(from);
-        c.Append(from);
-        c.Append(from);
+        c.append(c);
+        c.append(from);
+        c.append(from);
+        c.append(from);
+        c.append(from);
         MaybeHarden(c);
     }
 
     for (int i = 0; i < 1024; ++i) {
-        c.Append(from);
+        c.append(from);
     }
     KLOG(INFO) << "Made a Cord with " << c.size() << " bytes!";
     // Note: on a 32-bit build, this comes out to   2,818,048,000 bytes.
@@ -388,7 +388,7 @@ static turbo::Cord MakeExternalCord(int size) {
     char* buffer = new char[size];
     memset(buffer, 'x', size);
     turbo::Cord cord;
-    cord.Append(turbo::MakeCordFromExternal(
+    cord.append(turbo::make_cord_from_external(
         std::string_view(buffer, size),
         [](std::string_view s) { delete[] s.data(); }));
     return cord;
@@ -487,42 +487,42 @@ TEST_P(CordTest, StartsEndsWith) {
     ASSERT_TRUE(!empty.ends_with("xyz"));
 }
 
-TEST_P(CordTest, Contains) {
+TEST_P(CordTest, contains) {
     auto flat_haystack = turbo::Cord("this is a flat cord");
     auto fragmented_haystack = turbo::MakeFragmentedCord(
         { "this", " ", "is", " ", "a", " ", "fragmented", " ", "cord" });
 
-    EXPECT_TRUE(flat_haystack.Contains(""));
-    EXPECT_TRUE(fragmented_haystack.Contains(""));
-    EXPECT_TRUE(flat_haystack.Contains(turbo::Cord("")));
-    EXPECT_TRUE(fragmented_haystack.Contains(turbo::Cord("")));
-    EXPECT_TRUE(turbo::Cord("").Contains(""));
-    EXPECT_TRUE(turbo::Cord("").Contains(turbo::Cord("")));
-    EXPECT_FALSE(turbo::Cord("").Contains(flat_haystack));
-    EXPECT_FALSE(turbo::Cord("").Contains(fragmented_haystack));
+    EXPECT_TRUE(flat_haystack.contains(""));
+    EXPECT_TRUE(fragmented_haystack.contains(""));
+    EXPECT_TRUE(flat_haystack.contains(turbo::Cord("")));
+    EXPECT_TRUE(fragmented_haystack.contains(turbo::Cord("")));
+    EXPECT_TRUE(turbo::Cord("").contains(""));
+    EXPECT_TRUE(turbo::Cord("").contains(turbo::Cord("")));
+    EXPECT_FALSE(turbo::Cord("").contains(flat_haystack));
+    EXPECT_FALSE(turbo::Cord("").contains(fragmented_haystack));
 
-    EXPECT_FALSE(flat_haystack.Contains("z"));
-    EXPECT_FALSE(fragmented_haystack.Contains("z"));
-    EXPECT_FALSE(flat_haystack.Contains(turbo::Cord("z")));
-    EXPECT_FALSE(fragmented_haystack.Contains(turbo::Cord("z")));
+    EXPECT_FALSE(flat_haystack.contains("z"));
+    EXPECT_FALSE(fragmented_haystack.contains("z"));
+    EXPECT_FALSE(flat_haystack.contains(turbo::Cord("z")));
+    EXPECT_FALSE(fragmented_haystack.contains(turbo::Cord("z")));
 
-    EXPECT_FALSE(flat_haystack.Contains("is an"));
-    EXPECT_FALSE(fragmented_haystack.Contains("is an"));
-    EXPECT_FALSE(flat_haystack.Contains(turbo::Cord("is an")));
-    EXPECT_FALSE(fragmented_haystack.Contains(turbo::Cord("is an")));
+    EXPECT_FALSE(flat_haystack.contains("is an"));
+    EXPECT_FALSE(fragmented_haystack.contains("is an"));
+    EXPECT_FALSE(flat_haystack.contains(turbo::Cord("is an")));
+    EXPECT_FALSE(fragmented_haystack.contains(turbo::Cord("is an")));
     EXPECT_FALSE(
-        flat_haystack.Contains(turbo::MakeFragmentedCord({ "is", " ", "an" })));
-    EXPECT_FALSE(fragmented_haystack.Contains(
+        flat_haystack.contains(turbo::MakeFragmentedCord({ "is", " ", "an" })));
+    EXPECT_FALSE(fragmented_haystack.contains(
         turbo::MakeFragmentedCord({ "is", " ", "an" })));
 
-    EXPECT_TRUE(flat_haystack.Contains("is a"));
-    EXPECT_TRUE(fragmented_haystack.Contains("is a"));
-    EXPECT_TRUE(flat_haystack.Contains(turbo::Cord("is a")));
-    EXPECT_TRUE(fragmented_haystack.Contains(turbo::Cord("is a")));
+    EXPECT_TRUE(flat_haystack.contains("is a"));
+    EXPECT_TRUE(fragmented_haystack.contains("is a"));
+    EXPECT_TRUE(flat_haystack.contains(turbo::Cord("is a")));
+    EXPECT_TRUE(fragmented_haystack.contains(turbo::Cord("is a")));
     EXPECT_TRUE(
-        flat_haystack.Contains(turbo::MakeFragmentedCord({ "is", " ", "a" })));
+        flat_haystack.contains(turbo::MakeFragmentedCord({ "is", " ", "a" })));
     EXPECT_TRUE(
-        fragmented_haystack.Contains(turbo::MakeFragmentedCord({ "is", " ", "a" })));
+        fragmented_haystack.contains(turbo::MakeFragmentedCord({ "is", " ", "a" })));
 }
 
 TEST_P(CordTest, Find) {
@@ -574,7 +574,7 @@ TEST_P(CordTest, Find) {
         std::next(fragmented_haystack.char_begin(), 5));
 }
 
-TEST_P(CordTest, Subcord) {
+TEST_P(CordTest, subcord) {
     RandomEngine rng(GTEST_FLAG_GET(random_seed));
     const std::string s = RandomLowercaseString(&rng, 1024);
 
@@ -600,7 +600,7 @@ TEST_P(CordTest, Subcord) {
         for (size_t end_pos : positions) {
             if (end_pos < pos || end_pos > a.size())
                 continue;
-            turbo::Cord sa = a.Subcord(pos, end_pos - pos);
+            turbo::Cord sa = a.subcord(pos, end_pos - pos);
             ASSERT_EQ(std::string_view(s).substr(pos, end_pos - pos),
                 std::string(sa))
                 << a;
@@ -615,16 +615,16 @@ TEST_P(CordTest, Subcord) {
     turbo::Cord c(sh);
     for (size_t pos = 0; pos <= sh.size(); ++pos) {
         for (size_t n = 0; n <= sh.size() - pos; ++n) {
-            turbo::Cord sc = c.Subcord(pos, n);
+            turbo::Cord sc = c.subcord(pos, n);
             ASSERT_EQ(sh.substr(pos, n), std::string(sc)) << c;
         }
     }
 
     // Check subcords of subcords.
-    turbo::Cord sa = a.Subcord(0, a.size());
+    turbo::Cord sa = a.subcord(0, a.size());
     std::string ss = s.substr(0, s.size());
     while (sa.size() > 1) {
-        sa = sa.Subcord(1, sa.size() - 2);
+        sa = sa.subcord(1, sa.size() - 2);
         ss = ss.substr(1, ss.size() - 2);
         ASSERT_EQ(ss, std::string(sa)) << a;
         if (HasFailure())
@@ -632,13 +632,13 @@ TEST_P(CordTest, Subcord) {
     }
 
     // It is OK to ask for too much.
-    sa = a.Subcord(0, a.size() + 1);
+    sa = a.subcord(0, a.size() + 1);
     EXPECT_EQ(s, std::string(sa));
 
     // It is OK to ask for something beyond the end.
-    sa = a.Subcord(a.size() + 1, 0);
+    sa = a.subcord(a.size() + 1, 0);
     EXPECT_TRUE(sa.empty());
-    sa = a.Subcord(a.size() + 1, 1);
+    sa = a.subcord(a.size() + 1, 1);
     EXPECT_TRUE(sa.empty());
 }
 
@@ -666,18 +666,18 @@ TEST_P(CordTest, Swap) {
 
 static void VerifyCopyToString(const turbo::Cord& cord) {
     std::string initially_empty;
-    turbo::CopyCordToString(cord, &initially_empty);
+    turbo::copy_cord_to_string(cord, &initially_empty);
     EXPECT_EQ(initially_empty, cord);
 
     constexpr size_t kInitialLength = 1024;
     std::string has_initial_contents(kInitialLength, 'x');
     const char* address_before_copy = has_initial_contents.data();
-    turbo::CopyCordToString(cord, &has_initial_contents);
+    turbo::copy_cord_to_string(cord, &has_initial_contents);
     EXPECT_EQ(has_initial_contents, cord);
 
     if (cord.size() <= kInitialLength) {
         EXPECT_EQ(has_initial_contents.data(), address_before_copy)
-            << "CopyCordToString allocated new string storage; "
+            << "copy_cord_to_string allocated new string storage; "
                "has_initial_contents = \""
             << has_initial_contents << "\"";
     }
@@ -693,23 +693,23 @@ TEST_P(CordTest, CopyToString) {
 
 static void VerifyAppendCordToString(const turbo::Cord& cord) {
     std::string initially_empty;
-    turbo::AppendCordToString(cord, &initially_empty);
+    turbo::append_cord_to_string(cord, &initially_empty);
     EXPECT_EQ(initially_empty, cord);
 
     const std::string_view kInitialContents = "initial contents.";
     std::string expected_after_append = turbo::str_cat(kInitialContents, std::string(cord));
 
     std::string no_reserve(kInitialContents);
-    turbo::AppendCordToString(cord, &no_reserve);
+    turbo::append_cord_to_string(cord, &no_reserve);
     EXPECT_EQ(no_reserve, expected_after_append);
 
     std::string has_reserved_capacity(kInitialContents);
     has_reserved_capacity.reserve(has_reserved_capacity.size() + cord.size());
     const char* address_before_copy = has_reserved_capacity.data();
-    turbo::AppendCordToString(cord, &has_reserved_capacity);
+    turbo::append_cord_to_string(cord, &has_reserved_capacity);
     EXPECT_EQ(has_reserved_capacity, expected_after_append);
     EXPECT_EQ(has_reserved_capacity.data(), address_before_copy)
-        << "AppendCordToString allocated new string storage; "
+        << "append_cord_to_string allocated new string storage; "
            "has_reserved_capacity = \""
         << has_reserved_capacity << "\"";
 }
@@ -726,7 +726,7 @@ static void VerifyCopyToSpan(const turbo::Cord& cord) {
     // Test with span exactly the same size as the cord.
     {
         std::string dst(cord.size(), '\0');
-        size_t copied = turbo::CopyCordToSpan(cord, turbo::make_span(dst));
+        size_t copied = turbo::copy_cord_to_span(cord, turbo::make_span(dst));
         EXPECT_EQ(copied, cord.size());
         EXPECT_EQ(dst, cord);
     }
@@ -734,7 +734,7 @@ static void VerifyCopyToSpan(const turbo::Cord& cord) {
     // Test with span larger than the cord.
     {
         std::string dst(cord.size() + 10, 'x');
-        size_t copied = turbo::CopyCordToSpan(cord, turbo::make_span(dst));
+        size_t copied = turbo::copy_cord_to_span(cord, turbo::make_span(dst));
         EXPECT_EQ(copied, cord.size());
         EXPECT_EQ(std::string_view(dst).substr(0, copied), cord);
         if (cord.size() < dst.size()) {
@@ -747,7 +747,7 @@ static void VerifyCopyToSpan(const turbo::Cord& cord) {
     {
         size_t target_size = cord.size() / 2;
         std::string dst(target_size, '\0');
-        size_t copied = turbo::CopyCordToSpan(cord, turbo::make_span(dst));
+        size_t copied = turbo::copy_cord_to_span(cord, turbo::make_span(dst));
         EXPECT_EQ(copied, target_size);
         EXPECT_EQ(dst, std::string(cord).substr(0, target_size));
     }
@@ -755,7 +755,7 @@ static void VerifyCopyToSpan(const turbo::Cord& cord) {
     // Test with empty span.
     {
         char c = 'x';
-        size_t copied = turbo::CopyCordToSpan(cord, turbo::make_span(&c, 0));
+        size_t copied = turbo::copy_cord_to_span(cord, turbo::make_span(&c, 0));
         EXPECT_EQ(copied, 0);
         EXPECT_EQ(c, 'x');
     }
@@ -771,41 +771,41 @@ TEST_P(CordTest, CopyToSpan) {
 
 TEST_P(CordTest, AppendEmptyBuffer) {
     turbo::Cord cord;
-    cord.Append(turbo::CordBuffer());
-    cord.Append(turbo::CordBuffer::CreateWithDefaultLimit(2000));
+    cord.append(turbo::CordBuffer());
+    cord.append(turbo::CordBuffer::create_with_default_limit(2000));
 }
 
 TEST_P(CordTest, AppendEmptyBufferToFlat) {
     turbo::Cord cord(std::string(2000, 'x'));
-    cord.Append(turbo::CordBuffer());
-    cord.Append(turbo::CordBuffer::CreateWithDefaultLimit(2000));
+    cord.append(turbo::CordBuffer());
+    cord.append(turbo::CordBuffer::create_with_default_limit(2000));
 }
 
 TEST_P(CordTest, AppendEmptyBufferToTree) {
     turbo::Cord cord(std::string(2000, 'x'));
-    cord.Append(std::string(2000, 'y'));
-    cord.Append(turbo::CordBuffer());
-    cord.Append(turbo::CordBuffer::CreateWithDefaultLimit(2000));
+    cord.append(std::string(2000, 'y'));
+    cord.append(turbo::CordBuffer());
+    cord.append(turbo::CordBuffer::create_with_default_limit(2000));
 }
 
 TEST_P(CordTest, AppendSmallBuffer) {
     turbo::Cord cord;
-    turbo::CordBuffer buffer = turbo::CordBuffer::CreateWithDefaultLimit(3);
+    turbo::CordBuffer buffer = turbo::CordBuffer::create_with_default_limit(3);
     ASSERT_THAT(buffer.capacity(), Le(15));
     memcpy(buffer.data(), "Abc", 3);
-    buffer.SetLength(3);
-    cord.Append(std::move(buffer));
+    buffer.set_length(3);
+    cord.append(std::move(buffer));
     EXPECT_EQ(buffer.length(), 0); // NOLINT
     EXPECT_GT(buffer.capacity(), 0); // NOLINT
 
-    buffer = turbo::CordBuffer::CreateWithDefaultLimit(3);
+    buffer = turbo::CordBuffer::create_with_default_limit(3);
     memcpy(buffer.data(), "defgh", 5);
-    buffer.SetLength(5);
-    cord.Append(std::move(buffer));
+    buffer.set_length(5);
+    cord.append(std::move(buffer));
     EXPECT_EQ(buffer.length(), 0); // NOLINT
     EXPECT_GT(buffer.capacity(), 0); // NOLINT
 
-    EXPECT_THAT(cord.Chunks(), ElementsAre("Abcdefgh"));
+    EXPECT_THAT(cord.chunks(), ElementsAre("Abcdefgh"));
 }
 
 TEST_P(CordTest, AppendAndPrependBufferArePrecise) {
@@ -813,18 +813,18 @@ TEST_P(CordTest, AppendAndPrependBufferArePrecise) {
     std::string test_data(turbo::cord_internal::kMaxFlatLength * 10, 'x');
     turbo::Cord cord1(test_data);
     turbo::Cord cord2(test_data);
-    const size_t size1 = cord1.EstimatedMemoryUsage();
-    const size_t size2 = cord2.EstimatedMemoryUsage();
+    const size_t size1 = cord1.estimated_memory_usage();
+    const size_t size2 = cord2.estimated_memory_usage();
 
-    turbo::CordBuffer buffer = turbo::CordBuffer::CreateWithDefaultLimit(3);
+    turbo::CordBuffer buffer = turbo::CordBuffer::create_with_default_limit(3);
     memcpy(buffer.data(), "Abc", 3);
-    buffer.SetLength(3);
-    cord1.Append(std::move(buffer));
+    buffer.set_length(3);
+    cord1.append(std::move(buffer));
 
-    buffer = turbo::CordBuffer::CreateWithDefaultLimit(3);
+    buffer = turbo::CordBuffer::create_with_default_limit(3);
     memcpy(buffer.data(), "Abc", 3);
-    buffer.SetLength(3);
-    cord2.Prepend(std::move(buffer));
+    buffer.set_length(3);
+    cord2.prepend(std::move(buffer));
 
 #ifndef NDEBUG
     // Allow 32 bytes new CordRepFlat, and 128 bytes for 'glue nodes'
@@ -834,8 +834,8 @@ TEST_P(CordTest, AppendAndPrependBufferArePrecise) {
     constexpr size_t kMaxDelta = 128 + 32 + 256;
 #endif
 
-    EXPECT_LE(cord1.EstimatedMemoryUsage() - size1, kMaxDelta);
-    EXPECT_LE(cord2.EstimatedMemoryUsage() - size2, kMaxDelta);
+    EXPECT_LE(cord1.estimated_memory_usage() - size1, kMaxDelta);
+    EXPECT_LE(cord2.estimated_memory_usage() - size2, kMaxDelta);
 
     EXPECT_EQ(cord1, turbo::str_cat(test_data, "Abc"));
     EXPECT_EQ(cord2, turbo::str_cat("Abc", test_data));
@@ -843,66 +843,66 @@ TEST_P(CordTest, AppendAndPrependBufferArePrecise) {
 
 TEST_P(CordTest, PrependSmallBuffer) {
     turbo::Cord cord;
-    turbo::CordBuffer buffer = turbo::CordBuffer::CreateWithDefaultLimit(3);
+    turbo::CordBuffer buffer = turbo::CordBuffer::create_with_default_limit(3);
     ASSERT_THAT(buffer.capacity(), Le(15));
     memcpy(buffer.data(), "Abc", 3);
-    buffer.SetLength(3);
-    cord.Prepend(std::move(buffer));
+    buffer.set_length(3);
+    cord.prepend(std::move(buffer));
     EXPECT_EQ(buffer.length(), 0); // NOLINT
     EXPECT_GT(buffer.capacity(), 0); // NOLINT
 
-    buffer = turbo::CordBuffer::CreateWithDefaultLimit(3);
+    buffer = turbo::CordBuffer::create_with_default_limit(3);
     memcpy(buffer.data(), "defgh", 5);
-    buffer.SetLength(5);
-    cord.Prepend(std::move(buffer));
+    buffer.set_length(5);
+    cord.prepend(std::move(buffer));
     EXPECT_EQ(buffer.length(), 0); // NOLINT
     EXPECT_GT(buffer.capacity(), 0); // NOLINT
 
-    EXPECT_THAT(cord.Chunks(), ElementsAre("defghAbc"));
+    EXPECT_THAT(cord.chunks(), ElementsAre("defghAbc"));
 }
 
 TEST_P(CordTest, AppendLargeBuffer) {
     turbo::Cord cord;
 
     std::string s1(700, '1');
-    turbo::CordBuffer buffer = turbo::CordBuffer::CreateWithDefaultLimit(s1.size());
+    turbo::CordBuffer buffer = turbo::CordBuffer::create_with_default_limit(s1.size());
     memcpy(buffer.data(), s1.data(), s1.size());
-    buffer.SetLength(s1.size());
-    cord.Append(std::move(buffer));
+    buffer.set_length(s1.size());
+    cord.append(std::move(buffer));
     EXPECT_EQ(buffer.length(), 0); // NOLINT
     EXPECT_GT(buffer.capacity(), 0); // NOLINT
 
     std::string s2(1000, '2');
-    buffer = turbo::CordBuffer::CreateWithDefaultLimit(s2.size());
+    buffer = turbo::CordBuffer::create_with_default_limit(s2.size());
     memcpy(buffer.data(), s2.data(), s2.size());
-    buffer.SetLength(s2.size());
-    cord.Append(std::move(buffer));
+    buffer.set_length(s2.size());
+    cord.append(std::move(buffer));
     EXPECT_EQ(buffer.length(), 0); // NOLINT
     EXPECT_GT(buffer.capacity(), 0); // NOLINT
 
-    EXPECT_THAT(cord.Chunks(), ElementsAre(s1, s2));
+    EXPECT_THAT(cord.chunks(), ElementsAre(s1, s2));
 }
 
 TEST_P(CordTest, PrependLargeBuffer) {
     turbo::Cord cord;
 
     std::string s1(700, '1');
-    turbo::CordBuffer buffer = turbo::CordBuffer::CreateWithDefaultLimit(s1.size());
+    turbo::CordBuffer buffer = turbo::CordBuffer::create_with_default_limit(s1.size());
     memcpy(buffer.data(), s1.data(), s1.size());
-    buffer.SetLength(s1.size());
-    cord.Prepend(std::move(buffer));
+    buffer.set_length(s1.size());
+    cord.prepend(std::move(buffer));
     EXPECT_EQ(buffer.length(), 0); // NOLINT
     EXPECT_GT(buffer.capacity(), 0); // NOLINT
 
     std::string s2(1000, '2');
-    buffer = turbo::CordBuffer::CreateWithDefaultLimit(s2.size());
+    buffer = turbo::CordBuffer::create_with_default_limit(s2.size());
     memcpy(buffer.data(), s2.data(), s2.size());
-    buffer.SetLength(s2.size());
-    cord.Prepend(std::move(buffer));
+    buffer.set_length(s2.size());
+    cord.prepend(std::move(buffer));
     EXPECT_EQ(buffer.length(), 0); // NOLINT
     EXPECT_GT(buffer.capacity(), 0); // NOLINT
 
-    EXPECT_THAT(cord.Chunks(), ElementsAre(s2, s1));
+    EXPECT_THAT(cord.chunks(), ElementsAre(s2, s1));
 }
 
 class CordAppendBufferTest : public testing::TestWithParam<bool> {
@@ -920,15 +920,15 @@ public:
     }
 
     size_t maximum_payload() const {
-        return is_default() ? turbo::CordBuffer::MaximumPayload()
-                            : turbo::CordBuffer::MaximumPayload(limit());
+        return is_default() ? turbo::CordBuffer::maximum_payload()
+                            : turbo::CordBuffer::maximum_payload(limit());
     }
 
-    turbo::CordBuffer GetAppendBuffer(turbo::Cord& cord, size_t capacity,
+    turbo::CordBuffer get_append_buffer(turbo::Cord& cord, size_t capacity,
         size_t min_capacity = 16) {
         return is_default()
-            ? cord.GetAppendBuffer(capacity, min_capacity)
-            : cord.GetCustomAppendBuffer(limit(), capacity, min_capacity);
+            ? cord.get_append_buffer(capacity, min_capacity)
+            : cord.get_custom_append_buffer(limit(), capacity, min_capacity);
     }
 };
 
@@ -937,7 +937,7 @@ INSTANTIATE_TEST_SUITE_P(WithParam, CordAppendBufferTest, testing::Bool(),
 
 TEST_P(CordAppendBufferTest, GetAppendBufferOnEmptyCord) {
     turbo::Cord cord;
-    turbo::CordBuffer buffer = GetAppendBuffer(cord, 1000);
+    turbo::CordBuffer buffer = get_append_buffer(cord, 1000);
     EXPECT_GE(buffer.capacity(), 1000);
     EXPECT_EQ(buffer.length(), 0);
 }
@@ -946,7 +946,7 @@ TEST_P(CordAppendBufferTest, GetAppendBufferOnInlinedCord) {
     static constexpr int kInlinedSize = sizeof(turbo::CordBuffer) - 1;
     for (int size : { 6, kInlinedSize - 3, kInlinedSize - 2, 1000 }) {
         turbo::Cord cord("Abc");
-        turbo::CordBuffer buffer = GetAppendBuffer(cord, size, 1);
+        turbo::CordBuffer buffer = get_append_buffer(cord, size, 1);
         EXPECT_GE(buffer.capacity(), 3 + size);
         EXPECT_EQ(buffer.length(), 3);
         EXPECT_EQ(std::string_view(buffer.data(), buffer.length()), "Abc");
@@ -962,7 +962,7 @@ TEST_P(CordAppendBufferTest, GetAppendBufferOnInlinedCordCapacityCloseToMax) {
     for (size_t dist_from_max = 0; dist_from_max <= 4; ++dist_from_max) {
         turbo::Cord cord("Abc");
         size_t size = std::numeric_limits<size_t>::max() - dist_from_max;
-        turbo::CordBuffer buffer = GetAppendBuffer(cord, size, 1);
+        turbo::CordBuffer buffer = get_append_buffer(cord, size, 1);
         EXPECT_GE(buffer.capacity(), maximum_payload());
         EXPECT_EQ(buffer.length(), 3);
         EXPECT_EQ(std::string_view(buffer.data(), buffer.length()), "Abc");
@@ -973,13 +973,13 @@ TEST_P(CordAppendBufferTest, GetAppendBufferOnInlinedCordCapacityCloseToMax) {
 TEST_P(CordAppendBufferTest, GetAppendBufferOnFlat) {
     // Create a cord with a single flat and extra capacity
     turbo::Cord cord;
-    turbo::CordBuffer buffer = turbo::CordBuffer::CreateWithDefaultLimit(500);
+    turbo::CordBuffer buffer = turbo::CordBuffer::create_with_default_limit(500);
     const size_t expected_capacity = buffer.capacity();
-    buffer.SetLength(3);
+    buffer.set_length(3);
     memcpy(buffer.data(), "Abc", 3);
-    cord.Append(std::move(buffer));
+    cord.append(std::move(buffer));
 
-    buffer = GetAppendBuffer(cord, 6);
+    buffer = get_append_buffer(cord, 6);
     EXPECT_EQ(buffer.capacity(), expected_capacity);
     EXPECT_EQ(buffer.length(), 3);
     EXPECT_EQ(std::string_view(buffer.data(), buffer.length()), "Abc");
@@ -989,12 +989,12 @@ TEST_P(CordAppendBufferTest, GetAppendBufferOnFlat) {
 TEST_P(CordAppendBufferTest, GetAppendBufferOnFlatWithoutMinCapacity) {
     // Create a cord with a single flat and extra capacity
     turbo::Cord cord;
-    turbo::CordBuffer buffer = turbo::CordBuffer::CreateWithDefaultLimit(500);
-    buffer.SetLength(30);
+    turbo::CordBuffer buffer = turbo::CordBuffer::create_with_default_limit(500);
+    buffer.set_length(30);
     memset(buffer.data(), 'x', 30);
-    cord.Append(std::move(buffer));
+    cord.append(std::move(buffer));
 
-    buffer = GetAppendBuffer(cord, 1000, 900);
+    buffer = get_append_buffer(cord, 1000, 900);
     EXPECT_GE(buffer.capacity(), 1000);
     EXPECT_EQ(buffer.length(), 0);
     EXPECT_EQ(cord, std::string(30, 'x'));
@@ -1010,12 +1010,12 @@ TEST_P(CordAppendBufferTest, GetAppendBufferOnTree) {
         for (int i = 0; i < num_flats - 1; ++i) {
             prefix += last;
             last = RandomLowercaseString(&rng, 10);
-            turbo::CordBuffer buffer = turbo::CordBuffer::CreateWithDefaultLimit(500);
-            buffer.SetLength(10);
+            turbo::CordBuffer buffer = turbo::CordBuffer::create_with_default_limit(500);
+            buffer.set_length(10);
             memcpy(buffer.data(), last.data(), 10);
-            cord.Append(std::move(buffer));
+            cord.append(std::move(buffer));
         }
-        turbo::CordBuffer buffer = GetAppendBuffer(cord, 6);
+        turbo::CordBuffer buffer = get_append_buffer(cord, 6);
         EXPECT_GE(buffer.capacity(), 500);
         EXPECT_EQ(buffer.length(), 10);
         EXPECT_EQ(std::string_view(buffer.data(), buffer.length()), last);
@@ -1026,12 +1026,12 @@ TEST_P(CordAppendBufferTest, GetAppendBufferOnTree) {
 TEST_P(CordAppendBufferTest, GetAppendBufferOnTreeWithoutMinCapacity) {
     turbo::Cord cord;
     for (int i = 0; i < 2; ++i) {
-        turbo::CordBuffer buffer = turbo::CordBuffer::CreateWithDefaultLimit(500);
-        buffer.SetLength(3);
+        turbo::CordBuffer buffer = turbo::CordBuffer::create_with_default_limit(500);
+        buffer.set_length(3);
         memcpy(buffer.data(), i ? "def" : "Abc", 3);
-        cord.Append(std::move(buffer));
+        cord.append(std::move(buffer));
     }
-    turbo::CordBuffer buffer = GetAppendBuffer(cord, 1000, 900);
+    turbo::CordBuffer buffer = get_append_buffer(cord, 1000, 900);
     EXPECT_GE(buffer.capacity(), 1000);
     EXPECT_EQ(buffer.length(), 0);
     EXPECT_EQ(cord, "Abcdef");
@@ -1040,14 +1040,14 @@ TEST_P(CordAppendBufferTest, GetAppendBufferOnTreeWithoutMinCapacity) {
 TEST_P(CordAppendBufferTest, GetAppendBufferOnSubstring) {
     // Create a large cord with a single flat and some extra capacity
     turbo::Cord cord;
-    turbo::CordBuffer buffer = turbo::CordBuffer::CreateWithDefaultLimit(500);
-    buffer.SetLength(450);
+    turbo::CordBuffer buffer = turbo::CordBuffer::create_with_default_limit(500);
+    buffer.set_length(450);
     memset(buffer.data(), 'x', 450);
-    cord.Append(std::move(buffer));
-    cord.RemovePrefix(1);
+    cord.append(std::move(buffer));
+    cord.remove_prefix(1);
 
     // Deny on substring
-    buffer = GetAppendBuffer(cord, 6);
+    buffer = get_append_buffer(cord, 6);
     EXPECT_EQ(buffer.length(), 0);
     EXPECT_EQ(cord, std::string(449, 'x'));
 }
@@ -1055,25 +1055,25 @@ TEST_P(CordAppendBufferTest, GetAppendBufferOnSubstring) {
 TEST_P(CordAppendBufferTest, GetAppendBufferOnSharedCord) {
     // Create a shared cord with a single flat and extra capacity
     turbo::Cord cord;
-    turbo::CordBuffer buffer = turbo::CordBuffer::CreateWithDefaultLimit(500);
-    buffer.SetLength(3);
+    turbo::CordBuffer buffer = turbo::CordBuffer::create_with_default_limit(500);
+    buffer.set_length(3);
     memcpy(buffer.data(), "Abc", 3);
-    cord.Append(std::move(buffer));
+    cord.append(std::move(buffer));
     turbo::Cord shared_cord = cord;
 
     // Deny on flat
-    buffer = GetAppendBuffer(cord, 6);
+    buffer = get_append_buffer(cord, 6);
     EXPECT_EQ(buffer.length(), 0);
     EXPECT_EQ(cord, "Abc");
 
-    buffer = turbo::CordBuffer::CreateWithDefaultLimit(500);
-    buffer.SetLength(3);
+    buffer = turbo::CordBuffer::create_with_default_limit(500);
+    buffer.set_length(3);
     memcpy(buffer.data(), "def", 3);
-    cord.Append(std::move(buffer));
+    cord.append(std::move(buffer));
     shared_cord = cord;
 
     // Deny on tree
-    buffer = GetAppendBuffer(cord, 6);
+    buffer = get_append_buffer(cord, 6);
     EXPECT_EQ(buffer.length(), 0);
     EXPECT_EQ(cord, "Abcdef");
 }
@@ -1091,7 +1091,7 @@ TEST_P(CordTest, TryFlatFlat) {
 
 TEST_P(CordTest, TryFlatSubstrInlined) {
     turbo::Cord c("hello");
-    c.RemovePrefix(1);
+    c.remove_prefix(1);
     MaybeHarden(c);
     EXPECT_EQ(c.TryFlat(), "ello");
 }
@@ -1110,13 +1110,13 @@ TEST_P(CordTest, TryFlatConcat) {
 }
 
 TEST_P(CordTest, TryFlatExternal) {
-    turbo::Cord c = turbo::MakeCordFromExternal("hell", [](std::string_view) { });
+    turbo::Cord c = turbo::make_cord_from_external("hell", [](std::string_view) { });
     MaybeHarden(c);
     EXPECT_EQ(c.TryFlat(), "hell");
 }
 
 TEST_P(CordTest, TryFlatSubstrExternal) {
-    turbo::Cord c = turbo::MakeCordFromExternal("hell", [](std::string_view) { });
+    turbo::Cord c = turbo::make_cord_from_external("hell", [](std::string_view) { });
     turbo::Cord sub = turbo::CordTestPeer::MakeSubstring(c, 1, c.size() - 1);
     MaybeHarden(sub);
     EXPECT_EQ(sub.TryFlat(), "ell");
@@ -1140,10 +1140,10 @@ TEST_P(CordTest, TryFlatCommonlyAssumedInvariants) {
     int fragment = 0;
     int offset = 0;
     turbo::Cord::CharIterator itc = c.char_begin();
-    for (std::string_view sv : c.Chunks()) {
+    for (std::string_view sv : c.chunks()) {
         std::string_view expected = fragments[fragment];
-        turbo::Cord subcord1 = c.Subcord(offset, sv.length());
-        turbo::Cord subcord2 = turbo::Cord::AdvanceAndRead(&itc, sv.size());
+        turbo::Cord subcord1 = c.subcord(offset, sv.length());
+        turbo::Cord subcord2 = turbo::Cord::advance_and_read(&itc, sv.size());
         EXPECT_EQ(subcord1.TryFlat(), expected);
         EXPECT_EQ(subcord2.TryFlat(), expected);
         ++fragment;
@@ -1253,17 +1253,17 @@ TEST_P(CordTest, MultipleLengths) {
             EXPECT_EQ(a, std::string(x)) << "'" << a << "'";
         }
 
-        { // Append cord to self
+        { // append cord to self
             turbo::Cord self(a);
             MaybeHarden(self);
-            self.Append(self);
+            self.append(self);
             EXPECT_EQ(a + a, std::string(self)) << "'" << a << "' + '" << a << "'";
         }
 
-        { // Prepend cord to self
+        { // prepend cord to self
             turbo::Cord self(a);
             MaybeHarden(self);
-            self.Prepend(self);
+            self.prepend(self);
             EXPECT_EQ(a + a, std::string(self)) << "'" << a << "' + '" << a << "'";
         }
 
@@ -1286,33 +1286,33 @@ TEST_P(CordTest, MultipleLengths) {
                 EXPECT_EQ(b, std::string(x)) << "'" << a << "' + '" << b << "'";
             }
 
-            { // Cord::Append(Cord)
+            { // Cord::append(Cord)
                 turbo::Cord x(a);
                 turbo::Cord y(b);
                 MaybeHarden(x);
-                x.Append(y);
+                x.append(y);
                 EXPECT_EQ(a + b, std::string(x)) << "'" << a << "' + '" << b << "'";
             }
 
-            { // Cord::Append(std::string_view)
+            { // Cord::append(std::string_view)
                 turbo::Cord x(a);
                 MaybeHarden(x);
-                x.Append(b);
+                x.append(b);
                 EXPECT_EQ(a + b, std::string(x)) << "'" << a << "' + '" << b << "'";
             }
 
-            { // Cord::Prepend(Cord)
+            { // Cord::prepend(Cord)
                 turbo::Cord x(a);
                 turbo::Cord y(b);
                 MaybeHarden(x);
-                x.Prepend(y);
+                x.prepend(y);
                 EXPECT_EQ(b + a, std::string(x)) << "'" << b << "' + '" << a << "'";
             }
 
-            { // Cord::Prepend(std::string_view)
+            { // Cord::prepend(std::string_view)
                 turbo::Cord x(a);
                 MaybeHarden(x);
-                x.Prepend(b);
+                x.prepend(b);
                 EXPECT_EQ(b + a, std::string(x)) << "'" << b << "' + '" << a << "'";
             }
         }
@@ -1322,31 +1322,31 @@ TEST_P(CordTest, MultipleLengths) {
 namespace {
 
     TEST_P(CordTest, RemoveSuffixWithExternalOrSubstring) {
-        turbo::Cord cord = turbo::MakeCordFromExternal(
+        turbo::Cord cord = turbo::make_cord_from_external(
             "foo bar baz", [](std::string_view s) { DoNothing(s, nullptr); });
         EXPECT_EQ("foo bar baz", std::string(cord));
 
         MaybeHarden(cord);
 
-        // This RemoveSuffix() will wrap the EXTERNAL node in a SUBSTRING node.
-        cord.RemoveSuffix(4);
+        // This remove_suffix() will wrap the EXTERNAL node in a SUBSTRING node.
+        cord.remove_suffix(4);
         EXPECT_EQ("foo bar", std::string(cord));
 
         MaybeHarden(cord);
 
-        // This RemoveSuffix() will adjust the SUBSTRING node in-place.
-        cord.RemoveSuffix(4);
+        // This remove_suffix() will adjust the SUBSTRING node in-place.
+        cord.remove_suffix(4);
         EXPECT_EQ("foo", std::string(cord));
     }
 
     TEST_P(CordTest, RemoveSuffixMakesZeroLengthNode) {
         turbo::Cord c;
-        c.Append(turbo::Cord(std::string(100, 'x')));
+        c.append(turbo::Cord(std::string(100, 'x')));
         turbo::Cord other_ref = c; // Prevent inplace appends
         EXPECT_THAT(other_ref, testing::Eq(c));
         MaybeHarden(c);
-        c.Append(turbo::Cord(std::string(200, 'y')));
-        c.RemoveSuffix(200);
+        c.append(turbo::Cord(std::string(200, 'y')));
+        c.remove_suffix(200);
         EXPECT_EQ(std::string(100, 'x'), std::string(c));
     }
 
@@ -1361,7 +1361,7 @@ namespace {
         if (size > 0) {
             memset(data, 'z', size);
         }
-        turbo::Cord cord = turbo::MakeCordFromExternal(
+        turbo::Cord cord = turbo::make_cord_from_external(
             std::string_view(data, size),
             [](std::string_view s) { delete[] s.data(); });
         return cord;
@@ -1373,7 +1373,7 @@ namespace {
         MaybeHarden(blob);
         EXPECT_EQ(10, blob.size());
         std::string s;
-        turbo::CopyCordToString(blob, &s);
+        turbo::copy_cord_to_string(blob, &s);
         EXPECT_EQ("zzzzzzzzzz", s);
     }
 
@@ -1382,7 +1382,7 @@ namespace {
         MaybeHarden(blob);
         EXPECT_EQ(0, blob.size());
         std::string s;
-        turbo::CopyCordToString(blob, &s);
+        turbo::copy_cord_to_string(blob, &s);
         EXPECT_EQ("", s);
     }
 
@@ -1391,10 +1391,10 @@ namespace {
         MaybeHarden(blob);
         EXPECT_EQ(10, blob.size());
         turbo::Cord suffix(blob);
-        suffix.RemovePrefix(9);
+        suffix.remove_prefix(9);
         EXPECT_EQ(1, suffix.size());
         std::string s;
-        turbo::CopyCordToString(suffix, &s);
+        turbo::copy_cord_to_string(suffix, &s);
         EXPECT_EQ("z", s);
     }
 
@@ -1404,10 +1404,10 @@ namespace {
         MaybeHarden(blob);
         EXPECT_EQ(10, blob.size());
         turbo::Cord suffix(blob);
-        suffix.RemovePrefix(10);
+        suffix.remove_prefix(10);
         EXPECT_EQ(0, suffix.size());
         std::string s;
-        turbo::CopyCordToString(suffix, &s);
+        turbo::copy_cord_to_string(suffix, &s);
         EXPECT_EQ("", s);
     }
 
@@ -1422,11 +1422,11 @@ namespace {
         KCHECK_GE(offset, 0);
         KCHECK_LE(static_cast<size_t>(offset) + block.size(), blob.size());
         turbo::Cord result(blob);
-        result.RemoveSuffix(blob.size() - offset);
-        result.Append(block);
+        result.remove_suffix(blob.size() - offset);
+        result.append(block);
         turbo::Cord suffix(blob);
-        suffix.RemovePrefix(offset + block.size());
-        result.Append(suffix);
+        suffix.remove_prefix(offset + block.size());
+        result.append(suffix);
         KCHECK_EQ(blob.size(), result.size());
         return result;
     }
@@ -1436,20 +1436,20 @@ namespace {
         turbo::Cord zero = CordWithZedBlock(10);
         MaybeHarden(zero);
         turbo::Cord suffix(zero);
-        suffix.RemovePrefix(10);
+        suffix.remove_prefix(10);
         turbo::Cord result;
-        result.Append(suffix);
+        result.append(suffix);
     }
 
     TEST_P(CordTest, CordSpliceTestRemoveEntireBlock2) {
         turbo::Cord zero = CordWithZedBlock(10);
         MaybeHarden(zero);
         turbo::Cord prefix(zero);
-        prefix.RemoveSuffix(10);
+        prefix.remove_suffix(10);
         turbo::Cord suffix(zero);
-        suffix.RemovePrefix(10);
+        suffix.remove_prefix(10);
         turbo::Cord result(prefix);
-        result.Append(suffix);
+        result.append(suffix);
     }
 
     TEST_P(CordTest, CordSpliceTestRemoveEntireBlock3) {
@@ -1480,30 +1480,30 @@ namespace {
         std::string lhs_string(test_case.lhs_cord);
         std::string rhs_string(test_case.rhs_cord);
         int expected = sign(lhs_string.compare(rhs_string));
-        EXPECT_EQ(expected, test_case.lhs_cord.Compare(test_case.rhs_cord))
+        EXPECT_EQ(expected, test_case.lhs_cord.compare(test_case.rhs_cord))
             << "LHS=" << lhs_string << "; RHS=" << rhs_string;
-        EXPECT_EQ(expected, test_case.lhs_cord.Compare(rhs_string))
+        EXPECT_EQ(expected, test_case.lhs_cord.compare(rhs_string))
             << "LHS=" << lhs_string << "; RHS=" << rhs_string;
-        EXPECT_EQ(-expected, test_case.rhs_cord.Compare(test_case.lhs_cord))
+        EXPECT_EQ(-expected, test_case.rhs_cord.compare(test_case.lhs_cord))
             << "LHS=" << rhs_string << "; RHS=" << lhs_string;
-        EXPECT_EQ(-expected, test_case.rhs_cord.Compare(lhs_string))
+        EXPECT_EQ(-expected, test_case.rhs_cord.compare(lhs_string))
             << "LHS=" << rhs_string << "; RHS=" << lhs_string;
     }
 
-    TEST_P(CordTest, Compare) {
+    TEST_P(CordTest, compare) {
         turbo::Cord subcord("aaaaaBBBBBcccccDDDDD");
-        subcord = subcord.Subcord(3, 10);
+        subcord = subcord.subcord(3, 10);
 
         turbo::Cord tmp("aaaaaaaaaaaaaaaa");
-        tmp.Append("BBBBBBBBBBBBBBBB");
+        tmp.append("BBBBBBBBBBBBBBBB");
         turbo::Cord concat = turbo::Cord("cccccccccccccccc");
-        concat.Append("DDDDDDDDDDDDDDDD");
-        concat.Prepend(tmp);
+        concat.append("DDDDDDDDDDDDDDDD");
+        concat.prepend(tmp);
 
         turbo::Cord concat2("aaaaaaaaaaaaa");
-        concat2.Append("aaaBBBBBBBBBBBBBBBBccccc");
-        concat2.Append("cccccccccccDDDDDDDDDDDDDD");
-        concat2.Append("DD");
+        concat2.append("aaaBBBBBBBBBBBBBBBBccccc");
+        concat2.append("cccccccccccDDDDDDDDDDDDDD");
+        concat2.append("DD");
 
         const bool use_crc = UseCrc();
 
@@ -1586,7 +1586,7 @@ namespace {
         // Cord comparisons to be based on unsigned byte comparisons regardless of
         // whether char is signed.
         int expected = sign(std::string(c).compare(std::string(d)));
-        EXPECT_EQ(expected, sign(c.Compare(d))) << c << ", " << d;
+        EXPECT_EQ(expected, sign(c.compare(d))) << c << ", " << d;
     }
 
     TEST_P(CordTest, CompareComparisonIsUnsigned) {
@@ -1617,8 +1617,8 @@ namespace {
         for (int i = 0; i < kIters; i++) {
             turbo::Cord c, d;
             for (int j = 0; j < (i % 7) + 1; j++) {
-                c.Append(a[GetUniformRandomUpTo(&rng, KUMO_ARRAYSIZE(a))]);
-                d.Append(a[GetUniformRandomUpTo(&rng, KUMO_ARRAYSIZE(a))]);
+                c.append(a[GetUniformRandomUpTo(&rng, KUMO_ARRAYSIZE(a))]);
+                d.append(a[GetUniformRandomUpTo(&rng, KUMO_ARRAYSIZE(a))]);
             }
             std::bernoulli_distribution coin_flip(0.5);
             MaybeHarden(c);
@@ -1700,7 +1700,7 @@ namespace {
             bool invoked = false;
             auto releaser = [&invoked](std::string_view) { invoked = true; };
             {
-                auto c = turbo::MakeCordFromExternal("", releaser);
+                auto c = turbo::make_cord_from_external("", releaser);
                 EXPECT_THAT(c, testing::Eq(""));
                 EXPECT_TRUE(invoked);
             }
@@ -1715,7 +1715,7 @@ namespace {
             bool invoked = false;
             auto releaser = [&invoked](std::string_view) { invoked = true; };
             {
-                auto c = turbo::MakeCordFromExternal(large_dummy, releaser);
+                auto c = turbo::make_cord_from_external(large_dummy, releaser);
                 EXPECT_THAT(c, testing::Eq(large_dummy));
                 EXPECT_FALSE(invoked);
             }
@@ -1728,7 +1728,7 @@ namespace {
             {
                 turbo::Cord copy;
                 {
-                    auto c = turbo::MakeCordFromExternal(large_dummy, releaser);
+                    auto c = turbo::make_cord_from_external(large_dummy, releaser);
                     copy = c;
                     EXPECT_FALSE(invoked);
                 }
@@ -1744,7 +1744,7 @@ namespace {
         for (int length = 1; length <= 2048; length *= 2) {
             std::string data = RandomLowercaseString(&rng, length);
             auto* external = new std::string(data);
-            auto cord = turbo::MakeCordFromExternal(*external, [external](std::string_view sv) {
+            auto cord = turbo::make_cord_from_external(*external, [external](std::string_view sv) {
                 EXPECT_EQ(external->data(), sv.data());
                 EXPECT_EQ(external->size(), sv.size());
                 delete external;
@@ -1766,7 +1766,7 @@ namespace {
             EXPECT_EQ(data, std::string_view(data_array.data(), data_array.size()));
             invoked = true;
         };
-        (void)MaybeHardened(turbo::MakeCordFromExternal(data, releaser));
+        (void)MaybeHardened(turbo::make_cord_from_external(data, releaser));
         EXPECT_TRUE(invoked);
     }
 
@@ -1778,11 +1778,11 @@ namespace {
             invoked = true;
         });
         invoked = false;
-        (void)MaybeHardened(turbo::MakeCordFromExternal(data, releaser));
+        (void)MaybeHardened(turbo::make_cord_from_external(data, releaser));
         EXPECT_TRUE(invoked);
 
         invoked = false;
-        (void)MaybeHardened(turbo::MakeCordFromExternal(data, *releaser));
+        (void)MaybeHardened(turbo::make_cord_from_external(data, *releaser));
         EXPECT_TRUE(invoked);
     }
 
@@ -1798,7 +1798,7 @@ namespace {
         };
 
         bool invoked = false;
-        (void)MaybeHardened(turbo::MakeCordFromExternal("dummy", Releaser(&invoked)));
+        (void)MaybeHardened(turbo::make_cord_from_external("dummy", Releaser(&invoked)));
         EXPECT_TRUE(invoked);
     }
 
@@ -1813,7 +1813,7 @@ namespace {
         };
 
         bool invoked = false;
-        (void)MaybeHardened(turbo::MakeCordFromExternal("dummy", Releaser(&invoked)));
+        (void)MaybeHardened(turbo::make_cord_from_external("dummy", Releaser(&invoked)));
         EXPECT_TRUE(invoked);
     }
 
@@ -1828,20 +1828,20 @@ namespace {
         };
 
         bool invoked = false;
-        (void)MaybeHardened(turbo::MakeCordFromExternal("dummy", Releaser(&invoked)));
+        (void)MaybeHardened(turbo::make_cord_from_external("dummy", Releaser(&invoked)));
         EXPECT_TRUE(invoked);
     }
 
     TEST_P(CordTest, ConstructFromExternalNoArgLambda) {
         bool invoked = false;
         (void)MaybeHardened(
-            turbo::MakeCordFromExternal("dummy", [&invoked]() { invoked = true; }));
+            turbo::make_cord_from_external("dummy", [&invoked]() { invoked = true; }));
         EXPECT_TRUE(invoked);
     }
 
     TEST_P(CordTest, ConstructFromExternalStringViewArgLambda) {
         bool invoked = false;
-        (void)MaybeHardened(turbo::MakeCordFromExternal(
+        (void)MaybeHardened(turbo::make_cord_from_external(
             "dummy", [&invoked](std::string_view) { invoked = true; }));
         EXPECT_TRUE(invoked);
     }
@@ -1858,7 +1858,7 @@ namespace {
 
         bool destroyed = false;
         Releaser releaser(&destroyed);
-        (void)MaybeHardened(turbo::MakeCordFromExternal("dummy", releaser));
+        (void)MaybeHardened(turbo::make_cord_from_external("dummy", releaser));
         EXPECT_TRUE(destroyed);
     }
 
@@ -1901,32 +1901,32 @@ namespace {
         };
 
         const Releaser releaser1(&tracker);
-        (void)MaybeHardened(turbo::MakeCordFromExternal("", releaser1));
+        (void)MaybeHardened(turbo::make_cord_from_external("", releaser1));
         EXPECT_EQ(tracker.copied_as, kCopy);
         EXPECT_EQ(tracker.invoked_as, kRValue);
 
         const Releaser releaser2(&tracker);
-        (void)MaybeHardened(turbo::MakeCordFromExternal("", releaser2));
+        (void)MaybeHardened(turbo::make_cord_from_external("", releaser2));
         EXPECT_EQ(tracker.copied_as, kCopy);
         EXPECT_EQ(tracker.invoked_as, kRValue);
 
         Releaser releaser3(&tracker);
-        (void)MaybeHardened(turbo::MakeCordFromExternal("", std::move(releaser3)));
+        (void)MaybeHardened(turbo::make_cord_from_external("", std::move(releaser3)));
         EXPECT_EQ(tracker.copied_as, kMove);
         EXPECT_EQ(tracker.invoked_as, kRValue);
 
         Releaser releaser4(&tracker);
-        (void)MaybeHardened(turbo::MakeCordFromExternal("dummy", releaser4));
+        (void)MaybeHardened(turbo::make_cord_from_external("dummy", releaser4));
         EXPECT_EQ(tracker.copied_as, kCopy);
         EXPECT_EQ(tracker.invoked_as, kRValue);
 
         const Releaser releaser5(&tracker);
-        (void)MaybeHardened(turbo::MakeCordFromExternal("dummy", releaser5));
+        (void)MaybeHardened(turbo::make_cord_from_external("dummy", releaser5));
         EXPECT_EQ(tracker.copied_as, kCopy);
         EXPECT_EQ(tracker.invoked_as, kRValue);
 
         Releaser releaser6(&tracker);
-        (void)MaybeHardened(turbo::MakeCordFromExternal("foo", std::move(releaser6)));
+        (void)MaybeHardened(turbo::make_cord_from_external("foo", std::move(releaser6)));
         EXPECT_EQ(tracker.copied_as, kMove);
         EXPECT_EQ(tracker.invoked_as, kRValue);
     }
@@ -1938,7 +1938,7 @@ namespace {
             MaybeHarden(dst);
             AddExternalMemory(str, &dst);
             MaybeHarden(dst);
-            dst.Append("(suffix)");
+            dst.append("(suffix)");
             EXPECT_EQ((std::string("(prefix)") + str + std::string("(suffix)")),
                 std::string(dst));
         }
@@ -1952,9 +1952,9 @@ namespace {
             for (int length = 0; length <= s.size() - offset; length++) {
                 turbo::Cord result(cord);
                 MaybeHarden(result);
-                result.RemovePrefix(offset);
+                result.remove_prefix(offset);
                 MaybeHarden(result);
-                result.RemoveSuffix(result.size() - length);
+                result.remove_suffix(result.size() - length);
                 EXPECT_EQ(s.substr(offset, length), std::string(result))
                     << offset << " " << length;
             }
@@ -1966,7 +1966,7 @@ namespace {
         AddExternalMemory(" world!", &cord);
         MaybeHarden(cord);
         AddExternalMemory(" how are ", &cord);
-        cord.Append(" you?");
+        cord.append(" you?");
         MaybeHarden(cord);
         std::string s = std::string(cord);
         for (int i = 0; i < s.size(); i++) {
@@ -1974,7 +1974,7 @@ namespace {
         }
     }
 
-    // CordMemoryUsage tests verify the correctness of the EstimatedMemoryUsage()
+    // CordMemoryUsage tests verify the correctness of the estimated_memory_usage()
     // We use whiteboxed expectations based on our knowledge of the layout and size
     // of empty and inlined cords, and flat nodes.
 
@@ -1989,46 +1989,46 @@ namespace {
 
     TEST(CordTest, CordMemoryUsageEmpty) {
         turbo::Cord cord;
-        EXPECT_EQ(sizeof(turbo::Cord), cord.EstimatedMemoryUsage());
-        EXPECT_EQ(sizeof(turbo::Cord), cord.EstimatedMemoryUsage(kFairShare));
-        EXPECT_EQ(sizeof(turbo::Cord), cord.EstimatedMemoryUsage(kTotalMorePrecise));
+        EXPECT_EQ(sizeof(turbo::Cord), cord.estimated_memory_usage());
+        EXPECT_EQ(sizeof(turbo::Cord), cord.estimated_memory_usage(kFairShare));
+        EXPECT_EQ(sizeof(turbo::Cord), cord.estimated_memory_usage(kTotalMorePrecise));
     }
 
     TEST(CordTest, CordMemoryUsageInlined) {
         turbo::Cord a("hello");
-        EXPECT_EQ(a.EstimatedMemoryUsage(), sizeof(turbo::Cord));
-        EXPECT_EQ(a.EstimatedMemoryUsage(kFairShare), sizeof(turbo::Cord));
-        EXPECT_EQ(a.EstimatedMemoryUsage(kTotalMorePrecise), sizeof(turbo::Cord));
+        EXPECT_EQ(a.estimated_memory_usage(), sizeof(turbo::Cord));
+        EXPECT_EQ(a.estimated_memory_usage(kFairShare), sizeof(turbo::Cord));
+        EXPECT_EQ(a.estimated_memory_usage(kTotalMorePrecise), sizeof(turbo::Cord));
     }
 
     TEST(CordTest, CordMemoryUsageExternalMemory) {
         turbo::Cord cord;
         AddExternalMemory(std::string(1000, 'x'), &cord);
         const size_t expected = sizeof(turbo::Cord) + 1000 + sizeof(CordRepExternal) + sizeof(intptr_t);
-        EXPECT_EQ(cord.EstimatedMemoryUsage(), expected);
-        EXPECT_EQ(cord.EstimatedMemoryUsage(kFairShare), expected);
-        EXPECT_EQ(cord.EstimatedMemoryUsage(kTotalMorePrecise), expected);
+        EXPECT_EQ(cord.estimated_memory_usage(), expected);
+        EXPECT_EQ(cord.estimated_memory_usage(kFairShare), expected);
+        EXPECT_EQ(cord.estimated_memory_usage(kTotalMorePrecise), expected);
     }
 
     TEST(CordTest, CordMemoryUsageFlat) {
         turbo::Cord cord = MakeCord(1000, 'a');
         const size_t flat_size = turbo::CordTestPeer::Tree(cord)->flat()->AllocatedSize();
-        EXPECT_EQ(cord.EstimatedMemoryUsage(), sizeof(turbo::Cord) + flat_size);
-        EXPECT_EQ(cord.EstimatedMemoryUsage(kFairShare),
+        EXPECT_EQ(cord.estimated_memory_usage(), sizeof(turbo::Cord) + flat_size);
+        EXPECT_EQ(cord.estimated_memory_usage(kFairShare),
             sizeof(turbo::Cord) + flat_size);
-        EXPECT_EQ(cord.EstimatedMemoryUsage(kTotalMorePrecise),
+        EXPECT_EQ(cord.estimated_memory_usage(kTotalMorePrecise),
             sizeof(turbo::Cord) + flat_size);
     }
 
     TEST(CordTest, CordMemoryUsageSubStringSharedFlat) {
         turbo::Cord flat = MakeCord(2000, 'a');
         const size_t flat_size = turbo::CordTestPeer::Tree(flat)->flat()->AllocatedSize();
-        turbo::Cord cord = flat.Subcord(500, 1000);
-        EXPECT_EQ(cord.EstimatedMemoryUsage(),
+        turbo::Cord cord = flat.subcord(500, 1000);
+        EXPECT_EQ(cord.estimated_memory_usage(),
             sizeof(turbo::Cord) + sizeof(CordRepSubstring) + flat_size);
-        EXPECT_EQ(cord.EstimatedMemoryUsage(kTotalMorePrecise),
+        EXPECT_EQ(cord.estimated_memory_usage(kTotalMorePrecise),
             sizeof(turbo::Cord) + sizeof(CordRepSubstring) + flat_size);
-        EXPECT_EQ(cord.EstimatedMemoryUsage(kFairShare),
+        EXPECT_EQ(cord.estimated_memory_usage(kFairShare),
             sizeof(turbo::Cord) + sizeof(CordRepSubstring) + flat_size / 2);
     }
 
@@ -2036,10 +2036,10 @@ namespace {
         turbo::Cord shared = MakeCord(1000, 'a');
         turbo::Cord cord(shared);
         const size_t flat_size = turbo::CordTestPeer::Tree(cord)->flat()->AllocatedSize();
-        EXPECT_EQ(cord.EstimatedMemoryUsage(), sizeof(turbo::Cord) + flat_size);
-        EXPECT_EQ(cord.EstimatedMemoryUsage(kTotalMorePrecise),
+        EXPECT_EQ(cord.estimated_memory_usage(), sizeof(turbo::Cord) + flat_size);
+        EXPECT_EQ(cord.estimated_memory_usage(kTotalMorePrecise),
             sizeof(turbo::Cord) + flat_size);
-        EXPECT_EQ(cord.EstimatedMemoryUsage(kFairShare),
+        EXPECT_EQ(cord.estimated_memory_usage(kFairShare),
             sizeof(turbo::Cord) + flat_size / 2);
     }
 
@@ -2048,17 +2048,17 @@ namespace {
         turbo::Cord cord(shared);
         const size_t flat_size = turbo::CordTestPeer::Tree(cord)->flat()->AllocatedSize();
         cord.SetExpectedChecksum(1);
-        EXPECT_EQ(cord.EstimatedMemoryUsage(),
+        EXPECT_EQ(cord.estimated_memory_usage(),
             sizeof(turbo::Cord) + sizeof(CordRepCrc) + flat_size);
-        EXPECT_EQ(cord.EstimatedMemoryUsage(kFairShare),
+        EXPECT_EQ(cord.estimated_memory_usage(kFairShare),
             sizeof(turbo::Cord) + sizeof(CordRepCrc) + flat_size / 2);
 
         turbo::Cord cord2(cord);
-        EXPECT_EQ(cord2.EstimatedMemoryUsage(),
+        EXPECT_EQ(cord2.estimated_memory_usage(),
             sizeof(turbo::Cord) + sizeof(CordRepCrc) + flat_size);
-        EXPECT_EQ(cord2.EstimatedMemoryUsage(kTotalMorePrecise),
+        EXPECT_EQ(cord2.estimated_memory_usage(kTotalMorePrecise),
             sizeof(turbo::Cord) + sizeof(CordRepCrc) + flat_size);
-        EXPECT_EQ(cord2.EstimatedMemoryUsage(kFairShare),
+        EXPECT_EQ(cord2.estimated_memory_usage(kFairShare),
             sizeof(turbo::Cord) + (sizeof(CordRepCrc) + flat_size / 2) / 2);
     }
 
@@ -2069,7 +2069,7 @@ namespace {
             MakeCord(1200, 'a'), MakeCord(1300, 'a') };
         for (turbo::Cord flat : flats1) {
             flats1_size += turbo::CordTestPeer::Tree(flat)->flat()->AllocatedSize();
-            cord1.Append(std::move(flat));
+            cord1.append(std::move(flat));
         }
 
         // Make sure the created cord is a BTREE tree. Under some builds such as
@@ -2083,10 +2083,10 @@ namespace {
         size_t rep1_size = sizeof(CordRepBtree) + flats1_size;
         size_t rep1_shared_size = sizeof(CordRepBtree) + flats1_size / 2;
 
-        EXPECT_EQ(cord1.EstimatedMemoryUsage(), sizeof(turbo::Cord) + rep1_size);
-        EXPECT_EQ(cord1.EstimatedMemoryUsage(kTotalMorePrecise),
+        EXPECT_EQ(cord1.estimated_memory_usage(), sizeof(turbo::Cord) + rep1_size);
+        EXPECT_EQ(cord1.estimated_memory_usage(kTotalMorePrecise),
             sizeof(turbo::Cord) + rep1_size);
-        EXPECT_EQ(cord1.EstimatedMemoryUsage(kFairShare),
+        EXPECT_EQ(cord1.estimated_memory_usage(kFairShare),
             sizeof(turbo::Cord) + rep1_shared_size);
 
         turbo::Cord cord2;
@@ -2095,24 +2095,24 @@ namespace {
             MakeCord(800, 'a'), MakeCord(900, 'a') };
         for (turbo::Cord& flat : flats2) {
             flats2_size += turbo::CordTestPeer::Tree(flat)->flat()->AllocatedSize();
-            cord2.Append(std::move(flat));
+            cord2.append(std::move(flat));
         }
         size_t rep2_size = sizeof(CordRepBtree) + flats2_size;
 
-        EXPECT_EQ(cord2.EstimatedMemoryUsage(), sizeof(turbo::Cord) + rep2_size);
-        EXPECT_EQ(cord2.EstimatedMemoryUsage(kTotalMorePrecise),
+        EXPECT_EQ(cord2.estimated_memory_usage(), sizeof(turbo::Cord) + rep2_size);
+        EXPECT_EQ(cord2.estimated_memory_usage(kTotalMorePrecise),
             sizeof(turbo::Cord) + rep2_size);
-        EXPECT_EQ(cord2.EstimatedMemoryUsage(kFairShare),
+        EXPECT_EQ(cord2.estimated_memory_usage(kFairShare),
             sizeof(turbo::Cord) + rep2_size);
 
         turbo::Cord cord(cord1);
-        cord.Append(std::move(cord2));
+        cord.append(std::move(cord2));
 
-        EXPECT_EQ(cord.EstimatedMemoryUsage(),
+        EXPECT_EQ(cord.estimated_memory_usage(),
             sizeof(turbo::Cord) + sizeof(CordRepBtree) + rep1_size + rep2_size);
-        EXPECT_EQ(cord.EstimatedMemoryUsage(kTotalMorePrecise),
+        EXPECT_EQ(cord.estimated_memory_usage(kTotalMorePrecise),
             sizeof(turbo::Cord) + sizeof(CordRepBtree) + rep1_size + rep2_size);
-        EXPECT_EQ(cord.EstimatedMemoryUsage(kFairShare),
+        EXPECT_EQ(cord.estimated_memory_usage(kFairShare),
             sizeof(turbo::Cord) + sizeof(CordRepBtree) + rep1_shared_size / 2 + rep2_size);
     }
 
@@ -2144,9 +2144,9 @@ namespace {
         turbo::Cord c1(small_string);
 
         turbo::Cord c2;
-        c2.Append(small_string);
+        c2.append(small_string);
         EXPECT_EQ(c1, c2);
-        EXPECT_EQ(c1.EstimatedMemoryUsage(), c2.EstimatedMemoryUsage());
+        EXPECT_EQ(c1.estimated_memory_usage(), c2.estimated_memory_usage());
     }
 
     TEST_P(CordTest, CordMemoryUsageTotalMorePreciseMode) {
@@ -2157,18 +2157,18 @@ namespace {
         // Construct `fragmented` with two references into the same
         // underlying buffer shared with `flat`:
         turbo::Cord fragmented(flat);
-        fragmented.Append(flat);
+        fragmented.append(flat);
 
         // Memory usage of `flat`, minus the top-level Cord object:
-        const size_t flat_internal_usage = flat.EstimatedMemoryUsage() - sizeof(turbo::Cord);
+        const size_t flat_internal_usage = flat.estimated_memory_usage() - sizeof(turbo::Cord);
 
         // `fragmented` holds a Cord and a CordRepBtree. That tree points to two
         // copies of flat's internals, which we expect to dedup:
-        EXPECT_EQ(fragmented.EstimatedMemoryUsage(kTotalMorePrecise),
+        EXPECT_EQ(fragmented.estimated_memory_usage(kTotalMorePrecise),
             sizeof(turbo::Cord) + sizeof(CordRepBtree) + flat_internal_usage);
 
         // This is a case where kTotal produces an overestimate:
-        EXPECT_EQ(fragmented.EstimatedMemoryUsage(),
+        EXPECT_EQ(fragmented.estimated_memory_usage(),
             sizeof(turbo::Cord) + sizeof(CordRepBtree) + 2 * flat_internal_usage);
     }
 
@@ -2180,21 +2180,21 @@ namespace {
         // Construct `fragmented` with two references into the same
         // underlying buffer shared with `flat`.
         //
-        // This time, each reference is through a Subcord():
+        // This time, each reference is through a subcord():
         turbo::Cord fragmented;
-        fragmented.Append(flat.Subcord(1, kChunkSize - 2));
-        fragmented.Append(flat.Subcord(1, kChunkSize - 2));
+        fragmented.append(flat.subcord(1, kChunkSize - 2));
+        fragmented.append(flat.subcord(1, kChunkSize - 2));
 
         // Memory usage of `flat`, minus the top-level Cord object:
-        const size_t flat_internal_usage = flat.EstimatedMemoryUsage() - sizeof(turbo::Cord);
+        const size_t flat_internal_usage = flat.estimated_memory_usage() - sizeof(turbo::Cord);
 
         // `fragmented` holds a Cord and a CordRepBtree. That tree points to two
         // CordRepSubstrings, each pointing at flat's internals.
-        EXPECT_EQ(fragmented.EstimatedMemoryUsage(kTotalMorePrecise),
+        EXPECT_EQ(fragmented.estimated_memory_usage(kTotalMorePrecise),
             sizeof(turbo::Cord) + sizeof(CordRepBtree) + 2 * sizeof(CordRepSubstring) + flat_internal_usage);
 
         // This is a case where kTotal produces an overestimate:
-        EXPECT_EQ(fragmented.EstimatedMemoryUsage(),
+        EXPECT_EQ(fragmented.estimated_memory_usage(),
             sizeof(turbo::Cord) + sizeof(CordRepBtree) + 2 * sizeof(CordRepSubstring) + 2 * flat_internal_usage);
     }
 } // namespace
@@ -2204,13 +2204,13 @@ TEST_P(CordTest, Concat_Append) {
     // Create a rep of type CONCAT
     turbo::Cord s1("foobarbarbarbarbar");
     MaybeHarden(s1);
-    s1.Append("abcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefg");
+    s1.append("abcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefg");
     size_t size = s1.size();
 
     // Create a copy of s1 and append to it.
     turbo::Cord s2 = s1;
     MaybeHarden(s2);
-    s2.Append("x");
+    s2.append("x");
 
     // 7465150 modifies s1 when it shouldn't.
     EXPECT_EQ(s1.size(), size);
@@ -2218,8 +2218,8 @@ TEST_P(CordTest, Concat_Append) {
 }
 
 TEST_P(CordTest, DiabolicalGrowth) {
-    // This test exercises a diabolical Append(<one char>) on a cord, making the
-    // cord shared before each Append call resulting in a terribly fragmented
+    // This test exercises a diabolical append(<one char>) on a cord, making the
+    // cord shared before each append call resulting in a terribly fragmented
     // resulting cord.
     RandomEngine rng(GTEST_FLAG_GET(random_seed));
     const std::string expected = RandomLowercaseString(&rng, 5000);
@@ -2227,13 +2227,13 @@ TEST_P(CordTest, DiabolicalGrowth) {
     for (char c : expected) {
         turbo::Cord shared(cord);
         EXPECT_THAT(cord, testing::Eq(shared));
-        cord.Append(std::string_view(&c, 1));
+        cord.append(std::string_view(&c, 1));
         MaybeHarden(cord);
     }
     std::string value;
-    turbo::CopyCordToString(cord, &value);
+    turbo::copy_cord_to_string(cord, &value);
     EXPECT_EQ(value, expected);
-    KLOG(INFO) << "Diabolical size allocated = " << cord.EstimatedMemoryUsage();
+    KLOG(INFO) << "Diabolical size allocated = " << cord.estimated_memory_usage();
 }
 
 // The following tests check support for >4GB cords in 64-bit binaries, and
@@ -2246,7 +2246,7 @@ static turbo::Cord MakeHuge(std::string_view prefix) {
     if (sizeof(size_t) > 4) {
         // In 64-bit binaries, test 64-bit Cord support.
         const size_t size = static_cast<size_t>(std::numeric_limits<uint32_t>::max()) + 314;
-        cord.Append(turbo::MakeCordFromExternal(
+        cord.append(turbo::make_cord_from_external(
             std::string_view(prefix.data(), size),
             [](std::string_view s) { DoNothing(s, nullptr); }));
     } else {
@@ -2255,14 +2255,14 @@ static turbo::Cord MakeHuge(std::string_view prefix) {
         // However std::string_view does not allow lengths >= (1u<<31), so we need
         // to append in two parts;
         const size_t s1 = (1u << 31) - 1;
-        // For shorter cord, `Append` copies the data rather than allocating a new
+        // For shorter cord, `append` copies the data rather than allocating a new
         // node. The threshold is currently set to 511, so `s2` needs to be bigger
         // to not trigger the copy.
         const size_t s2 = 600;
-        cord.Append(turbo::MakeCordFromExternal(
+        cord.append(turbo::make_cord_from_external(
             std::string_view(prefix.data(), s1),
             [](std::string_view s) { DoNothing(s, nullptr); }));
-        cord.Append(turbo::MakeCordFromExternal(
+        cord.append(turbo::make_cord_from_external(
             std::string_view("", s2),
             [](std::string_view s) { DoNothing(s, nullptr); }));
     }
@@ -2274,16 +2274,16 @@ TEST_P(CordTest, HugeCord) {
     MaybeHarden(cord);
 
     const size_t acceptable_delta = 100 + (UseCrc() ? sizeof(turbo::cord_internal::CordRepCrc) : 0);
-    EXPECT_LE(cord.size(), cord.EstimatedMemoryUsage());
-    EXPECT_GE(cord.size() + acceptable_delta, cord.EstimatedMemoryUsage());
+    EXPECT_LE(cord.size(), cord.estimated_memory_usage());
+    EXPECT_GE(cord.size() + acceptable_delta, cord.estimated_memory_usage());
 }
 
-// Tests that Append() works ok when handed a self reference
+// Tests that append() works ok when handed a self reference
 TEST_P(CordTest, AppendSelf) {
     // Test the empty case.
     turbo::Cord empty;
     MaybeHarden(empty);
-    empty.Append(empty);
+    empty.append(empty);
     ASSERT_EQ(empty, "");
 
     // We run the test until data is ~16K
@@ -2292,7 +2292,7 @@ TEST_P(CordTest, AppendSelf) {
     turbo::Cord data(control_data);
     while (control_data.length() < 0x4000) {
         MaybeHarden(data);
-        data.Append(data);
+        data.append(data);
         control_data.append(control_data);
         ASSERT_EQ(control_data, data);
     }
@@ -2378,7 +2378,7 @@ static void VerifyChunkIterator(const turbo::Cord& cord,
     EXPECT_EQ(cord.chunk_begin() == cord.chunk_end(), cord.empty()) << cord;
     EXPECT_EQ(cord.chunk_begin() != cord.chunk_end(), !cord.empty());
 
-    turbo::Cord::ChunkRange range = cord.Chunks();
+    turbo::Cord::ChunkRange range = cord.chunks();
     EXPECT_EQ(range.begin() == range.end(), cord.empty());
     EXPECT_EQ(range.begin() != range.end(), !cord.empty());
 
@@ -2438,12 +2438,12 @@ TEST_P(CordTest, CordChunkIteratorOperations) {
         8);
 
     turbo::Cord reused_nodes_cord(std::string(40, 'c'));
-    reused_nodes_cord.Prepend(turbo::Cord(std::string(40, 'b')));
+    reused_nodes_cord.prepend(turbo::Cord(std::string(40, 'b')));
     MaybeHarden(reused_nodes_cord);
-    reused_nodes_cord.Prepend(turbo::Cord(std::string(40, 'a')));
+    reused_nodes_cord.prepend(turbo::Cord(std::string(40, 'a')));
     size_t expected_chunks = 3;
     for (int i = 0; i < 8; ++i) {
-        reused_nodes_cord.Prepend(reused_nodes_cord);
+        reused_nodes_cord.prepend(reused_nodes_cord);
         MaybeHarden(reused_nodes_cord);
         expected_chunks *= 2;
         VerifyChunkIterator(reused_nodes_cord, expected_chunks);
@@ -2453,7 +2453,7 @@ TEST_P(CordTest, CordChunkIteratorOperations) {
     turbo::Cord flat_cord(RandomLowercaseString(&rng, 256));
     turbo::Cord subcords;
     for (int i = 0; i < 128; ++i)
-        subcords.Prepend(flat_cord.Subcord(i, 128));
+        subcords.prepend(flat_cord.subcord(i, 128));
     VerifyChunkIterator(subcords, 128);
 }
 
@@ -2464,27 +2464,27 @@ TEST_P(CordTest, AdvanceAndReadOnDataEdge) {
         SCOPED_TRACE(as_flat ? "Flat" : "External");
 
         turbo::Cord cord = as_flat ? turbo::Cord(data)
-                                   : turbo::MakeCordFromExternal(data, [](std::string_view) { });
+                                   : turbo::make_cord_from_external(data, [](std::string_view) { });
         auto it = cord.Chars().begin();
 #if !defined(NDEBUG) || KUMO_OPTION_HARDENED
-        EXPECT_DEATH_IF_SUPPORTED(cord.AdvanceAndRead(&it, 2001), ".*");
+        EXPECT_DEATH_IF_SUPPORTED(cord.advance_and_read(&it, 2001), ".*");
 #endif
 
         it = cord.Chars().begin();
-        turbo::Cord frag = cord.AdvanceAndRead(&it, 2000);
+        turbo::Cord frag = cord.advance_and_read(&it, 2000);
         EXPECT_EQ(frag, data);
         EXPECT_TRUE(it == cord.Chars().end());
 
         it = cord.Chars().begin();
-        frag = cord.AdvanceAndRead(&it, 200);
+        frag = cord.advance_and_read(&it, 200);
         EXPECT_EQ(frag, data.substr(0, 200));
         EXPECT_FALSE(it == cord.Chars().end());
 
-        frag = cord.AdvanceAndRead(&it, 1500);
+        frag = cord.advance_and_read(&it, 1500);
         EXPECT_EQ(frag, data.substr(200, 1500));
         EXPECT_FALSE(it == cord.Chars().end());
 
-        frag = cord.AdvanceAndRead(&it, 300);
+        frag = cord.advance_and_read(&it, 300);
         EXPECT_EQ(frag, data.substr(1700, 300));
         EXPECT_TRUE(it == cord.Chars().end());
     }
@@ -2497,30 +2497,30 @@ TEST_P(CordTest, AdvanceAndReadOnSubstringDataEdge) {
         SCOPED_TRACE(as_flat ? "Flat" : "External");
 
         turbo::Cord cord = as_flat ? turbo::Cord(data)
-                                   : turbo::MakeCordFromExternal(data, [](std::string_view) { });
-        cord = cord.Subcord(200, 2000);
+                                   : turbo::make_cord_from_external(data, [](std::string_view) { });
+        cord = cord.subcord(200, 2000);
         const std::string substr = data.substr(200, 2000);
 
         auto it = cord.Chars().begin();
 #if !defined(NDEBUG) || KUMO_OPTION_HARDENED
-        EXPECT_DEATH_IF_SUPPORTED(cord.AdvanceAndRead(&it, 2001), ".*");
+        EXPECT_DEATH_IF_SUPPORTED(cord.advance_and_read(&it, 2001), ".*");
 #endif
 
         it = cord.Chars().begin();
-        turbo::Cord frag = cord.AdvanceAndRead(&it, 2000);
+        turbo::Cord frag = cord.advance_and_read(&it, 2000);
         EXPECT_EQ(frag, substr);
         EXPECT_TRUE(it == cord.Chars().end());
 
         it = cord.Chars().begin();
-        frag = cord.AdvanceAndRead(&it, 200);
+        frag = cord.advance_and_read(&it, 200);
         EXPECT_EQ(frag, substr.substr(0, 200));
         EXPECT_FALSE(it == cord.Chars().end());
 
-        frag = cord.AdvanceAndRead(&it, 1500);
+        frag = cord.advance_and_read(&it, 1500);
         EXPECT_EQ(frag, substr.substr(200, 1500));
         EXPECT_FALSE(it == cord.Chars().end());
 
-        frag = cord.AdvanceAndRead(&it, 300);
+        frag = cord.advance_and_read(&it, 300);
         EXPECT_EQ(frag, substr.substr(1700, 300));
         EXPECT_TRUE(it == cord.Chars().end());
     }
@@ -2565,9 +2565,9 @@ static void VerifyCharIterator(const turbo::Cord& cord) {
     turbo::Cord::CharRange range = cord.Chars();
     EXPECT_EQ(range.begin() == range.end(), cord.empty());
     EXPECT_EQ(range.begin() != range.end(), !cord.empty());
-    EXPECT_EQ(turbo::Cord::Distance(range.begin(), range.end()),
+    EXPECT_EQ(turbo::Cord::distance(range.begin(), range.end()),
         static_cast<ptrdiff_t>(cord.size()));
-    EXPECT_EQ(turbo::Cord::Distance(range.end(), range.begin()),
+    EXPECT_EQ(turbo::Cord::distance(range.end(), range.begin()),
         -static_cast<ptrdiff_t>(cord.size()));
 
     size_t i = 0;
@@ -2597,31 +2597,31 @@ static void VerifyCharIterator(const turbo::Cord& cord) {
         EXPECT_EQ(n_equal_iterators, 1);
 
         turbo::Cord::CharIterator advance_iter = range.begin();
-        turbo::Cord::Advance(&advance_iter, i);
+        turbo::Cord::advance(&advance_iter, i);
         EXPECT_EQ(pre_iter, advance_iter);
-        EXPECT_EQ(turbo::Cord::Distance(range.begin(), advance_iter),
+        EXPECT_EQ(turbo::Cord::distance(range.begin(), advance_iter),
             static_cast<ptrdiff_t>(i));
 
         advance_iter = range.begin();
-        EXPECT_EQ(turbo::Cord::AdvanceAndRead(&advance_iter, i), cord.Subcord(0, i));
+        EXPECT_EQ(turbo::Cord::advance_and_read(&advance_iter, i), cord.subcord(0, i));
         EXPECT_EQ(pre_iter, advance_iter);
-        EXPECT_EQ(turbo::Cord::Distance(range.begin(), advance_iter),
+        EXPECT_EQ(turbo::Cord::distance(range.begin(), advance_iter),
             static_cast<ptrdiff_t>(i));
 
         advance_iter = pre_iter;
-        turbo::Cord::Advance(&advance_iter, cord.size() - i);
+        turbo::Cord::advance(&advance_iter, cord.size() - i);
         EXPECT_EQ(range.end(), advance_iter);
-        EXPECT_EQ(turbo::Cord::Distance(range.begin(), advance_iter),
+        EXPECT_EQ(turbo::Cord::distance(range.begin(), advance_iter),
             static_cast<ptrdiff_t>(cord.size()));
-        EXPECT_EQ(turbo::Cord::Distance(advance_iter, range.end()), 0);
+        EXPECT_EQ(turbo::Cord::distance(advance_iter, range.end()), 0);
 
         advance_iter = pre_iter;
-        EXPECT_EQ(turbo::Cord::AdvanceAndRead(&advance_iter, cord.size() - i),
-            cord.Subcord(i, cord.size() - i));
+        EXPECT_EQ(turbo::Cord::advance_and_read(&advance_iter, cord.size() - i),
+            cord.subcord(i, cord.size() - i));
         EXPECT_EQ(range.end(), advance_iter);
-        EXPECT_EQ(turbo::Cord::Distance(range.begin(), advance_iter),
+        EXPECT_EQ(turbo::Cord::distance(range.begin(), advance_iter),
             static_cast<ptrdiff_t>(cord.size()));
-        EXPECT_EQ(turbo::Cord::Distance(advance_iter, range.end()), 0);
+        EXPECT_EQ(turbo::Cord::distance(advance_iter, range.end()), 0);
 
         ++i;
         ++pre_iter;
@@ -2632,13 +2632,13 @@ static void VerifyCharIterator(const turbo::Cord& cord) {
     EXPECT_TRUE(post_iter == cord.char_end()); // NOLINT
 
     turbo::Cord::CharIterator zero_advanced_end = cord.char_end();
-    turbo::Cord::Advance(&zero_advanced_end, 0);
+    turbo::Cord::advance(&zero_advanced_end, 0);
     EXPECT_EQ(zero_advanced_end, cord.char_end());
 
     turbo::Cord::CharIterator it = cord.char_begin();
-    for (std::string_view chunk : cord.Chunks()) {
+    for (std::string_view chunk : cord.chunks()) {
         while (!chunk.empty()) {
-            EXPECT_EQ(turbo::Cord::ChunkRemaining(it), chunk);
+            EXPECT_EQ(turbo::Cord::chunk_remaining(it), chunk);
             chunk.remove_prefix(1);
             ++it;
         }
@@ -2662,10 +2662,10 @@ TEST_P(CordTest, CharIteratorOperations) {
             "testing ", "character ", "iteration." })));
 
     turbo::Cord reused_nodes_cord("ghi");
-    reused_nodes_cord.Prepend(turbo::Cord("def"));
-    reused_nodes_cord.Prepend(turbo::Cord("abc"));
+    reused_nodes_cord.prepend(turbo::Cord("def"));
+    reused_nodes_cord.prepend(turbo::Cord("abc"));
     for (int i = 0; i < 4; ++i) {
-        reused_nodes_cord.Prepend(reused_nodes_cord);
+        reused_nodes_cord.prepend(reused_nodes_cord);
         MaybeHarden(reused_nodes_cord);
         VerifyCharIterator(reused_nodes_cord);
     }
@@ -2674,7 +2674,7 @@ TEST_P(CordTest, CharIteratorOperations) {
     turbo::Cord flat_cord(RandomLowercaseString(&rng, 256));
     turbo::Cord subcords;
     for (int i = 0; i < 4; ++i) {
-        subcords.Prepend(flat_cord.Subcord(16 * i, 128));
+        subcords.prepend(flat_cord.subcord(16 * i, 128));
         MaybeHarden(subcords);
     }
     VerifyCharIterator(subcords);
@@ -2698,7 +2698,7 @@ TEST_P(CordTest, CharIteratorAdvanceAndRead) {
     turbo::Cord cord;
     for (int i = 0; i < kBlocks; ++i) {
         const std::string block = data.substr(i * kBlockSize, kBlockSize);
-        cord.Append(turbo::Cord(block));
+        cord.append(turbo::Cord(block));
     }
 
     MaybeHarden(cord);
@@ -2710,17 +2710,17 @@ TEST_P(CordTest, CharIteratorAdvanceAndRead) {
         size_t it_advanced = 0;
         size_t offset = 0;
         while (offset < data.length()) {
-            EXPECT_EQ(turbo::Cord::Distance(it, cord.char_end()), it_remaining);
-            EXPECT_EQ(turbo::Cord::Distance(cord.char_begin(), it), it_advanced);
+            EXPECT_EQ(turbo::Cord::distance(it, cord.char_end()), it_remaining);
+            EXPECT_EQ(turbo::Cord::distance(cord.char_begin(), it), it_advanced);
             const size_t n = std::min<size_t>(data.length() - offset, chunk_size);
-            turbo::Cord chunk = cord.AdvanceAndRead(&it, n);
+            turbo::Cord chunk = cord.advance_and_read(&it, n);
             ASSERT_EQ(chunk.size(), n);
-            ASSERT_EQ(chunk.Compare(data.substr(offset, n)), 0);
+            ASSERT_EQ(chunk.compare(data.substr(offset, n)), 0);
             offset += n;
             it_remaining -= n;
             it_advanced += n;
-            EXPECT_EQ(turbo::Cord::Distance(it, cord.char_end()), it_remaining);
-            EXPECT_EQ(turbo::Cord::Distance(cord.char_begin(), it), it_advanced);
+            EXPECT_EQ(turbo::Cord::distance(it, cord.char_end()), it_remaining);
+            EXPECT_EQ(turbo::Cord::distance(cord.char_begin(), it), it_advanced);
         }
     }
 }
@@ -2733,7 +2733,7 @@ TEST_P(CordTest, StreamingOutput) {
     EXPECT_EQ("A small fragmented Cord.", output.str());
 }
 
-TEST_P(CordTest, ForEachChunk) {
+TEST_P(CordTest, for_each_chunk) {
     for (int num_elements : { 1, 10, 200 }) {
         SCOPED_TRACE(num_elements);
         std::vector<std::string> cord_chunks;
@@ -2744,7 +2744,7 @@ TEST_P(CordTest, ForEachChunk) {
         MaybeHarden(c);
 
         std::vector<std::string> iterated_chunks;
-        turbo::CordTestPeer::ForEachChunk(c,
+        turbo::CordTestPeer::for_each_chunk(c,
             [&iterated_chunks](std::string_view sv) {
                 iterated_chunks.emplace_back(sv);
             });
@@ -2789,8 +2789,8 @@ TEST_P(CordTest, Hardening) {
     MaybeHarden(cord);
 
     // These statement should abort the program in all builds modes.
-    EXPECT_DEATH_IF_SUPPORTED(cord.RemovePrefix(6), "");
-    EXPECT_DEATH_IF_SUPPORTED(cord.RemoveSuffix(6), "");
+    EXPECT_DEATH_IF_SUPPORTED(cord.remove_prefix(6), "");
+    EXPECT_DEATH_IF_SUPPORTED(cord.remove_suffix(6), "");
 
     bool test_hardening = false;
     KUMO_HARDENING_ASSERT([&]() {
@@ -2825,7 +2825,7 @@ TEST_P(CordTest, BtreeHostileSplitInsertJoin) {
     turbo::Cord buffer(data);
     turbo::Cord cord;
     for (int i = 0; i < 1000000; ++i) {
-        cord.Append(buffer);
+        cord.append(buffer);
     }
 
     for (int j = 0; j < 1000; ++j) {
@@ -2833,19 +2833,19 @@ TEST_P(CordTest, BtreeHostileSplitInsertJoin) {
         size_t offset = std::uniform_int_distribution<size_t>(0u, cord.size())(bitgen);
         size_t length = std::uniform_int_distribution<size_t>(100u, data.size())(bitgen);
         if (cord.size() == offset) {
-            cord.Append(std::string_view(data.data(), length));
+            cord.append(std::string_view(data.data(), length));
         } else {
             turbo::Cord suffix;
             if (offset + length < cord.size()) {
                 suffix = cord;
-                suffix.RemovePrefix(offset + length);
+                suffix.remove_prefix(offset + length);
             }
             if (cord.size() > offset) {
-                cord.RemoveSuffix(cord.size() - offset);
+                cord.remove_suffix(cord.size() - offset);
             }
-            cord.Append(std::string_view(data.data(), length));
+            cord.append(std::string_view(data.data(), length));
             if (!suffix.empty()) {
-                cord.Append(suffix);
+                cord.append(suffix);
             }
         }
     }
@@ -2894,7 +2894,7 @@ void TestAfterExit(Str) {
         turbo::Cord copy = cord;
         std::string expected_copy(expected);
         for (int i = 0; i < 10; ++i) {
-            copy.Append(cord);
+            copy.append(cord);
             turbo::str_append(&expected_copy, expected);
             EXPECT_EQ(copy, expected_copy);
         }
@@ -2966,18 +2966,18 @@ PopulatedCordFactory cord_factories[] = {
   {"external", [] {
     // A cheat: we are using a string literal as the external storage, so a
     // no-op releaser is correct here.
-    return turbo::MakeCordFromExternal("abcde External!", []{});
+    return turbo::make_cord_from_external("abcde External!", []{});
   }},
   {"external substring", [] {
     // A cheat: we are using a string literal as the external storage, so a
     // no-op releaser is correct here.
-    turbo::Cord ext = turbo::MakeCordFromExternal("-abcde External!", []{});
+    turbo::Cord ext = turbo::make_cord_from_external("-abcde External!", []{});
     return turbo::CordTestPeer::MakeSubstring(ext, 1, ext.size() - 1);
   }},
   {"substring", [] {
     turbo::Cord flat(turbo::str_cat("-abcde", std::string(1000, 'x')));
     flat.Flatten();
-    return flat.Subcord(1, 998);
+    return flat.subcord(1, 998);
   }},
   {"fragmented", [] {
     std::string fragment = turbo::str_cat("abcde", std::string(195, 'x'));
@@ -3013,42 +3013,42 @@ PopulatedCordFactory cord_factories[] = {
     // clang-format off
 // This array is constant-initialized in conformant compilers.
 CordMutator cord_mutators[] = {
-  {"clear", [](turbo::Cord& c) { c.Clear(); }},
+  {"clear", [](turbo::Cord& c) { c.clear(); }},
   {"overwrite", [](turbo::Cord& c) { c = "overwritten"; }},
   {
     "append string",
-    [](turbo::Cord& c) { c.Append("0123456789"); },
-    [](turbo::Cord& c) { c.RemoveSuffix(10); }
+    [](turbo::Cord& c) { c.append("0123456789"); },
+    [](turbo::Cord& c) { c.remove_suffix(10); }
   },
   {
     "append cord",
     [](turbo::Cord& c) {
-      c.Append(turbo::MakeFragmentedCord({"12345", "67890"}));
+      c.append(turbo::MakeFragmentedCord({"12345", "67890"}));
     },
-    [](turbo::Cord& c) { c.RemoveSuffix(10); }
+    [](turbo::Cord& c) { c.remove_suffix(10); }
   },
   {
     "append checksummed cord",
     [](turbo::Cord& c) {
       turbo::Cord to_append = turbo::MakeFragmentedCord({"12345", "67890"});
       to_append.SetExpectedChecksum(999);
-      c.Append(to_append);
+      c.append(to_append);
     },
-    [](turbo::Cord& c) { c.RemoveSuffix(10); }
+    [](turbo::Cord& c) { c.remove_suffix(10); }
   },
   {
     "append self",
-    [](turbo::Cord& c) { c.Append(c); },
-    [](turbo::Cord& c) { c.RemoveSuffix(c.size() / 2); }
+    [](turbo::Cord& c) { c.append(c); },
+    [](turbo::Cord& c) { c.remove_suffix(c.size() / 2); }
   },
   {
     "append empty string",
-    [](turbo::Cord& c) { c.Append(""); },
+    [](turbo::Cord& c) { c.append(""); },
     [](turbo::Cord& c) { }
   },
   {
     "append empty cord",
-    [](turbo::Cord& c) { c.Append(turbo::Cord()); },
+    [](turbo::Cord& c) { c.append(turbo::Cord()); },
     [](turbo::Cord& c) { }
   },
   {
@@ -3056,39 +3056,39 @@ CordMutator cord_mutators[] = {
     [](turbo::Cord& c) {
       turbo::Cord to_append;
       to_append.SetExpectedChecksum(999);
-      c.Append(to_append);
+      c.append(to_append);
     },
     [](turbo::Cord& c) { }
   },
   {
     "prepend string",
-    [](turbo::Cord& c) { c.Prepend("9876543210"); },
-    [](turbo::Cord& c) { c.RemovePrefix(10); }
+    [](turbo::Cord& c) { c.prepend("9876543210"); },
+    [](turbo::Cord& c) { c.remove_prefix(10); }
   },
   {
     "prepend cord",
     [](turbo::Cord& c) {
-      c.Prepend(turbo::MakeFragmentedCord({"98765", "43210"}));
+      c.prepend(turbo::MakeFragmentedCord({"98765", "43210"}));
     },
-    [](turbo::Cord& c) { c.RemovePrefix(10); }
+    [](turbo::Cord& c) { c.remove_prefix(10); }
   },
   {
     "prepend checksummed cord",
     [](turbo::Cord& c) {
       turbo::Cord to_prepend = turbo::MakeFragmentedCord({"98765", "43210"});
       to_prepend.SetExpectedChecksum(999);
-      c.Prepend(to_prepend);
+      c.prepend(to_prepend);
     },
-    [](turbo::Cord& c) { c.RemovePrefix(10); }
+    [](turbo::Cord& c) { c.remove_prefix(10); }
   },
   {
     "prepend empty string",
-    [](turbo::Cord& c) { c.Prepend(""); },
+    [](turbo::Cord& c) { c.prepend(""); },
     [](turbo::Cord& c) { }
   },
   {
     "prepend empty cord",
-    [](turbo::Cord& c) { c.Prepend(turbo::Cord()); },
+    [](turbo::Cord& c) { c.prepend(turbo::Cord()); },
     [](turbo::Cord& c) { }
   },
   {
@@ -3096,20 +3096,20 @@ CordMutator cord_mutators[] = {
     [](turbo::Cord& c) {
       turbo::Cord to_prepend;
       to_prepend.SetExpectedChecksum(999);
-      c.Prepend(to_prepend);
+      c.prepend(to_prepend);
     },
     [](turbo::Cord& c) { }
   },
   {
     "prepend self",
-    [](turbo::Cord& c) { c.Prepend(c); },
-    [](turbo::Cord& c) { c.RemovePrefix(c.size() / 2); }
+    [](turbo::Cord& c) { c.prepend(c); },
+    [](turbo::Cord& c) { c.remove_prefix(c.size() / 2); }
   },
-  {"remove prefix", [](turbo::Cord& c) { c.RemovePrefix(c.size() / 2); }},
-  {"remove suffix", [](turbo::Cord& c) { c.RemoveSuffix(c.size() / 2); }},
-  {"remove 0-prefix", [](turbo::Cord& c) { c.RemovePrefix(0); }},
-  {"remove 0-suffix", [](turbo::Cord& c) { c.RemoveSuffix(0); }},
-  {"subcord", [](turbo::Cord& c) { c = c.Subcord(1, c.size() - 2); }},
+  {"remove prefix", [](turbo::Cord& c) { c.remove_prefix(c.size() / 2); }},
+  {"remove suffix", [](turbo::Cord& c) { c.remove_suffix(c.size() / 2); }},
+  {"remove 0-prefix", [](turbo::Cord& c) { c.remove_prefix(0); }},
+  {"remove 0-suffix", [](turbo::Cord& c) { c.remove_suffix(0); }},
+  {"subcord", [](turbo::Cord& c) { c = c.subcord(1, c.size() - 2); }},
   {
     "swap inline",
     [](turbo::Cord& c) {
@@ -3209,23 +3209,23 @@ TEST_P(CordTest, ExpectedChecksum) {
 
             EXPECT_EQ(cc3.size(), base_value_as_string.size());
             EXPECT_FALSE(cc3.empty());
-            EXPECT_EQ(cc3.Compare(base_value), 0);
-            EXPECT_EQ(cc3.Compare(base_value_as_string), 0);
-            EXPECT_EQ(cc3.Compare("wxyz"), -1);
-            EXPECT_EQ(cc3.Compare(turbo::Cord("wxyz")), -1);
-            EXPECT_EQ(cc3.Compare("aaaa"), 1);
-            EXPECT_EQ(cc3.Compare(turbo::Cord("aaaa")), 1);
-            EXPECT_EQ(turbo::Cord("wxyz").Compare(cc3), 1);
-            EXPECT_EQ(turbo::Cord("aaaa").Compare(cc3), -1);
+            EXPECT_EQ(cc3.compare(base_value), 0);
+            EXPECT_EQ(cc3.compare(base_value_as_string), 0);
+            EXPECT_EQ(cc3.compare("wxyz"), -1);
+            EXPECT_EQ(cc3.compare(turbo::Cord("wxyz")), -1);
+            EXPECT_EQ(cc3.compare("aaaa"), 1);
+            EXPECT_EQ(cc3.compare(turbo::Cord("aaaa")), 1);
+            EXPECT_EQ(turbo::Cord("wxyz").compare(cc3), 1);
+            EXPECT_EQ(turbo::Cord("aaaa").compare(cc3), -1);
             EXPECT_TRUE(cc3.starts_with("abcd"));
             EXPECT_EQ(std::string(cc3), base_value_as_string);
 
             std::string dest;
-            turbo::CopyCordToString(cc3, &dest);
+            turbo::copy_cord_to_string(cc3, &dest);
             EXPECT_EQ(dest, base_value_as_string);
 
             bool first_pass = true;
-            for (std::string_view chunk : cc3.Chunks()) {
+            for (std::string_view chunk : cc3.chunks()) {
                 if (first_pass) {
                     EXPECT_TRUE(turbo::starts_with(chunk, "abcde"));
                 }
@@ -3242,12 +3242,12 @@ TEST_P(CordTest, ExpectedChecksum) {
             EXPECT_EQ(*cc3.char_begin(), 'a');
 
             auto char_it = cc3.char_begin();
-            turbo::Cord::Advance(&char_it, 2);
-            EXPECT_EQ(turbo::Cord::AdvanceAndRead(&char_it, 2), "cd");
+            turbo::Cord::advance(&char_it, 2);
+            EXPECT_EQ(turbo::Cord::advance_and_read(&char_it, 2), "cd");
             EXPECT_EQ(*char_it, 'e');
             char_it = cc3.char_begin();
-            turbo::Cord::Advance(&char_it, 2);
-            EXPECT_TRUE(turbo::starts_with(turbo::Cord::ChunkRemaining(char_it), "cde"));
+            turbo::Cord::advance(&char_it, 2);
+            EXPECT_TRUE(turbo::starts_with(turbo::Cord::chunk_remaining(char_it), "cde"));
 
             EXPECT_EQ(cc3[0], 'a');
             EXPECT_EQ(cc3[4], 'e');
@@ -3322,20 +3322,20 @@ TEST_P(CordTest, ChecksummedEmptyCord) {
     EXPECT_EQ(cc3, "");
     EXPECT_EQ(cc3, turbo::Cord());
     EXPECT_EQ(cc3.size(), 0);
-    EXPECT_EQ(cc3.Compare(turbo::Cord()), 0);
-    EXPECT_EQ(cc3.Compare(c1), 0);
-    EXPECT_EQ(cc3.Compare(cc3), 0);
-    EXPECT_EQ(cc3.Compare(""), 0);
-    EXPECT_EQ(cc3.Compare("wxyz"), -1);
-    EXPECT_EQ(cc3.Compare(turbo::Cord("wxyz")), -1);
-    EXPECT_EQ(turbo::Cord("wxyz").Compare(cc3), 1);
+    EXPECT_EQ(cc3.compare(turbo::Cord()), 0);
+    EXPECT_EQ(cc3.compare(c1), 0);
+    EXPECT_EQ(cc3.compare(cc3), 0);
+    EXPECT_EQ(cc3.compare(""), 0);
+    EXPECT_EQ(cc3.compare("wxyz"), -1);
+    EXPECT_EQ(cc3.compare(turbo::Cord("wxyz")), -1);
+    EXPECT_EQ(turbo::Cord("wxyz").compare(cc3), 1);
     EXPECT_EQ(std::string(cc3), "");
 
     std::string dest;
-    turbo::CopyCordToString(cc3, &dest);
+    turbo::copy_cord_to_string(cc3, &dest);
     EXPECT_EQ(dest, "");
 
-    for (std::string_view chunk : cc3.Chunks()) { // NOLINT(unreachable loop)
+    for (std::string_view chunk : cc3.chunks()) { // NOLINT(unreachable loop)
         static_cast<void>(chunk);
         GTEST_FAIL() << "no chunks expected";
     }
@@ -3369,14 +3369,14 @@ size_t FalseReport(const turbo::Cord& a, bool f) {
 TEST(CordSanitizerTest, SanitizesCordFalseReport) {
     turbo::Cord c;
     for (int i = 0; i < 1000; ++i)
-        c.Append("a");
+        c.append("a");
     FalseReport(c, false);
 }
 
 TEST(CrcCordTest, ChecksummedEmptyCordEstimateMemoryUsage) {
     turbo::Cord cord;
     cord.SetExpectedChecksum(0);
-    EXPECT_NE(cord.EstimatedMemoryUsage(), 0);
+    EXPECT_NE(cord.estimated_memory_usage(), 0);
 }
 
 TEST(CordThreeWayComparisonTest, CompareCords) {

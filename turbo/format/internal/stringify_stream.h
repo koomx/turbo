@@ -49,8 +49,8 @@
 #include <type_traits>
 #include <utility>
 
-#include <turbo/macros/config.h>
 #include <string_view>
+#include <turbo/macros/config.h>
 
 namespace turbo {
     namespace strings_internal {
@@ -58,13 +58,14 @@ namespace turbo {
         public:
             // Constructor: adapts (but does not take ownership of) some underlying
             // std::ostream instance.
-            explicit StringifyStream(std::ostream &os) : sink_{os} {
+            explicit StringifyStream(std::ostream& os)
+                : sink_ { os } {
             }
 
             // Stream insertion: delegate to an overload of operator<< if defined for type
             // T, otherwise fall back to turbo_stringify for T.
-            template<typename T>
-            friend StringifyStream &operator<<(StringifyStream &stream, const T &t) {
+            template <typename T>
+            friend StringifyStream& operator<<(StringifyStream& stream, const T& t) {
                 if constexpr (HasStreamInsertion<T>::value) {
                     stream.sink_.os << t;
                 } else {
@@ -75,14 +76,14 @@ namespace turbo {
 
             // Rvalue-ref overload, required when the StringifyStream parameter hasn't
             // been bound to a variable.
-            template<typename T>
-            friend StringifyStream &operator<<(StringifyStream &&stream, const T &t) {
+            template <typename T>
+            friend StringifyStream& operator<<(StringifyStream&& stream, const T& t) {
                 return stream << t;
             }
 
             // Overload for things like << std::endl which need an explicit type in order
             // to resolve to the appropriate overload or template instantiation.
-            StringifyStream &operator<<(std::ostream & (*func)(std::ostream &)) {
+            StringifyStream& operator<<(std::ostream& (*func)(std::ostream&)) {
                 sink_.os << func;
                 return *this;
             }
@@ -90,28 +91,28 @@ namespace turbo {
         private:
             // Abseil "stringify sink" concept (stringify_sink.h)
             struct Sink {
-                std::ostream &os;
-                void Append(size_t count, char ch) { os << std::string(count, ch); }
-                void Append(std::string_view v) { os << v; }
+                std::ostream& os;
+                void append(size_t count, char ch) { os << std::string(count, ch); }
+                void append(std::string_view v) { os << v; }
 
-                friend void TurboFormatFlush(Sink *sink, std::string_view v) {
-                    sink->Append(v);
+                friend void turbo_format_flush(Sink* sink, std::string_view v) {
+                    sink->append(v);
                 }
             } sink_;
 
             // SFINAE helper to identify types with a defined operator<< overload.
-            template<typename T, typename = void>
+            template <typename T, typename = void>
             struct HasStreamInsertion : std::false_type {
             };
 
-            template<typename T>
+            template <typename T>
             struct HasStreamInsertion<T,
-                        std::void_t<decltype(std::declval<std::ostream &>()
-                                             << std::declval<const T &>())> >
-                    : std::true_type {
+                std::void_t<decltype(std::declval<std::ostream&>()
+                    << std::declval<const T&>())>>
+                : std::true_type {
             };
         };
     } // namespace strings_internal
 } // namespace turbo
 
-#endif  // TURBO_STRINGS_INTERNAL_STRINGIFY_STREAM_H_
+#endif // TURBO_STRINGS_INTERNAL_STRINGIFY_STREAM_H_

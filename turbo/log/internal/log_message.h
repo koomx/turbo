@@ -368,19 +368,19 @@ namespace turbo {
             explicit StringifySink(LogMessage &message) : message_(message) {
             }
 
-            void Append(size_t count, char ch) {
+            void append(size_t count, char ch) {
                 message_.copy_to_encoded_buffer<LogMessage::StringType::kNotLiteral>(ch,
                     count);
             }
 
-            void Append(std::string_view v) {
+            void append(std::string_view v) {
                 message_.copy_to_encoded_buffer<LogMessage::StringType::kNotLiteral>(v);
             }
 
             // For types that implement `turbo_stringify` using `turbo::str_printf_to()`.
-            friend void TurboFormatFlush(StringifySink * turbo_nonnull sink,
+            friend void turbo_format_flush(StringifySink * turbo_nonnull sink,
                                          std::string_view v) {
-                sink->Append(v);
+                sink->append(v);
             }
 
         private:
