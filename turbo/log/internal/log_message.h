@@ -239,7 +239,7 @@ namespace turbo {
 
             // This prevents non-const `char[]` arrays from looking like literals.
             template<int SIZE>
-            LogMessage &operator<<(char (&buf)[SIZE]) KUMO_ATTRIBUTE_NOINLINE;
+           KUMO_ATTRIBUTE_NOINLINE LogMessage &operator<<(char (&buf)[SIZE]);
 
             // `wchar_t[SIZE]` is handled by `operator<< <const wchar_t*>`.
 
@@ -247,7 +247,7 @@ namespace turbo {
             // Types that don't support `turbo_stringify()` but do support streaming into a
             // `std::ostream&` are serialized that way.
             template<typename T>
-            LogMessage &operator<<(const T &v) KUMO_ATTRIBUTE_NOINLINE;
+           KUMO_ATTRIBUTE_NOINLINE LogMessage &operator<<(const T &v);
 
             // Dispatches the completed `turbo::LogEntry` to applicable `turbo::LogSink`s.
             void flush();
@@ -307,21 +307,19 @@ namespace turbo {
             };
 
             template<StringType str_type>
-            void copy_to_encoded_buffer(std::string_view str) KUMO_ATTRIBUTE_NOINLINE;
+           KUMO_ATTRIBUTE_NOINLINE void copy_to_encoded_buffer(std::string_view str);
 
             template<StringType str_type>
-            void copy_to_encoded_buffer(char ch, size_t num) KUMO_ATTRIBUTE_NOINLINE;
+           KUMO_ATTRIBUTE_NOINLINE void copy_to_encoded_buffer(char ch, size_t num);
 
             template<StringType str_type>
-            void copy_to_encoded_buffer(std::wstring_view str) KUMO_ATTRIBUTE_NOINLINE;
+           KUMO_ATTRIBUTE_NOINLINE void copy_to_encoded_buffer(std::wstring_view str);
 
             // Copies `field` to the encoded buffer, then appends `str` after it
             // (truncating `str` if necessary to fit).
             template<StringType str_type>
-            void copy_to_encoded_buffer_with_structured_proto_field(StructuredProtoField field,
-                                                                    std::string_view str)
-
-            KUMO_ATTRIBUTE_NOINLINE;
+           KUMO_ATTRIBUTE_NOINLINE void copy_to_encoded_buffer_with_structured_proto_field(StructuredProtoField field,
+                                                                    std::string_view str);
 
             // Returns `true` if the message is fatal or enabled debug-fatal.
             bool is_fatal() const;

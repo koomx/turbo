@@ -295,8 +295,8 @@ class Symbolizer {
     memcpy(dst, s, len + 1);
     return dst;
   }
-  ObjFile *FindObjFile(const void *const start,
-                       size_t size) KUMO_ATTRIBUTE_NOINLINE;
+  KUMO_ATTRIBUTE_NOINLINE ObjFile *FindObjFile(const void *const start,
+                       size_t size);
   static bool RegisterObjFile(const char *filename,
                               const void *const start_addr,
                               const void *const end_addr, uint64_t offset,

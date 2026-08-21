@@ -26,6 +26,8 @@
 #include <cstdint>
 #include <string>
 #include <string_view>
+#include <exception>
+#include <stdexcept>
 
 #if defined(__SSE2__)
 #include <emmintrin.h>

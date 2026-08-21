@@ -446,8 +446,8 @@ KUMO_ATTRIBUTE_PURE_FUNCTION const char * turbo_nonnull make_check_fail_string(
 
         // Build the error message string.  Specify no inlining for code size.
         template<typename T1, typename T2>
-KUMO_ATTRIBUTE_RETURNS_NONNULL const char * turbo_nonnull make_check_op_string(
-            T1 v1, T2 v2, const char * turbo_nonnull exprtext) KUMO_ATTRIBUTE_NOINLINE;
+        KUMO_ATTRIBUTE_NOINLINE KUMO_ATTRIBUTE_RETURNS_NONNULL const char * turbo_nonnull make_check_op_string(
+            T1 v1, T2 v2, const char * turbo_nonnull exprtext);
 
         template<typename T1, typename T2>
         const char * turbo_nonnull make_check_op_string(T1 v1, T2 v2,
