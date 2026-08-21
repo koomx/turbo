@@ -750,15 +750,15 @@ namespace turbo {
 
         // REQUIRES: !ok()
         // Ensures rep is not inlined or shared with any other Status.
-        static status_internal::StatusRep* turbo_nonnull PrepareToModify(
+        static status_internal::StatusRep* turbo_nonnull prepare_to_modify(
             uintptr_t rep);
 
         // MSVC 14.0 limitation requires the const.
         static constexpr const char kMovedFromString[] = "Status accessed after move.";
 
-        static const std::string* turbo_nonnull EmptyString();
+        static const std::string* turbo_nonnull empty_string();
 
-        static const std::string* turbo_nonnull MovedFromString();
+        static const std::string* turbo_nonnull moved_from_string();
 
         // Returns whether rep contains an inlined representation.
         // See rep_ for details.
@@ -1077,7 +1077,7 @@ namespace turbo {
     inline void Status::set_payload(std::string_view type_url, std::string payload) {
         if (ok())
             return;
-        status_internal::StatusRep* rep = PrepareToModify(rep_);
+        status_internal::StatusRep* rep = prepare_to_modify(rep_);
         rep->set_payload(type_url, std::move(payload));
         rep_ = pointer_to_rep(rep);
     }
@@ -1085,7 +1085,7 @@ namespace turbo {
     inline bool Status::erase_payload(std::string_view type_url) {
         if (is_inlined(rep_))
             return false;
-        status_internal::StatusRep* rep = PrepareToModify(rep_);
+        status_internal::StatusRep* rep = prepare_to_modify(rep_);
         auto res = rep->erase_payload(type_url);
         rep_ = res.new_rep;
         return res.erased;
@@ -1236,14 +1236,12 @@ namespace turbo {
 
     inline Status deadline_exceeded_error(std::string_view message,
         turbo::SourceLocation loc) {
-        return status_internal::make_error<StatusCode::kDeadlineExceeded>(message,
-            loc);
+        return status_internal::make_error<StatusCode::kDeadlineExceeded>(message,loc);
     }
 
     inline Status failed_precondition_error(std::string_view message,
         turbo::SourceLocation loc) {
-        return status_internal::make_error<StatusCode::kFailedPrecondition>(message,
-            loc);
+        return status_internal::make_error<StatusCode::kFailedPrecondition>(message,loc);
     }
 
     inline Status internal_error(std::string_view message,

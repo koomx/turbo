@@ -35,7 +35,7 @@
 
 #include <turbo/macros/config.h>
 #include <turbo/base/internal/raw_logging.h>
-#include <turbo/base/internal/strerror.h>
+#include <turbo/platform/strerror.h>
 #include <turbo/base/internal/sysinfo.h>
 #include <turbo/base/log_severity.h>
 #include <turbo/base/nullability.h>
@@ -506,7 +506,7 @@ namespace turbo {
             if (data_->entry.log_severity() < turbo::min_log_level()) return;
 
             if (data_->is_perror) {
-                internal_stream() << ": " << turbo::base_internal::StrError(errno_saver_())
+                internal_stream() << ": " << turbo::str_error(errno_saver_())
                         << " [" << errno_saver_() << "]";
             }
 

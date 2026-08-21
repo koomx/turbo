@@ -31,7 +31,6 @@
 //
 // See below for complete details.
 
-
 #ifndef TURBO_BASE_NO_DESTRUCTOR_H_
 #define TURBO_BASE_NO_DESTRUCTOR_H_
 
@@ -39,153 +38,152 @@
 #include <type_traits>
 #include <utility>
 
-#include <turbo/macros/config.h>
 #include <turbo/base/nullability.h>
+#include <turbo/macros/config.h>
 
 namespace turbo {
 
-
-// turbo::NoDestructor<T>
-//
-// NoDestructor<T> is a wrapper around an object of type T that behaves as an
-// object of type T but never calls T's destructor. NoDestructor<T> makes it
-// safer and/or more efficient to use such objects in static storage contexts,
-// ideally as function scope static variables.
-//
-// An instance of turbo::NoDestructor<T> has similar type semantics to an
-// instance of T:
-//
-// * Constructs in the same manner as an object of type T through perfect
-//   forwarding.
-// * Provides pointer/reference semantic access to the object of type T via
-//   `->`, `*`, and `get()`.
-//   (Note that `const NoDestructor<T>` works like a pointer to const `T`.)
-//
-// Additionally, NoDestructor<T> provides the following benefits:
-//
-// * Never calls T's destructor for the object
-// * If the object is a function-local static variable, the type can be
-//   lazily constructed.
-//
-// An object of type NoDestructor<T> is "trivially destructible" in the notion
-// that its destructor is never run.
-//
-// Usage as Function Scope Static Variables
-//
-// Function static objects will be lazily initialized within static storage:
-//
-//    // Function scope.
-//    const std::string& MyString() {
-//      static const turbo::NoDestructor<std::string> x("foo");
-//      return *x;
-//    }
-//
-// For function static variables, NoDestructor avoids heap allocation and can be
-// inlined in static storage, resulting in exactly-once, thread-safe
-// construction of an object, and very fast access thereafter (the cost is a few
-// extra cycles).
-//
-// Using NoDestructor<T> in this manner is generally better than other patterns
-// which require pointer chasing:
-//
-//   // Prefer using turbo::NoDestructor<T> instead for the static variable.
-//   const std::string& MyString() {
-//     static const std::string* x = new std::string("foo");
-//     return *x;
-//   }
-//
-// Usage as Global Static Variables
-//
-// NoDestructor<T> allows declaration of a global object of type T that has a
-// non-trivial destructor since its destructor is never run. However, such
-// objects still need to worry about initialization order, so such use is not
-// recommended, strongly discouraged by the Google C++ Style Guide, and outright
-// banned in Chromium.
-// See https://google.github.io/styleguide/cppguide.html#Static_and_Global_Variables
-//
-//    // Global or namespace scope.
-//    turbo::NoDestructor<MyRegistry> reg{"foo", "bar", 8008};
-//
-// Note that if your object already has a trivial destructor, you don't need to
-// use NoDestructor<T>.
-//
-template <typename T>
-class NoDestructor {
- public:
-  // Forwards arguments to the T's constructor: calls T(args...).
-  template <typename... Ts,
+    // turbo::NoDestructor<T>
+    //
+    // NoDestructor<T> is a wrapper around an object of type T that behaves as an
+    // object of type T but never calls T's destructor. NoDestructor<T> makes it
+    // safer and/or more efficient to use such objects in static storage contexts,
+    // ideally as function scope static variables.
+    //
+    // An instance of turbo::NoDestructor<T> has similar type semantics to an
+    // instance of T:
+    //
+    // * Constructs in the same manner as an object of type T through perfect
+    //   forwarding.
+    // * Provides pointer/reference semantic access to the object of type T via
+    //   `->`, `*`, and `get()`.
+    //   (Note that `const NoDestructor<T>` works like a pointer to const `T`.)
+    //
+    // Additionally, NoDestructor<T> provides the following benefits:
+    //
+    // * Never calls T's destructor for the object
+    // * If the object is a function-local static variable, the type can be
+    //   lazily constructed.
+    //
+    // An object of type NoDestructor<T> is "trivially destructible" in the notion
+    // that its destructor is never run.
+    //
+    // Usage as Function Scope Static Variables
+    //
+    // Function static objects will be lazily initialized within static storage:
+    //
+    //    // Function scope.
+    //    const std::string& MyString() {
+    //      static const turbo::NoDestructor<std::string> x("foo");
+    //      return *x;
+    //    }
+    //
+    // For function static variables, NoDestructor avoids heap allocation and can be
+    // inlined in static storage, resulting in exactly-once, thread-safe
+    // construction of an object, and very fast access thereafter (the cost is a few
+    // extra cycles).
+    //
+    // Using NoDestructor<T> in this manner is generally better than other patterns
+    // which require pointer chasing:
+    //
+    //   // Prefer using turbo::NoDestructor<T> instead for the static variable.
+    //   const std::string& MyString() {
+    //     static const std::string* x = new std::string("foo");
+    //     return *x;
+    //   }
+    //
+    // Usage as Global Static Variables
+    //
+    // NoDestructor<T> allows declaration of a global object of type T that has a
+    // non-trivial destructor since its destructor is never run. However, such
+    // objects still need to worry about initialization order, so such use is not
+    // recommended, strongly discouraged by the Google C++ Style Guide, and outright
+    // banned in Chromium.
+    // See https://google.github.io/styleguide/cppguide.html#Static_and_Global_Variables
+    //
+    //    // Global or namespace scope.
+    //    turbo::NoDestructor<MyRegistry> reg{"foo", "bar", 8008};
+    //
+    // Note that if your object already has a trivial destructor, you don't need to
+    // use NoDestructor<T>.
+    //
+    template <typename T>
+    class NoDestructor {
+    public:
+        // Forwards arguments to the T's constructor: calls T(args...).
+        template <typename... Ts,
             // Disable this overload when it might collide with copy/move.
             std::enable_if_t<!std::is_same_v<void(std::decay_t<Ts>&...),
-                                             void(NoDestructor&)>,
-                             int> = 0>
-  explicit constexpr NoDestructor(Ts&&... args)
-      : impl_(std::forward<Ts>(args)...) {}
+                                 void(NoDestructor&)>,
+                int> = 0>
+        explicit constexpr NoDestructor(Ts&&... args)
+            : impl_(std::forward<Ts>(args)...) { }
 
-  // Forwards copy and move construction for T. Enables usage like this:
-  //   static NoDestructor<std::array<string, 3>> x{{{"1", "2", "3"}}};
-  //   static NoDestructor<std::vector<int>> x{{1, 2, 3}};
-  explicit constexpr NoDestructor(const T& x) : impl_(x) {}
-  explicit constexpr NoDestructor(T&& x)
-      : impl_(std::move(x)) {}
+        // Forwards copy and move construction for T. Enables usage like this:
+        //   static NoDestructor<std::array<string, 3>> x{{{"1", "2", "3"}}};
+        //   static NoDestructor<std::vector<int>> x{{1, 2, 3}};
+        explicit constexpr NoDestructor(const T& x)
+            : impl_(x) { }
+        explicit constexpr NoDestructor(T&& x)
+            : impl_(std::move(x)) { }
 
-  // No copying.
-  NoDestructor(const NoDestructor&) = delete;
-  NoDestructor& operator=(const NoDestructor&) = delete;
+        // No copying.
+        NoDestructor(const NoDestructor&) = delete;
+        NoDestructor& operator=(const NoDestructor&) = delete;
 
-  // Pretend to be a smart pointer to T with deep constness.
-  // Never returns a null pointer.
-  T& operator*() { return *get(); }
-  T* turbo_nonnull operator->() { return get(); }
-  T* turbo_nonnull get() { return impl_.get(); }
-  const T& operator*() const { return *get(); }
-  const T* turbo_nonnull operator->() const { return get(); }
-  const T* turbo_nonnull get() const { return impl_.get(); }
+        // Pretend to be a smart pointer to T with deep constness.
+        // Never returns a null pointer.
+        T& operator*() { return *get(); }
+        T* turbo_nonnull operator->() { return get(); }
+        T* turbo_nonnull get() { return impl_.get(); }
+        const T& operator*() const { return *get(); }
+        const T* turbo_nonnull operator->() const { return get(); }
+        const T* turbo_nonnull get() const { return impl_.get(); }
 
- private:
-  class DirectImpl {
-   public:
-    template <typename... Args>
-    explicit constexpr DirectImpl(Args&&... args)
-        : value_(std::forward<Args>(args)...) {}
-    const T* turbo_nonnull get() const { return &value_; }
-    T* turbo_nonnull get() { return &value_; }
+    private:
+        class DirectImpl {
+        public:
+            template <typename... Args>
+            explicit constexpr DirectImpl(Args&&... args)
+                : value_(std::forward<Args>(args)...) { }
+            const T* turbo_nonnull get() const { return &value_; }
+            T* turbo_nonnull get() { return &value_; }
 
-   private:
-    T value_;
-  };
+        private:
+            T value_;
+        };
 
-  class PlacementImpl {
-   public:
-    template <typename... Args>
-    explicit PlacementImpl(Args&&... args) {
-      new (&space_) T(std::forward<Args>(args)...);
-    }
-    const T* turbo_nonnull get() const {
-      return std::launder(reinterpret_cast<const T*>(&space_));
-    }
-    T* turbo_nonnull get() {
-      return std::launder(reinterpret_cast<T*>(&space_));
-    }
+        class PlacementImpl {
+        public:
+            template <typename... Args>
+            explicit PlacementImpl(Args&&... args) {
+                new (&space_) T(std::forward<Args>(args)...);
+            }
+            const T* turbo_nonnull get() const {
+                return std::launder(reinterpret_cast<const T*>(&space_));
+            }
+            T* turbo_nonnull get() {
+                return std::launder(reinterpret_cast<T*>(&space_));
+            }
 
-   private:
-    alignas(T) unsigned char space_[sizeof(T)];
-  };
+        private:
+            alignas(T) unsigned char space_[sizeof(T)];
+        };
 
-  // If the object is trivially destructible we use a member directly to avoid
-  // potential once-init runtime initialization. It somewhat defeats the
-  // purpose of NoDestructor in this case, but this makes the class more
-  // friendly to generic code.
-  std::conditional_t<std::is_trivially_destructible_v<T>, DirectImpl,
-                     PlacementImpl>
-      impl_;
-};
+        // If the object is trivially destructible we use a member directly to avoid
+        // potential once-init runtime initialization. It somewhat defeats the
+        // purpose of NoDestructor in this case, but this makes the class more
+        // friendly to generic code.
+        std::conditional_t<std::is_trivially_destructible_v<T>, DirectImpl,
+            PlacementImpl>
+            impl_;
+    };
 
-// Provide 'Class Template Argument Deduction': the type of NoDestructor's T
-// will be the same type as the argument passed to NoDestructor's constructor.
-template <typename T>
-NoDestructor(T) -> NoDestructor<T>;
+    // Provide 'Class Template Argument Deduction': the type of NoDestructor's T
+    // will be the same type as the argument passed to NoDestructor's constructor.
+    template <typename T>
+    NoDestructor(T) -> NoDestructor<T>;
 
+} // namespace turbo
 
-}  // namespace turbo
-
-#endif  // TURBO_BASE_NO_DESTRUCTOR_H_
+#endif // TURBO_BASE_NO_DESTRUCTOR_H_

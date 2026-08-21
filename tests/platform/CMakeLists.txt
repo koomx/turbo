@@ -13,24 +13,16 @@
 # limitations under the License.
 #
 
-set(BASE_INT_TESTS
-        atomic_hook_test
-        cmake_thread_test
-        hardening_test
-        low_level_alloc_test
-        nullability_traits_test
-        poison_test
-        sysinfo_test
-        thread_identity_test
-        tracing_strong_test
-        tracing_weak_test
-        unique_small_name_test
+set(META_TESTS
+        scoped_set_env_test
+        strerror_test
+        errno_saver_test
 )
 
-foreach (case IN LISTS BASE_INT_TESTS)
+foreach (case IN LISTS META_TESTS)
     kmcmake_cc_test(
             NAME ${case}
-            MODULE base_internal
+            MODULE platform
             SOURCES
             ${case}.cc
             CXXOPTS
@@ -39,7 +31,7 @@ foreach (case IN LISTS BASE_INT_TESTS)
             GTest::gtest
             GTest::gmock
             GTest::gtest_main
-            turbo::base_testing_static
+            turbo::test_utils_static
             turbo::turbo_static
             ${KMCMAKE_DEPS_LINK}
     )

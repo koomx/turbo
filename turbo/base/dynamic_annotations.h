@@ -55,7 +55,7 @@
 #endif
 
 // TODO(rogeeff): Remove after the backward compatibility period.
-#include <turbo/base/internal/dynamic_annotations.h>  // IWYU pragma: export
+#include <turbo/base/internal/dynamic_annotations.h> // IWYU pragma: export
 
 // -------------------------------------------------------------------------
 // Decide which features are enabled.
@@ -91,18 +91,18 @@
 
 // Read/write annotations are enabled in Annotalysis mode; disabled otherwise.
 #define TURBO_INTERNAL_READS_WRITES_ANNOTATIONS_ENABLED \
-  TURBO_INTERNAL_ANNOTALYSIS_ENABLED
+    TURBO_INTERNAL_ANNOTALYSIS_ENABLED
 
-#endif  // TURBO_HAVE_THREAD_SANITIZER
+#endif // TURBO_HAVE_THREAD_SANITIZER
 
 #ifdef __cplusplus
 #define TURBO_INTERNAL_BEGIN_EXTERN_C extern "C" {
-#define TURBO_INTERNAL_END_EXTERN_C }  // extern "C"
+#define TURBO_INTERNAL_END_EXTERN_C } // extern "C"
 #define TURBO_INTERNAL_GLOBAL_SCOPED(F) ::F
 #define TURBO_INTERNAL_STATIC_INLINE inline
 #else
-#define TURBO_INTERNAL_BEGIN_EXTERN_C  // empty
-#define TURBO_INTERNAL_END_EXTERN_C    // empty
+#define TURBO_INTERNAL_BEGIN_EXTERN_C // empty
+#define TURBO_INTERNAL_END_EXTERN_C // empty
 #define TURBO_INTERNAL_GLOBAL_SCOPED(F) F
 #define TURBO_INTERNAL_STATIC_INLINE static inline
 #endif
@@ -124,29 +124,29 @@
 // "sizeof(*(pointer))". `pointer` must be a non-void* pointer. Insert at the
 // point where `pointer` has been allocated, preferably close to the point
 // where the race happens. See also TURBO_ANNOTATE_BENIGN_RACE_STATIC.
-#define TURBO_ANNOTATE_BENIGN_RACE(pointer, description) \
-  TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateBenignRaceSized)  \
-  (__FILE__, __LINE__, pointer, sizeof(*(pointer)), description)
+#define TURBO_ANNOTATE_BENIGN_RACE(pointer, description)  \
+    TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateBenignRaceSized) \
+    (__FILE__, __LINE__, pointer, sizeof(*(pointer)), description)
 
 // Same as TURBO_ANNOTATE_BENIGN_RACE(`address`, `description`), but applies to
 // the memory range [`address`, `address`+`size`).
 #define TURBO_ANNOTATE_BENIGN_RACE_SIZED(address, size, description) \
-  TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateBenignRaceSized)              \
-  (__FILE__, __LINE__, address, size, description)
+    TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateBenignRaceSized)            \
+    (__FILE__, __LINE__, address, size, description)
 
 // Enable (`enable`!=0) or disable (`enable`==0) race detection for all threads.
 // This annotation could be useful if you want to skip expensive race analysis
 // during some period of program execution, e.g. during initialization.
-#define TURBO_ANNOTATE_ENABLE_RACE_DETECTION(enable)        \
-  TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateEnableRaceDetection) \
-  (__FILE__, __LINE__, enable)
+#define TURBO_ANNOTATE_ENABLE_RACE_DETECTION(enable)          \
+    TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateEnableRaceDetection) \
+    (__FILE__, __LINE__, enable)
 
 // -------------------------------------------------------------
 // Annotations useful for debugging.
 
 // Report the current thread `name` to a race detector.
 #define TURBO_ANNOTATE_THREAD_NAME(name) \
-  TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateThreadName)(__FILE__, __LINE__, name)
+    TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateThreadName)(__FILE__, __LINE__, name)
 
 // -------------------------------------------------------------
 // Annotations useful when implementing locks. They are not normally needed by
@@ -155,83 +155,83 @@
 
 // Report that a lock has been created at address `lock`.
 #define TURBO_ANNOTATE_RWLOCK_CREATE(lock) \
-  TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateRWLockCreate)(__FILE__, __LINE__, lock)
+    TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateRWLockCreate)(__FILE__, __LINE__, lock)
 
 // Report that a linker initialized lock has been created at address `lock`.
 #if KUMO_HAVE_THREAD_SANITIZER
-#define TURBO_ANNOTATE_RWLOCK_CREATE_STATIC(lock)          \
-  TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateRWLockCreateStatic) \
-  (__FILE__, __LINE__, lock)
+#define TURBO_ANNOTATE_RWLOCK_CREATE_STATIC(lock)            \
+    TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateRWLockCreateStatic) \
+    (__FILE__, __LINE__, lock)
 #else
 #define TURBO_ANNOTATE_RWLOCK_CREATE_STATIC(lock) \
-  TURBO_ANNOTATE_RWLOCK_CREATE(lock)
+    TURBO_ANNOTATE_RWLOCK_CREATE(lock)
 #endif
 
 // Report that the lock at address `lock` is about to be destroyed.
 #define TURBO_ANNOTATE_RWLOCK_DESTROY(lock) \
-  TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateRWLockDestroy)(__FILE__, __LINE__, lock)
+    TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateRWLockDestroy)(__FILE__, __LINE__, lock)
 
 // Report that the lock at address `lock` has been acquired.
 // `is_w`=1 for writer lock, `is_w`=0 for reader lock.
-#define TURBO_ANNOTATE_RWLOCK_ACQUIRED(lock, is_w)     \
-  TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateRWLockAcquired) \
-  (__FILE__, __LINE__, lock, is_w)
+#define TURBO_ANNOTATE_RWLOCK_ACQUIRED(lock, is_w)       \
+    TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateRWLockAcquired) \
+    (__FILE__, __LINE__, lock, is_w)
 
 // Report that the lock at address `lock` is about to be released.
 // `is_w`=1 for writer lock, `is_w`=0 for reader lock.
-#define TURBO_ANNOTATE_RWLOCK_RELEASED(lock, is_w)     \
-  TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateRWLockReleased) \
-  (__FILE__, __LINE__, lock, is_w)
+#define TURBO_ANNOTATE_RWLOCK_RELEASED(lock, is_w)       \
+    TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateRWLockReleased) \
+    (__FILE__, __LINE__, lock, is_w)
 
 // Apply TURBO_ANNOTATE_BENIGN_RACE_SIZED to a static variable `static_var`.
-#define TURBO_ANNOTATE_BENIGN_RACE_STATIC(static_var, description)      \
-  namespace {                                                          \
-  class static_var##_annotator {                                       \
-   public:                                                             \
-    static_var##_annotator() {                                         \
-      TURBO_ANNOTATE_BENIGN_RACE_SIZED(&static_var, sizeof(static_var), \
-                                      #static_var ": " description);   \
-    }                                                                  \
-  };                                                                   \
-  static static_var##_annotator the##static_var##_annotator;           \
-  }  // namespace
+#define TURBO_ANNOTATE_BENIGN_RACE_STATIC(static_var, description)                \
+    namespace {                                                                   \
+        class static_var##_annotator {                                            \
+        public:                                                                   \
+            static_var##_annotator() {                                            \
+                TURBO_ANNOTATE_BENIGN_RACE_SIZED(&static_var, sizeof(static_var), \
+                    #static_var ": " description);                                \
+            }                                                                     \
+        };                                                                        \
+        static static_var##_annotator the##static_var##_annotator;                \
+    } // namespace
 
 // Function prototypes of annotations provided by the compiler-based sanitizer
 // implementation.
 TURBO_INTERNAL_BEGIN_EXTERN_C
 void AnnotateRWLockCreate(const char* file, int line,
-                          const volatile void* lock);
+    const volatile void* lock);
 void AnnotateRWLockCreateStatic(const char* file, int line,
-                                const volatile void* lock);
+    const volatile void* lock);
 void AnnotateRWLockDestroy(const char* file, int line,
-                           const volatile void* lock);
+    const volatile void* lock);
 void AnnotateRWLockAcquired(const char* file, int line,
-                            const volatile void* lock, long is_w);  // NOLINT
+    const volatile void* lock, long is_w); // NOLINT
 void AnnotateRWLockReleased(const char* file, int line,
-                            const volatile void* lock, long is_w);  // NOLINT
+    const volatile void* lock, long is_w); // NOLINT
 void AnnotateBenignRace(const char* file, int line,
-                        const volatile void* address, const char* description);
+    const volatile void* address, const char* description);
 void AnnotateBenignRaceSized(const char* file, int line,
-                             const volatile void* address, size_t size,
-                             const char* description);
+    const volatile void* address, size_t size,
+    const char* description);
 void AnnotateThreadName(const char* file, int line, const char* name);
 void AnnotateEnableRaceDetection(const char* file, int line, int enable);
 TURBO_INTERNAL_END_EXTERN_C
 
-#else  // TURBO_INTERNAL_RACE_ANNOTATIONS_ENABLED == 0
+#else // TURBO_INTERNAL_RACE_ANNOTATIONS_ENABLED == 0
 
-#define TURBO_ANNOTATE_RWLOCK_CREATE(lock)                            // empty
-#define TURBO_ANNOTATE_RWLOCK_CREATE_STATIC(lock)                     // empty
-#define TURBO_ANNOTATE_RWLOCK_DESTROY(lock)                           // empty
-#define TURBO_ANNOTATE_RWLOCK_ACQUIRED(lock, is_w)                    // empty
-#define TURBO_ANNOTATE_RWLOCK_RELEASED(lock, is_w)                    // empty
-#define TURBO_ANNOTATE_BENIGN_RACE(address, description)              // empty
-#define TURBO_ANNOTATE_BENIGN_RACE_SIZED(address, size, description)  // empty
-#define TURBO_ANNOTATE_THREAD_NAME(name)                              // empty
-#define TURBO_ANNOTATE_ENABLE_RACE_DETECTION(enable)                  // empty
-#define TURBO_ANNOTATE_BENIGN_RACE_STATIC(static_var, description)    // empty
+#define TURBO_ANNOTATE_RWLOCK_CREATE(lock) // empty
+#define TURBO_ANNOTATE_RWLOCK_CREATE_STATIC(lock) // empty
+#define TURBO_ANNOTATE_RWLOCK_DESTROY(lock) // empty
+#define TURBO_ANNOTATE_RWLOCK_ACQUIRED(lock, is_w) // empty
+#define TURBO_ANNOTATE_RWLOCK_RELEASED(lock, is_w) // empty
+#define TURBO_ANNOTATE_BENIGN_RACE(address, description) // empty
+#define TURBO_ANNOTATE_BENIGN_RACE_SIZED(address, size, description) // empty
+#define TURBO_ANNOTATE_THREAD_NAME(name) // empty
+#define TURBO_ANNOTATE_ENABLE_RACE_DETECTION(enable) // empty
+#define TURBO_ANNOTATE_BENIGN_RACE_STATIC(static_var, description) // empty
 
-#endif  // TURBO_INTERNAL_RACE_ANNOTATIONS_ENABLED
+#endif // TURBO_INTERNAL_RACE_ANNOTATIONS_ENABLED
 
 // -------------------------------------------------------------------------
 // Define memory annotations.
@@ -241,17 +241,17 @@ TURBO_INTERNAL_END_EXTERN_C
 #include <sanitizer/msan_interface.h>
 
 #define TURBO_ANNOTATE_MEMORY_IS_INITIALIZED(address, size) \
-  __msan_unpoison(address, size)
+    __msan_unpoison(address, size)
 
 #define TURBO_ANNOTATE_MEMORY_IS_UNINITIALIZED(address, size) \
-  __msan_allocated_memory(address, size)
+    __msan_allocated_memory(address, size)
 
-#else  // !KUMO_HAVE_MEMORY_SANITIZER
+#else // !KUMO_HAVE_MEMORY_SANITIZER
 
-#define TURBO_ANNOTATE_MEMORY_IS_INITIALIZED(address, size)    // empty
-#define TURBO_ANNOTATE_MEMORY_IS_UNINITIALIZED(address, size)  // empty
+#define TURBO_ANNOTATE_MEMORY_IS_INITIALIZED(address, size) // empty
+#define TURBO_ANNOTATE_MEMORY_IS_UNINITIALIZED(address, size) // empty
 
-#endif  // TURBO_HAVE_MEMORY_SANITIZER
+#endif // TURBO_HAVE_MEMORY_SANITIZER
 
 // -------------------------------------------------------------------------
 // Define IGNORE_READS_BEGIN/_END attributes.
@@ -259,16 +259,16 @@ TURBO_INTERNAL_END_EXTERN_C
 #if defined(TURBO_INTERNAL_IGNORE_READS_ATTRIBUTE_ENABLED)
 
 #define TURBO_INTERNAL_IGNORE_READS_BEGIN_ATTRIBUTE \
-  __attribute((exclusive_lock_function("*")))
+    __attribute((exclusive_lock_function("*")))
 #define TURBO_INTERNAL_IGNORE_READS_END_ATTRIBUTE \
-  __attribute((unlock_function("*")))
+    __attribute((unlock_function("*")))
 
-#else  // !defined(TURBO_INTERNAL_IGNORE_READS_ATTRIBUTE_ENABLED)
+#else // !defined(TURBO_INTERNAL_IGNORE_READS_ATTRIBUTE_ENABLED)
 
-#define TURBO_INTERNAL_IGNORE_READS_BEGIN_ATTRIBUTE  // empty
-#define TURBO_INTERNAL_IGNORE_READS_END_ATTRIBUTE    // empty
+#define TURBO_INTERNAL_IGNORE_READS_BEGIN_ATTRIBUTE // empty
+#define TURBO_INTERNAL_IGNORE_READS_END_ATTRIBUTE // empty
 
-#endif  // defined(TURBO_INTERNAL_IGNORE_READS_ATTRIBUTE_ENABLED)
+#endif // defined(TURBO_INTERNAL_IGNORE_READS_ATTRIBUTE_ENABLED)
 
 // -------------------------------------------------------------------------
 // Define IGNORE_READS_BEGIN/_END annotations.
@@ -282,14 +282,14 @@ TURBO_INTERNAL_END_EXTERN_C
 // TURBO_ANNOTATE_IGNORE_READS_END is called. Useful to ignore intentional racey
 // reads, while still checking other reads and all writes.
 // See also TURBO_ANNOTATE_UNPROTECTED_READ.
-#define TURBO_ANNOTATE_IGNORE_READS_BEGIN()              \
-  TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateIgnoreReadsBegin) \
-  (__FILE__, __LINE__)
+#define TURBO_ANNOTATE_IGNORE_READS_BEGIN()                \
+    TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateIgnoreReadsBegin) \
+    (__FILE__, __LINE__)
 
 // Stop ignoring reads.
-#define TURBO_ANNOTATE_IGNORE_READS_END()              \
-  TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateIgnoreReadsEnd) \
-  (__FILE__, __LINE__)
+#define TURBO_ANNOTATE_IGNORE_READS_END()                \
+    TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateIgnoreReadsEnd) \
+    (__FILE__, __LINE__)
 
 // Function prototypes of annotations provided by the compiler-based sanitizer
 // implementation.
@@ -297,7 +297,7 @@ TURBO_INTERNAL_BEGIN_EXTERN_C
 void AnnotateIgnoreReadsBegin(const char* file, int line)
     TURBO_INTERNAL_IGNORE_READS_BEGIN_ATTRIBUTE;
 void AnnotateIgnoreReadsEnd(const char* file,
-                            int line) TURBO_INTERNAL_IGNORE_READS_END_ATTRIBUTE;
+    int line) TURBO_INTERNAL_IGNORE_READS_END_ATTRIBUTE;
 TURBO_INTERNAL_END_EXTERN_C
 
 #elif defined(TURBO_INTERNAL_ANNOTALYSIS_ENABLED)
@@ -309,28 +309,28 @@ TURBO_INTERNAL_END_EXTERN_C
 // TODO(delesley) -- The exclusive lock here ignores writes as well, but
 // allows IGNORE_READS_AND_WRITES to work properly.
 
-#define TURBO_ANNOTATE_IGNORE_READS_BEGIN()                          \
-  TURBO_INTERNAL_GLOBAL_SCOPED(                                      \
-      TURBO_INTERNAL_C_SYMBOL(TurboInternalAnnotateIgnoreReadsBegin)) \
-  ()
+#define TURBO_ANNOTATE_IGNORE_READS_BEGIN()                             \
+    TURBO_INTERNAL_GLOBAL_SCOPED(                                       \
+        TURBO_INTERNAL_C_SYMBOL(TurboInternalAnnotateIgnoreReadsBegin)) \
+    ()
 
-#define TURBO_ANNOTATE_IGNORE_READS_END()                          \
-  TURBO_INTERNAL_GLOBAL_SCOPED(                                    \
-      TURBO_INTERNAL_C_SYMBOL(TurboInternalAnnotateIgnoreReadsEnd)) \
-  ()
+#define TURBO_ANNOTATE_IGNORE_READS_END()                             \
+    TURBO_INTERNAL_GLOBAL_SCOPED(                                     \
+        TURBO_INTERNAL_C_SYMBOL(TurboInternalAnnotateIgnoreReadsEnd)) \
+    ()
 
 TURBO_INTERNAL_STATIC_INLINE void TURBO_INTERNAL_C_SYMBOL(
     TurboInternalAnnotateIgnoreReadsBegin)()
-    TURBO_INTERNAL_IGNORE_READS_BEGIN_ATTRIBUTE {}
+    TURBO_INTERNAL_IGNORE_READS_BEGIN_ATTRIBUTE { }
 
 TURBO_INTERNAL_STATIC_INLINE void TURBO_INTERNAL_C_SYMBOL(
     TurboInternalAnnotateIgnoreReadsEnd)()
-    TURBO_INTERNAL_IGNORE_READS_END_ATTRIBUTE {}
+    TURBO_INTERNAL_IGNORE_READS_END_ATTRIBUTE { }
 
 #else
 
-#define TURBO_ANNOTATE_IGNORE_READS_BEGIN()  // empty
-#define TURBO_ANNOTATE_IGNORE_READS_END()    // empty
+#define TURBO_ANNOTATE_IGNORE_READS_BEGIN() // empty
+#define TURBO_ANNOTATE_IGNORE_READS_END() // empty
 
 #endif
 
@@ -341,11 +341,11 @@ TURBO_INTERNAL_STATIC_INLINE void TURBO_INTERNAL_C_SYMBOL(
 
 // Similar to TURBO_ANNOTATE_IGNORE_READS_BEGIN, but ignore writes instead.
 #define TURBO_ANNOTATE_IGNORE_WRITES_BEGIN() \
-  TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateIgnoreWritesBegin)(__FILE__, __LINE__)
+    TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateIgnoreWritesBegin)(__FILE__, __LINE__)
 
 // Stop ignoring writes.
 #define TURBO_ANNOTATE_IGNORE_WRITES_END() \
-  TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateIgnoreWritesEnd)(__FILE__, __LINE__)
+    TURBO_INTERNAL_GLOBAL_SCOPED(AnnotateIgnoreWritesEnd)(__FILE__, __LINE__)
 
 // Function prototypes of annotations provided by the compiler-based sanitizer
 // implementation.
@@ -356,8 +356,8 @@ TURBO_INTERNAL_END_EXTERN_C
 
 #else
 
-#define TURBO_ANNOTATE_IGNORE_WRITES_BEGIN()  // empty
-#define TURBO_ANNOTATE_IGNORE_WRITES_END()    // empty
+#define TURBO_ANNOTATE_IGNORE_WRITES_BEGIN() // empty
+#define TURBO_ANNOTATE_IGNORE_WRITES_END() // empty
 
 #endif
 
@@ -376,44 +376,44 @@ TURBO_INTERNAL_END_EXTERN_C
 
 // Start ignoring all memory accesses (both reads and writes).
 #define TURBO_ANNOTATE_IGNORE_READS_AND_WRITES_BEGIN() \
-  do {                                                \
-    TURBO_ANNOTATE_IGNORE_READS_BEGIN();               \
-    TURBO_ANNOTATE_IGNORE_WRITES_BEGIN();              \
-  } while (0)
+    do {                                               \
+        TURBO_ANNOTATE_IGNORE_READS_BEGIN();           \
+        TURBO_ANNOTATE_IGNORE_WRITES_BEGIN();          \
+    } while (0)
 
 // Stop ignoring both reads and writes.
 #define TURBO_ANNOTATE_IGNORE_READS_AND_WRITES_END() \
-  do {                                              \
-    TURBO_ANNOTATE_IGNORE_WRITES_END();              \
-    TURBO_ANNOTATE_IGNORE_READS_END();               \
-  } while (0)
+    do {                                             \
+        TURBO_ANNOTATE_IGNORE_WRITES_END();          \
+        TURBO_ANNOTATE_IGNORE_READS_END();           \
+    } while (0)
 
 #ifdef __cplusplus
 // TURBO_ANNOTATE_UNPROTECTED_READ is the preferred way to annotate racey reads.
 #define TURBO_ANNOTATE_UNPROTECTED_READ(x) \
-  turbo::base_internal::AnnotateUnprotectedRead(x)
+    turbo::base_internal::AnnotateUnprotectedRead(x)
 
 namespace turbo {
 
-namespace base_internal {
+    namespace base_internal {
 
-template <typename T>
-inline T AnnotateUnprotectedRead(const volatile T& x) {  // NOLINT
-  TURBO_ANNOTATE_IGNORE_READS_BEGIN();
-  T res = x;
-  TURBO_ANNOTATE_IGNORE_READS_END();
-  return res;
-}
+        template <typename T>
+        inline T AnnotateUnprotectedRead(const volatile T& x) { // NOLINT
+            TURBO_ANNOTATE_IGNORE_READS_BEGIN();
+            T res = x;
+            TURBO_ANNOTATE_IGNORE_READS_END();
+            return res;
+        }
 
-}  // namespace base_internal
+    } // namespace base_internal
 
-}  // namespace turbo
+} // namespace turbo
 #endif
 
 #else
 
-#define TURBO_ANNOTATE_IGNORE_READS_AND_WRITES_BEGIN()  // empty
-#define TURBO_ANNOTATE_IGNORE_READS_AND_WRITES_END()    // empty
+#define TURBO_ANNOTATE_IGNORE_READS_AND_WRITES_BEGIN() // empty
+#define TURBO_ANNOTATE_IGNORE_READS_AND_WRITES_END() // empty
 #define TURBO_ANNOTATE_UNPROTECTED_READ(x) (x)
 
 #endif
@@ -428,18 +428,18 @@ inline T AnnotateUnprotectedRead(const volatile T& x) {  // NOLINT
 #include <sanitizer/common_interface_defs.h>
 
 #define TURBO_ANNOTATE_CONTIGUOUS_CONTAINER(beg, end, old_mid, new_mid) \
-  __sanitizer_annotate_contiguous_container(beg, end, old_mid, new_mid)
+    __sanitizer_annotate_contiguous_container(beg, end, old_mid, new_mid)
 #define TURBO_ADDRESS_SANITIZER_REDZONE(name) \
-  struct {                                   \
-    alignas(8) char x[8];                    \
-  } name
+    struct {                                  \
+        alignas(8) char x[8];                 \
+    } name
 
 #else
 
-#define TURBO_ANNOTATE_CONTIGUOUS_CONTAINER(beg, end, old_mid, new_mid)  // empty
+#define TURBO_ANNOTATE_CONTIGUOUS_CONTAINER(beg, end, old_mid, new_mid) // empty
 #define TURBO_ADDRESS_SANITIZER_REDZONE(name) static_assert(true, "")
 
-#endif  // TURBO_HAVE_ADDRESS_SANITIZER
+#endif // TURBO_HAVE_ADDRESS_SANITIZER
 
 // -------------------------------------------------------------------------
 // HWAddress sanitizer annotations
@@ -447,18 +447,18 @@ inline T AnnotateUnprotectedRead(const volatile T& x) {  // NOLINT
 #ifdef __cplusplus
 namespace turbo {
 #if KUMO_HAVE_HWADDRESS_SANITIZER
-// Under HWASAN changes the tag of the pointer.
-template <typename T>
-T* HwasanTagPointer(T* ptr, uintptr_t tag) {
-  return reinterpret_cast<T*>(__hwasan_tag_pointer(ptr, tag));
-}
+    // Under HWASAN changes the tag of the pointer.
+    template <typename T>
+    T* HwasanTagPointer(T* ptr, uintptr_t tag) {
+        return reinterpret_cast<T*>(__hwasan_tag_pointer(ptr, tag));
+    }
 #else
-template <typename T>
-T* HwasanTagPointer(T* ptr, uintptr_t) {
-  return ptr;
-}
+    template <typename T>
+    T* HwasanTagPointer(T* ptr, uintptr_t) {
+        return ptr;
+    }
 #endif
-}  // namespace turbo
+} // namespace turbo
 #endif
 
 // -------------------------------------------------------------------------
@@ -473,4 +473,4 @@ T* HwasanTagPointer(T* ptr, uintptr_t) {
 #undef TURBO_INTERNAL_END_EXTERN_C
 #undef TURBO_INTERNAL_STATIC_INLINE
 
-#endif  // TURBO_BASE_DYNAMIC_ANNOTATIONS_H_
+#endif // TURBO_BASE_DYNAMIC_ANNOTATIONS_H_

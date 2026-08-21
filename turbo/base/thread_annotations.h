@@ -137,14 +137,14 @@
 //   void bar() const TURBO_SHARED_LOCKS_REQUIRED(mu1, mu2) { ... }
 #if KUMO_HAVE_ATTRIBUTE(exclusive_locks_required)
 #define TURBO_EXCLUSIVE_LOCKS_REQUIRED(...) \
-  __attribute__((exclusive_locks_required(__VA_ARGS__)))
+    __attribute__((exclusive_locks_required(__VA_ARGS__)))
 #else
 #define TURBO_EXCLUSIVE_LOCKS_REQUIRED(...)
 #endif
 
 #if KUMO_HAVE_ATTRIBUTE(shared_locks_required)
 #define TURBO_SHARED_LOCKS_REQUIRED(...) \
-  __attribute__((shared_locks_required(__VA_ARGS__)))
+    __attribute__((shared_locks_required(__VA_ARGS__)))
 #else
 #define TURBO_SHARED_LOCKS_REQUIRED(...)
 #endif
@@ -199,7 +199,7 @@
 // not release it.
 #if KUMO_HAVE_ATTRIBUTE(exclusive_lock_function)
 #define TURBO_EXCLUSIVE_LOCK_FUNCTION(...) \
-  __attribute__((exclusive_lock_function(__VA_ARGS__)))
+    __attribute__((exclusive_lock_function(__VA_ARGS__)))
 #else
 #define TURBO_EXCLUSIVE_LOCK_FUNCTION(...)
 #endif
@@ -210,7 +210,7 @@
 // function, and do not release it.
 #if KUMO_HAVE_ATTRIBUTE(shared_lock_function)
 #define TURBO_SHARED_LOCK_FUNCTION(...) \
-  __attribute__((shared_lock_function(__VA_ARGS__)))
+    __attribute__((shared_lock_function(__VA_ARGS__)))
 #else
 #define TURBO_SHARED_LOCK_FUNCTION(...)
 #endif
@@ -235,14 +235,14 @@
 // mutex is assumed to be `this`.
 #if KUMO_HAVE_ATTRIBUTE(exclusive_trylock_function)
 #define TURBO_EXCLUSIVE_TRYLOCK_FUNCTION(...) \
-  __attribute__((exclusive_trylock_function(__VA_ARGS__)))
+    __attribute__((exclusive_trylock_function(__VA_ARGS__)))
 #else
 #define TURBO_EXCLUSIVE_TRYLOCK_FUNCTION(...)
 #endif
 
 #if KUMO_HAVE_ATTRIBUTE(shared_trylock_function)
 #define TURBO_SHARED_TRYLOCK_FUNCTION(...) \
-  __attribute__((shared_trylock_function(__VA_ARGS__)))
+    __attribute__((shared_trylock_function(__VA_ARGS__)))
 #else
 #define TURBO_SHARED_TRYLOCK_FUNCTION(...)
 #endif
@@ -253,14 +253,14 @@
 // if it is not held.
 #if KUMO_HAVE_ATTRIBUTE(assert_exclusive_lock)
 #define TURBO_ASSERT_EXCLUSIVE_LOCK(...) \
-  __attribute__((assert_exclusive_lock(__VA_ARGS__)))
+    __attribute__((assert_exclusive_lock(__VA_ARGS__)))
 #else
 #define TURBO_ASSERT_EXCLUSIVE_LOCK(...)
 #endif
 
 #if KUMO_HAVE_ATTRIBUTE(assert_shared_lock)
 #define TURBO_ASSERT_SHARED_LOCK(...) \
-  __attribute__((assert_shared_lock(__VA_ARGS__)))
+    __attribute__((assert_shared_lock(__VA_ARGS__)))
 #else
 #define TURBO_ASSERT_SHARED_LOCK(...)
 #endif
@@ -272,7 +272,7 @@
 // the locking behavior is more complicated than the analyzer can handle.
 #if KUMO_HAVE_ATTRIBUTE(no_thread_safety_analysis)
 #define TURBO_NO_THREAD_SAFETY_ANALYSIS \
-  __attribute__((no_thread_safety_analysis))
+    __attribute__((no_thread_safety_analysis))
 #else
 #define TURBO_NO_THREAD_SAFETY_ANALYSIS
 #endif
@@ -310,23 +310,23 @@
 
 namespace turbo {
 
-namespace base_internal {
+    namespace base_internal {
 
-// Takes a reference to a guarded data member, and returns an unguarded
-// reference.
-// Do not use this function directly, use TURBO_TS_UNCHECKED_READ instead.
-template <typename T>
-inline const T& ts_unchecked_read(const T& v) TURBO_NO_THREAD_SAFETY_ANALYSIS {
-  return v;
-}
+        // Takes a reference to a guarded data member, and returns an unguarded
+        // reference.
+        // Do not use this function directly, use TURBO_TS_UNCHECKED_READ instead.
+        template <typename T>
+        inline const T& ts_unchecked_read(const T& v) TURBO_NO_THREAD_SAFETY_ANALYSIS {
+            return v;
+        }
 
-template <typename T>
-inline T& ts_unchecked_read(T& v) TURBO_NO_THREAD_SAFETY_ANALYSIS {
-  return v;
-}
+        template <typename T>
+        inline T& ts_unchecked_read(T& v) TURBO_NO_THREAD_SAFETY_ANALYSIS {
+            return v;
+        }
 
-}  // namespace base_internal
+    } // namespace base_internal
 
-}  // namespace turbo
+} // namespace turbo
 
-#endif  // TURBO_BASE_THREAD_ANNOTATIONS_H_
+#endif // TURBO_BASE_THREAD_ANNOTATIONS_H_

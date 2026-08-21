@@ -34,275 +34,275 @@
 #include <mutex>
 #include <type_traits>
 
-#include <turbo/macros/config.h>
 #include <turbo/base/const_init.h>
 #include <turbo/base/internal/low_level_scheduling.h>
 #include <turbo/base/internal/raw_logging.h>
 #include <turbo/base/internal/scheduling_mode.h>
 #include <turbo/base/internal/tsan_mutex_interface.h>
 #include <turbo/base/thread_annotations.h>
+#include <turbo/macros/config.h>
 
 namespace tcmalloc {
-namespace tcmalloc_internal {
+    namespace tcmalloc_internal {
 
-class AllocationGuardSpinLockHolder;
-class Static;
+        class AllocationGuardSpinLockHolder;
+        class Static;
 
-}  // namespace tcmalloc_internal
-}  // namespace tcmalloc
+    } // namespace tcmalloc_internal
+} // namespace tcmalloc
 
 namespace turbo {
 
-namespace base_internal {
+    namespace base_internal {
 
-class TURBO_LOCKABLE KUMO_ATTRIBUTE_WARN_UNUSED SpinLock {
- public:
-  constexpr SpinLock() : lockword_(kSpinLockCooperative) { RegisterWithTsan(); }
+        class TURBO_LOCKABLE KUMO_ATTRIBUTE_WARN_UNUSED SpinLock {
+        public:
+            constexpr SpinLock()
+                : lockword_(kSpinLockCooperative) { RegisterWithTsan(); }
 
-  // Constructors that allow non-cooperative spinlocks to be created for use
-  // inside thread schedulers.  Normal clients should not use these.
-  constexpr explicit SpinLock(SchedulingMode mode)
-      : lockword_(IsCooperative(mode) ? kSpinLockCooperative : 0) {
-    RegisterWithTsan();
-  }
+            // Constructors that allow non-cooperative spinlocks to be created for use
+            // inside thread schedulers.  Normal clients should not use these.
+            constexpr explicit SpinLock(SchedulingMode mode)
+                : lockword_(IsCooperative(mode) ? kSpinLockCooperative : 0) {
+                RegisterWithTsan();
+            }
 
 #if KUMO_HAVE_ATTRIBUTE(enable_if) && !defined(_WIN32)
-  // Constructor to inline users of the default scheduling mode.
-  //
-  // This only needs to exists for inliner runs, but doesn't work correctly in
-  // clang+windows builds, likely due to mangling differences.
-  KUMO_DEPRECATE_AND_INLINE()
-  constexpr explicit SpinLock(SchedulingMode mode)
-      __attribute__((enable_if(mode == SCHEDULE_COOPERATIVE_AND_KERNEL,
-                               "Cooperative use default constructor")))
-      : SpinLock() {}
+            // Constructor to inline users of the default scheduling mode.
+            //
+            // This only needs to exists for inliner runs, but doesn't work correctly in
+            // clang+windows builds, likely due to mangling differences.
+            KUMO_DEPRECATE_AND_INLINE()
+            constexpr explicit SpinLock(SchedulingMode mode)
+                __attribute__((enable_if(mode == SCHEDULE_COOPERATIVE_AND_KERNEL,
+                    "Cooperative use default constructor")))
+                : SpinLock() { }
 #endif
 
-  // Constructor for global SpinLock instances.  See turbo/base/const_init.h.
-  KUMO_DEPRECATE_AND_INLINE()
-  constexpr SpinLock(turbo::ConstInitType, SchedulingMode mode)
-      : SpinLock(mode) {}
+            // Constructor for global SpinLock instances.  See turbo/base/const_init.h.
+            KUMO_DEPRECATE_AND_INLINE()
+            constexpr SpinLock(turbo::ConstInitType, SchedulingMode mode)
+                : SpinLock(mode) { }
 
-  // For global SpinLock instances prefer trivial destructor when possible.
-  // Default but non-trivial destructor in some build configurations causes an
-  // extra static initializer.
+            // For global SpinLock instances prefer trivial destructor when possible.
+            // Default but non-trivial destructor in some build configurations causes an
+            // extra static initializer.
 #ifdef TURBO_INTERNAL_HAVE_TSAN_INTERFACE
-  ~SpinLock() { TURBO_TSAN_MUTEX_DESTROY(this, __tsan_mutex_not_static); }
+            ~SpinLock() { TURBO_TSAN_MUTEX_DESTROY(this, __tsan_mutex_not_static); }
 #else
-  ~SpinLock() = default;
+            ~SpinLock() = default;
 #endif
 
-  // Acquire this SpinLock.
-  inline void lock() TURBO_EXCLUSIVE_LOCK_FUNCTION() {
-    TURBO_TSAN_MUTEX_PRE_LOCK(this, 0);
-    if (!TryLockImpl()) {
-      SlowLock();
-    }
-    TURBO_TSAN_MUTEX_POST_LOCK(this, 0, 0);
-  }
+            // Acquire this SpinLock.
+            inline void lock() TURBO_EXCLUSIVE_LOCK_FUNCTION() {
+                TURBO_TSAN_MUTEX_PRE_LOCK(this, 0);
+                if (!TryLockImpl()) {
+                    SlowLock();
+                }
+                TURBO_TSAN_MUTEX_POST_LOCK(this, 0, 0);
+            }
 
-  KUMO_DEPRECATE_AND_INLINE()
-  inline void Lock() TURBO_EXCLUSIVE_LOCK_FUNCTION() { return lock(); }
+            KUMO_DEPRECATE_AND_INLINE()
+            inline void Lock() TURBO_EXCLUSIVE_LOCK_FUNCTION() { return lock(); }
 
-  // Try to acquire this SpinLock without blocking and return true if the
-  // acquisition was successful.  If the lock was not acquired, false is
-  // returned.  If this SpinLock is free at the time of the call, try_lock will
-  // return true with high probability.
-  [[nodiscard]] inline bool try_lock() TURBO_EXCLUSIVE_TRYLOCK_FUNCTION(true) {
-    TURBO_TSAN_MUTEX_PRE_LOCK(this, __tsan_mutex_try_lock);
-    bool res = TryLockImpl();
-    TURBO_TSAN_MUTEX_POST_LOCK(
-        this, __tsan_mutex_try_lock | (res ? 0 : __tsan_mutex_try_lock_failed),
-        0);
-    return res;
-  }
+            // Try to acquire this SpinLock without blocking and return true if the
+            // acquisition was successful.  If the lock was not acquired, false is
+            // returned.  If this SpinLock is free at the time of the call, try_lock will
+            // return true with high probability.
+            [[nodiscard]] inline bool try_lock() TURBO_EXCLUSIVE_TRYLOCK_FUNCTION(true) {
+                TURBO_TSAN_MUTEX_PRE_LOCK(this, __tsan_mutex_try_lock);
+                bool res = TryLockImpl();
+                TURBO_TSAN_MUTEX_POST_LOCK(
+                    this, __tsan_mutex_try_lock | (res ? 0 : __tsan_mutex_try_lock_failed),
+                    0);
+                return res;
+            }
 
-  KUMO_DEPRECATE_AND_INLINE()
-  [[nodiscard]] inline bool TryLock() TURBO_EXCLUSIVE_TRYLOCK_FUNCTION(true) {
-    return try_lock();
-  }
+            KUMO_DEPRECATE_AND_INLINE()
+            [[nodiscard]] inline bool TryLock() TURBO_EXCLUSIVE_TRYLOCK_FUNCTION(true) {
+                return try_lock();
+            }
 
-  // Release this SpinLock, which must be held by the calling thread.
-  inline void unlock() TURBO_UNLOCK_FUNCTION() {
-    TURBO_TSAN_MUTEX_PRE_UNLOCK(this, 0);
-    uint32_t lock_value = lockword_.load(std::memory_order_relaxed);
-    lock_value = lockword_.exchange(lock_value & kSpinLockCooperative,
-                                    std::memory_order_release);
+            // Release this SpinLock, which must be held by the calling thread.
+            inline void unlock() TURBO_UNLOCK_FUNCTION() {
+                TURBO_TSAN_MUTEX_PRE_UNLOCK(this, 0);
+                uint32_t lock_value = lockword_.load(std::memory_order_relaxed);
+                lock_value = lockword_.exchange(lock_value & kSpinLockCooperative,
+                    std::memory_order_release);
 
-    if ((lock_value & kSpinLockDisabledScheduling) != 0) {
-      SchedulingGuard::EnableRescheduling(true);
-    }
-    if ((lock_value & kWaitTimeMask) != 0) {
-      // Collect contentionz profile info, and speed the wakeup of any waiter.
-      // The wait_cycles value indicates how long this thread spent waiting
-      // for the lock.
-      SlowUnlock(lock_value);
-    }
-    TURBO_TSAN_MUTEX_POST_UNLOCK(this, 0);
-  }
+                if ((lock_value & kSpinLockDisabledScheduling) != 0) {
+                    SchedulingGuard::EnableRescheduling(true);
+                }
+                if ((lock_value & kWaitTimeMask) != 0) {
+                    // Collect contentionz profile info, and speed the wakeup of any waiter.
+                    // The wait_cycles value indicates how long this thread spent waiting
+                    // for the lock.
+                    SlowUnlock(lock_value);
+                }
+                TURBO_TSAN_MUTEX_POST_UNLOCK(this, 0);
+            }
 
-  KUMO_DEPRECATE_AND_INLINE()
-  inline void Unlock() TURBO_UNLOCK_FUNCTION() { unlock(); }
+            KUMO_DEPRECATE_AND_INLINE()
+            inline void Unlock() TURBO_UNLOCK_FUNCTION() { unlock(); }
 
-  // Determine if the lock is held.  When the lock is held by the invoking
-  // thread, true will always be returned. Intended to be used as
-  // KCHECK(lock.IsHeld()).
-  [[nodiscard]] inline bool IsHeld() const {
-    return (lockword_.load(std::memory_order_relaxed) & kSpinLockHeld) != 0;
-  }
+            // Determine if the lock is held.  When the lock is held by the invoking
+            // thread, true will always be returned. Intended to be used as
+            // KCHECK(lock.IsHeld()).
+            [[nodiscard]] inline bool IsHeld() const {
+                return (lockword_.load(std::memory_order_relaxed) & kSpinLockHeld) != 0;
+            }
 
-  // Return immediately if this thread holds the SpinLock exclusively.
-  // Otherwise, report an error by crashing with a diagnostic.
-  inline void AssertHeld() const TURBO_ASSERT_EXCLUSIVE_LOCK() {
-    if (!IsHeld()) {
-      TURBO_RAW_LOG(FATAL, "thread should hold the lock on SpinLock");
-    }
-  }
+            // Return immediately if this thread holds the SpinLock exclusively.
+            // Otherwise, report an error by crashing with a diagnostic.
+            inline void AssertHeld() const TURBO_ASSERT_EXCLUSIVE_LOCK() {
+                if (!IsHeld()) {
+                    TURBO_RAW_LOG(FATAL, "thread should hold the lock on SpinLock");
+                }
+            }
 
- protected:
-  // These should not be exported except for testing.
+        protected:
+            // These should not be exported except for testing.
 
-  // Store number of cycles between wait_start_time and wait_end_time in a
-  // lock value.
-  static uint32_t EncodeWaitCycles(int64_t wait_start_time,
-                                   int64_t wait_end_time);
+            // Store number of cycles between wait_start_time and wait_end_time in a
+            // lock value.
+            static uint32_t EncodeWaitCycles(int64_t wait_start_time,
+                int64_t wait_end_time);
 
-  // Extract number of wait cycles in a lock value.
-  static int64_t DecodeWaitCycles(uint32_t lock_value);
+            // Extract number of wait cycles in a lock value.
+            static int64_t DecodeWaitCycles(uint32_t lock_value);
 
-  // Provide access to protected method above.  Use for testing only.
-  friend struct SpinLockTest;
-  friend class tcmalloc::tcmalloc_internal::AllocationGuardSpinLockHolder;
-  friend class tcmalloc::tcmalloc_internal::Static;
+            // Provide access to protected method above.  Use for testing only.
+            friend struct SpinLockTest;
+            friend class tcmalloc::tcmalloc_internal::AllocationGuardSpinLockHolder;
+            friend class tcmalloc::tcmalloc_internal::Static;
 
-  static int GetAdaptiveSpinCount() {
-    return adaptive_spin_count_.load(std::memory_order_relaxed);
-  }
-  static void SetAdaptiveSpinCount(int count) {
-    adaptive_spin_count_.store(count, std::memory_order_relaxed);
-  }
+            static int GetAdaptiveSpinCount() {
+                return adaptive_spin_count_.load(std::memory_order_relaxed);
+            }
+            static void SetAdaptiveSpinCount(int count) {
+                adaptive_spin_count_.store(count, std::memory_order_relaxed);
+            }
 
-  static std::atomic<int> adaptive_spin_count_;
+            static std::atomic<int> adaptive_spin_count_;
 
- private:
-  // lockword_ is used to store the following:
-  //
-  // bit[0] encodes whether a lock is being held.
-  // bit[1] encodes whether a lock uses cooperative scheduling.
-  // bit[2] encodes whether the current lock holder disabled scheduling when
-  //        acquiring the lock. Only set when kSpinLockHeld is also set.
-  // bit[3:31] encodes time a lock spent on waiting as a 29-bit unsigned int.
-  //        This is set by the lock holder to indicate how long it waited on
-  //        the lock before eventually acquiring it. The number of cycles is
-  //        encoded as a 29-bit unsigned int, or in the case that the current
-  //        holder did not wait but another waiter is queued, the LSB
-  //        (kSpinLockSleeper) is set. The implementation does not explicitly
-  //        track the number of queued waiters beyond this. It must always be
-  //        assumed that waiters may exist if the current holder was required to
-  //        queue.
-  //
-  // Invariant: if the lock is not held, the value is either 0 or
-  // kSpinLockCooperative.
-  static constexpr uint32_t kSpinLockHeld = 1;
-  static constexpr uint32_t kSpinLockCooperative = 2;
-  static constexpr uint32_t kSpinLockDisabledScheduling = 4;
-  static constexpr uint32_t kSpinLockSleeper = 8;
-  // Includes kSpinLockSleeper.
-  static constexpr uint32_t kWaitTimeMask =
-      ~(kSpinLockHeld | kSpinLockCooperative | kSpinLockDisabledScheduling);
+        private:
+            // lockword_ is used to store the following:
+            //
+            // bit[0] encodes whether a lock is being held.
+            // bit[1] encodes whether a lock uses cooperative scheduling.
+            // bit[2] encodes whether the current lock holder disabled scheduling when
+            //        acquiring the lock. Only set when kSpinLockHeld is also set.
+            // bit[3:31] encodes time a lock spent on waiting as a 29-bit unsigned int.
+            //        This is set by the lock holder to indicate how long it waited on
+            //        the lock before eventually acquiring it. The number of cycles is
+            //        encoded as a 29-bit unsigned int, or in the case that the current
+            //        holder did not wait but another waiter is queued, the LSB
+            //        (kSpinLockSleeper) is set. The implementation does not explicitly
+            //        track the number of queued waiters beyond this. It must always be
+            //        assumed that waiters may exist if the current holder was required to
+            //        queue.
+            //
+            // Invariant: if the lock is not held, the value is either 0 or
+            // kSpinLockCooperative.
+            static constexpr uint32_t kSpinLockHeld = 1;
+            static constexpr uint32_t kSpinLockCooperative = 2;
+            static constexpr uint32_t kSpinLockDisabledScheduling = 4;
+            static constexpr uint32_t kSpinLockSleeper = 8;
+            // Includes kSpinLockSleeper.
+            static constexpr uint32_t kWaitTimeMask = ~(kSpinLockHeld | kSpinLockCooperative | kSpinLockDisabledScheduling);
 
-  // Returns true if the provided scheduling mode is cooperative.
-  static constexpr bool IsCooperative(SchedulingMode scheduling_mode) {
-    return scheduling_mode == SCHEDULE_COOPERATIVE_AND_KERNEL;
-  }
+            // Returns true if the provided scheduling mode is cooperative.
+            static constexpr bool IsCooperative(SchedulingMode scheduling_mode) {
+                return scheduling_mode == SCHEDULE_COOPERATIVE_AND_KERNEL;
+            }
 
-  constexpr void RegisterWithTsan() {
+            constexpr void RegisterWithTsan() {
 #if KUMO_HAVE_BUILTIN(__builtin_is_constant_evaluated)
-    if (!__builtin_is_constant_evaluated()) {
-      TURBO_TSAN_MUTEX_CREATE(this, __tsan_mutex_not_static);
-    }
+                if (!__builtin_is_constant_evaluated()) {
+                    TURBO_TSAN_MUTEX_CREATE(this, __tsan_mutex_not_static);
+                }
 #endif
-  }
+            }
 
-  bool IsCooperative() const {
-    return lockword_.load(std::memory_order_relaxed) & kSpinLockCooperative;
-  }
+            bool IsCooperative() const {
+                return lockword_.load(std::memory_order_relaxed) & kSpinLockCooperative;
+            }
 
-  uint32_t TryLockInternal(uint32_t lock_value, uint32_t wait_cycles);
-  void SlowLock() KUMO_ATTRIBUTE_COLD;
-  void SlowUnlock(uint32_t lock_value) KUMO_ATTRIBUTE_COLD;
-  uint32_t SpinLoop();
+            uint32_t TryLockInternal(uint32_t lock_value, uint32_t wait_cycles);
+            void SlowLock() KUMO_ATTRIBUTE_COLD;
+            void SlowUnlock(uint32_t lock_value) KUMO_ATTRIBUTE_COLD;
+            uint32_t SpinLoop();
 
-  inline bool TryLockImpl() {
-    uint32_t lock_value = lockword_.load(std::memory_order_relaxed);
-    return (TryLockInternal(lock_value, 0) & kSpinLockHeld) == 0;
-  }
+            inline bool TryLockImpl() {
+                uint32_t lock_value = lockword_.load(std::memory_order_relaxed);
+                return (TryLockInternal(lock_value, 0) & kSpinLockHeld) == 0;
+            }
 
-  std::atomic<uint32_t> lockword_;
+            std::atomic<uint32_t> lockword_;
 
-  SpinLock(const SpinLock&) = delete;
-  SpinLock& operator=(const SpinLock&) = delete;
-};
+            SpinLock(const SpinLock&) = delete;
+            SpinLock& operator=(const SpinLock&) = delete;
+        };
 
-// Corresponding locker object that arranges to acquire a spinlock for
-// the duration of a C++ scope.
-class TURBO_SCOPED_LOCKABLE [[nodiscard]] SpinLockHolder
-    : public std::lock_guard<SpinLock> {
- public:
-  inline explicit SpinLockHolder(
-      SpinLock& l KUMO_INTERNAL_ATTRIBUTE_CAPTURED_BY_THIS)
-      TURBO_EXCLUSIVE_LOCK_FUNCTION(l)
-      : std::lock_guard<SpinLock>(l) {}
-  KUMO_DEPRECATE_AND_INLINE()
-  inline explicit SpinLockHolder(SpinLock* l) TURBO_EXCLUSIVE_LOCK_FUNCTION(l)
-      : SpinLockHolder(*l) {}
+        // Corresponding locker object that arranges to acquire a spinlock for
+        // the duration of a C++ scope.
+        class TURBO_SCOPED_LOCKABLE [[nodiscard]] SpinLockHolder
+            : public std::lock_guard<SpinLock> {
+        public:
+            inline explicit SpinLockHolder(
+                SpinLock& l KUMO_INTERNAL_ATTRIBUTE_CAPTURED_BY_THIS)
+                TURBO_EXCLUSIVE_LOCK_FUNCTION(l)
+                : std::lock_guard<SpinLock>(l) { }
+            KUMO_DEPRECATE_AND_INLINE()
+            inline explicit SpinLockHolder(SpinLock* l) TURBO_EXCLUSIVE_LOCK_FUNCTION(l)
+                : SpinLockHolder(*l) { }
 
-  inline ~SpinLockHolder() TURBO_UNLOCK_FUNCTION() = default;
-};
+            inline ~SpinLockHolder() TURBO_UNLOCK_FUNCTION() = default;
+        };
 
-// Register a hook for profiling support.
-//
-// The function pointer registered here will be called whenever a spinlock is
-// contended.  The callback is given an opaque handle to the contended spinlock
-// and the number of wait cycles.  This is thread-safe, but only a single
-// profiler can be registered.  It is an error to call this function multiple
-// times with different arguments.
-void RegisterSpinLockProfiler(void (*fn)(const void* lock,
-                                         int64_t wait_cycles));
+        // Register a hook for profiling support.
+        //
+        // The function pointer registered here will be called whenever a spinlock is
+        // contended.  The callback is given an opaque handle to the contended spinlock
+        // and the number of wait cycles.  This is thread-safe, but only a single
+        // profiler can be registered.  It is an error to call this function multiple
+        // times with different arguments.
+        void RegisterSpinLockProfiler(void (*fn)(const void* lock,
+            int64_t wait_cycles));
 
-//------------------------------------------------------------------------------
-// Public interface ends here.
-//------------------------------------------------------------------------------
+        //------------------------------------------------------------------------------
+        // Public interface ends here.
+        //------------------------------------------------------------------------------
 
-// If (result & kSpinLockHeld) == 0, then *this was successfully locked.
-// Otherwise, returns last observed value for lockword_.
-inline uint32_t SpinLock::TryLockInternal(uint32_t lock_value,
-                                          uint32_t wait_cycles) {
-  if ((lock_value & kSpinLockHeld) != 0) {
-    return lock_value;
-  }
+        // If (result & kSpinLockHeld) == 0, then *this was successfully locked.
+        // Otherwise, returns last observed value for lockword_.
+        inline uint32_t SpinLock::TryLockInternal(uint32_t lock_value,
+            uint32_t wait_cycles) {
+            if ((lock_value & kSpinLockHeld) != 0) {
+                return lock_value;
+            }
 
-  uint32_t sched_disabled_bit = 0;
-  if ((lock_value & kSpinLockCooperative) == 0) {
-    // For non-cooperative locks we must make sure we mark ourselves as
-    // non-reschedulable before we attempt to CompareAndSwap.
-    if (SchedulingGuard::DisableRescheduling()) {
-      sched_disabled_bit = kSpinLockDisabledScheduling;
-    }
-  }
+            uint32_t sched_disabled_bit = 0;
+            if ((lock_value & kSpinLockCooperative) == 0) {
+                // For non-cooperative locks we must make sure we mark ourselves as
+                // non-reschedulable before we attempt to CompareAndSwap.
+                if (SchedulingGuard::DisableRescheduling()) {
+                    sched_disabled_bit = kSpinLockDisabledScheduling;
+                }
+            }
 
-  if (!lockword_.compare_exchange_strong(
-          lock_value,
-          kSpinLockHeld | lock_value | wait_cycles | sched_disabled_bit,
-          std::memory_order_acquire, std::memory_order_relaxed)) {
-    SchedulingGuard::EnableRescheduling(sched_disabled_bit != 0);
-  }
+            if (!lockword_.compare_exchange_strong(
+                    lock_value,
+                    kSpinLockHeld | lock_value | wait_cycles | sched_disabled_bit,
+                    std::memory_order_acquire, std::memory_order_relaxed)) {
+                SchedulingGuard::EnableRescheduling(sched_disabled_bit != 0);
+            }
 
-  return lock_value;
-}
+            return lock_value;
+        }
 
-}  // namespace base_internal
+    } // namespace base_internal
 
-}  // namespace turbo
+} // namespace turbo
 
-#endif  // TURBO_BASE_INTERNAL_SPINLOCK_H_
+#endif // TURBO_BASE_INTERNAL_SPINLOCK_H_

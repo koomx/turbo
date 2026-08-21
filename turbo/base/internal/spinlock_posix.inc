@@ -19,28 +19,28 @@
 #include <atomic>
 #include <ctime>
 
-#include <turbo/base/internal/errno_saver.h>
 #include <turbo/base/internal/scheduling_mode.h>
 #include <turbo/macros/config.h>
+#include <turbo/platform/strerror.h>
 
 extern "C" {
 
 KUMO_ATTRIBUTE_WEAK void TURBO_INTERNAL_C_SYMBOL(TurboInternalSpinLockDelay)(
     std::atomic<uint32_t>* /* lock_word */, uint32_t /* value */, int loop,
     turbo::base_internal::SchedulingMode /* mode */) {
-  turbo::base_internal::ErrnoSaver errno_saver;
-  if (loop == 0) {
-  } else if (loop == 1) {
-    sched_yield();
-  } else {
-    struct timespec tm;
-    tm.tv_sec = 0;
-    tm.tv_nsec = turbo::base_internal::SpinLockSuggestedDelayNS(loop);
-    nanosleep(&tm, nullptr);
-  }
+    turbo::ErrnoSaver errno_saver;
+    if (loop == 0) {
+    } else if (loop == 1) {
+        sched_yield();
+    } else {
+        struct timespec tm;
+        tm.tv_sec = 0;
+        tm.tv_nsec = turbo::base_internal::SpinLockSuggestedDelayNS(loop);
+        nanosleep(&tm, nullptr);
+    }
 }
 
 KUMO_ATTRIBUTE_WEAK void TURBO_INTERNAL_C_SYMBOL(TurboInternalSpinLockWake)(
-    std::atomic<uint32_t>* /* lock_word */, bool /* all */) {}
+    std::atomic<uint32_t>* /* lock_word */, bool /* all */) { }
 
-}  // extern "C"
+} // extern "C"

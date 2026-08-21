@@ -23,7 +23,7 @@
 #include <utility>
 
 #include <turbo/macros/config.h>
-#include <turbo/base/internal/strerror.h>
+#include <turbo/platform/strerror.h>
 #include <turbo/base/no_destructor.h>
 #include <turbo/base/nullability.h>
 #include <turbo/status/internal/status_internal.h>
@@ -85,12 +85,12 @@ namespace turbo {
         return os << status_code_to_string(code);
     }
 
-    const std::string * turbo_nonnull Status::EmptyString() {
+    const std::string * turbo_nonnull Status::empty_string() {
         static const turbo::NoDestructor<std::string> kEmpty;
         return kEmpty.get();
     }
 
-    const std::string * turbo_nonnull Status::MovedFromString() {
+    const std::string * turbo_nonnull Status::moved_from_string() {
         static const turbo::NoDestructor<std::string> kMovedFrom(kMovedFromString);
         return kMovedFrom.get();
     }
@@ -138,12 +138,12 @@ namespace turbo {
                                             turbo::SourceLocation loc) {
         if (is_inlined(rep)) return rep;
         if (loc.file_name()[0] == '\0') return rep;
-        status_internal::StatusRep *rep_ptr = PrepareToModify(rep);
+        status_internal::StatusRep *rep_ptr = prepare_to_modify(rep);
         rep_ptr->add_source_location(loc);
         return pointer_to_rep(rep_ptr);
     }
 
-    status_internal::StatusRep * turbo_nonnull Status::PrepareToModify(
+    status_internal::StatusRep * turbo_nonnull Status::prepare_to_modify(
         uintptr_t rep) {
         if (is_inlined(rep)) {
             return new status_internal::StatusRep(inlined_rep_to_code(rep),
@@ -414,7 +414,7 @@ namespace turbo {
         std::string MessageForErrnoToStatus(int error_number,
                                             std::string_view message) {
             return turbo::str_cat(message, ": ",
-                                 turbo::base_internal::StrError(error_number));
+                                 turbo::str_error(error_number));
         }
     } // namespace
 

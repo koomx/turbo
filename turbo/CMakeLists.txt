@@ -38,14 +38,12 @@ set(BASE_SRC
         base/internal/low_level_alloc.cc
         base/internal/poison.cc
         base/internal/raw_logging.cc
-        base/internal/scoped_set_env.cc
         base/internal/spinlock_akaros.inc
         base/internal/spinlock.cc
         base/internal/spinlock_linux.inc
         base/internal/spinlock_posix.inc
         base/internal/spinlock_wait.cc
         base/internal/spinlock_win32.inc
-        base/internal/strerror.cc
         base/internal/sysinfo.cc
         base/internal/thread_identity.cc
         base/internal/tracing.cc
@@ -157,7 +155,10 @@ set(NUM_SRC
         numeric/int128_no_intrinsic.inc
 )
 
-
+set(PLATFORM_SRC
+        platform/environment.cc
+        platform/strerror.cc
+)
 
 set(STATUS_SRC
         status/internal/status_internal.cc
@@ -275,6 +276,7 @@ set(TURBO_SRC
         ${HASH_SRC}
         ${LOG_SRC}
         ${NUM_SRC}
+        ${PLATFORM_SRC}
         ${STATUS_SRC}
         ${STRINGS_SRC}
         ${TIME_SRC}

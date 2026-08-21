@@ -24,7 +24,7 @@
 #include <ctime>
 
 #include <turbo/macros/config.h>
-#include <turbo/base/internal/errno_saver.h>
+#include <turbo/platform/strerror.h>
 
 // The SpinLock lockword is `std::atomic<uint32_t>`. Here we assert that
 // `std::atomic<uint32_t>` is bitwise equivalent of the `int` expected
@@ -33,7 +33,7 @@
 // std::atomic<> API. C++ provides no guarantees of these assumptions,
 // but they are believed to hold in practice.
 static_assert(sizeof(std::atomic<uint32_t>) == sizeof(int),
-              "SpinLock lockword has the wrong size for a futex");
+    "SpinLock lockword has the wrong size for a futex");
 
 // Some Android headers are missing these definitions even though they
 // support these futex operations.
@@ -57,15 +57,15 @@ static_assert(sizeof(std::atomic<uint32_t>) == sizeof(int),
 extern "C" {
 
 KUMO_ATTRIBUTE_WEAK void TURBO_INTERNAL_C_SYMBOL(TurboInternalSpinLockDelay)(
-    std::atomic<uint32_t> *w, uint32_t value, int,
+    std::atomic<uint32_t>* w, uint32_t value, int,
     turbo::base_internal::SchedulingMode) {
-  turbo::base_internal::ErrnoSaver errno_saver;
-  syscall(SYS_futex, w, FUTEX_WAIT | FUTEX_PRIVATE_FLAG, value, nullptr);
+    turbo::base_internal::ErrnoSaver errno_saver;
+    syscall(SYS_futex, w, FUTEX_WAIT | FUTEX_PRIVATE_FLAG, value, nullptr);
 }
 
 KUMO_ATTRIBUTE_WEAK void TURBO_INTERNAL_C_SYMBOL(TurboInternalSpinLockWake)(
-    std::atomic<uint32_t> *w, bool all) {
-  syscall(SYS_futex, w, FUTEX_WAKE | FUTEX_PRIVATE_FLAG, all ? INT_MAX : 1, 0);
+    std::atomic<uint32_t>* w, bool all) {
+    syscall(SYS_futex, w, FUTEX_WAKE | FUTEX_PRIVATE_FLAG, all ? INT_MAX : 1, 0);
 }
 
-}  // extern "C"
+} // extern "C"

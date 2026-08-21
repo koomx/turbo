@@ -25,7 +25,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <turbo/macros/config.h>
-#include <turbo/base/internal/errno_saver.h>
+#include <turbo/platform/strerror.h>
 #include <turbo/types/span.h>
 
 static int g_should_fixup_calls = 0;

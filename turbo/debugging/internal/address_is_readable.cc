@@ -36,7 +36,7 @@ bool AddressIsReadable(const void* /* addr */) { return true; }
 #include <syscall.h>
 #include <unistd.h>
 
-#include <turbo/base/internal/errno_saver.h>
+#include <turbo/platform/strerror.h>
 #include <turbo/base/internal/raw_logging.h>
 
 namespace turbo {

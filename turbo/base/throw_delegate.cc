@@ -19,187 +19,185 @@
 #include <new>
 #include <stdexcept>
 
-#include <turbo/macros/config.h>
 #include <turbo/base/internal/raw_logging.h>
+#include <turbo/macros/config.h>
 
 namespace turbo {
 
+    void ThrowStdLogicError(const std::string& what_arg) {
+#if KUMO_HAVE_EXCEPTIONS
+        throw std::logic_error(what_arg);
+#else
+        TURBO_RAW_LOG(FATAL, "%s", what_arg.c_str());
+        std::abort();
+#endif
+    }
+    void ThrowStdLogicError(const char* what_arg) {
+#if KUMO_HAVE_EXCEPTIONS
+        throw std::logic_error(what_arg);
+#else
+        TURBO_RAW_LOG(FATAL, "%s", what_arg);
+        std::abort();
+#endif
+    }
+    void ThrowStdInvalidArgument(const std::string& what_arg) {
+#if KUMO_HAVE_EXCEPTIONS
+        throw std::invalid_argument(what_arg);
+#else
+        TURBO_RAW_LOG(FATAL, "%s", what_arg.c_str());
+        std::abort();
+#endif
+    }
+    void ThrowStdInvalidArgument(const char* what_arg) {
+#if KUMO_HAVE_EXCEPTIONS
+        throw std::invalid_argument(what_arg);
+#else
+        TURBO_RAW_LOG(FATAL, "%s", what_arg);
+        std::abort();
+#endif
+    }
 
-void ThrowStdLogicError(const std::string& what_arg) {
+    void ThrowStdDomainError(const std::string& what_arg) {
 #if KUMO_HAVE_EXCEPTIONS
-  throw std::logic_error(what_arg);
+        throw std::domain_error(what_arg);
 #else
-  TURBO_RAW_LOG(FATAL, "%s", what_arg.c_str());
-  std::abort();
+        TURBO_RAW_LOG(FATAL, "%s", what_arg.c_str());
+        std::abort();
 #endif
-}
-void ThrowStdLogicError(const char* what_arg) {
+    }
+    void ThrowStdDomainError(const char* what_arg) {
 #if KUMO_HAVE_EXCEPTIONS
-  throw std::logic_error(what_arg);
+        throw std::domain_error(what_arg);
 #else
-  TURBO_RAW_LOG(FATAL, "%s", what_arg);
-  std::abort();
+        TURBO_RAW_LOG(FATAL, "%s", what_arg);
+        std::abort();
 #endif
-}
-void ThrowStdInvalidArgument(const std::string& what_arg) {
-#if KUMO_HAVE_EXCEPTIONS
-  throw std::invalid_argument(what_arg);
-#else
-  TURBO_RAW_LOG(FATAL, "%s", what_arg.c_str());
-  std::abort();
-#endif
-}
-void ThrowStdInvalidArgument(const char* what_arg) {
-#if KUMO_HAVE_EXCEPTIONS
-  throw std::invalid_argument(what_arg);
-#else
-  TURBO_RAW_LOG(FATAL, "%s", what_arg);
-  std::abort();
-#endif
-}
+    }
 
-void ThrowStdDomainError(const std::string& what_arg) {
+    void ThrowStdLengthError(const std::string& what_arg) {
 #if KUMO_HAVE_EXCEPTIONS
-  throw std::domain_error(what_arg);
+        throw std::length_error(what_arg);
 #else
-  TURBO_RAW_LOG(FATAL, "%s", what_arg.c_str());
-  std::abort();
+        TURBO_RAW_LOG(FATAL, "%s", what_arg.c_str());
+        std::abort();
 #endif
-}
-void ThrowStdDomainError(const char* what_arg) {
+    }
+    void ThrowStdLengthError(const char* what_arg) {
 #if KUMO_HAVE_EXCEPTIONS
-  throw std::domain_error(what_arg);
+        throw std::length_error(what_arg);
 #else
-  TURBO_RAW_LOG(FATAL, "%s", what_arg);
-  std::abort();
+        TURBO_RAW_LOG(FATAL, "%s", what_arg);
+        std::abort();
 #endif
-}
+    }
 
-void ThrowStdLengthError(const std::string& what_arg) {
+    void ThrowStdOutOfRange(const std::string& what_arg) {
 #if KUMO_HAVE_EXCEPTIONS
-  throw std::length_error(what_arg);
+        throw std::out_of_range(what_arg);
 #else
-  TURBO_RAW_LOG(FATAL, "%s", what_arg.c_str());
-  std::abort();
+        TURBO_RAW_LOG(FATAL, "%s", what_arg.c_str());
+        std::abort();
 #endif
-}
-void ThrowStdLengthError(const char* what_arg) {
+    }
+    void ThrowStdOutOfRange(const char* what_arg) {
 #if KUMO_HAVE_EXCEPTIONS
-  throw std::length_error(what_arg);
+        throw std::out_of_range(what_arg);
 #else
-  TURBO_RAW_LOG(FATAL, "%s", what_arg);
-  std::abort();
+        TURBO_RAW_LOG(FATAL, "%s", what_arg);
+        std::abort();
 #endif
-}
+    }
 
-void ThrowStdOutOfRange(const std::string& what_arg) {
+    void ThrowStdRuntimeError(const std::string& what_arg) {
 #if KUMO_HAVE_EXCEPTIONS
-  throw std::out_of_range(what_arg);
+        throw std::runtime_error(what_arg);
 #else
-  TURBO_RAW_LOG(FATAL, "%s", what_arg.c_str());
-  std::abort();
+        TURBO_RAW_LOG(FATAL, "%s", what_arg.c_str());
+        std::abort();
 #endif
-}
-void ThrowStdOutOfRange(const char* what_arg) {
+    }
+    void ThrowStdRuntimeError(const char* what_arg) {
 #if KUMO_HAVE_EXCEPTIONS
-  throw std::out_of_range(what_arg);
+        throw std::runtime_error(what_arg);
 #else
-  TURBO_RAW_LOG(FATAL, "%s", what_arg);
-  std::abort();
+        TURBO_RAW_LOG(FATAL, "%s", what_arg);
+        std::abort();
 #endif
-}
+    }
 
-void ThrowStdRuntimeError(const std::string& what_arg) {
+    void ThrowStdRangeError(const std::string& what_arg) {
 #if KUMO_HAVE_EXCEPTIONS
-  throw std::runtime_error(what_arg);
+        throw std::range_error(what_arg);
 #else
-  TURBO_RAW_LOG(FATAL, "%s", what_arg.c_str());
-  std::abort();
+        TURBO_RAW_LOG(FATAL, "%s", what_arg.c_str());
+        std::abort();
 #endif
-}
-void ThrowStdRuntimeError(const char* what_arg) {
+    }
+    void ThrowStdRangeError(const char* what_arg) {
 #if KUMO_HAVE_EXCEPTIONS
-  throw std::runtime_error(what_arg);
+        throw std::range_error(what_arg);
 #else
-  TURBO_RAW_LOG(FATAL, "%s", what_arg);
-  std::abort();
+        TURBO_RAW_LOG(FATAL, "%s", what_arg);
+        std::abort();
 #endif
-}
+    }
 
-void ThrowStdRangeError(const std::string& what_arg) {
+    void ThrowStdOverflowError(const std::string& what_arg) {
 #if KUMO_HAVE_EXCEPTIONS
-  throw std::range_error(what_arg);
+        throw std::overflow_error(what_arg);
 #else
-  TURBO_RAW_LOG(FATAL, "%s", what_arg.c_str());
-  std::abort();
+        TURBO_RAW_LOG(FATAL, "%s", what_arg.c_str());
+        std::abort();
 #endif
-}
-void ThrowStdRangeError(const char* what_arg) {
+    }
+    void ThrowStdOverflowError(const char* what_arg) {
 #if KUMO_HAVE_EXCEPTIONS
-  throw std::range_error(what_arg);
+        throw std::overflow_error(what_arg);
 #else
-  TURBO_RAW_LOG(FATAL, "%s", what_arg);
-  std::abort();
+        TURBO_RAW_LOG(FATAL, "%s", what_arg);
+        std::abort();
 #endif
-}
+    }
 
-void ThrowStdOverflowError(const std::string& what_arg) {
+    void ThrowStdUnderflowError(const std::string& what_arg) {
 #if KUMO_HAVE_EXCEPTIONS
-  throw std::overflow_error(what_arg);
+        throw std::underflow_error(what_arg);
 #else
-  TURBO_RAW_LOG(FATAL, "%s", what_arg.c_str());
-  std::abort();
+        TURBO_RAW_LOG(FATAL, "%s", what_arg.c_str());
+        std::abort();
 #endif
-}
-void ThrowStdOverflowError(const char* what_arg) {
+    }
+    void ThrowStdUnderflowError(const char* what_arg) {
 #if KUMO_HAVE_EXCEPTIONS
-  throw std::overflow_error(what_arg);
+        throw std::underflow_error(what_arg);
 #else
-  TURBO_RAW_LOG(FATAL, "%s", what_arg);
-  std::abort();
+        TURBO_RAW_LOG(FATAL, "%s", what_arg);
+        std::abort();
 #endif
-}
+    }
 
-void ThrowStdUnderflowError(const std::string& what_arg) {
+    void ThrowStdBadFunctionCall() {
 #if KUMO_HAVE_EXCEPTIONS
-  throw std::underflow_error(what_arg);
+        throw std::bad_function_call();
 #else
-  TURBO_RAW_LOG(FATAL, "%s", what_arg.c_str());
-  std::abort();
+        std::abort();
 #endif
-}
-void ThrowStdUnderflowError(const char* what_arg) {
+    }
+
+    void ThrowStdBadAlloc() {
 #if KUMO_HAVE_EXCEPTIONS
-  throw std::underflow_error(what_arg);
+        throw std::bad_alloc();
 #else
-  TURBO_RAW_LOG(FATAL, "%s", what_arg);
-  std::abort();
+        std::abort();
 #endif
-}
+    }
 
-void ThrowStdBadFunctionCall() {
+    void ThrowStdBadArrayNewLength() {
 #if KUMO_HAVE_EXCEPTIONS
-  throw std::bad_function_call();
+        throw std::bad_array_new_length();
 #else
-  std::abort();
+        std::abort();
 #endif
-}
+    }
 
-void ThrowStdBadAlloc() {
-#if KUMO_HAVE_EXCEPTIONS
-  throw std::bad_alloc();
-#else
-  std::abort();
-#endif
-}
-
-void ThrowStdBadArrayNewLength() {
-#if KUMO_HAVE_EXCEPTIONS
-  throw std::bad_array_new_length();
-#else
-  std::abort();
-#endif
-}
-
-
-}  // namespace turbo
+} // namespace turbo
