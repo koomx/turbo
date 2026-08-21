@@ -541,9 +541,9 @@ namespace turbo {
         // from a status code), this will be empty.
         decltype(auto) GetPreviousSourceLocations() const {
             if (rep_ == nullptr) {
-                return turbo::ok_status().GetSourceLocations();
+                return turbo::ok_status().get_source_locations();
             }
-            return rep_->status.GetSourceLocations();
+            return rep_->status.get_source_locations();
         }
 
         // Returns a string based on the `mode`. This produces the same string as

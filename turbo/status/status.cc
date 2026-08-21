@@ -107,7 +107,7 @@ namespace turbo {
                                 turbo::SourceLocation loc) {
         static_assert(std::is_same_v<StringOrView, std::string_view> ||
                       std::is_same_v<StringOrView, std::string &&>);
-        bool ok = inlined_rep == Status::code_to_inlined_rep(turbo::StatusCode::kOk);
+        bool ok = Status::inlined_rep_to_code(inlined_rep) == turbo::StatusCode::kOk;
         if (ok) return inlined_rep;
         if (msg.empty()
         ) {
@@ -115,7 +115,9 @@ namespace turbo {
         }
         auto *rep =
                 new status_internal::StatusRep(Status::inlined_rep_to_code(inlined_rep),
-                                               std::forward<StringOrView>(msg), nullptr);
+                                               std::forward<StringOrView>(msg), nullptr,
+                                               Status::inlined_rep_to_sub_type(inlined_rep),
+                                               Status::inlined_rep_to_sub_code(inlined_rep));
         if (loc.file_name()[0] != '\0') {
             rep->add_source_location(loc);
         }
@@ -143,18 +145,55 @@ namespace turbo {
         return pointer_to_rep(rep_ptr);
     }
 
+    uintptr_t Status::set_sub_impl(uintptr_t rep, SubStatusType type, int32_t sub_code) {
+        if (is_inlined(rep)) {
+            return pack_inlined_rep(inlined_rep_to_code(rep), type, sub_code,
+                is_moved_from(rep));
+        }
+        status_internal::StatusRep *rep_ptr = prepare_to_modify(rep);
+        rep_ptr->set_sub(type, sub_code);
+        return pointer_to_rep(rep_ptr);
+    }
+
     status_internal::StatusRep * turbo_nonnull Status::prepare_to_modify(
         uintptr_t rep) {
         if (is_inlined(rep)) {
             return new status_internal::StatusRep(inlined_rep_to_code(rep),
-                                                  std::string_view(), nullptr);
+                                                  std::string_view(), nullptr,
+                                                  inlined_rep_to_sub_type(rep),
+                                                  inlined_rep_to_sub_code(rep));
         }
         return rep_to_pointer(rep)->CloneAndUnref();
     }
 
+    std::string to_string(SubStatusType s) {
+        switch (s) {
+            case kSubErrno:
+                return "errno";
+            case kSubSignal:
+                return "signal";
+            case kSubUser:
+                return "user";
+            default:
+                return std::to_string(s);
+        }
+    }
+
+    namespace {
+        std::string format_status_head(StatusCode code, SubStatusType type, int32_t sub) {
+            return turbo::str_cat(turbo::status_code_to_string(code), "(s",
+                static_cast<unsigned>(type), ":", sub, ")");
+        }
+    } // namespace
+
     std::string Status::to_string_slow(uintptr_t rep, StatusToStringMode mode) {
         if (is_inlined(rep)) {
-            return turbo::str_cat(turbo::status_code_to_string(inlined_rep_to_code(rep)), ": ");
+            std::string head = format_status_head(inlined_rep_to_code(rep),
+                inlined_rep_to_sub_type(rep), inlined_rep_to_sub_code(rep));
+            if (is_moved_from(rep)) {
+                return turbo::str_cat(head, ": ", kMovedFromString);
+            }
+            return head;
         }
         return rep_to_pointer(rep)->ToString(mode);
     }
@@ -420,8 +459,12 @@ namespace turbo {
 
     Status ErrnoToStatus(int error_number, std::string_view message,
                          turbo::SourceLocation loc) {
-        return Status(ErrnoToStatusCode(error_number),
-                      MessageForErrnoToStatus(error_number, message), loc);
+        return Status(ErrnoToStatusCode(error_number), kSubErrno, error_number,
+            MessageForErrnoToStatus(error_number, message), loc);
+    }
+
+    Status ErrnoToStatus(int error_number) {
+        return Status(ErrnoToStatusCode(error_number), kSubErrno, error_number);
     }
 
     const char * turbo_nonnull status_message_as_cstr(const Status &status) {

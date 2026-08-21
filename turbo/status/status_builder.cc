@@ -115,7 +115,8 @@ namespace turbo {
             KUMO_ASSERT(!status.ok());
 
             if (message.empty()) {
-                return turbo::Status(status.code(), message, turbo::SourceLocation());
+                return turbo::Status(status.code(), status.sub_type(), status.sub_code(),
+                    message, turbo::SourceLocation());
             }
 
             using StatusRep =
@@ -124,7 +125,8 @@ namespace turbo {
             StatusRep *rep;
             if (Status::is_inlined(status.rep_)) {
                 rep = new StatusRep(Status::inlined_rep_to_code(status.rep_), message,
-                                    nullptr);
+                                    nullptr, Status::inlined_rep_to_sub_type(status.rep_),
+                                    Status::inlined_rep_to_sub_code(status.rep_));
             } else {
                 rep = Status::rep_to_pointer(status.rep_)->Clone(message, true, true);
             }

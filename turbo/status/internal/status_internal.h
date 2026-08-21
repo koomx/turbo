@@ -25,13 +25,13 @@
 #include <utility>
 #include <vector>
 
-#include <turbo/types/source_location.h>
 #include <string_view>
 #include <turbo/base/nullability.h>
 #include <turbo/functional/function_ref.h>
 #include <turbo/macros/config.h>
 #include <turbo/types/inlined_vector.h>
 #include <turbo/types/optional_ref.h>
+#include <turbo/types/source_location.h>
 #include <turbo/types/span.h>
 
 #ifndef SWIG
@@ -53,7 +53,7 @@ namespace turbo {
 #endif // !SWIG
 
 namespace turbo {
-    enum class StatusCode : int;
+    enum class StatusCode : uint8_t;
     enum class StatusToStringMode : int;
 
     // Forward declaration of Result for Status friendship.
@@ -78,9 +78,12 @@ namespace turbo {
         class StatusRep {
         public:
             StatusRep(turbo::StatusCode code_arg, std::string_view message_arg,
-                std::unique_ptr<status_internal::Payloads> payloads_arg)
+                std::unique_ptr<status_internal::Payloads> payloads_arg,
+                uint8_t sub_type_arg = 0, int32_t sub_code_arg = 0)
                 : ref_(int32_t { 1 })
                 , code_(code_arg)
+                , sub_type_(sub_type_arg)
+                , sub_code_(sub_code_arg)
                 , message_(message_arg)
                 , payloads_(std::move(payloads_arg)) {
             }
@@ -88,14 +91,23 @@ namespace turbo {
             template <typename String,
                 typename = std::enable_if_t<std::is_same_v<String, std::string>>>
             StatusRep(turbo::StatusCode code_arg, String&& message_arg,
-                std::unique_ptr<status_internal::Payloads> payloads_arg)
+                std::unique_ptr<status_internal::Payloads> payloads_arg,
+                uint8_t sub_type_arg = 0, int32_t sub_code_arg = 0)
                 : ref_(int32_t { 1 })
                 , code_(code_arg)
+                , sub_type_(sub_type_arg)
+                , sub_code_(sub_code_arg)
                 , message_(std::forward<String>(message_arg))
                 , payloads_(std::move(payloads_arg)) {
             }
 
             turbo::StatusCode code() const { return code_; }
+            uint8_t sub_type() const { return sub_type_; }
+            int32_t sub_code() const { return sub_code_; }
+            void set_sub(uint8_t type, int32_t code) {
+                sub_type_ = type;
+                sub_code_ = code;
+            }
             const std::string& message() const { return message_; }
 
             // Ref and unref are const to allow access through a const pointer, and are
@@ -120,7 +132,7 @@ namespace turbo {
                 turbo::FunctionRef<void(std::string_view, const std::string&)> visitor)
                 const;
 
-            turbo::Span<const turbo::SourceLocation> GetSourceLocations() const;
+            turbo::Span<const turbo::SourceLocation> get_source_locations() const;
 
             void add_source_location(turbo::SourceLocation loc);
 
@@ -149,6 +161,8 @@ namespace turbo {
         private:
             mutable std::atomic<int32_t> ref_;
             turbo::StatusCode code_;
+            uint8_t sub_type_ { 0 };
+            int32_t sub_code_ { 0 };
 
             // As an internal implementation detail, we guarantee that if status.message()
             // is non-empty, then the resulting std::string_view is null terminated.

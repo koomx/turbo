@@ -32,7 +32,7 @@ set(STATUS_TESTS
         status_macros_test
         status_matchers_test
         status_test
-        statusor_test
+        result_test
 )
 
 foreach (case IN LISTS STATUS_TESTS)
