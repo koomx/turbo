@@ -79,14 +79,14 @@ namespace turbo {
 
             // These constructors are slightly smaller/faster to call; the severity is
             // curried into the function pointer.
-            LogMessage(const char * turbo_nonnull file, int line,
-                       InfoTag) KUMO_ATTRIBUTE_COLD KUMO_ATTRIBUTE_NOINLINE;
+           KUMO_ATTRIBUTE_NOINLINE LogMessage(const char * turbo_nonnull file, int line,
+                       InfoTag) KUMO_ATTRIBUTE_COLD;
 
-            LogMessage(const char * turbo_nonnull file, int line,
-                       WarningTag) KUMO_ATTRIBUTE_COLD KUMO_ATTRIBUTE_NOINLINE;
+           KUMO_ATTRIBUTE_NOINLINE LogMessage(const char * turbo_nonnull file, int line,
+                       WarningTag) KUMO_ATTRIBUTE_COLD;
 
-            LogMessage(const char * turbo_nonnull file, int line,
-                       ErrorTag) KUMO_ATTRIBUTE_COLD KUMO_ATTRIBUTE_NOINLINE;
+           KUMO_ATTRIBUTE_NOINLINE LogMessage(const char * turbo_nonnull file, int line,
+                       ErrorTag) KUMO_ATTRIBUTE_COLD;
 
             LogMessage(const LogMessage &) = delete;
 
