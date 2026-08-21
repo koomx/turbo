@@ -264,7 +264,7 @@ namespace turbo {
                             return this->value;
 
                         __m256i zero = __lasx_xvldi(0);
-                        __m256i UnicodeResult, shuf;
+                        __m256i result, shuf;
                         if (N < 16) {
                             shuf = __lasx_xvld(prev_shuf_table[N], 0);
 
@@ -274,7 +274,7 @@ namespace turbo {
                             __m256i srl_prev = __lasx_xvbsrl_v(
                                 __lasx_xvpermi_q(zero, prev_chunk.value, 0b00110001), (16 - N));
                             __m256i mask = __lasx_xvld(bitsel_mask_table[N], 0);
-                            result = __lasx_xvbitsel_v(UnicodeResult, srl_prev, mask);
+                            result = __lasx_xvbitsel_v(result, srl_prev, mask);
 
                             return result;
                         } else if (N == 16) {

@@ -12,7 +12,7 @@ validating_utf8_to_fixed_length(const char* str, size_t len, OUTPUT* dwords) {
     static_assert(
         UTF32 or UTF16,
         "output type has to be uint32_t (for UTF-32) or char16_t (for UTF-16)");
-    static_assert(!(UTF32 and big_endian),
+    static_assert(!(UTF32 && big_endian == Endian::big),
         "we do not currently support big-endian UTF-32");
 
     const char* ptr = str;
@@ -139,7 +139,7 @@ validating_utf8_to_fixed_length_with_constant_checks(const char* str,
     static_assert(
         UTF32 or UTF16,
         "output type has to be uint32_t (for UTF-32) or char16_t (for UTF-16)");
-    static_assert(!(UTF32 and big_endian),
+    static_assert(!(UTF32 && big_endian == Endian::big),
         "we do not currently support big-endian UTF-32");
 
     const char* ptr = str;

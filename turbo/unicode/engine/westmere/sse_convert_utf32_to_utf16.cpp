@@ -27,7 +27,7 @@ expansion_result_t sse_expand_surrogate(const __m128i x) {
             ? tables::utf32_to_utf16::pack_utf32_to_utf16le[mask]
             : tables::utf32_to_utf16::pack_utf32_to_utf16be[mask]);
 
-    const size_t u16count = (4 + popcount(mask));
+    const size_t u16count = (4 + popcount(static_cast<unsigned>(mask)));
     const auto compressed = shuffle.lookup_16(merged);
 
     return { u16count, compressed };
@@ -174,7 +174,7 @@ sse_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
                         return std::make_pair(
                             UnicodeResult(UnicodeError::SURROGATE, buf - start + k), utf16_output);
                     }
-                    *utf16_output++ = big_endian
+                    *utf16_output++ = (big_endian == Endian::big)
                         ? char16_t((uint16_t(word) >> 8) | (uint16_t(word) << 8))
                         : char16_t(word);
                 } else {

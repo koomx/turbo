@@ -38,7 +38,7 @@ __m128i lookup_pshufb_improved(const __m128i input) {
     //         0 .. 25 -> remains 0
     //        26 .. 51 -> becomes 13
     const __m128i less = _mm_cmpgt_epi8(_mm_set1_epi8(26), input);
-    result = _mm_or_si128(UnicodeResult, _mm_and_si128(less, _mm_set1_epi8(13)));
+    result = _mm_or_si128(result, _mm_and_si128(less, _mm_set1_epi8(13)));
 
     __m128i shift_LUT;
     if (base64_url) {
@@ -54,7 +54,7 @@ __m128i lookup_pshufb_improved(const __m128i input) {
     // read shift
     result = _mm_shuffle_epi8(shift_LUT, result);
 
-    return _mm_add_epi8(UnicodeResult, input);
+    return _mm_add_epi8(result, input);
 }
 
 inline __m128i insert_line_feed16(__m128i input, size_t K) {

@@ -44,7 +44,7 @@ avx2_convert_utf32_to_utf16(const char32_t* buf, size_t len,
                     if (word >= 0xD800 && word <= 0xDFFF) {
                         return std::make_pair(nullptr, utf16_output);
                     }
-                    *utf16_output++ = big_endian
+                    *utf16_output++ = (big_endian == Endian::big)
                         ? char16_t((uint16_t(word) >> 8) | (uint16_t(word) << 8))
                         : char16_t(word);
                 } else {
@@ -124,7 +124,7 @@ avx2_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
                         return std::make_pair(
                             UnicodeResult(UnicodeError::SURROGATE, buf - start + k), utf16_output);
                     }
-                    *utf16_output++ = big_endian
+                    *utf16_output++ = (big_endian == Endian::big)
                         ? char16_t((uint16_t(word) >> 8) | (uint16_t(word) << 8))
                         : char16_t(word);
                 } else {

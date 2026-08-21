@@ -1300,11 +1300,11 @@ namespace turbo {
 namespace turbo {
     IsaInfo get_westmere_info() {
         static IsaInfo ins = {
-            .compiled = UNICODE_IMPLEMENTATION_WESTMERE == 1,
-            .failback = false,
-            .required_isa = static_cast<uint32_t>(InstructionSet::SSE42),
-            .isa_name = "westmere",
-            .engine = get_westmere_instance(),
+            UNICODE_IMPLEMENTATION_WESTMERE == 1,
+            false,
+            static_cast<uint32_t>(InstructionSet::SSE42),
+             "westmere",
+            get_westmere_instance(),
         };
         return ins;
     }
