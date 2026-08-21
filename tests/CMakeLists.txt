@@ -23,6 +23,7 @@ endif ()
 
 
 add_subdirectory(algorithm)
+add_subdirectory(arch)
 add_subdirectory(base)
 add_subdirectory(bits)
 add_subdirectory(cctz)

@@ -2,7 +2,7 @@
 #define UNICODE_LSX_IMPLEMENTATION_H
 
 #include <turbo/unicode/utf.h>
-#include <turbo/arch/isadetection.h>
+#include <turbo/arch/cpu_detect.h>
 
 namespace turbo {
     namespace lsx {

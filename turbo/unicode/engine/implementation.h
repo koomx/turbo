@@ -6,7 +6,7 @@
 #include <turbo/unicode/engine/portability.h>
 #include <turbo/unicode/text_encoding.h>
 #include <turbo/unicode/error.h>
-#include <turbo/arch/isadetection.h>
+#include <turbo/arch/cpu_detect.h>
 #include <turbo/bits/bits.h>
 #include <string_view>
 

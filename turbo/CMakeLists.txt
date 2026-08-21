@@ -19,11 +19,20 @@
 
 set(ARCH_SRC
         arch/isa.cc
+        arch/arm64/apple.cc
+        arch/arm64/general.cc
+        arch/arm64/linux.cc
+        arch/fallback/unknown.cc
+        arch/loongarch/general.cc
+        arch/loongarch/linux.cc
+        arch/ppc64/general.cc
+        arch/riscv64/general.cc
+        arch/riscv64/linux.cc
+        arch/x64/general.cc
 )
 set(BASE_SRC
         base/log_severity.cc
         base/throw_delegate.cc
-        base/internal/cpu_detect.cc
         base/internal/cycleclock.cc
         base/internal/hardening.cc
         base/internal/low_level_alloc.cc

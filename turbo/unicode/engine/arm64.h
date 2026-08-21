@@ -8,7 +8,7 @@
 #define UNICODE_IMPLEMENTATION_ARM64 (KUMO_ARCH_ARM64)
 #endif
 
-#include <turbo/arch/isadetection.h>
+#include <turbo/arch/cpu_detect.h>
 
 namespace turbo {
     IsaInfo get_arm64_info();

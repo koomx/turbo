@@ -21,7 +21,7 @@
 #include <string>
 #include <string_view>
 #include <turbo/arch/instruction.h>
-#include <turbo/arch/isadetection.h>
+#include <turbo/arch/cpu_detect.h>
 #include <turbo/macros/macros.h>
 #include <type_traits>
 #include <vector>
@@ -240,7 +240,7 @@ namespace turbo {
         /// If `_force_isa` is set, replace best; missing name or null engine aborts.
         virtual void initialize_default() {
             uint32_t current_compiled = make_compiled_architectures();
-            uint32_t current_isa = internal::detect_supported_architectures();
+            uint32_t current_isa = detect_supported_architectures();
             for (auto& info : _all_isa_info) {
                 info.current_compiled = current_compiled;
                 info.current_isa = current_isa;

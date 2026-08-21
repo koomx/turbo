@@ -2,7 +2,7 @@
 #define UNICODE_ARM64_IMPLEMENTATION_H
 
 #include <turbo/unicode/utf.h>
-#include <turbo/arch/isadetection.h>
+#include <turbo/arch/cpu_detect.h>
 
 namespace turbo {
     namespace arm64 {

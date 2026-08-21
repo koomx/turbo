@@ -11,33 +11,30 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 
-#include <turbo/base/internal/cpu_detect.h>
-
+#include <turbo/arch/cpu_detect.h>
 #include <gtest/gtest.h>
 #include <turbo/macros/config.h>
 
 namespace turbo {
 
-namespace base_internal {
-namespace {
+    namespace {
 
-TEST(CpuDetectTest, SupportsBmi2) {
+        TEST(CpuDetectTest, supports_bmi2) {
 #if defined(__x86_64__) || defined(_M_X64)
 #if KUMO_HAVE_BUILTIN(__builtin_cpu_supports) && defined(__linux__)
-  EXPECT_EQ(SupportsBmi2(), __builtin_cpu_supports("bmi2") != 0);
+            EXPECT_EQ(supports_bmi2(), __builtin_cpu_supports("bmi2") != 0);
 #else
-  // If __builtin_cpu_supports is not available, we just verify it doesn't
-  // crash.
-  (void)SupportsBmi2();
+            // If __builtin_cpu_supports is not available, we just verify it doesn't
+            // crash.
+            (void)supports_bmi2();
 #endif
 #else
-  // On non-x86, SupportsBmi2() must return false.
-  EXPECT_FALSE(SupportsBmi2());
+            // On non-x86, supports_bmi2() must return false.
+            EXPECT_FALSE(supports_bmi2());
 #endif
-}
+        }
 
-}  // namespace
-}  // namespace base_internal
-
-}  // namespace turbo
+    } // namespace
+} // namespace turbo
