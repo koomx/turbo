@@ -22,7 +22,7 @@
 namespace {
 void BM_TurboStrError(benchmark::State& state) {
   for (auto _ : state) {
-    benchmark::DoNotOptimize(turbo::base_internal::str_error(ERANGE));
+    benchmark::DoNotOptimize(turbo::str_error(ERANGE));
   }
 }
 BENCHMARK(BM_TurboStrError);

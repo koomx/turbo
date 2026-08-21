@@ -175,7 +175,7 @@ class StrippingTest : public ::testing::Test {
     std::unique_ptr<FILE, std::function<void(FILE*)>> fp(
         fopen("/proc/self/exe", "rb"), [](FILE* fp) { fclose(fp); });
     if (!fp) {
-      const std::string err = turbo::base_internal::str_error(errno);
+      const std::string err = turbo::str_error(errno);
       turbo::str_fprintf(stderr, "Failed to open /proc/self/exe: %s\n", err);
     }
     return fp;
@@ -188,7 +188,7 @@ class StrippingTest : public ::testing::Test {
               "rb"),
         [](FILE* fp) { fclose(fp); });
     if (!fp) {
-      const std::string err = turbo::base_internal::str_error(errno);
+      const std::string err = turbo::str_error(errno);
       turbo::str_fprintf(stderr, "Failed to open /pkg/bin/<binary name>: %s\n", err);
     }
     return fp;
