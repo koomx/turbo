@@ -25,12 +25,12 @@ utf32_to_utf16_t ppc64_convert_utf32_to_utf16(const char32_t* buf, size_t len,
         if (any_surrogate.is_zero()) {
             // Pack UTF-32 to UTF-16
 #if KUMO_ENDIAN_BIG
-            const auto sh = big_endian ? vector_u8(2, 3, 6, 7, 10, 11, 14, 15, 18, 19,
+            const auto sh = big_endian == Endian::big ? vector_u8(2, 3, 6, 7, 10, 11, 14, 15, 18, 19,
                                              22, 23, 26, 27, 30, 31)
                                        : vector_u8(3, 2, 7, 6, 11, 10, 15, 14, 19, 18,
                                              23, 22, 27, 26, 31, 30);
 #else
-            const auto sh = big_endian ? vector_u8(1, 0, 5, 4, 9, 8, 13, 12, 17, 16,
+            const auto sh = big_endian == Endian::big ? vector_u8(1, 0, 5, 4, 9, 8, 13, 12, 17, 16,
                                              21, 20, 25, 24, 29, 28)
                                        : vector_u8(0, 1, 4, 5, 8, 9, 12, 13, 16, 17,
                                              20, 21, 24, 25, 28, 29);
@@ -39,11 +39,11 @@ utf32_to_utf16_t ppc64_convert_utf32_to_utf16(const char32_t* buf, size_t len,
             const auto packed = as_vector_u16(packed0);
 
 #if KUMO_ENDIAN_BIG
-            const auto v_f800 = big_endian ? vector_u16::splat(0xf800) : vector_u16::splat(0x00f8);
-            const auto v_d800 = big_endian ? vector_u16::splat(0xd800) : vector_u16::splat(0x00d8);
+            const auto v_f800 = big_endian == Endian::big ? vector_u16::splat(0xf800) : vector_u16::splat(0x00f8);
+            const auto v_d800 = big_endian == Endian::big ? vector_u16::splat(0xd800) : vector_u16::splat(0x00d8);
 #else
-            const auto v_f800 = big_endian ? vector_u16::splat(0x00f8) : vector_u16::splat(0xf800);
-            const auto v_d800 = big_endian ? vector_u16::splat(0x00d8) : vector_u16::splat(0xd800);
+            const auto v_f800 = big_endian == Endian::big ? vector_u16::splat(0x00f8) : vector_u16::splat(0xf800);
+            const auto v_d800 = big_endian == Endian::big ? vector_u16::splat(0x00d8) : vector_u16::splat(0xd800);
 #endif // KUMO_ENDIAN_BIG
             const auto forbidden = (packed & v_f800) == v_d800;
 

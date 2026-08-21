@@ -161,7 +161,7 @@ size_t convert_masked_utf8_to_utf16(const char* input,
                 utf16_output[1] = uint16_t(surrogate_buffer[i] >> 16);
                 utf16_output += 2;
             } else {
-                utf16_output[0] = big_endian ? uint16_t(basic_buffer_swap[i])
+                utf16_output[0] = big_endian == Endian::big ? uint16_t(basic_buffer_swap[i])
                                              : uint16_t(basic_buffer[i]);
                 utf16_output++;
             }
