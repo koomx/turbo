@@ -57,13 +57,13 @@ process_block_utf8_to_utf16(const char*& in, char16_t*& out, size_t gap) {
             in += 64; // consumed 64 bytes
             // we convert a full 64-byte block, writing 128 bytes.
             __m512i input1 = _mm512_cvtepu8_epi16(_mm512_castsi512_si256(input));
-            if (big_endian) {
+            if (big_endian == Endian::big) {
                 input1 = _mm512_shuffle_epi8(input1, byteflip);
             }
             _mm512_storeu_si512(out, input1);
             out += 32;
             __m512i input2 = _mm512_cvtepu8_epi16(_mm512_extracti64x4_epi64(input, 1));
-            if (big_endian) {
+            if (big_endian == Endian::big) {
                 input2 = _mm512_shuffle_epi8(input2, byteflip);
             }
             _mm512_storeu_si512(out, input2);
@@ -73,7 +73,7 @@ process_block_utf8_to_utf16(const char*& in, char16_t*& out, size_t gap) {
             in += gap;
             if (gap <= 32) {
                 __m512i input1 = _mm512_cvtepu8_epi16(_mm512_castsi512_si256(input));
-                if (big_endian) {
+                if (big_endian == Endian::big) {
                     input1 = _mm512_shuffle_epi8(input1, byteflip);
                 }
                 _mm512_mask_storeu_epi16(out, __mmask32((uint64_t(1) << (gap)) - 1),
@@ -81,13 +81,13 @@ process_block_utf8_to_utf16(const char*& in, char16_t*& out, size_t gap) {
                 out += gap;
             } else {
                 __m512i input1 = _mm512_cvtepu8_epi16(_mm512_castsi512_si256(input));
-                if (big_endian) {
+                if (big_endian == Endian::big) {
                     input1 = _mm512_shuffle_epi8(input1, byteflip);
                 }
                 _mm512_storeu_si512(out, input1);
                 out += 32;
                 __m512i input2 = _mm512_cvtepu8_epi16(_mm512_extracti64x4_epi64(input, 1));
-                if (big_endian) {
+                if (big_endian == Endian::big) {
                     input2 = _mm512_shuffle_epi8(input2, byteflip);
                 }
                 _mm512_mask_storeu_epi16(
@@ -219,7 +219,7 @@ process_block_utf8_to_utf16(const char*& in, char16_t*& out, size_t gap) {
             }
             int64_t nout = _mm_popcnt_u64(mprocessed);
             in += 64 - countl_zero(mprocessed);
-            if (big_endian) {
+            if (big_endian == Endian::big) {
                 Wout = _mm512_shuffle_epi8(Wout, byteflip);
             }
             _mm512_mask_storeu_epi16(out, __mmask32((uint64_t(1) << nout) - 1), Wout);
@@ -332,7 +332,7 @@ process_block_utf8_to_utf16(const char*& in, char16_t*& out, size_t gap) {
         }
         in += 64 - countl_zero(mprocessed);
         int64_t nout = _mm_popcnt_u64(mprocessed);
-        if (big_endian) {
+        if (big_endian == Endian::big) {
             Wout = _mm512_shuffle_epi8(Wout, byteflip);
         }
         _mm512_mask_storeu_epi16(out, __mmask32((uint64_t(1) << nout) - 1), Wout);
@@ -391,7 +391,7 @@ process_block_utf8_to_utf16(const char*& in, char16_t*& out, size_t gap) {
     lead = _mm512_slli_epi16(lead, 6); // shifted into position
     __m512i final = _mm512_add_epi16(follow, lead); // combining lead and follow
 
-    if (big_endian) {
+    if (big_endian == Endian::big) {
         final = _mm512_shuffle_epi8(final, byteflip);
     }
     if (tail == UNICODE_FULL) {
@@ -441,7 +441,7 @@ KUMO_FORCE_INLINE size_t utf32_to_utf16_masked(const __m512i byteflip,
     const __mmask16 sp_mask = _mm512_mask_cmpgt_epu32_mask(valid, utf32, v_0000_ffff);
 
     if (sp_mask == 0) {
-        if (big_endian) {
+        if (big_endian == Endian::big) {
             _mm256_mask_storeu_epi16(
                 (__m256i*)output, valid,
                 _mm256_shuffle_epi8(_mm512_cvtepi32_epi16(utf32),
@@ -484,7 +484,7 @@ KUMO_FORCE_INLINE size_t utf32_to_utf16_masked(const __m512i byteflip,
         const __mmask32 nonzero = _kor_mask32(
             0xaaaaaaaa, _mm512_cmpneq_epi16_mask(t5, _mm512_setzero_si512()));
         const __mmask32 nonzero_masked = _kand_mask32(nonzero, __mmask32((uint64_t(1) << (2 * count)) - 1));
-        if (big_endian) {
+        if (big_endian == Endian::big) {
             t5 = _mm512_shuffle_epi8(t5, byteflip);
         }
         // we deliberately avoid _mm512_mask_compressstoreu_epi16 for portability
@@ -529,7 +529,7 @@ KUMO_FORCE_INLINE size_t utf32_to_utf16(const __m512i byteflip,
 
     if (sp_mask == 0) {
         // technically, it should be _mm256_storeu_epi16
-        if (big_endian) {
+        if (big_endian == Endian::big) {
             _mm256_storeu_si256(
                 (__m256i*)output,
                 _mm256_shuffle_epi8(_mm512_cvtepi32_epi16(utf32),
@@ -566,7 +566,7 @@ KUMO_FORCE_INLINE size_t utf32_to_utf16(const __m512i byteflip,
         __m512i t5 = _mm512_ror_epi32(t4, 16);
         const __mmask32 nonzero = _kor_mask32(
             0xaaaaaaaa, _mm512_cmpneq_epi16_mask(t5, _mm512_setzero_si512()));
-        if (big_endian) {
+        if (big_endian == Endian::big) {
             t5 = _mm512_shuffle_epi8(t5, byteflip);
         }
         // we deliberately avoid _mm512_mask_compressstoreu_epi16 for portability

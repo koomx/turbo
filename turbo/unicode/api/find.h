@@ -26,6 +26,8 @@
 #include <cstdint>
 #include <string>
 #include <string_view>
+#include <exception>
+#include <stdexcept>
 
 #if defined(__SSE2__)
 #include <emmintrin.h>
@@ -457,6 +459,8 @@ namespace turbo {
 
         template <bool positive, ReturnMode return_mode, char... symbols>
         inline const char* find_last_symbols_sse2(const char* const begin, const char* const end) {
+            if (begin == end)
+                return return_mode == ReturnMode::End ? end : nullptr;
             const char* pos = end;
 
 #if defined(__SSE2__)
@@ -532,6 +536,8 @@ namespace turbo {
 
         template <bool positive, ReturnMode return_mode>
         inline const char* find_last_symbols_sse2(const char* const begin, const char* const end, const char* symbols, size_t num_chars) {
+            if (begin == end)
+                return return_mode == ReturnMode::End ? end : nullptr;
             const char* pos = end;
 
 #if defined(__SSE2__)

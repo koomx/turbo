@@ -14,7 +14,7 @@ size_t icelake_convert_utf16_to_latin1(const char16_t* buf, size_t len,
         36, 34, 32, 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 8, 6, 4, 2, 0);
     while (end - buf >= 32) {
         __m512i in = _mm512_loadu_si512((__m512i*)buf);
-        if (big_endian) {
+        if (big_endian == Endian::big) {
             in = _mm512_shuffle_epi8(in, byteflip);
         }
         if (_mm512_cmpgt_epu16_mask(in, v_0xFF)) {
@@ -29,7 +29,7 @@ size_t icelake_convert_utf16_to_latin1(const char16_t* buf, size_t len,
     if (buf < end) {
         uint32_t mask((1U << (end - buf)) - 1);
         __m512i in = _mm512_maskz_loadu_epi16(mask, buf);
-        if (big_endian) {
+       if (big_endian == Endian::big) {
             in = _mm512_shuffle_epi8(in, byteflip);
         }
         if (_mm512_cmpgt_epu16_mask(in, v_0xFF)) {
@@ -59,7 +59,7 @@ icelake_convert_utf16_to_latin1_with_errors(const char16_t* buf, size_t len,
         36, 34, 32, 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 8, 6, 4, 2, 0);
     while (end - buf >= 32) {
         __m512i in = _mm512_loadu_si512((__m512i*)buf);
-        if (big_endian) {
+        if (big_endian == Endian::big) {
             in = _mm512_shuffle_epi8(in, byteflip);
         }
         if (_mm512_cmpgt_epu16_mask(in, v_0xFF)) {
@@ -82,7 +82,7 @@ icelake_convert_utf16_to_latin1_with_errors(const char16_t* buf, size_t len,
     if (buf < end) {
         uint32_t mask((1U << (end - buf)) - 1);
         __m512i in = _mm512_maskz_loadu_epi16(mask, buf);
-        if (big_endian) {
+       if (big_endian == Endian::big) {
             in = _mm512_shuffle_epi8(in, byteflip);
         }
         if (_mm512_cmpgt_epu16_mask(in, v_0xFF)) {

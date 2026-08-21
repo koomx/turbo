@@ -192,7 +192,7 @@ namespace turbo {
                     KUMO_FORCE_INLINE operator __m256i&() { return this->value; }
                     template <Endian big_endian>
                     KUMO_FORCE_INLINE void store_ascii_as_utf16(char16_t* ptr) const {
-                        if (big_endian) {
+                        if (big_endian == Endian::big) {
                             __m256i zero = __lasx_xvldi(0);
                             __m256i in8 = __lasx_xvpermi_d(this->value, 0b11011000);
                             __m256i inlow = __lasx_xvilvl_b(in8, zero);
@@ -264,7 +264,7 @@ namespace turbo {
                             return this->value;
 
                         __m256i zero = __lasx_xvldi(0);
-                        __m256i UnicodeResult, shuf;
+                        __m256i result, shuf;
                         if (N < 16) {
                             shuf = __lasx_xvld(prev_shuf_table[N], 0);
 
@@ -274,7 +274,7 @@ namespace turbo {
                             __m256i srl_prev = __lasx_xvbsrl_v(
                                 __lasx_xvpermi_q(zero, prev_chunk.value, 0b00110001), (16 - N));
                             __m256i mask = __lasx_xvld(bitsel_mask_table[N], 0);
-                            result = __lasx_xvbitsel_v(UnicodeResult, srl_prev, mask);
+                            result = __lasx_xvbitsel_v(result, srl_prev, mask);
 
                             return result;
                         } else if (N == 16) {

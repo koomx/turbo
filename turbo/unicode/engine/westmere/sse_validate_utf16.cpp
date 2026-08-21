@@ -1,7 +1,7 @@
 template <Endian big_endian>
 simd8<uint8_t> utf16_gather_high_bytes(const simd16<uint16_t> in0,
     const simd16<uint16_t> in1) {
-    if (big_endian) {
+    if (big_endian == Endian::big) {
         // we want lower bytes
         const auto mask = simd16<uint16_t>(0x00ff);
         const auto t0 = in0 & mask;

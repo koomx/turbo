@@ -61,7 +61,7 @@ avx2_convert_utf16_to_utf32(const char16_t* buf, size_t len,
 
     while (end - buf >= 16) {
         __m256i in = _mm256_loadu_si256((__m256i*)buf);
-        if (big_endian) {
+        if (big_endian == Endian::big) {
             const __m256i swap = _mm256_setr_epi8(
                 1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, 17, 16, 19, 18,
                 21, 20, 23, 22, 25, 24, 27, 26, 29, 28, 31, 30);
@@ -140,7 +140,7 @@ avx2_convert_utf16_to_utf32_with_errors(const char16_t* buf, size_t len,
 
     while (end - buf >= 16) {
         __m256i in = _mm256_loadu_si256((__m256i*)buf);
-        if (big_endian) {
+        if (big_endian == Endian::big) {
             const __m256i swap = _mm256_setr_epi8(
                 1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, 17, 16, 19, 18,
                 21, 20, 23, 22, 25, 24, 27, 26, 29, 28, 31, 30);

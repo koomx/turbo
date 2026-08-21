@@ -328,9 +328,9 @@ rvv_utf16_to_utf32_with_errors(const char16_t* src, size_t len, char32_t* dst) {
         // t4 = utf32 from surrogate pairs
         const vuint32m4_t t4 = __riscv_vadd_vx_u32m4(t3, 0x10000, vl);
 
-        const vuint32m4_t UnicodeResult = __riscv_vmerge_vvm_u32m4(utf32, t4, surhi, vl);
+        const vuint32m4_t result = __riscv_vmerge_vvm_u32m4(utf32, t4, surhi, vl);
 
-        const vuint32m4_t comp = __riscv_vcompress_vm_u32m4(UnicodeResult, compress, vl);
+        const vuint32m4_t comp = __riscv_vcompress_vm_u32m4(result, compress, vl);
         const size_t vlOut = __riscv_vcpop_m_b8(compress, vl);
         __riscv_vse32_v_u32m4((uint32_t*)dst, comp, vlOut);
 

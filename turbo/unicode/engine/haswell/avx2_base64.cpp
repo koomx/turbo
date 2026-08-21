@@ -30,7 +30,7 @@ KUMO_FORCE_INLINE __m256i lookup_pshufb_improved(const __m256i input) {
     // credit: Wojciech Muła
     __m256i result = _mm256_subs_epu8(input, _mm256_set1_epi8(51));
     const __m256i less = _mm256_cmpgt_epi8(_mm256_set1_epi8(26), input);
-    result = _mm256_or_si256(UnicodeResult, _mm256_and_si256(less, _mm256_set1_epi8(13)));
+    result = _mm256_or_si256(result, _mm256_and_si256(less, _mm256_set1_epi8(13)));
     __m256i shift_LUT;
     if (base64_url) {
         shift_LUT = _mm256_setr_epi8(
@@ -49,7 +49,7 @@ KUMO_FORCE_INLINE __m256i lookup_pshufb_improved(const __m256i input) {
     }
 
     result = _mm256_shuffle_epi8(shift_LUT, result);
-    return _mm256_add_epi8(UnicodeResult, input);
+    return _mm256_add_epi8(result, input);
 }
 
 KUMO_FORCE_INLINE __m128i insert_line_feed16(__m128i input, int K) {
@@ -86,7 +86,7 @@ KUMO_FORCE_INLINE __m256i insert_line_feed32(__m256i input, int K) {
         lo = insert_line_feed16(lo, K);
     }
     __m256i result = _mm256_castsi128_si256(lo);
-    result = _mm256_inserti128_si256(UnicodeResult, hi, 1);
+    result = _mm256_inserti128_si256(result, hi, 1);
     return result;
 }
 
@@ -167,7 +167,7 @@ avx2_encode_base64_impl(char* dst, const char* src, size_t srclen,
                     _mm256_storeu_si256(reinterpret_cast<__m256i*>(out + 1), result);
                     _mm256_storeu_si256(
                         reinterpret_cast<__m256i*>(out),
-                        insert_line_feed32(UnicodeResult, static_cast<int>(location_end)));
+                        insert_line_feed32(result, static_cast<int>(location_end)));
                     offset = to_move;
                     out += 32 + 1;
                 } else {
@@ -185,9 +185,9 @@ avx2_encode_base64_impl(char* dst, const char* src, size_t srclen,
                     _mm256_storeu_si256(reinterpret_cast<__m256i*>(out + 1), result);
                     _mm256_storeu_si256(
                         reinterpret_cast<__m256i*>(out),
-                        insert_line_feed32(UnicodeResult, static_cast<int>(location_end)));
+                        insert_line_feed32(result, static_cast<int>(location_end)));
                     // see above.
-                    // out[32] = static_cast<uint8_t>(_mm256_extract_epi8(UnicodeResult, 31));
+                    // out[32] = static_cast<uint8_t>(_mm256_extract_epi8(result, 31));
                     offset = to_move;
                     out += 32 + 1;
                 } else {
@@ -207,9 +207,9 @@ avx2_encode_base64_impl(char* dst, const char* src, size_t srclen,
                     _mm256_storeu_si256(reinterpret_cast<__m256i*>(out + 1), result);
                     _mm256_storeu_si256(
                         reinterpret_cast<__m256i*>(out),
-                        insert_line_feed32(UnicodeResult, static_cast<int>(location_end)));
+                        insert_line_feed32(result, static_cast<int>(location_end)));
                     // see above.
-                    // out[32] = static_cast<uint8_t>(_mm256_extract_epi8(UnicodeResult, 31));
+                    // out[32] = static_cast<uint8_t>(_mm256_extract_epi8(result, 31));
                     offset = to_move;
                     out += 32 + 1;
                 } else {
@@ -227,9 +227,9 @@ avx2_encode_base64_impl(char* dst, const char* src, size_t srclen,
                     _mm256_storeu_si256(reinterpret_cast<__m256i*>(out + 1), result);
                     _mm256_storeu_si256(
                         reinterpret_cast<__m256i*>(out),
-                        insert_line_feed32(UnicodeResult, static_cast<int>(location_end)));
+                        insert_line_feed32(result, static_cast<int>(location_end)));
                     // see above.
-                    // out[32] = static_cast<uint8_t>(_mm256_extract_epi8(UnicodeResult, 31));
+                    // out[32] = static_cast<uint8_t>(_mm256_extract_epi8(result, 31));
                     offset = to_move;
                     out += 32 + 1;
                 } else {

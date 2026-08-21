@@ -14,7 +14,7 @@
 //
 
 #include <turbo/encoding/base58.h>
-
+#include <turbo/bits/bits.h>
 
 #include <cstring>
 #include <optional>
@@ -112,7 +112,7 @@ constexpr uint32_t dec_table_64[18][16] = {
         // clang-format on
 
         inline uint32_t b58_bswap32(uint32_t x) {
-            return __builtin_bswap32(x);
+            return turbo::u32_byteswap(x);
         }
 
         inline uint32_t b58_load_u32_be(const uint8_t* p) {
@@ -354,7 +354,7 @@ constexpr uint32_t dec_table_64[18][16] = {
 
         inline int b58_find_lsb(uint64_t x) {
             /// returns index of lowest set bit; UB if x==0
-            return __builtin_ctzll(x);
+            return turbo::countr_zero(x);
         }
 
         inline int b58_find_lsb_default(uint64_t x, int def) {

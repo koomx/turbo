@@ -65,7 +65,7 @@ sse_convert_utf16_to_utf8(const char16_t* buf, size_t len, char* utf8_output) {
 
     while (end - buf >= std::ptrdiff_t(16 + safety_margin)) {
         __m128i in = _mm_loadu_si128((__m128i*)buf);
-        if (big_endian) {
+        if (big_endian == Endian::big) {
             const __m128i swap = _mm_setr_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
             in = _mm_shuffle_epi8(in, swap);
         }
@@ -73,7 +73,7 @@ sse_convert_utf16_to_utf8(const char16_t* buf, size_t len, char* utf8_output) {
         const __m128i v_ff80 = _mm_set1_epi16((int16_t)0xff80);
         if (_mm_testz_si128(in, v_ff80)) { // ASCII fast path!!!!
             __m128i nextin = _mm_loadu_si128((__m128i*)buf + 1);
-            if (big_endian) {
+            if (big_endian == Endian::big) {
                 const __m128i swap = _mm_setr_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
                 nextin = _mm_shuffle_epi8(nextin, swap);
             }
@@ -279,7 +279,7 @@ sse_convert_utf16_to_utf8_with_errors(const char16_t* buf, size_t len,
 
     while (end - buf >= std::ptrdiff_t(16 + safety_margin)) {
         __m128i in = _mm_loadu_si128((__m128i*)buf);
-        if (big_endian) {
+        if (big_endian == Endian::big) {
             const __m128i swap = _mm_setr_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
             in = _mm_shuffle_epi8(in, swap);
         }
@@ -287,7 +287,7 @@ sse_convert_utf16_to_utf8_with_errors(const char16_t* buf, size_t len,
         const __m128i v_ff80 = _mm_set1_epi16((int16_t)0xff80);
         if (_mm_testz_si128(in, v_ff80)) { // ASCII fast path!!!!
             __m128i nextin = _mm_loadu_si128((__m128i*)buf + 1);
-            if (big_endian) {
+            if (big_endian == Endian::big) {
                 const __m128i swap = _mm_setr_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
                 nextin = _mm_shuffle_epi8(nextin, swap);
             }

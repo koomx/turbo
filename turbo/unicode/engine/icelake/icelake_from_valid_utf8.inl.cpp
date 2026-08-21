@@ -25,7 +25,7 @@ valid_utf8_to_fixed_length(const char* str, size_t len, OUTPUT* dwords) {
     static_assert(
         UTF32 or UTF16,
         "output type has to be uint32_t (for UTF-32) or char16_t (for UTF-16)");
-    static_assert(!(UTF32 and big_endian),
+    static_assert(!(UTF32 && big_endian == Endian::big),
         "we do not currently support big-endian UTF-32");
 
     __m512i byteflip = _mm512_setr_epi64(0x0607040502030001, 0x0e0f0c0d0a0b0809,

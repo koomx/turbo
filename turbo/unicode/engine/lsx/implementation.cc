@@ -1253,11 +1253,11 @@ namespace turbo {
 namespace turbo {
     IsaInfo get_lsx_info() {
         static IsaInfo ins = {
-            .compiled = UNICODE_IMPLEMENTATION_LSX,
-            .failback = false,
-            .required_isa = static_cast<uint32_t>(InstructionSet::LSX),
-            .isa_name = "lsx",
-            .engine = get_lsx_instance(),
+            UNICODE_IMPLEMENTATION_LSX == 1,
+            false,
+            static_cast<uint32_t>(InstructionSet::LSX),
+             "lsx",
+            get_lsx_instance(),
         };
         return ins;
     }

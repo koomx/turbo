@@ -360,12 +360,10 @@ BENCHMARK(BM_ResultString_StatusMethodRvalue_Ok);
 // below for the variants.
 bool bm_cond = true;
 
-bool SimpleIntInterface(int64_t* v) KUMO_ATTRIBUTE_NOINLINE;
-bool SimpleIntInterfaceWithErrorMessage(int64_t* v, std::string* msg)
-    KUMO_ATTRIBUTE_NOINLINE;
-turbo::Status SimpleIntInterfaceWithErrorStatus(int64_t* v)
-    KUMO_ATTRIBUTE_NOINLINE;
-turbo::Result<int64_t> SimpleIntResultInterface() KUMO_ATTRIBUTE_NOINLINE;
+bool SimpleIntInterface(int64_t* v);
+bool SimpleIntInterfaceWithErrorMessage(int64_t* v, std::string* msg);
+turbo::Status SimpleIntInterfaceWithErrorStatus(int64_t* v);
+turbo::Result<int64_t> SimpleIntResultInterface();
 
 // (a): Just a boolean return value with an out int64* parameter
 bool SimpleIntInterface(int64_t* v) {

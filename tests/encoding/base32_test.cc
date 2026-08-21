@@ -14,6 +14,9 @@
 //
 
 #include <turbo/encoding/base32.h>
+#include <algorithm>
+#include <cctype>
+#include <string>
 #include <string_view>
 
 #include <gtest/gtest.h>

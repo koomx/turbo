@@ -1361,11 +1361,11 @@ namespace turbo {
 namespace turbo {
     IsaInfo get_lasx_info() {
         static IsaInfo ins = {
-            .compiled = UNICODE_IMPLEMENTATION_LASX,
-            .failback = false,
-            .required_isa = static_cast<uint32_t>(InstructionSet::LSX | InstructionSet::LASX),
-            .isa_name = "lasx",
-            .engine = get_lasx_instance(),
+            UNICODE_IMPLEMENTATION_LASX == 1,
+            false,
+            static_cast<uint32_t>(InstructionSet::LSX | InstructionSet::LASX),
+             "lasx",
+            get_lasx_instance(),
         };
         return ins;
     }

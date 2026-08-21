@@ -24,7 +24,7 @@ avx2_convert_utf32_to_utf16(const char32_t* buf, size_t len,
 
             __m128i utf16_packed = _mm_packus_epi32(_mm256_castsi256_si128(in),
                 _mm256_extractf128_si256(in, 1));
-            if (big_endian) {
+            if (big_endian == Endian::big) {
                 const __m128i swap = _mm_setr_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
                 utf16_packed = _mm_shuffle_epi8(utf16_packed, swap);
             }
@@ -44,7 +44,7 @@ avx2_convert_utf32_to_utf16(const char32_t* buf, size_t len,
                     if (word >= 0xD800 && word <= 0xDFFF) {
                         return std::make_pair(nullptr, utf16_output);
                     }
-                    *utf16_output++ = big_endian
+                    *utf16_output++ = (big_endian == Endian::big)
                         ? char16_t((uint16_t(word) >> 8) | (uint16_t(word) << 8))
                         : char16_t(word);
                 } else {
@@ -55,7 +55,7 @@ avx2_convert_utf32_to_utf16(const char32_t* buf, size_t len,
                     word -= 0x10000;
                     uint16_t high_surrogate = uint16_t(0xD800 + (word >> 10));
                     uint16_t low_surrogate = uint16_t(0xDC00 + (word & 0x3FF));
-                    if (big_endian) {
+                   if (big_endian == Endian::big) {
                         high_surrogate = uint16_t((high_surrogate >> 8) | (high_surrogate << 8));
                         low_surrogate = uint16_t((low_surrogate >> 8) | (low_surrogate << 8));
                     }
@@ -103,7 +103,7 @@ avx2_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
 
             __m128i utf16_packed = _mm_packus_epi32(_mm256_castsi256_si128(in),
                 _mm256_extractf128_si256(in, 1));
-            if (big_endian) {
+            if (big_endian == Endian::big) {
                 const __m128i swap = _mm_setr_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
                 utf16_packed = _mm_shuffle_epi8(utf16_packed, swap);
             }
@@ -124,7 +124,7 @@ avx2_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
                         return std::make_pair(
                             UnicodeResult(UnicodeError::SURROGATE, buf - start + k), utf16_output);
                     }
-                    *utf16_output++ = big_endian
+                    *utf16_output++ = (big_endian == Endian::big)
                         ? char16_t((uint16_t(word) >> 8) | (uint16_t(word) << 8))
                         : char16_t(word);
                 } else {
@@ -136,7 +136,7 @@ avx2_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
                     word -= 0x10000;
                     uint16_t high_surrogate = uint16_t(0xD800 + (word >> 10));
                     uint16_t low_surrogate = uint16_t(0xDC00 + (word & 0x3FF));
-                    if (big_endian) {
+                    if (big_endian == Endian::big) {
                         high_surrogate = uint16_t((high_surrogate >> 8) | (high_surrogate << 8));
                         low_surrogate = uint16_t((low_surrogate >> 8) | (low_surrogate << 8));
                     }

@@ -18,6 +18,8 @@
 #include <turbo/bits/endian.h>
 #include <turbo/base/internal/raw_logging.h>
 #include <turbo/strings/ascii.h>
+#include <limits>
+#include <algorithm>
 
 namespace turbo {
 

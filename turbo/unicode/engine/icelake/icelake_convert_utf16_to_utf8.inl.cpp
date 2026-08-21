@@ -20,7 +20,7 @@ size_t utf16_to_utf8_avx512i(const char16_t* inbuf, size_t inlen,
 
     while (inlen >= 32) {
         in = _mm512_loadu_si512(inbuf);
-        if (big_endian) {
+        if (big_endian == Endian::big) {
             in = _mm512_shuffle_epi8(in, byteflip);
         }
         inlen -= 31;
@@ -184,7 +184,7 @@ tail:
         // We must have inlen < 31.
         inmask = _cvtu32_mask32((1U << inlen) - 1);
         in = _mm512_maskz_loadu_epi16(inmask, inbuf);
-        if (big_endian) {
+       if (big_endian == Endian::big) {
             in = _mm512_shuffle_epi8(in, byteflip);
         }
         adjust = (int)inlen - 31;

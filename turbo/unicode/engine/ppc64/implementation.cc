@@ -917,11 +917,11 @@ namespace turbo {
 namespace turbo {
     IsaInfo get_ppc64_info() {
         static IsaInfo ins = {
-            .compiled = UNICODE_IMPLEMENTATION_PPC64,
-            .failback = false,
-            .required_isa = static_cast<uint32_t>(InstructionSet::ALTIVEC),
-            .isa_name = "ppc64",
-            .engine = get_ppc64_instance(),
+            UNICODE_IMPLEMENTATION_PPC64 == 1,
+            false,
+            static_cast<uint32_t>(InstructionSet::ALTIVEC),
+             "ppc64",
+            get_ppc64_instance(),
         };
         return ins;
     }

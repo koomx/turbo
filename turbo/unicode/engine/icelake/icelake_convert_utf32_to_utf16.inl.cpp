@@ -26,7 +26,7 @@ avx512_convert_utf32_to_utf16(const char32_t* buf, size_t len,
             forbidden_bytemask |= _mm512_cmpeq_epi32_mask(_mm512_and_si512(in, v_f800), v_d800);
 
             __m256i utf16_packed = _mm512_cvtepi32_epi16(in);
-            if (big_endian) {
+            if (big_endian == Endian::big) {
                 const __m256i swap = _mm256_setr_epi8(
                     1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5,
                     4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
@@ -60,7 +60,7 @@ avx512_convert_utf32_to_utf16(const char32_t* buf, size_t len,
             v2 = _mm512_mask_and_epi32(in, surrogate_bitmask, v2, v_3ff);
             v = _mm512_or_si512(v1, v2);
             in = _mm512_mask_add_epi32(in, surrogate_bitmask, v, v_dc00d800);
-            if (big_endian) {
+            if (big_endian == Endian::big) {
                 const __m512i swap_512 = _mm512_set_epi8(
                     14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1, 14, 15, 12,
                     13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1, 14, 15, 12, 13, 10, 11, 8,
@@ -89,7 +89,7 @@ avx512_convert_utf32_to_utf16(const char32_t* buf, size_t len,
             forbidden_bytemask |= _mm512_cmpeq_epi32_mask(_mm512_and_si512(in, v_f800), v_d800);
 
             __m256i utf16_packed = _mm512_cvtepi32_epi16(in);
-            if (big_endian) {
+            if (big_endian == Endian::big) {
                 const __m256i swap = _mm256_setr_epi8(
                     1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5,
                     4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
@@ -116,7 +116,7 @@ avx512_convert_utf32_to_utf16(const char32_t* buf, size_t len,
             v2 = _mm512_mask_and_epi32(in, surrogate_bitmask, v2, v_3ff);
             v = _mm512_or_si512(v1, v2);
             in = _mm512_mask_add_epi32(in, surrogate_bitmask, v, v_dc00d800);
-            if (big_endian) {
+            if (big_endian == Endian::big)) {
                 const __m512i swap_512 = _mm512_set_epi8(
                     14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1, 14, 15, 12,
                     13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1, 14, 15, 12, 13, 10, 11, 8,
@@ -173,7 +173,7 @@ avx512_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
             __mmask32 forbidden_bytemask = _mm512_cmpeq_epi32_mask(_mm512_and_si512(in, v_f800), v_d800);
 
             __m256i utf16_packed = _mm512_cvtepi32_epi16(in);
-            if (big_endian) {
+            if (big_endian == Endian::big) {
                 const __m256i swap = _mm256_setr_epi8(
                     1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5,
                     4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
@@ -218,7 +218,7 @@ avx512_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
             v2 = _mm512_mask_and_epi32(in, surrogate_bitmask, v2, v_3ff);
             v = _mm512_or_si512(v1, v2);
             in = _mm512_mask_add_epi32(in, surrogate_bitmask, v, v_dc00d800);
-            if (big_endian) {
+            if (big_endian == Endian::big) {
                 const __m512i swap_512 = _mm512_set_epi8(
                     14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1, 14, 15, 12,
                     13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1, 14, 15, 12, 13, 10, 11, 8,
@@ -250,7 +250,7 @@ avx512_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
         if (saturation_bitmask == input_mask) {
             __mmask32 forbidden_bytemask = _mm512_cmpeq_epi32_mask(_mm512_and_si512(in, v_f800), v_d800);
             __m256i utf16_packed = _mm512_cvtepi32_epi16(in);
-            if (big_endian) {
+            if (big_endian == Endian::big) {
                 const __m256i swap = _mm256_setr_epi8(
                     1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5,
                     4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
@@ -294,7 +294,7 @@ avx512_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
             v2 = _mm512_mask_and_epi32(in, surrogate_bitmask, v2, v_3ff);
             v = _mm512_or_si512(v1, v2);
             in = _mm512_mask_add_epi32(in, surrogate_bitmask, v, v_dc00d800);
-            if (big_endian) {
+            if (big_endian == Endian::big) {
                 const __m512i swap_512 = _mm512_set_epi8(
                     14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1, 14, 15, 12,
                     13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1, 14, 15, 12, 13, 10, 11, 8,

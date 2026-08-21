@@ -1,7 +1,7 @@
 template <Endian big_endian>
 simd8<uint8_t> utf16_gather_high_bytes(const simd16<uint16_t> in0,
     const simd16<uint16_t> in1) {
-    if (big_endian) {
+    if (big_endian == Endian::big) {
         const vec_u8_t pack_high = {
             0, 2, 4, 6, 8, 10, 12, 14, // in0
             16, 18, 20, 22, 24, 26, 28, 30 // in1

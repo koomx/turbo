@@ -61,7 +61,7 @@ struct base8 {
     KUMO_FORCE_INLINE void store_bytes_as_utf16(char16_t* p) const {
         const vector_type zero = vec_splats(T(0));
 
-        if (big_endian) {
+        if (big_endian == Endian::big) {
             const vec_u8_t perm_lo = { 16, 0, 16, 1, 16, 2, 16, 3,
                 16, 4, 16, 5, 16, 6, 16, 7 };
             const vec_u8_t perm_hi = { 16, 8, 16, 9, 16, 10, 16, 11,
