@@ -1253,7 +1253,7 @@ namespace turbo {
 namespace turbo {
     IsaInfo get_lsx_info() {
         static IsaInfo ins = {
-            .compiled = UNICODE_IMPLEMENTATION_LSX,
+            .compiled = UNICODE_IMPLEMENTATION_LSX == 1,
             .failback = false,
             .required_isa = static_cast<uint32_t>(InstructionSet::LSX),
             .isa_name = "lsx",

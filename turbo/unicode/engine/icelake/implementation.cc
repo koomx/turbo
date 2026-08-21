@@ -1741,7 +1741,7 @@ namespace turbo {
 namespace turbo {
     IsaInfo get_icelake_info() {
         static IsaInfo ins = {
-            .compiled = UNICODE_IMPLEMENTATION_ICELAKE,
+            .compiled = UNICODE_IMPLEMENTATION_ICELAKE == 1,
             .failback = false,
             .required_isa = static_cast<uint32_t>(
                 InstructionSet::AVX2 | InstructionSet::BMI1 | InstructionSet::BMI2 |

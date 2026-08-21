@@ -23,7 +23,7 @@ namespace turbo {
                     KUMO_FORCE_INLINE void store_ascii_as_utf16(char16_t* p) const {
                         __m128i first = _mm_cvtepu8_epi16(*this);
                         __m128i second = _mm_cvtepu8_epi16(_mm_srli_si128(*this, 8));
-                        if (big_endian) {
+                        if (big_endian == Endian::big) {
                             const __m128i swap = _mm_setr_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
                             first = _mm_shuffle_epi8(first, swap);
                             second = _mm_shuffle_epi8(second, swap);

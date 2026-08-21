@@ -13,7 +13,7 @@ size_t icelake_convert_latin1_to_utf16(const char* latin1_input, size_t len,
         __m256i in = _mm256_loadu_si256((__m256i*)&latin1_input[i]);
         // Zero extend each set of 8 Latin1 characters to 32 16-bit integers
         __m512i out = _mm512_cvtepu8_epi16(in);
-        if (big_endian) {
+       if (big_endian == Endian::big) {
             out = _mm512_shuffle_epi8(out, byteflip);
         }
         // Store the results back to memory
@@ -25,7 +25,7 @@ size_t icelake_convert_latin1_to_utf16(const char* latin1_input, size_t len,
 
         // Zero extend each set of 8 Latin1 characters to 32 16-bit integers
         __m512i out = _mm512_cvtepu8_epi16(in);
-        if (big_endian) {
+       if (big_endian == Endian::big) {
             out = _mm512_shuffle_epi8(out, byteflip);
         }
         // Store the results back to memory

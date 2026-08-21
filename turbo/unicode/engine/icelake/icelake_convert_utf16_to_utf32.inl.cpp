@@ -20,7 +20,7 @@ convert_utf16_to_utf32(const char16_t* buf, size_t len,
     while (end - buf >= 32) {
         // Always safe because buf + 32 <= end so that end - buf >= 64 bytes:
         __m512i in = _mm512_loadu_si512((__m512i*)buf);
-        if (big_endian) {
+        if (big_endian == Endian::big) {
             in = _mm512_shuffle_epi8(in, byteflip);
         }
 

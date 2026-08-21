@@ -63,7 +63,7 @@ sse_convert_utf16_to_utf32(const char16_t* buf, size_t len,
     while (end - buf >= 8) {
         __m128i in = _mm_loadu_si128((__m128i*)buf);
 
-        if (big_endian) {
+        if (big_endian == Endian::big) {
             const __m128i swap = _mm_setr_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
             in = _mm_shuffle_epi8(in, swap);
         }
@@ -139,7 +139,7 @@ sse_convert_utf16_to_utf32_with_errors(const char16_t* buf, size_t len,
     while (end - buf >= 8) {
         __m128i in = _mm_loadu_si128((__m128i*)buf);
 
-        if (big_endian) {
+        if (big_endian == Endian::big) {
             const __m128i swap = _mm_setr_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
             in = _mm_shuffle_epi8(in, swap);
         }

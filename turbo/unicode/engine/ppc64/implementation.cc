@@ -917,7 +917,7 @@ namespace turbo {
 namespace turbo {
     IsaInfo get_ppc64_info() {
         static IsaInfo ins = {
-            .compiled = UNICODE_IMPLEMENTATION_PPC64,
+            .compiled = UNICODE_IMPLEMENTATION_PPC64 == 1,
             .failback = false,
             .required_isa = static_cast<uint32_t>(InstructionSet::ALTIVEC),
             .isa_name = "ppc64",

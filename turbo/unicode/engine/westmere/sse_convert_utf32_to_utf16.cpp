@@ -83,7 +83,7 @@ sse_convert_utf32_to_utf16(const char32_t* buf, size_t len,
                     _mm_cmpeq_epi16(_mm_and_si128(utf16_packed0, v_f800), v_d800),
                     _mm_cmpeq_epi16(_mm_and_si128(utf16_packed1, v_f800), v_d800)));
 
-            if (big_endian) {
+            if (big_endian == Endian::big) {
                 const __m128i swap = _mm_setr_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
                 utf16_packed0 = _mm_shuffle_epi8(utf16_packed0, swap);
                 utf16_packed1 = _mm_shuffle_epi8(utf16_packed1, swap);
@@ -152,7 +152,7 @@ sse_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
                     utf16_output);
             }
 
-            if (big_endian) {
+            if (big_endian == Endian::big) {
                 const __m128i swap = _mm_setr_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
                 utf16_packed = _mm_shuffle_epi8(utf16_packed, swap);
             }
@@ -186,7 +186,7 @@ sse_convert_utf32_to_utf16_with_errors(const char32_t* buf, size_t len,
                     word -= 0x10000;
                     uint16_t high_surrogate = uint16_t(0xD800 + (word >> 10));
                     uint16_t low_surrogate = uint16_t(0xDC00 + (word & 0x3FF));
-                    if (big_endian) {
+                    if (big_endian == Endian::big) {
                         high_surrogate = uint16_t((high_surrogate >> 8) | (high_surrogate << 8));
                         low_surrogate = uint16_t((low_surrogate >> 8) | (low_surrogate << 8));
                     }

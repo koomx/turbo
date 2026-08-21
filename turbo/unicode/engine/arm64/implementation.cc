@@ -1271,7 +1271,7 @@ namespace turbo {
 namespace turbo {
     IsaInfo get_arm64_info() {
         static IsaInfo ins = {
-            .compiled = UNICODE_IMPLEMENTATION_ARM64,
+            .compiled = UNICODE_IMPLEMENTATION_ARM64 == 1,
             .failback = false,
             .required_isa = static_cast<uint32_t>(InstructionSet::NEON),
             .isa_name ="arm64",

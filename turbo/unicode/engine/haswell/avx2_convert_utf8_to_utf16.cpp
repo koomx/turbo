@@ -25,7 +25,7 @@ size_t convert_masked_utf8_to_utf16(const char* input,
     if (utf8_end_of_code_point_mask == 0xfff) {
         // We process the data in chunks of 12 bytes.
         __m256i ascii = _mm256_cvtepu8_epi16(in);
-        if (big_endian) {
+       if (big_endian == Endian::big) {
             const __m256i swap256 = _mm256_setr_epi8(
                 1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, 17, 16, 19, 18,
                 21, 20, 23, 22, 25, 24, 27, 26, 29, 28, 31, 30);
@@ -44,7 +44,7 @@ size_t convert_masked_utf8_to_utf16(const char* input,
         const __m128i ascii = _mm_and_si128(perm, _mm_set1_epi16(0x7f));
         const __m128i highbyte = _mm_and_si128(perm, _mm_set1_epi16(0x1f00));
         __m128i composed = _mm_or_si128(ascii, _mm_srli_epi16(highbyte, 2));
-        if (big_endian)
+        if (big_endian == Endian::big)
             composed = _mm_shuffle_epi8(composed, swap);
         _mm_storeu_si128((__m128i*)utf16_output, composed);
         utf16_output += 8; // We wrote 16 bytes, 8 code points.
@@ -63,7 +63,7 @@ size_t convert_masked_utf8_to_utf16(const char* input,
         const __m128i highbyte_shifted = _mm_srli_epi32(highbyte, 4);
         const __m128i composed = _mm_or_si128(_mm_or_si128(ascii, middlebyte_shifted), highbyte_shifted);
         __m128i composed_repacked = _mm_packus_epi32(composed, composed);
-        if (big_endian)
+        if (big_endian == Endian::big)
             composed_repacked = _mm_shuffle_epi8(composed_repacked, swap);
         _mm_storeu_si128((__m128i*)utf16_output, composed_repacked);
         utf16_output += 4;
@@ -87,7 +87,7 @@ size_t convert_masked_utf8_to_utf16(const char* input,
         const __m128i ascii = _mm_and_si128(perm, _mm_set1_epi16(0x7f));
         const __m128i highbyte = _mm_and_si128(perm, _mm_set1_epi16(0x1f00));
         __m128i composed = _mm_or_si128(ascii, _mm_srli_epi16(highbyte, 2));
-        if (big_endian)
+        if (big_endian == Endian::big)
             composed = _mm_shuffle_epi8(composed, swap);
         _mm_storeu_si128((__m128i*)utf16_output, composed);
         utf16_output += 6; // We wrote 12 bytes, 6 code points. There is a potential
@@ -104,7 +104,7 @@ size_t convert_masked_utf8_to_utf16(const char* input,
         const __m128i highbyte_shifted = _mm_srli_epi32(highbyte, 4);
         const __m128i composed = _mm_or_si128(_mm_or_si128(ascii, middlebyte_shifted), highbyte_shifted);
         __m128i composed_repacked = _mm_packus_epi32(composed, composed);
-        if (big_endian)
+        if (big_endian == Endian::big)
             composed_repacked = _mm_shuffle_epi8(composed_repacked, swap);
         _mm_storeu_si128((__m128i*)utf16_output, composed_repacked);
         utf16_output += 4; // Here we overflow by 8 bytes.
@@ -150,7 +150,7 @@ size_t convert_masked_utf8_to_utf16(const char* input,
         __m128i surrogates = _mm_or_si128(hightenbitsadd, lowtenbitsaddshifted);
         uint32_t basic_buffer[4];
         uint32_t basic_buffer_swap[4];
-        if (big_endian) {
+        if (big_endian == Endian::big) {
             _mm_storeu_si128((__m128i*)basic_buffer_swap,
                 _mm_shuffle_epi8(composed, swap));
             surrogates = _mm_shuffle_epi8(surrogates, swap);

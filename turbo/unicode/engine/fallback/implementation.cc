@@ -554,7 +554,7 @@ namespace turbo {
 namespace turbo {
     IsaInfo get_fallback_info() {
         static IsaInfo ins = {
-            .compiled = UNICODE_IMPLEMENTATION_FALLBACK,
+            .compiled = UNICODE_IMPLEMENTATION_FALLBACK == 1,
             .failback = true,
             .required_isa = static_cast<uint32_t>(InstructionSet::NEON),
             .isa_name ="fallback",

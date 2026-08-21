@@ -1280,7 +1280,7 @@ namespace turbo {
 namespace turbo {
     IsaInfo get_haswell_info() {
         static IsaInfo ins = {
-            .compiled = UNICODE_IMPLEMENTATION_HASWELL,
+            .compiled = UNICODE_IMPLEMENTATION_HASWELL == 1,
             .failback = false,
             .required_isa = static_cast<uint32_t>(InstructionSet::AVX2 | InstructionSet::BMI1 | InstructionSet::BMI2),
             .isa_name = "haswell",

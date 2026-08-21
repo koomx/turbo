@@ -167,7 +167,7 @@ namespace turbo {
 namespace turbo {
     IsaInfo get_rvv_info() {
         static IsaInfo ins = {
-            .compiled = UNICODE_IMPLEMENTATION_RVV,
+            .compiled = UNICODE_IMPLEMENTATION_RVV == 1,
             .failback = false,
             .required_isa = static_cast<uint32_t>(InstructionSet::RVV),
             .isa_name = "rvv",

@@ -192,7 +192,7 @@ namespace turbo {
                     KUMO_FORCE_INLINE operator __m256i&() { return this->value; }
                     template <Endian big_endian>
                     KUMO_FORCE_INLINE void store_ascii_as_utf16(char16_t* ptr) const {
-                        if (big_endian) {
+                        if (big_endian == Endian::big) {
                             __m256i zero = __lasx_xvldi(0);
                             __m256i in8 = __lasx_xvpermi_d(this->value, 0b11011000);
                             __m256i inlow = __lasx_xvilvl_b(in8, zero);
