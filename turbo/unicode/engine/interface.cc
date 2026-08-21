@@ -17,14 +17,14 @@
 
 namespace turbo {
 
-    bool implementation::supported_by_runtime_system() const {
+    bool UnicodeImplement::supported_by_runtime_system() const {
         uint32_t required_instruction_sets = this->required_instruction_sets();
         uint32_t supported_instruction_sets = internal::detect_supported_architectures();
         return ((supported_instruction_sets & required_instruction_sets) == required_instruction_sets);
     }
 
 
-     [[nodiscard]] TextEncoding implementation::autodetect_encoding(
+     [[nodiscard]] TextEncoding UnicodeImplement::autodetect_encoding(
         const char* input, size_t length) const noexcept {
         // If there is a BOM, then we trust it.
         auto bom_encoding = turbo::BOM::check_bom(input, length);
@@ -59,34 +59,34 @@ namespace turbo {
     }
 
 #ifdef UNICODE_INTERNAL_TESTS
-    std::vector<implementation::TestProcedure>
-    implementation::internal_tests() const {
+    std::vector<UnicodeImplement::TestProcedure>
+    UnicodeImplement::internal_tests() const {
         return {};
     }
 #endif
 
 
-     [[nodiscard]] size_t implementation::maximal_binary_length_from_base64(
+     [[nodiscard]] size_t UnicodeImplement::maximal_binary_length_from_base64(
         const char* input, size_t length) const noexcept {
         return scalar::base64::maximal_binary_length_from_base64(input, length);
     }
 
-     [[nodiscard]] size_t implementation::maximal_binary_length_from_base64(
+     [[nodiscard]] size_t UnicodeImplement::maximal_binary_length_from_base64(
         const char16_t* input, size_t length) const noexcept {
         return scalar::base64::maximal_binary_length_from_base64(input, length);
     }
 
-     [[nodiscard]] size_t implementation::binary_length_from_base64(
+     [[nodiscard]] size_t UnicodeImplement::binary_length_from_base64(
         const char* input, size_t length) const noexcept {
         return scalar::base64::binary_length_from_base64(input, length);
     }
 
-     [[nodiscard]] size_t implementation::binary_length_from_base64(
+     [[nodiscard]] size_t UnicodeImplement::binary_length_from_base64(
     const char16_t* input, size_t length) const noexcept {
         return scalar::base64::binary_length_from_base64(input, length);
     }
 
-     [[nodiscard]] size_t implementation::base64_length_from_binary(
+     [[nodiscard]] size_t UnicodeImplement::base64_length_from_binary(
     size_t length, Base64Options options) const noexcept {
         return scalar::base64::base64_length_from_binary(length, options);
     }

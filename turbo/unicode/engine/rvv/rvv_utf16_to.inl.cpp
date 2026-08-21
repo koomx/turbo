@@ -14,26 +14,26 @@ rvv_utf16_to_latin1_with_errors(const char16_t* src, size_t len, char* dst) {
     return UnicodeResult(UnicodeError::SUCCESS, src - beg);
 }
 
- [[nodiscard]] size_t implementation::convert_utf16le_to_latin1(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_utf16le_to_latin1(
     const char16_t* src, size_t len, char* dst) const noexcept {
     UnicodeResult res = convert_utf16le_to_latin1_with_errors(src, len, dst);
     return res.error == UnicodeError::SUCCESS ? res.count : 0;
 }
 
- [[nodiscard]] size_t implementation::convert_utf16be_to_latin1(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_utf16be_to_latin1(
     const char16_t* src, size_t len, char* dst) const noexcept {
     UnicodeResult res = convert_utf16be_to_latin1_with_errors(src, len, dst);
     return res.error == UnicodeError::SUCCESS ? res.count : 0;
 }
 
  [[nodiscard]] UnicodeResult
-implementation::convert_utf16le_to_latin1_with_errors(
+UnicodeImplementRvv::convert_utf16le_to_latin1_with_errors(
     const char16_t* src, size_t len, char* dst) const noexcept {
     return rvv_utf16_to_latin1_with_errors<unicode_ByteFlip::NONE>(src, len, dst);
 }
 
  [[nodiscard]] UnicodeResult
-implementation::convert_utf16be_to_latin1_with_errors(
+UnicodeImplementRvv::convert_utf16be_to_latin1_with_errors(
     const char16_t* src, size_t len, char* dst) const noexcept {
     if (supports_zvbb())
         return rvv_utf16_to_latin1_with_errors<unicode_ByteFlip::ZVBB>(src, len,
@@ -42,7 +42,7 @@ implementation::convert_utf16be_to_latin1_with_errors(
         return rvv_utf16_to_latin1_with_errors<unicode_ByteFlip::V>(src, len, dst);
 }
 
- [[nodiscard]] size_t implementation::convert_valid_utf16le_to_latin1(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_valid_utf16le_to_latin1(
     const char16_t* src, size_t len, char* dst) const noexcept {
     const char16_t* const beg = src;
     for (size_t vl; len > 0; len -= vl, src += vl, dst += vl) {
@@ -53,7 +53,7 @@ implementation::convert_utf16be_to_latin1_with_errors(
     return src - beg;
 }
 
- [[nodiscard]] size_t implementation::convert_valid_utf16be_to_latin1(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_valid_utf16be_to_latin1(
     const char16_t* src, size_t len, char* dst) const noexcept {
     const char16_t* const beg = src;
     for (size_t vl; len > 0; len -= vl, src += vl, dst += vl) {
@@ -205,24 +205,24 @@ rvv_utf16_to_utf8_with_errors(const char16_t* src, size_t len, char* dst) {
     return UnicodeResult(UnicodeError::SUCCESS, dst - dstBeg);
 }
 
- [[nodiscard]] size_t implementation::convert_utf16le_to_utf8(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_utf16le_to_utf8(
     const char16_t* src, size_t len, char* dst) const noexcept {
     UnicodeResult res = convert_utf16le_to_utf8_with_errors(src, len, dst);
     return res.error == UnicodeError::SUCCESS ? res.count : 0;
 }
 
- [[nodiscard]] size_t implementation::convert_utf16be_to_utf8(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_utf16be_to_utf8(
     const char16_t* src, size_t len, char* dst) const noexcept {
     UnicodeResult res = convert_utf16be_to_utf8_with_errors(src, len, dst);
     return res.error == UnicodeError::SUCCESS ? res.count : 0;
 }
 
- [[nodiscard]] UnicodeResult implementation::convert_utf16le_to_utf8_with_errors(
+ [[nodiscard]] UnicodeResult UnicodeImplementRvv::convert_utf16le_to_utf8_with_errors(
     const char16_t* src, size_t len, char* dst) const noexcept {
     return rvv_utf16_to_utf8_with_errors<unicode_ByteFlip::NONE>(src, len, dst);
 }
 
- [[nodiscard]] UnicodeResult implementation::convert_utf16be_to_utf8_with_errors(
+ [[nodiscard]] UnicodeResult UnicodeImplementRvv::convert_utf16be_to_utf8_with_errors(
     const char16_t* src, size_t len, char* dst) const noexcept {
     if (supports_zvbb())
         return rvv_utf16_to_utf8_with_errors<unicode_ByteFlip::ZVBB>(src, len, dst);
@@ -230,12 +230,12 @@ rvv_utf16_to_utf8_with_errors(const char16_t* src, size_t len, char* dst) {
         return rvv_utf16_to_utf8_with_errors<unicode_ByteFlip::V>(src, len, dst);
 }
 
- [[nodiscard]] size_t implementation::convert_valid_utf16le_to_utf8(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_valid_utf16le_to_utf8(
     const char16_t* src, size_t len, char* dst) const noexcept {
     return convert_utf16le_to_utf8(src, len, dst);
 }
 
- [[nodiscard]] size_t implementation::convert_valid_utf16be_to_utf8(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_valid_utf16be_to_utf8(
     const char16_t* src, size_t len, char* dst) const noexcept {
     return convert_utf16be_to_utf8(src, len, dst);
 }
@@ -348,24 +348,24 @@ rvv_utf16_to_utf32_with_errors(const char16_t* src, size_t len, char32_t* dst) {
     return UnicodeResult(UnicodeError::SUCCESS, dst - dstBeg);
 }
 
- [[nodiscard]] size_t implementation::convert_utf16le_to_utf32(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_utf16le_to_utf32(
     const char16_t* src, size_t len, char32_t* dst) const noexcept {
     UnicodeResult res = convert_utf16le_to_utf32_with_errors(src, len, dst);
     return res.error == UnicodeError::SUCCESS ? res.count : 0;
 }
 
- [[nodiscard]] size_t implementation::convert_utf16be_to_utf32(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_utf16be_to_utf32(
     const char16_t* src, size_t len, char32_t* dst) const noexcept {
     UnicodeResult res = convert_utf16be_to_utf32_with_errors(src, len, dst);
     return res.error == UnicodeError::SUCCESS ? res.count : 0;
 }
 
- [[nodiscard]] UnicodeResult implementation::convert_utf16le_to_utf32_with_errors(
+ [[nodiscard]] UnicodeResult UnicodeImplementRvv::convert_utf16le_to_utf32_with_errors(
     const char16_t* src, size_t len, char32_t* dst) const noexcept {
     return rvv_utf16_to_utf32_with_errors<unicode_ByteFlip::NONE>(src, len, dst);
 }
 
- [[nodiscard]] UnicodeResult implementation::convert_utf16be_to_utf32_with_errors(
+ [[nodiscard]] UnicodeResult UnicodeImplementRvv::convert_utf16be_to_utf32_with_errors(
     const char16_t* src, size_t len, char32_t* dst) const noexcept {
     if (supports_zvbb())
         return rvv_utf16_to_utf32_with_errors<unicode_ByteFlip::ZVBB>(src, len,
@@ -374,12 +374,12 @@ rvv_utf16_to_utf32_with_errors(const char16_t* src, size_t len, char32_t* dst) {
         return rvv_utf16_to_utf32_with_errors<unicode_ByteFlip::V>(src, len, dst);
 }
 
- [[nodiscard]] size_t implementation::convert_valid_utf16le_to_utf32(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_valid_utf16le_to_utf32(
     const char16_t* src, size_t len, char32_t* dst) const noexcept {
     return convert_utf16le_to_utf32(src, len, dst);
 }
 
- [[nodiscard]] size_t implementation::convert_valid_utf16be_to_utf32(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_valid_utf16be_to_utf32(
     const char16_t* src, size_t len, char32_t* dst) const noexcept {
     return convert_utf16be_to_utf32(src, len, dst);
 }

@@ -11,10 +11,10 @@ namespace turbo {
             using namespace turbo;
         }
 
-        class implementation final : public turbo::implementation {
+        class UnicodeImplementLasx final : public turbo::UnicodeImplement {
         public:
-            KUMO_FORCE_INLINE implementation()
-                : turbo::implementation("lasx", "LOONGARCH ASX",
+            KUMO_FORCE_INLINE UnicodeImplementLasx()
+                : turbo::UnicodeImplement("lasx", "LOONGARCH ASX",
                       InstructionSet::LSX | InstructionSet::LASX) { }
              [[nodiscard]] int detect_encodings(const char* input,
                 size_t length) const noexcept final;

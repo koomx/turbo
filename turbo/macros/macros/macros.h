@@ -300,6 +300,14 @@
 #error "KUMO_RESTORE_UNDESIRED_WARNINGS is not defined"
 #endif
 
+#ifndef KUMO_TARGET_REGION
+#error "KUMO_TARGET_REGION is not defined"
+#endif
+
+#ifndef KUMO_UNTARGET_REGION
+#error "KUMO_UNTARGET_REGION is not defined"
+#endif
+
 // ---------------------------------------------------------------------------
 // assert.h
 // ---------------------------------------------------------------------------

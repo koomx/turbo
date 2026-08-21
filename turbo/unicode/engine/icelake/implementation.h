@@ -10,10 +10,10 @@ namespace turbo {
             using namespace turbo;
         }
 
-        class implementation final : public turbo::implementation {
+        class UnicodeImplementIcelake final : public turbo::UnicodeImplement {
         public:
-            KUMO_FORCE_INLINE implementation()
-                : turbo::implementation(
+            KUMO_FORCE_INLINE UnicodeImplementIcelake()
+                : turbo::UnicodeImplement(
                       "icelake",
                       "Intel AVX512 (AVX-512BW, AVX-512CD, AVX-512VL, AVX-512VBMI2 "
                       "extensions)",

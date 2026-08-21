@@ -23,13 +23,7 @@
 #define UNICODE_IMPLEMENTATION_LASX 0
 #endif
 #endif
-#if UNICODE_IMPLEMENTATION_LASX && KUMO_SIMD_LASX
-#define UNICODE_CAN_ALWAYS_RUN_LASX 1
-#else
-#define UNICODE_CAN_ALWAYS_RUN_LASX 0
-#endif
 
-#define UNICODE_CAN_ALWAYS_RUN_FALLBACK (UNICODE_IMPLEMENTATION_FALLBACK)
 #include <turbo/arch/isadetection.h>
 
 namespace turbo {
@@ -37,7 +31,7 @@ namespace turbo {
 } // namespace turbo
 
 #if UNICODE_IMPLEMENTATION_LASX
-#define UNICODE_TARGET_LASX UNICODE_TARGET_REGION("lasx,lsx")
+#define UNICODE_TARGET_LASX KUMO_TARGET_REGION("lasx,lsx")
 
 // For runtime dispatching to work, we need the lsxintrin to appear
 // before we call UNICODE_TARGET_LASX. It is unclear why.

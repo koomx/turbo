@@ -1,18 +1,12 @@
 #ifndef UNICODE_PPC64_H
 #define UNICODE_PPC64_H
 
-#ifdef UNICODE_FALLBACK_H
-#error "ppc64.h must be included before fallback.h"
-#endif
-
 #include <turbo/unicode/engine/portability.h>
 #include <turbo/arch/isa.h>
 
 #ifndef UNICODE_IMPLEMENTATION_PPC64
 #define UNICODE_IMPLEMENTATION_PPC64 (KUMO_ARCH_PPC64 && KUMO_SIMD_ALTIVEC)
 #endif
-#define UNICODE_CAN_ALWAYS_RUN_PPC64 \
-    UNICODE_IMPLEMENTATION_PPC64 && KUMO_ARCH_PPC64 && KUMO_SIMD_ALTIVEC
 
 #include <turbo/arch/isadetection.h>
 

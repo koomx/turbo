@@ -11,10 +11,10 @@ namespace turbo {
             using namespace turbo;
         }
 
-        class implementation final : public turbo::implementation {
+        class UnicodeImplementArm64 final : public turbo::UnicodeImplement {
         public:
-            KUMO_FORCE_INLINE implementation()
-                : turbo::implementation("arm64", "ARM NEON",
+            KUMO_FORCE_INLINE UnicodeImplementArm64()
+                : turbo::UnicodeImplement("arm64", "ARM NEON",
                       InstructionSet::NEON) { }
              [[nodiscard]] int detect_encodings(const char* input,
                 size_t length) const noexcept final;

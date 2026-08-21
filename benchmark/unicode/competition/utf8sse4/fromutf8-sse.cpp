@@ -286,7 +286,7 @@ size_t fromUtf8(const char **inbuf, size_t *inbytesleft, char **outbuf, size_t *
 }
 
 }
-UNICODE_UNTARGET_REGION
+KUMO_UNTARGET_REGION
 
 
 #endif // __x86_64__

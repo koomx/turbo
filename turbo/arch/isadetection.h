@@ -59,7 +59,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <stdfil.h>
 #endif
 
-#include <turbo/unicode/engine/portability.h>
 
 // RISC-V ISA detection utilities
 #if KUMO_ARCH_RISCV64 && defined(__linux__)

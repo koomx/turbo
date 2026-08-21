@@ -1,20 +1,11 @@
 #ifndef UNICODE_ARM64_H
 #define UNICODE_ARM64_H
 
-#ifdef UNICODE_FALLBACK_H
-#error "arm64.h must be included before fallback.h"
-#endif
-
 #include <turbo/unicode/engine/portability.h>
 #include <turbo/arch/isa.h>
 
 #ifndef UNICODE_IMPLEMENTATION_ARM64
 #define UNICODE_IMPLEMENTATION_ARM64 (KUMO_ARCH_ARM64)
-#endif
-#if UNICODE_IMPLEMENTATION_ARM64 && KUMO_ARCH_ARM64
-#define UNICODE_CAN_ALWAYS_RUN_ARM64 1
-#else
-#define UNICODE_CAN_ALWAYS_RUN_ARM64 0
 #endif
 
 #include <turbo/arch/isadetection.h>

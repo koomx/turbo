@@ -31,18 +31,12 @@
     "You are using a legacy GCC compiler, we are disabling AVX-512 support"
 #endif
 
-// We allow icelake on x64 as long as the compiler is known to support VBMI2.
-#ifndef UNICODE_IMPLEMENTATION_ICELAKE
-#define UNICODE_IMPLEMENTATION_ICELAKE \
-    ((KUMO_ARCH_X86_64) && (UNICODE_COMPILER_SUPPORTS_VBMI2))
-#endif
-
 // To see why  (__BMI__) && (__LZCNT__) are not part of this next line, see
 // https://github.com/simdutf/simdutf/issues/1247
 #if ((UNICODE_IMPLEMENTATION_ICELAKE) && (KUMO_ARCH_X86_64) && (__AVX2__) && (KUMO_SIMD_AVX512F && KUMO_SIMD_AVX512DQ && KUMO_SIMD_AVX512VL && KUMO_SIMD_AVX512VBMI2) && (!KUMO_ARCH_32_BIT))
-#define UNICODE_CAN_ALWAYS_RUN_ICELAKE 1
+#define UNICODE_IMPLEMENTATION_ICELAKE 1
 #else
-#define UNICODE_CAN_ALWAYS_RUN_ICELAKE 0
+#define UNICODE_IMPLEMENTATION_ICELAKE 0
 #endif
 
 namespace turbo {
@@ -50,21 +44,16 @@ namespace turbo {
 } // namespace turbo
 
 #if UNICODE_IMPLEMENTATION_ICELAKE
-#if UNICODE_CAN_ALWAYS_RUN_ICELAKE
-#define UNICODE_TARGET_ICELAKE
-#else
 #define UNICODE_TARGET_ICELAKE                                       \
-    UNICODE_TARGET_REGION(                                           \
+    KUMO_TARGET_REGION(                                           \
         "avx512f,avx512dq,avx512cd,avx512bw,avx512vbmi,avx512vbmi2," \
         "avx512vl,avx2,bmi,bmi2,pclmul,lzcnt,popcnt,avx512vpopcntdq")
-#endif
-
 namespace turbo {
     namespace icelake { } // namespace icelake
 } // namespace turbo
 
 //
-// These two need to be included outside UNICODE_TARGET_REGION
+// These two need to be included outside KUMO_TARGET_REGION
 //
 #include <turbo/unicode/engine/icelake/intrinsics.h>
 #include <turbo/unicode/engine/icelake/implementation.h>

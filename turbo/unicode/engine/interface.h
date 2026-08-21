@@ -1,8 +1,6 @@
 #pragma once
 
-#if !UNICODE_NO_THREADS
 #include <atomic>
-#endif
 #ifdef UNICODE_INTERNAL_TESTS
 #include <vector>
 #endif
@@ -22,11 +20,11 @@ namespace turbo {
     /// Also used to maintain the currently active implementation. The active
     /// implementation is automatically initialized on first use to the most advanced
     /// implementation supported by the host.
-    class implementation {
+    class UnicodeImplement {
     public:
         /// The name of this implementation.
         ///
-        ///     const implementation *impl = turbo::active_implementation;
+        ///     const UnicodeImplement *impl = turbo::UnicodeRegistry::get_best_isa();
         ///     cout << "simdutf is optimized for " << impl->name() << "(" <<
         /// impl->description() << ")" << endl;
         ///
@@ -35,7 +33,7 @@ namespace turbo {
 
         /// The description of this implementation.
         ///
-        ///     const implementation *impl = turbo::active_implementation;
+        ///     const UnicodeImplement *impl = turbo::UnicodeRegistry::get_best_isa();
         ///     cout << "simdutf is optimized for " << impl->name() << "(" <<
         /// impl->description() << ")" << endl;
         ///
@@ -1757,7 +1755,7 @@ namespace turbo {
             std::string_view name;
 
             // procedure should return whether given test pass or not
-            void (*procedure)(const implementation&);
+            void (*procedure)(const UnicodeImplement&);
         };
 
         virtual std::vector<TestProcedure> internal_tests() const;
@@ -1770,7 +1768,7 @@ namespace turbo {
         /// @param description a description of this implementation
         /// @param required_instruction_sets the instruction sets this implementation
         /// requires
-        KUMO_FORCE_INLINE implementation(const char* name,
+        KUMO_FORCE_INLINE UnicodeImplement(const char* name,
             const char* description,
             uint32_t required_instruction_sets)
             : _name(name)
@@ -1778,7 +1776,7 @@ namespace turbo {
             , _required_instruction_sets(required_instruction_sets) { }
 
     protected:
-        ~implementation() = default;
+        ~UnicodeImplement() = default;
 
     private:
         /// The name of this implementation.

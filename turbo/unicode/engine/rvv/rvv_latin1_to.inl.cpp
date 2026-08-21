@@ -1,4 +1,4 @@
- [[nodiscard]] size_t implementation::convert_latin1_to_utf8(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_latin1_to_utf8(
     const char* src, size_t len, char* dst) const noexcept {
     char* beg = dst;
     for (size_t vl, vlOut; len > 0; len -= vl, src += vl, dst += vlOut) {
@@ -26,7 +26,7 @@
     return dst - beg;
 }
 
- [[nodiscard]] size_t implementation::convert_latin1_to_utf16le(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_latin1_to_utf16le(
     const char* src, size_t len, char16_t* dst) const noexcept {
     char16_t* beg = dst;
     for (size_t vl; len > 0; len -= vl, src += vl, dst += vl) {
@@ -37,7 +37,7 @@
     return dst - beg;
 }
 
- [[nodiscard]] size_t implementation::convert_latin1_to_utf16be(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_latin1_to_utf16be(
     const char* src, size_t len, char16_t* dst) const noexcept {
     char16_t* beg = dst;
     for (size_t vl; len > 0; len -= vl, src += vl, dst += vl) {
@@ -50,7 +50,7 @@
     return dst - beg;
 }
 
- [[nodiscard]] size_t implementation::convert_latin1_to_utf32(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_latin1_to_utf32(
     const char* src, size_t len, char32_t* dst) const noexcept {
     char32_t* beg = dst;
     for (size_t vl; len > 0; len -= vl, src += vl, dst += vl) {

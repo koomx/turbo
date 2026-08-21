@@ -107,9 +107,9 @@ void run_from_utf8(const std::vector<char> &input_data,
   } else {
     std::cout << "# [iconv] initialized ISO-8859-1 to UTF-16 converter\n";
   }
-  std::cout << "n,\tsimdutf-speed\ticonv-speed\n";
+  std::cout << "n,\tunicode-speed\ticonv-speed\n";
 #else
-  std::cout << "n,\tsimdutf-speed\n";
+  std::cout << "n,\tunicode-speed\n";
 #endif
   size_t offset = size_t(
       round(double(input_data.size() - min_len) / approx_output_datapoints));
@@ -157,7 +157,7 @@ void run_from_utf16(const std::vector<char> &input_data,
   if (input_data.size() < min_len) {
     return;
   }
-  std::cout << "n,\tsimdutf-speed\n";
+  std::cout << "n,\tunicode-speed\n";
   size_t offset = size_t(
       round(double(input_data.size() - min_len) / approx_output_datapoints));
   for (size_t len = min_len; len <= input_data.size();

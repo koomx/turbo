@@ -1,5 +1,5 @@
  [[nodiscard]] bool
-implementation::validate_ascii(const char* src, size_t len) const noexcept {
+UnicodeImplementRvv::validate_ascii(const char* src, size_t len) const noexcept {
     size_t vlmax = __riscv_vsetvlmax_e8m8();
     vint8m8_t mask = __riscv_vmv_v_x_i8m8(0, vlmax);
     for (size_t vl; len > 0; len -= vl, src += vl) {
@@ -10,7 +10,7 @@ implementation::validate_ascii(const char* src, size_t len) const noexcept {
     return __riscv_vfirst_m_b1(__riscv_vmslt_vx_i8m8_b1(mask, 0, vlmax), vlmax) < 0;
 }
 
- [[nodiscard]] UnicodeResult implementation::validate_ascii_with_errors(
+ [[nodiscard]] UnicodeResult UnicodeImplementRvv::validate_ascii_with_errors(
     const char* src, size_t len) const noexcept {
     const char* beg = src;
     for (size_t vl; len > 0; len -= vl, src += vl) {
@@ -37,13 +37,13 @@ KUMO_FORCE_INLINE bool rvv_validate_utf16_as_ascii(const char16_t* buf,
     return true;
 }
  [[nodiscard]] bool
-implementation::validate_utf16le_as_ascii(const char16_t* buf,
+UnicodeImplementRvv::validate_utf16le_as_ascii(const char16_t* buf,
     size_t len) const noexcept {
     return rvv_validate_utf16_as_ascii<unicode_ByteFlip::NONE>(buf, len);
 }
 
  [[nodiscard]] bool
-implementation::validate_utf16be_as_ascii(const char16_t* buf,
+UnicodeImplementRvv::validate_utf16be_as_ascii(const char16_t* buf,
     size_t len) const noexcept {
     if (supports_zvbb())
         return rvv_validate_utf16_as_ascii<unicode_ByteFlip::ZVBB>(buf, len);
@@ -124,12 +124,12 @@ KUMO_FORCE_INLINE static size_t rvv_count_valid_utf8(const char* src,
 }
 
  [[nodiscard]] bool
-implementation::validate_utf8(const char* src, size_t len) const noexcept {
+UnicodeImplementRvv::validate_utf8(const char* src, size_t len) const noexcept {
     size_t count = rvv_count_valid_utf8(src, len);
     return scalar::utf8::validate(src + count, len - count);
 }
 
- [[nodiscard]] UnicodeResult implementation::validate_utf8_with_errors(
+ [[nodiscard]] UnicodeResult UnicodeImplementRvv::validate_utf8_with_errors(
     const char* src, size_t len) const noexcept {
     size_t count = rvv_count_valid_utf8(src, len);
     UnicodeResult res = scalar::utf8::validate_with_errors(src + count, len - count);
@@ -173,7 +173,7 @@ rvv_validate_utf16_with_errors(const char16_t* src, size_t len) {
 }
 
  [[nodiscard]] bool
-implementation::validate_utf16le(const char16_t* src,
+UnicodeImplementRvv::validate_utf16le(const char16_t* src,
     size_t len) const noexcept {
     return rvv_validate_utf16_with_errors<unicode_ByteFlip::NONE>(src, len)
                .error
@@ -181,17 +181,17 @@ implementation::validate_utf16le(const char16_t* src,
 }
 
  [[nodiscard]] bool
-implementation::validate_utf16be(const char16_t* src,
+UnicodeImplementRvv::validate_utf16be(const char16_t* src,
     size_t len) const noexcept {
     return validate_utf16be_with_errors(src, len).error == UnicodeError::SUCCESS;
 }
 
- [[nodiscard]] UnicodeResult implementation::validate_utf16le_with_errors(
+ [[nodiscard]] UnicodeResult UnicodeImplementRvv::validate_utf16le_with_errors(
     const char16_t* src, size_t len) const noexcept {
     return rvv_validate_utf16_with_errors<unicode_ByteFlip::NONE>(src, len);
 }
 
- [[nodiscard]] UnicodeResult implementation::validate_utf16be_with_errors(
+ [[nodiscard]] UnicodeResult UnicodeImplementRvv::validate_utf16be_with_errors(
     const char16_t* src, size_t len) const noexcept {
     if (supports_zvbb())
         return rvv_validate_utf16_with_errors<unicode_ByteFlip::ZVBB>(src, len);
@@ -200,7 +200,7 @@ implementation::validate_utf16be(const char16_t* src,
 }
 
  [[nodiscard]] bool
-implementation::validate_utf32(const char32_t* src, size_t len) const noexcept {
+UnicodeImplementRvv::validate_utf32(const char32_t* src, size_t len) const noexcept {
     size_t vlmax = __riscv_vsetvlmax_e32m8();
     vuint32m8_t max = __riscv_vmv_v_x_u32m8(0x10FFFF, vlmax);
     vuint32m8_t maxOff = __riscv_vmv_v_x_u32m8(0xFFFFF7FF, vlmax);
@@ -219,7 +219,7 @@ implementation::validate_utf32(const char32_t* src, size_t len) const noexcept {
         < 0;
 }
 
- [[nodiscard]] UnicodeResult implementation::validate_utf32_with_errors(
+ [[nodiscard]] UnicodeResult UnicodeImplementRvv::validate_utf32_with_errors(
     const char32_t* src, size_t len) const noexcept {
     const char32_t* beg = src;
     for (size_t vl; len > 0; len -= vl, src += vl) {

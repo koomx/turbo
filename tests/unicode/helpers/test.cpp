@@ -106,18 +106,14 @@ void print_architectures(FILE* file) {
     fprintf(file, "Little-endian system detected.\n");
 #endif
     fprintf(file, "Available implementations:\n");
-    for (const auto& implementation : turbo::get_available_implementations()) {
-        if (implementation == nullptr) {
-            puts("implementation is null which is unexpected.");
-            abort();
-        }
-        if (implementation->supported_by_runtime_system()) {
-            fprintf(file, "- %.*s\n", int(implementation->name().size()),
-                implementation->name().data());
+    for (const auto& info : turbo::UnicodeRegistry::get_all_isa_info()) {
+        if (!info.compiled || info.engine == nullptr) {
+            fprintf(file, "- %s [not compiled]\n", info.isa_name);
+        } else if (info.rank == 0) {
+            fprintf(file, "- %s [unsupported by current processor]\n",
+                info.isa_name);
         } else {
-            fprintf(file, "- %.*s [unsupported by current processor]\n",
-                int(implementation->name().size()),
-                implementation->name().data());
+            fprintf(file, "- %s\n", info.isa_name);
         }
     }
 }
@@ -140,7 +136,7 @@ void print_tests() {
 namespace turbo {
     namespace test {
 
-        void test_entry::operator()(const turbo::implementation& impl) {
+        void test_entry::operator()(const turbo::UnicodeImplement& impl) {
             std::string title = name;
             std::replace(title.begin(), title.end(), '_', ' ');
             printf("Running '%s'... ", title.c_str());
@@ -166,25 +162,16 @@ namespace turbo {
             }
             size_t matching_implementation { 0 };
 
-            for (const auto& implementation : turbo::get_available_implementations()) {
-                if (implementation == nullptr) {
-                    puts("implementation is null which is unexpected");
-                    abort();
-                }
-                if (!implementation->supported_by_runtime_system()) {
-                    printf("Implementation %s is unsupported by the current processor.\n",
-                        implementation->name().data());
-                    continue;
-                }
+            for (const auto& info : turbo::UnicodeRegistry::get_avail_isa_info()) {
                 if (not cmdline.architectures.empty()) {
-                    if (cmdline.architectures.count(std::string(implementation->name())) == 0) {
+                    if (cmdline.architectures.count(info.isa_name) == 0) {
                         continue;
                     }
                 }
                 matching_implementation++;
 
-                printf("Checking implementation %.*s\n", int(implementation->name().size()),
-                    implementation->name().data());
+                auto* implementation = static_cast<turbo::UnicodeImplement*>(info.engine);
+                printf("Checking implementation %s\n", info.isa_name);
 
                 auto filter = [&cmdline](const turbo::test::test_entry& test) -> bool {
                     if (cmdline.tests.empty())

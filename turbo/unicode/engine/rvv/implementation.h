@@ -11,10 +11,10 @@ namespace turbo {
             using namespace turbo;
         } // namespace
 
-        class implementation final : public turbo::implementation {
+        class UnicodeImplementRvv final : public turbo::UnicodeImplement {
         public:
-            KUMO_FORCE_INLINE implementation()
-                : turbo::implementation("rvv", "RISC-V Vector Extension",
+            KUMO_FORCE_INLINE UnicodeImplementRvv()
+                : turbo::UnicodeImplement("rvv", "RISC-V Vector Extension",
                       InstructionSet::RVV)
                 , _supports_zvbb(internal::detect_supported_architectures() & InstructionSet::ZVBB) { }
              [[nodiscard]] int detect_encodings(const char* input,

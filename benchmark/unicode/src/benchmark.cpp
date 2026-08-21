@@ -20,7 +20,7 @@ UNICODE_TARGET_WESTMERE
 namespace {
   #include "benchmarks/competition/utf8lut/src/utf8lut.h"
 }
-UNICODE_UNTARGET_REGION
+KUMO_UNTARGET_REGION
 
   /**
    * Bob Steagall, CppCon2018
@@ -510,9 +510,9 @@ void Benchmark::list_procedures(ListingMode lm) const {
       printf(" {\n");
       printf("    \"name\": \"%s\",\n", name.c_str());
       if (std::holds_alternative<thirdparty_fn>(entry.first)) {
-        printf("    \"simdutf\": false,\n");
+        printf("    \"unicode\": false,\n");
       } else if (std::holds_alternative<unicode_fn>(entry.first)) {
-        printf("    \"simdutf\": true,\n");
+        printf("    \"unicode\": true,\n");
       }
 
       {
@@ -608,7 +608,7 @@ void Benchmark::run(const std::string &procedure_name, size_t iterations) {
   std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
-void Benchmark::run_validate_utf8(const turbo::implementation &implementation,
+void Benchmark::run_validate_utf8(const turbo::UnicodeImplement &implementation,
                                   size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
@@ -628,7 +628,7 @@ void Benchmark::run_validate_utf8(const turbo::implementation &implementation,
 }
 
 void Benchmark::run_validate_utf8_with_errors(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
   volatile bool sink{false};
@@ -658,7 +658,7 @@ bool ascii_is_valid(const char *data, size_t size) {
 } // namespace details
 
 void Benchmark::run_naive_validate_ascii(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
   volatile bool sink{false};
@@ -676,7 +676,7 @@ void Benchmark::run_naive_validate_ascii(
 }
 
 void Benchmark::run_validate_ascii(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
   volatile bool sink{false};
@@ -695,7 +695,7 @@ void Benchmark::run_validate_ascii(
 }
 
 void Benchmark::run_validate_ascii_with_errors(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
   volatile bool sink{false};
@@ -715,7 +715,7 @@ void Benchmark::run_validate_ascii_with_errors(
 }
 
 void Benchmark::run_validate_utf16le(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char16_t *data = reinterpret_cast<const char16_t *>(
@@ -744,7 +744,7 @@ void Benchmark::run_validate_utf16le(
 }
 
 void Benchmark::run_validate_utf16le_with_errors(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char16_t *data = reinterpret_cast<const char16_t *>(
@@ -774,7 +774,7 @@ void Benchmark::run_validate_utf16le_with_errors(
 }
 
 void Benchmark::run_validate_utf32(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char32_t *data = reinterpret_cast<const char32_t *>(
@@ -803,7 +803,7 @@ void Benchmark::run_validate_utf32(
 }
 
 void Benchmark::run_validate_utf32_with_errors(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char32_t *data = reinterpret_cast<const char32_t *>(
@@ -834,7 +834,7 @@ void Benchmark::run_validate_utf32_with_errors(
 }
 
 void Benchmark::run_convert_latin1_to_utf8(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
   std::unique_ptr<char[]> output_buffer{new char[size * 2]};
@@ -853,7 +853,7 @@ void Benchmark::run_convert_latin1_to_utf8(
 }
 
 void Benchmark::run_convert_latin1_to_utf16le(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
   std::unique_ptr<char16_t[]> output_buffer{new char16_t[size * 2]};
@@ -872,7 +872,7 @@ void Benchmark::run_convert_latin1_to_utf16le(
 }
 
 void Benchmark::run_convert_latin1_to_utf32(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
   std::unique_ptr<char32_t[]> output_buffer{new char32_t[size]};
@@ -891,7 +891,7 @@ void Benchmark::run_convert_latin1_to_utf32(
 }
 
 void Benchmark::run_utf8_length_from_latin1(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
   volatile size_t sink{0};
@@ -909,7 +909,7 @@ void Benchmark::run_utf8_length_from_latin1(
 }
 
 void Benchmark::run_utf8_length_from_utf16le(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char16_t *data = reinterpret_cast<const char16_t *>(input_data.data());
   const size_t size = input_data.size() / 2;
   volatile size_t sink{0};
@@ -923,7 +923,7 @@ void Benchmark::run_utf8_length_from_utf16le(
 }
 
 void Benchmark::run_utf8_length_from_utf16be(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char16_t *data = reinterpret_cast<const char16_t *>(input_data.data());
   const size_t size = input_data.size() / 2;
   volatile size_t sink{0};
@@ -937,7 +937,7 @@ void Benchmark::run_utf8_length_from_utf16be(
 }
 
 void Benchmark::run_utf8_length_from_utf16le_with_replacement(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char16_t *data = reinterpret_cast<const char16_t *>(input_data.data());
   const size_t size = input_data.size() / 2;
   volatile size_t sink{0};
@@ -953,7 +953,7 @@ void Benchmark::run_utf8_length_from_utf16le_with_replacement(
 }
 
 void Benchmark::run_utf8_length_from_utf16be_with_replacement(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char16_t *data = reinterpret_cast<const char16_t *>(input_data.data());
   const size_t size = input_data.size() / 2;
   volatile size_t sink{0};
@@ -969,7 +969,7 @@ void Benchmark::run_utf8_length_from_utf16be_with_replacement(
 }
 
 void Benchmark::run_utf8_length_from_utf32(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char32_t *data = reinterpret_cast<const char32_t *>(input_data.data());
   const size_t size = input_data.size() / 4;
   volatile size_t sink{0};
@@ -983,7 +983,7 @@ void Benchmark::run_utf8_length_from_utf32(
 }
 
 void Benchmark::run_to_well_formed_utf16le(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char16_t *data = reinterpret_cast<const char16_t *>(input_data.data());
   const size_t size = input_data.size() / 2;
   std::unique_ptr<char16_t[]> output_buffer{new char16_t[size]};
@@ -997,7 +997,7 @@ void Benchmark::run_to_well_formed_utf16le(
 }
 
 void Benchmark::run_utf16_length_from_utf8(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size() / 4;
   volatile size_t sink{0};
@@ -1057,7 +1057,7 @@ void Benchmark::run_utf8_length_from_latin1_node(size_t iterations) {
 }
 
 void Benchmark::run_convert_utf8_to_latin1(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
   std::unique_ptr<char[]> output_buffer{new char[size]};
@@ -1077,7 +1077,7 @@ void Benchmark::run_convert_utf8_to_latin1(
 }
 
 void Benchmark::run_convert_utf8_to_latin1_with_errors(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
   std::unique_ptr<char[]> output_buffer{new char[size]};
@@ -1098,7 +1098,7 @@ void Benchmark::run_convert_utf8_to_latin1_with_errors(
 }
 
 void Benchmark::run_convert_valid_utf8_to_latin1(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
   std::unique_ptr<char[]> output_buffer{new char[size]};
@@ -1118,7 +1118,7 @@ void Benchmark::run_convert_valid_utf8_to_latin1(
 }
 
 void Benchmark::run_convert_utf8_to_utf16le(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
   std::unique_ptr<char16_t[]> output_buffer{new char16_t[size]};
@@ -1138,7 +1138,7 @@ void Benchmark::run_convert_utf8_to_utf16le(
 }
 
 void Benchmark::run_convert_utf8_to_utf16le_with_errors(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
   std::unique_ptr<char16_t[]> output_buffer{new char16_t[size]};
@@ -1159,7 +1159,7 @@ void Benchmark::run_convert_utf8_to_utf16le_with_errors(
 }
 
 void Benchmark::run_convert_utf8_to_utf32(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
   std::unique_ptr<char32_t[]> output_buffer{new char32_t[size]};
@@ -1179,7 +1179,7 @@ void Benchmark::run_convert_utf8_to_utf32(
 }
 
 void Benchmark::run_convert_utf8_to_utf32_with_errors(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
   std::unique_ptr<char32_t[]> output_buffer{new char32_t[size]};
@@ -1200,7 +1200,7 @@ void Benchmark::run_convert_utf8_to_utf32_with_errors(
 }
 
 void Benchmark::run_convert_utf8_to_utf16le_with_dynamic_allocation(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
   volatile size_t sink{0};
@@ -1220,7 +1220,7 @@ void Benchmark::run_convert_utf8_to_utf16le_with_dynamic_allocation(
 }
 
 void Benchmark::run_convert_utf8_to_utf32_with_dynamic_allocation(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
   volatile size_t sink{0};
@@ -2612,7 +2612,7 @@ void Benchmark::run_convert_utf8_to_utf16_utf8sse4(size_t iterations) {
 #endif
 
 void Benchmark::run_convert_valid_utf8_to_utf16le(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
   std::unique_ptr<char16_t[]> output_buffer{new char16_t[size]};
@@ -2632,7 +2632,7 @@ void Benchmark::run_convert_valid_utf8_to_utf16le(
 }
 
 void Benchmark::run_convert_valid_utf8_to_utf32(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
   std::unique_ptr<char32_t[]> output_buffer{new char32_t[size]};
@@ -2652,7 +2652,7 @@ void Benchmark::run_convert_valid_utf8_to_utf32(
 }
 
 void Benchmark::run_convert_utf16le_to_latin1(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char16_t *data = reinterpret_cast<const char16_t *>(
@@ -2681,7 +2681,7 @@ void Benchmark::run_convert_utf16le_to_latin1(
 }
 
 void Benchmark::run_convert_utf16le_to_latin1_with_errors(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char16_t *data = reinterpret_cast<const char16_t *>(
@@ -2711,7 +2711,7 @@ void Benchmark::run_convert_utf16le_to_latin1_with_errors(
 }
 
 void Benchmark::run_convert_valid_utf16le_to_latin1(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char16_t *data = reinterpret_cast<const char16_t *>(
@@ -2740,8 +2740,8 @@ void Benchmark::run_convert_valid_utf16le_to_latin1(
 }
 
 void Benchmark::run_convert_utf16_to_utf8_safe(
-    const turbo::implementation &implementation, size_t iterations) {
-  const turbo::implementation *active_implementation =
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
+  const turbo::UnicodeImplement *active_implementation =
       turbo::get_active_implementation();
   turbo::get_active_implementation() =
       &implementation; // set the active implementation
@@ -2780,7 +2780,7 @@ void Benchmark::run_convert_utf16_to_utf8_safe(
 }
 
 void Benchmark::run_convert_utf16le_to_utf8(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char16_t *data = reinterpret_cast<const char16_t *>(
@@ -2816,7 +2816,7 @@ void Benchmark::run_convert_utf16le_to_utf8(
 }
 
 void Benchmark::run_convert_utf16le_to_utf8_with_replacement(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char16_t *data = reinterpret_cast<const char16_t *>(
@@ -2850,7 +2850,7 @@ void Benchmark::run_convert_utf16le_to_utf8_with_replacement(
 }
 
 void Benchmark::run_convert_utf16le_to_utf8_with_errors(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char16_t *data = reinterpret_cast<const char16_t *>(
@@ -2887,7 +2887,7 @@ void Benchmark::run_convert_utf16le_to_utf8_with_errors(
 }
 
 void Benchmark::run_convert_utf16le_to_utf32(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char16_t *data = reinterpret_cast<const char16_t *>(
@@ -2922,7 +2922,7 @@ void Benchmark::run_convert_utf16le_to_utf32(
 }
 
 void Benchmark::run_convert_utf16le_to_utf32_with_errors(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char16_t *data = reinterpret_cast<const char16_t *>(
@@ -2958,7 +2958,7 @@ void Benchmark::run_convert_utf16le_to_utf32_with_errors(
 }
 
 void Benchmark::run_convert_utf16le_to_utf8_with_dynamic_allocation(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char16_t *data = reinterpret_cast<const char16_t *>(
@@ -2995,7 +2995,7 @@ void Benchmark::run_convert_utf16le_to_utf8_with_dynamic_allocation(
 }
 
 void Benchmark::run_convert_utf16le_to_utf32_with_dynamic_allocation(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char16_t *data = reinterpret_cast<const char16_t *>(
@@ -3031,7 +3031,7 @@ void Benchmark::run_convert_utf16le_to_utf32_with_dynamic_allocation(
 }
 
 void Benchmark::run_convert_valid_utf16le_to_utf8(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char16_t *data = reinterpret_cast<const char16_t *>(
@@ -3067,7 +3067,7 @@ void Benchmark::run_convert_valid_utf16le_to_utf8(
 }
 
 void Benchmark::run_convert_utf32_to_latin1(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char32_t *data = reinterpret_cast<const char32_t *>(
@@ -3097,7 +3097,7 @@ void Benchmark::run_convert_utf32_to_latin1(
   print_summary(result, input_data.size(), char_count);
 }
 void Benchmark::run_convert_utf32_to_latin1_with_errors(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char32_t *data = reinterpret_cast<const char32_t *>(
@@ -3128,7 +3128,7 @@ void Benchmark::run_convert_utf32_to_latin1_with_errors(
   print_summary(result, input_data.size(), char_count);
 }
 void Benchmark::run_convert_valid_utf32_to_latin1(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char32_t *data = reinterpret_cast<const char32_t *>(
@@ -3159,7 +3159,7 @@ void Benchmark::run_convert_valid_utf32_to_latin1(
 }
 
 void Benchmark::run_convert_utf32_to_utf8(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char32_t *data = reinterpret_cast<const char32_t *>(
@@ -3194,7 +3194,7 @@ void Benchmark::run_convert_utf32_to_utf8(
 }
 
 void Benchmark::run_convert_utf32_to_utf8_with_errors(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char32_t *data = reinterpret_cast<const char32_t *>(
@@ -3230,7 +3230,7 @@ void Benchmark::run_convert_utf32_to_utf8_with_errors(
 }
 
 void Benchmark::run_convert_valid_utf32_to_utf8(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char32_t *data = reinterpret_cast<const char32_t *>(
@@ -3265,7 +3265,7 @@ void Benchmark::run_convert_valid_utf32_to_utf8(
 }
 
 void Benchmark::run_convert_valid_utf16le_to_utf32(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char16_t *data = reinterpret_cast<const char16_t *>(
@@ -3302,7 +3302,7 @@ void Benchmark::run_convert_valid_utf16le_to_utf32(
 
 template <Endian byte_order>
 void Benchmark::run_convert_utf32_to_utf16(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char32_t *data = reinterpret_cast<const char32_t *>(
@@ -3343,7 +3343,7 @@ void Benchmark::run_convert_utf32_to_utf16(
 
 template <Endian byte_order>
 void Benchmark::run_convert_utf32_to_utf16_with_errors(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char32_t *data = reinterpret_cast<const char32_t *>(
@@ -3386,7 +3386,7 @@ void Benchmark::run_convert_utf32_to_utf16_with_errors(
 
 template <Endian byte_order>
 void Benchmark::run_convert_valid_utf32_to_utf16(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char32_t *data = reinterpret_cast<const char32_t *>(
@@ -3425,7 +3425,7 @@ void Benchmark::run_convert_valid_utf32_to_utf16(
   print_summary(result, input_data.size(), char_count);
 }
 
-void Benchmark::run_count_utf8(const turbo::implementation &implementation,
+void Benchmark::run_count_utf8(const turbo::UnicodeImplement &implementation,
                                size_t iterations) {
   const char *data = reinterpret_cast<const char *>(input_data.data());
   const size_t size = input_data.size();
@@ -3443,7 +3443,7 @@ void Benchmark::run_count_utf8(const turbo::implementation &implementation,
   print_summary(result, size, char_count);
 }
 
-void Benchmark::run_count_utf16le(const turbo::implementation &implementation,
+void Benchmark::run_count_utf16le(const turbo::UnicodeImplement &implementation,
                                   size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
@@ -3469,7 +3469,7 @@ void Benchmark::run_count_utf16le(const turbo::implementation &implementation,
 }
 
 void Benchmark::run_detect_encodings(
-    const turbo::implementation &implementation, size_t iterations) {
+    const turbo::UnicodeImplement &implementation, size_t iterations) {
   const turbo::TextEncoding bom =
       BOM::check_bom(input_data.data(), input_data.size());
   const char *data = reinterpret_cast<const char *>(input_data.data() +

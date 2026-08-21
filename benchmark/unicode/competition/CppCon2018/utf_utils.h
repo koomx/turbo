@@ -590,6 +590,6 @@ UtfUtils::AdvanceWithTrace(char8_t const*& pSrc, char8_t const* pSrcEnd, char32_
 }
 
 }       //- namespace uu
-UNICODE_UNTARGET_REGION
+KUMO_UNTARGET_REGION
 
 #endif  //- KEWB_UNICODE_UTILS_H_DEFINED

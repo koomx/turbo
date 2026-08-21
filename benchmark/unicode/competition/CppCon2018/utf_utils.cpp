@@ -1273,4 +1273,4 @@ UtfUtils::PrintStateData(State curr, CharClass type, uint32_t unit, State next)
 }
 
 }   //- Namespace uu
-UNICODE_UNTARGET_REGION
+KUMO_UNTARGET_REGION

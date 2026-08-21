@@ -6,27 +6,13 @@
 #error "lsx.h must be included before fallback.h"
 #endif
 
-#ifndef UNICODE_CAN_ALWAYS_RUN_LASX
-#error "lsx.h must be included after lasx.h"
-#endif
-
 #include <turbo/unicode/engine/portability.h>
 #include <turbo/arch/isa.h>
 
 #ifndef UNICODE_IMPLEMENTATION_LSX
-#if UNICODE_CAN_ALWAYS_RUN_LASX
-#define UNICODE_IMPLEMENTATION_LSX 0
-#else
 #define UNICODE_IMPLEMENTATION_LSX (KUMO_SIMD_LSX)
 #endif
-#endif
-#if UNICODE_IMPLEMENTATION_LSX && KUMO_SIMD_LSX
-#define UNICODE_CAN_ALWAYS_RUN_LSX 1
-#else
-#define UNICODE_CAN_ALWAYS_RUN_LSX 0
-#endif
 
-#define UNICODE_CAN_ALWAYS_RUN_FALLBACK (UNICODE_IMPLEMENTATION_FALLBACK)
 #include <turbo/arch/isadetection.h>
 
 namespace turbo {

@@ -1,4 +1,4 @@
-const char* implementation::find(const char* start, const char* end,
+const char* UnicodeImplementRvv::find(const char* start, const char* end,
     char character) const noexcept {
     const char* src = start;
     for (size_t len = end - start, vl; len > 0; len -= vl, src += vl) {
@@ -11,7 +11,7 @@ const char* implementation::find(const char* start, const char* end,
     return end;
 }
 
-const char16_t* implementation::find(const char16_t* start, const char16_t* end,
+const char16_t* UnicodeImplementRvv::find(const char16_t* start, const char16_t* end,
     char16_t character) const noexcept {
     const char16_t* src = start;
     for (size_t len = end - start, vl; len > 0; len -= vl, src += vl) {

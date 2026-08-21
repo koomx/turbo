@@ -155,7 +155,7 @@ namespace turbo {
     namespace UNICODE_IMPLEMENTATION {
 
          [[nodiscard]] int
-        implementation::detect_encodings(const char* input,
+        UnicodeImplementArm64::detect_encodings(const char* input,
             size_t length) const noexcept {
             // If there is a BOM, then we trust it.
             auto bom_encoding = turbo::BOM::check_bom(input, length);
@@ -182,28 +182,28 @@ namespace turbo {
         }
 
          [[nodiscard]] bool
-        implementation::validate_utf8(const char* buf, size_t len) const noexcept {
+        UnicodeImplementArm64::validate_utf8(const char* buf, size_t len) const noexcept {
             return arm64::utf8_validation::generic_validate_utf8(buf, len);
         }
 
-         [[nodiscard]] UnicodeResult implementation::validate_utf8_with_errors(
+         [[nodiscard]] UnicodeResult UnicodeImplementArm64::validate_utf8_with_errors(
             const char* buf, size_t len) const noexcept {
             return arm64::utf8_validation::generic_validate_utf8_with_errors(buf, len);
         }
 
          [[nodiscard]] bool
-        implementation::validate_ascii(const char* buf, size_t len) const noexcept {
+        UnicodeImplementArm64::validate_ascii(const char* buf, size_t len) const noexcept {
             return arm64::ascii_validation::generic_validate_ascii(buf, len);
         }
 
-         [[nodiscard]] UnicodeResult implementation::validate_ascii_with_errors(
+         [[nodiscard]] UnicodeResult UnicodeImplementArm64::validate_ascii_with_errors(
             const char* buf, size_t len) const noexcept {
             return arm64::ascii_validation::generic_validate_ascii_with_errors(buf, len);
         }
 
 
          [[nodiscard]] bool
-        implementation::validate_utf16le_as_ascii(const char16_t* buf,
+        UnicodeImplementArm64::validate_utf16le_as_ascii(const char16_t* buf,
             size_t len) const noexcept {
             if (KUMO_UNLIKELY(len == 0)) {
                 // empty input is valid. protected the implementation from nullptr.
@@ -219,7 +219,7 @@ namespace turbo {
         }
 
          [[nodiscard]] bool
-        implementation::validate_utf16be_as_ascii(const char16_t* buf,
+        UnicodeImplementArm64::validate_utf16be_as_ascii(const char16_t* buf,
             size_t len) const noexcept {
             if (KUMO_UNLIKELY(len == 0)) {
                 // empty input is valid. protected the implementation from nullptr.
@@ -235,7 +235,7 @@ namespace turbo {
         }
 
          [[nodiscard]] bool
-        implementation::validate_utf16le(const char16_t* buf,
+        UnicodeImplementArm64::validate_utf16le(const char16_t* buf,
             size_t len) const noexcept {
             if (KUMO_UNLIKELY(len == 0)) {
                 // empty input is valid. protected the implementation from nullptr.
@@ -251,7 +251,7 @@ namespace turbo {
         }
 
          [[nodiscard]] bool
-        implementation::validate_utf16be(const char16_t* buf,
+        UnicodeImplementArm64::validate_utf16be(const char16_t* buf,
             size_t len) const noexcept {
             if (KUMO_UNLIKELY(len == 0)) {
                 // empty input is valid. protected the implementation from nullptr.
@@ -265,7 +265,7 @@ namespace turbo {
             }
         }
 
-         [[nodiscard]] UnicodeResult implementation::validate_utf16le_with_errors(
+         [[nodiscard]] UnicodeResult UnicodeImplementArm64::validate_utf16le_with_errors(
             const char16_t* buf, size_t len) const noexcept {
             if (KUMO_UNLIKELY(len == 0)) {
                 return UnicodeResult(UnicodeError::SUCCESS, 0);
@@ -280,7 +280,7 @@ namespace turbo {
             }
         }
 
-         [[nodiscard]] UnicodeResult implementation::validate_utf16be_with_errors(
+         [[nodiscard]] UnicodeResult UnicodeImplementArm64::validate_utf16be_with_errors(
             const char16_t* buf, size_t len) const noexcept {
             if (KUMO_UNLIKELY(len == 0)) {
                 return UnicodeResult(UnicodeError::SUCCESS, 0);
@@ -295,18 +295,18 @@ namespace turbo {
             }
         }
 
-        void implementation::to_well_formed_utf16le(const char16_t* input, size_t len,
+        void UnicodeImplementArm64::to_well_formed_utf16le(const char16_t* input, size_t len,
             char16_t* output) const noexcept {
             return utf16fix_neon_64bits<Endian::little>(input, len, output);
         }
 
-        void implementation::to_well_formed_utf16be(const char16_t* input, size_t len,
+        void UnicodeImplementArm64::to_well_formed_utf16be(const char16_t* input, size_t len,
             char16_t* output) const noexcept {
             return utf16fix_neon_64bits<Endian::big>(input, len, output);
         }
 
          [[nodiscard]] bool
-        implementation::validate_utf32(const char32_t* buf, size_t len) const noexcept {
+        UnicodeImplementArm64::validate_utf32(const char32_t* buf, size_t len) const noexcept {
             if (KUMO_UNLIKELY(len == 0)) {
                 // empty input is valid. protected the implementation from nullptr.
                 return true;
@@ -319,7 +319,7 @@ namespace turbo {
             }
         }
 
-         [[nodiscard]] UnicodeResult implementation::validate_utf32_with_errors(
+         [[nodiscard]] UnicodeResult UnicodeImplementArm64::validate_utf32_with_errors(
             const char32_t* buf, size_t len) const noexcept {
             if (KUMO_UNLIKELY(len == 0)) {
                 return UnicodeResult(UnicodeError::SUCCESS, 0);
@@ -333,7 +333,7 @@ namespace turbo {
             }
         }
 
-         [[nodiscard]] size_t implementation::convert_latin1_to_utf8(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_latin1_to_utf8(
             const char* buf, size_t len, char* utf8_output) const noexcept {
             std::pair<const char*, char*> ret = arm_convert_latin1_to_utf8(buf, len, utf8_output);
             size_t converted_chars = ret.second - utf8_output;
@@ -346,7 +346,7 @@ namespace turbo {
             return converted_chars;
         }
 
-         [[nodiscard]] size_t implementation::convert_latin1_to_utf16le(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_latin1_to_utf16le(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
             std::pair<const char*, char16_t*> ret = arm_convert_latin1_to_utf16<Endian::little>(buf, len, utf16_output);
             size_t converted_chars = ret.second - utf16_output;
@@ -358,7 +358,7 @@ namespace turbo {
             return converted_chars;
         }
 
-         [[nodiscard]] size_t implementation::convert_latin1_to_utf16be(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_latin1_to_utf16be(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
             std::pair<const char*, char16_t*> ret = arm_convert_latin1_to_utf16<Endian::big>(buf, len, utf16_output);
             size_t converted_chars = ret.second - utf16_output;
@@ -370,7 +370,7 @@ namespace turbo {
             return converted_chars;
         }
 
-         [[nodiscard]] size_t implementation::convert_latin1_to_utf32(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_latin1_to_utf32(
             const char* buf, size_t len, char32_t* utf32_output) const noexcept {
             std::pair<const char*, char32_t*> ret = arm_convert_latin1_to_utf32(buf, len, utf32_output);
             size_t converted_chars = ret.second - utf32_output;
@@ -382,78 +382,78 @@ namespace turbo {
             return converted_chars;
         }
 
-         [[nodiscard]] size_t implementation::convert_utf8_to_latin1(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_utf8_to_latin1(
             const char* buf, size_t len, char* latin1_output) const noexcept {
             utf8_to_latin1::validating_transcoder converter;
             return converter.convert(buf, len, latin1_output);
         }
 
-         [[nodiscard]] UnicodeResult implementation::convert_utf8_to_latin1_with_errors(
+         [[nodiscard]] UnicodeResult UnicodeImplementArm64::convert_utf8_to_latin1_with_errors(
             const char* buf, size_t len, char* latin1_output) const noexcept {
             utf8_to_latin1::validating_transcoder converter;
             return converter.convert_with_errors(buf, len, latin1_output);
         }
 
-         [[nodiscard]] size_t implementation::convert_valid_utf8_to_latin1(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_valid_utf8_to_latin1(
             const char* buf, size_t len, char* latin1_output) const noexcept {
             return arm64::utf8_to_latin1::convert_valid(buf, len, latin1_output);
         }
 
-         [[nodiscard]] size_t implementation::convert_utf8_to_utf16le(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_utf8_to_utf16le(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
             utf8_to_utf16::validating_transcoder converter;
             return converter.convert<Endian::little>(buf, len, utf16_output);
         }
 
-         [[nodiscard]] size_t implementation::convert_utf8_to_utf16be(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_utf8_to_utf16be(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
             utf8_to_utf16::validating_transcoder converter;
             return converter.convert<Endian::big>(buf, len, utf16_output);
         }
 
-         [[nodiscard]] UnicodeResult implementation::convert_utf8_to_utf16le_with_errors(
+         [[nodiscard]] UnicodeResult UnicodeImplementArm64::convert_utf8_to_utf16le_with_errors(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
             utf8_to_utf16::validating_transcoder converter;
             return converter.convert_with_errors<Endian::little>(buf, len,
                 utf16_output);
         }
 
-         [[nodiscard]] UnicodeResult implementation::convert_utf8_to_utf16be_with_errors(
+         [[nodiscard]] UnicodeResult UnicodeImplementArm64::convert_utf8_to_utf16be_with_errors(
             const char* buf, size_t len, char16_t* utf16_output) const noexcept {
             utf8_to_utf16::validating_transcoder converter;
             return converter.convert_with_errors<Endian::big>(buf, len, utf16_output);
         }
 
-         [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf16le(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_valid_utf8_to_utf16le(
             const char* input, size_t size, char16_t* utf16_output) const noexcept {
             return utf8_to_utf16::convert_valid<Endian::little>(input, size,
                 utf16_output);
         }
 
-         [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf16be(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_valid_utf8_to_utf16be(
             const char* input, size_t size, char16_t* utf16_output) const noexcept {
             return utf8_to_utf16::convert_valid<Endian::big>(input, size,
                 utf16_output);
         }
 
-         [[nodiscard]] size_t implementation::convert_utf8_to_utf32(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_utf8_to_utf32(
             const char* buf, size_t len, char32_t* utf32_output) const noexcept {
             utf8_to_utf32::validating_transcoder converter;
             return converter.convert(buf, len, utf32_output);
         }
 
-         [[nodiscard]] UnicodeResult implementation::convert_utf8_to_utf32_with_errors(
+         [[nodiscard]] UnicodeResult UnicodeImplementArm64::convert_utf8_to_utf32_with_errors(
             const char* buf, size_t len, char32_t* utf32_output) const noexcept {
             utf8_to_utf32::validating_transcoder converter;
             return converter.convert_with_errors(buf, len, utf32_output);
         }
 
-         [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf32(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_valid_utf8_to_utf32(
             const char* input, size_t size, char32_t* utf32_output) const noexcept {
             return utf8_to_utf32::convert_valid(input, size, utf32_output);
         }
 
-         [[nodiscard]] size_t implementation::convert_utf16le_to_latin1(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_utf16le_to_latin1(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
             std::pair<const char16_t*, char*> ret = arm_convert_utf16_to_latin1<Endian::little>(buf, len, latin1_output);
             if (ret.first == nullptr) {
@@ -472,7 +472,7 @@ namespace turbo {
             return saved_bytes;
         }
 
-         [[nodiscard]] size_t implementation::convert_utf16be_to_latin1(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_utf16be_to_latin1(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
             std::pair<const char16_t*, char*> ret = arm_convert_utf16_to_latin1<Endian::big>(buf, len, latin1_output);
             if (ret.first == nullptr) {
@@ -492,7 +492,7 @@ namespace turbo {
         }
 
          [[nodiscard]] UnicodeResult
-        implementation::convert_utf16le_to_latin1_with_errors(
+        UnicodeImplementArm64::convert_utf16le_to_latin1_with_errors(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
             std::pair<UnicodeResult, char*> ret = arm_convert_utf16_to_latin1_with_errors<Endian::little>(
                 buf, len, latin1_output);
@@ -515,7 +515,7 @@ namespace turbo {
         }
 
          [[nodiscard]] UnicodeResult
-        implementation::convert_utf16be_to_latin1_with_errors(
+        UnicodeImplementArm64::convert_utf16be_to_latin1_with_errors(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
             std::pair<UnicodeResult, char*> ret = arm_convert_utf16_to_latin1_with_errors<Endian::big>(buf, len,
                 latin1_output);
@@ -537,19 +537,19 @@ namespace turbo {
             return ret.first;
         }
 
-         [[nodiscard]] size_t implementation::convert_valid_utf16be_to_latin1(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_valid_utf16be_to_latin1(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
             // optimization opportunity: implement a custom function.
             return convert_utf16be_to_latin1(buf, len, latin1_output);
         }
 
-         [[nodiscard]] size_t implementation::convert_valid_utf16le_to_latin1(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_valid_utf16le_to_latin1(
             const char16_t* buf, size_t len, char* latin1_output) const noexcept {
             // optimization opportunity: implement a custom function.
             return convert_utf16le_to_latin1(buf, len, latin1_output);
         }
 
-         [[nodiscard]] size_t implementation::convert_utf16le_to_utf8(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_utf16le_to_utf8(
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
             std::pair<const char16_t*, char*> ret = arm_convert_utf16_to_utf8<Endian::little>(buf, len, utf8_output);
             if (ret.first == nullptr) {
@@ -567,7 +567,7 @@ namespace turbo {
             return saved_bytes;
         }
 
-         [[nodiscard]] size_t implementation::convert_utf16be_to_utf8(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_utf16be_to_utf8(
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
             std::pair<const char16_t*, char*> ret = arm_convert_utf16_to_utf8<Endian::big>(buf, len, utf8_output);
             if (ret.first == nullptr) {
@@ -585,7 +585,7 @@ namespace turbo {
             return saved_bytes;
         }
 
-         [[nodiscard]] UnicodeResult implementation::convert_utf16le_to_utf8_with_errors(
+         [[nodiscard]] UnicodeResult UnicodeImplementArm64::convert_utf16le_to_utf8_with_errors(
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
@@ -609,7 +609,7 @@ namespace turbo {
             return ret.first;
         }
 
-         [[nodiscard]] UnicodeResult implementation::convert_utf16be_to_utf8_with_errors(
+         [[nodiscard]] UnicodeResult UnicodeImplementArm64::convert_utf16be_to_utf8_with_errors(
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
@@ -633,17 +633,17 @@ namespace turbo {
             return ret.first;
         }
 
-         [[nodiscard]] size_t implementation::convert_valid_utf16le_to_utf8(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_valid_utf16le_to_utf8(
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
             return convert_utf16le_to_utf8(buf, len, utf8_output);
         }
 
-         [[nodiscard]] size_t implementation::convert_valid_utf16be_to_utf8(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_valid_utf16be_to_utf8(
             const char16_t* buf, size_t len, char* utf8_output) const noexcept {
             return convert_utf16be_to_utf8(buf, len, utf8_output);
         }
 
-         [[nodiscard]] size_t implementation::convert_utf32_to_utf8(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_utf32_to_utf8(
             const char32_t* buf, size_t len, char* utf8_output) const noexcept {
             if (KUMO_UNLIKELY(len == 0)) {
                 return 0;
@@ -664,7 +664,7 @@ namespace turbo {
             return saved_bytes;
         }
 
-         [[nodiscard]] UnicodeResult implementation::convert_utf32_to_utf8_with_errors(
+         [[nodiscard]] UnicodeResult UnicodeImplementArm64::convert_utf32_to_utf8_with_errors(
             const char32_t* buf, size_t len, char* utf8_output) const noexcept {
             if (KUMO_UNLIKELY(len == 0)) {
                 return UnicodeResult(UnicodeError::SUCCESS, 0);
@@ -686,7 +686,7 @@ namespace turbo {
             return ret.first;
         }
 
-         [[nodiscard]] size_t implementation::convert_utf16le_to_utf32(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_utf16le_to_utf32(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
             std::pair<const char16_t*, char32_t*> ret = arm_convert_utf16_to_utf32<Endian::little>(buf, len, utf32_output);
             if (ret.first == nullptr) {
@@ -704,7 +704,7 @@ namespace turbo {
             return saved_bytes;
         }
 
-         [[nodiscard]] size_t implementation::convert_utf16be_to_utf32(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_utf16be_to_utf32(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
             std::pair<const char16_t*, char32_t*> ret = arm_convert_utf16_to_utf32<Endian::big>(buf, len, utf32_output);
             if (ret.first == nullptr) {
@@ -722,7 +722,7 @@ namespace turbo {
             return saved_bytes;
         }
 
-         [[nodiscard]] UnicodeResult implementation::convert_utf16le_to_utf32_with_errors(
+         [[nodiscard]] UnicodeResult UnicodeImplementArm64::convert_utf16le_to_utf32_with_errors(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
@@ -746,7 +746,7 @@ namespace turbo {
             return ret.first;
         }
 
-         [[nodiscard]] UnicodeResult implementation::convert_utf16be_to_utf32_with_errors(
+         [[nodiscard]] UnicodeResult UnicodeImplementArm64::convert_utf16be_to_utf32_with_errors(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
@@ -770,7 +770,7 @@ namespace turbo {
             return ret.first;
         }
 
-         [[nodiscard]] size_t implementation::convert_utf32_to_latin1(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_utf32_to_latin1(
             const char32_t* buf, size_t len, char* latin1_output) const noexcept {
             std::pair<const char32_t*, char*> ret = arm_convert_utf32_to_latin1(buf, len, latin1_output);
             if (ret.first == nullptr) {
@@ -789,7 +789,7 @@ namespace turbo {
             return saved_bytes;
         }
 
-         [[nodiscard]] UnicodeResult implementation::convert_utf32_to_latin1_with_errors(
+         [[nodiscard]] UnicodeResult UnicodeImplementArm64::convert_utf32_to_latin1_with_errors(
             const char32_t* buf, size_t len, char* latin1_output) const noexcept {
             std::pair<UnicodeResult, char*> ret = arm_convert_utf32_to_latin1_with_errors(buf, len, latin1_output);
             if (ret.first.error) {
@@ -810,7 +810,7 @@ namespace turbo {
             return ret.first;
         }
 
-         [[nodiscard]] size_t implementation::convert_valid_utf32_to_latin1(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_valid_utf32_to_latin1(
             const char32_t* buf, size_t len, char* latin1_output) const noexcept {
             std::pair<const char32_t*, char*> ret = arm_convert_utf32_to_latin1(buf, len, latin1_output);
             if (ret.first == nullptr) {
@@ -826,13 +826,13 @@ namespace turbo {
             return saved_bytes;
         }
 
-         [[nodiscard]] size_t implementation::convert_valid_utf32_to_utf8(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_valid_utf32_to_utf8(
             const char32_t* buf, size_t len, char* utf8_output) const noexcept {
             // optimization opportunity: implement a custom function.
             return convert_utf32_to_utf8(buf, len, utf8_output);
         }
 
-         [[nodiscard]] size_t implementation::convert_utf32_to_utf16le(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_utf32_to_utf16le(
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
             std::pair<const char32_t*, char16_t*> ret = arm_convert_utf32_to_utf16<Endian::little>(buf, len, utf16_output);
             if (ret.first == nullptr) {
@@ -850,7 +850,7 @@ namespace turbo {
             return saved_bytes;
         }
 
-         [[nodiscard]] size_t implementation::convert_utf32_to_utf16be(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_utf32_to_utf16be(
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
             std::pair<const char32_t*, char16_t*> ret = arm_convert_utf32_to_utf16<Endian::big>(buf, len, utf16_output);
             if (ret.first == nullptr) {
@@ -868,7 +868,7 @@ namespace turbo {
             return saved_bytes;
         }
 
-         [[nodiscard]] UnicodeResult implementation::convert_utf32_to_utf16le_with_errors(
+         [[nodiscard]] UnicodeResult UnicodeImplementArm64::convert_utf32_to_utf16le_with_errors(
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
@@ -888,7 +888,7 @@ namespace turbo {
             return ret.first;
         }
 
-         [[nodiscard]] UnicodeResult implementation::convert_utf32_to_utf16be_with_errors(
+         [[nodiscard]] UnicodeResult UnicodeImplementArm64::convert_utf32_to_utf16be_with_errors(
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
             // ret.first.count is always the position in the buffer, not the number of
             // code units written even if finished
@@ -908,53 +908,53 @@ namespace turbo {
             return ret.first;
         }
 
-         [[nodiscard]] size_t implementation::convert_valid_utf32_to_utf16le(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_valid_utf32_to_utf16le(
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
             return convert_utf32_to_utf16le(buf, len, utf16_output);
         }
 
-         [[nodiscard]] size_t implementation::convert_valid_utf32_to_utf16be(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_valid_utf32_to_utf16be(
             const char32_t* buf, size_t len, char16_t* utf16_output) const noexcept {
             return convert_utf32_to_utf16be(buf, len, utf16_output);
         }
 
-         [[nodiscard]] size_t implementation::convert_valid_utf16le_to_utf32(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_valid_utf16le_to_utf32(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
             return convert_utf16le_to_utf32(buf, len, utf32_output);
         }
 
-         [[nodiscard]] size_t implementation::convert_valid_utf16be_to_utf32(
+         [[nodiscard]] size_t UnicodeImplementArm64::convert_valid_utf16be_to_utf32(
             const char16_t* buf, size_t len, char32_t* utf32_output) const noexcept {
             return convert_utf16be_to_utf32(buf, len, utf32_output);
         }
 
-        void implementation::change_endianness_utf16(const char16_t* input,
+        void UnicodeImplementArm64::change_endianness_utf16(const char16_t* input,
             size_t length,
             char16_t* output) const noexcept {
             utf16::change_endianness_utf16(input, length, output);
         }
 
-         [[nodiscard]] size_t implementation::count_utf16le(
+         [[nodiscard]] size_t UnicodeImplementArm64::count_utf16le(
             const char16_t* input, size_t length) const noexcept {
             return utf16::count_code_points<Endian::little>(input, length);
         }
 
-         [[nodiscard]] size_t implementation::count_utf16be(
+         [[nodiscard]] size_t UnicodeImplementArm64::count_utf16be(
             const char16_t* input, size_t length) const noexcept {
             return utf16::count_code_points<Endian::big>(input, length);
         }
 
          [[nodiscard]] size_t
-        implementation::count_utf8(const char* input, size_t length) const noexcept {
+        UnicodeImplementArm64::count_utf8(const char* input, size_t length) const noexcept {
             return utf8::count_code_points(input, length);
         }
 
-         [[nodiscard]] size_t implementation::latin1_length_from_utf8(
+         [[nodiscard]] size_t UnicodeImplementArm64::latin1_length_from_utf8(
             const char* buf, size_t len) const noexcept {
             return count_utf8(buf, len);
         }
 
-         [[nodiscard]] size_t implementation::utf8_length_from_latin1(
+         [[nodiscard]] size_t UnicodeImplementArm64::utf8_length_from_latin1(
             const char* input, size_t length) const noexcept {
             // See
             // https://lemire.me/blog/2023/05/15/computing-the-utf-8-size-of-a-latin-1-string-quickly-arm-neon-edition/
@@ -976,47 +976,47 @@ namespace turbo {
             return UnicodeResult + (length / lanes) * lanes + scalar::latin1::utf8_length_from_latin1((const char*)simd_end, rem);
         }
 
-         [[nodiscard]] size_t implementation::utf8_length_from_utf16le(
+         [[nodiscard]] size_t UnicodeImplementArm64::utf8_length_from_utf16le(
             const char16_t* input, size_t length) const noexcept {
             return arm64_utf8_length_from_utf16_bytemask<Endian::little>(input,
                 length);
         }
 
-         [[nodiscard]] size_t implementation::utf8_length_from_utf16be(
+         [[nodiscard]] size_t UnicodeImplementArm64::utf8_length_from_utf16be(
             const char16_t* input, size_t length) const noexcept {
             return arm64_utf8_length_from_utf16_bytemask<Endian::big>(input, length);
         }
 
-         [[nodiscard]] size_t implementation::utf32_length_from_utf16le(
+         [[nodiscard]] size_t UnicodeImplementArm64::utf32_length_from_utf16le(
             const char16_t* input, size_t length) const noexcept {
             return utf16::utf32_length_from_utf16<Endian::little>(input, length);
         }
 
-         [[nodiscard]] size_t implementation::utf32_length_from_utf16be(
+         [[nodiscard]] size_t UnicodeImplementArm64::utf32_length_from_utf16be(
             const char16_t* input, size_t length) const noexcept {
             return utf16::utf32_length_from_utf16<Endian::big>(input, length);
         }
 
-         [[nodiscard]] size_t implementation::utf16_length_from_utf8(
+         [[nodiscard]] size_t UnicodeImplementArm64::utf16_length_from_utf8(
             const char* input, size_t length) const noexcept {
             return utf8::utf16_length_from_utf8(input, length);
         }
          [[nodiscard]] UnicodeResult
-        implementation::utf8_length_from_utf16le_with_replacement(
+        UnicodeImplementArm64::utf8_length_from_utf16le_with_replacement(
             const char16_t* input, size_t length) const noexcept {
             return arm64_utf8_length_from_utf16_with_replacement<Endian::little>(
                 input, length);
         }
 
          [[nodiscard]] UnicodeResult
-        implementation::utf8_length_from_utf16be_with_replacement(
+        UnicodeImplementArm64::utf8_length_from_utf16be_with_replacement(
             const char16_t* input, size_t length) const noexcept {
             return arm64_utf8_length_from_utf16_with_replacement<Endian::big>(input,
                 length);
         }
 
          [[nodiscard]] size_t
-        implementation::convert_utf16le_to_utf8_with_replacement(
+        UnicodeImplementArm64::convert_utf16le_to_utf8_with_replacement(
             const char16_t* input, size_t length, char* utf8_buffer) const noexcept {
             return utf16_to_utf8::convert_with_replacement_via(
                 [this](const char16_t* b, size_t l, char* o) {
@@ -1029,7 +1029,7 @@ namespace turbo {
         }
 
          [[nodiscard]] size_t
-        implementation::convert_utf16be_to_utf8_with_replacement(
+        UnicodeImplementArm64::convert_utf16be_to_utf8_with_replacement(
             const char16_t* input, size_t length, char* utf8_buffer) const noexcept {
             return utf16_to_utf8::convert_with_replacement_via(
                 [this](const char16_t* b, size_t l, char* o) {
@@ -1042,7 +1042,7 @@ namespace turbo {
         }
 
 
-         [[nodiscard]] size_t implementation::utf8_length_from_utf32(
+         [[nodiscard]] size_t UnicodeImplementArm64::utf8_length_from_utf32(
             const char32_t* input, size_t length) const noexcept {
             const uint32x4_t v_7f = vmovq_n_u32((uint32_t)0x7f);
             const uint32x4_t v_7ff = vmovq_n_u32((uint32_t)0x7ff);
@@ -1076,7 +1076,7 @@ namespace turbo {
             return count + scalar::utf32::utf8_length_from_utf32(input + pos, length - pos);
         }
 
-         [[nodiscard]] size_t implementation::utf16_length_from_utf32(
+         [[nodiscard]] size_t UnicodeImplementArm64::utf16_length_from_utf32(
             const char32_t* input, size_t length) const noexcept {
             const uint32x4_t v_ffff = vmovq_n_u32((uint32_t)0xffff);
             const uint32x4_t v_1 = vmovq_n_u32((uint32_t)0x1);
@@ -1094,12 +1094,12 @@ namespace turbo {
             return count + scalar::utf32::utf16_length_from_utf32(input + pos, length - pos);
         }
 
-         [[nodiscard]] size_t implementation::utf32_length_from_utf8(
+         [[nodiscard]] size_t UnicodeImplementArm64::utf32_length_from_utf8(
             const char* input, size_t length) const noexcept {
             return utf8::count_code_points(input, length);
         }
 
-         [[nodiscard]] UnicodeResult implementation::base64_to_binary(
+         [[nodiscard]] UnicodeResult UnicodeImplementArm64::base64_to_binary(
             const char* input, size_t length, char* output, Base64Options options,
             last_chunk_handling_options last_chunk_options) const noexcept {
             if (options & base64_default_or_url) {
@@ -1129,7 +1129,7 @@ namespace turbo {
             }
         }
 
-         [[nodiscard]] full_result implementation::base64_to_binary_details(
+         [[nodiscard]] full_result UnicodeImplementArm64::base64_to_binary_details(
             const char* input, size_t length, char* output, Base64Options options,
             last_chunk_handling_options last_chunk_options) const noexcept {
             if (options & base64_default_or_url) {
@@ -1159,7 +1159,7 @@ namespace turbo {
             }
         }
 
-         [[nodiscard]] UnicodeResult implementation::base64_to_binary(
+         [[nodiscard]] UnicodeResult UnicodeImplementArm64::base64_to_binary(
             const char16_t* input, size_t length, char* output, Base64Options options,
             last_chunk_handling_options last_chunk_options) const noexcept {
             if (options & base64_default_or_url) {
@@ -1189,7 +1189,7 @@ namespace turbo {
             }
         }
 
-         [[nodiscard]] full_result implementation::base64_to_binary_details(
+         [[nodiscard]] full_result UnicodeImplementArm64::base64_to_binary_details(
             const char16_t* input, size_t length, char* output, Base64Options options,
             last_chunk_handling_options last_chunk_options) const noexcept {
             if (options & base64_default_or_url) {
@@ -1219,42 +1219,42 @@ namespace turbo {
             }
         }
 
-        size_t implementation::binary_to_base64(const char* input, size_t length,
+        size_t UnicodeImplementArm64::binary_to_base64(const char* input, size_t length,
             char* output,
             Base64Options options) const noexcept {
             return encode_base64(output, input, length, options);
         }
 
-        size_t implementation::binary_to_base64_with_lines(
+        size_t UnicodeImplementArm64::binary_to_base64_with_lines(
             const char* input, size_t length, char* output, size_t line_length,
             Base64Options options) const noexcept {
             return encode_base64_impl<true>(output, input, length, options, line_length);
         }
 
-        const char* implementation::find(const char* start, const char* end,
+        const char* UnicodeImplementArm64::find(const char* start, const char* end,
             char character) const noexcept {
             return util_find(start, end, character);
         }
 
-        const char16_t* implementation::find(const char16_t* start, const char16_t* end,
+        const char16_t* UnicodeImplementArm64::find(const char16_t* start, const char16_t* end,
             char16_t character) const noexcept {
             return util_find(start, end, character);
         }
 
-         [[nodiscard]] size_t implementation::binary_length_from_base64(
+         [[nodiscard]] size_t UnicodeImplementArm64::binary_length_from_base64(
             const char* input, size_t length) const noexcept {
             return base64_lengths::binary_length_from_base64(input, length);
         }
 
-         [[nodiscard]] size_t implementation::binary_length_from_base64(
+         [[nodiscard]] size_t UnicodeImplementArm64::binary_length_from_base64(
             const char16_t* input, size_t length) const noexcept {
             return base64_lengths::binary_length_from_base64(input, length);
         }
 
     } // namespace UNICODE_IMPLEMENTATION
 
-    static turbo::implementation *get_arm64_instance() {
-        static arm64::implementation ins;
+    static turbo::UnicodeImplement *get_arm64_instance() {
+        static arm64::UnicodeImplementArm64 ins;
         return &ins;
     }
 } // namespace turbo
@@ -1262,7 +1262,7 @@ namespace turbo {
 #include <turbo/unicode/engine/arm64/end.h>
 #else
 namespace turbo {
-    static turbo::implementation *get_arm64_instance() {
+    static turbo::UnicodeImplement *get_arm64_instance() {
         return nullptr;
     }
 }

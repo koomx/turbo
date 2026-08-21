@@ -35,7 +35,7 @@
 extern "C" {
 #endif
 
-/* C-friendly subset of simdutf errors */
+/* C-friendly subset of unicode errors */
 typedef enum unicode_error_code {
     UNICODE_ERROR_SUCCESS = 0,
     UNICODE_ERROR_HEADER_BITS,

@@ -16,6 +16,10 @@
 #pragma once
 
 #include <cstdint>
+#include <cstdlib>
+#include <sstream>
+#include <string>
+#include <string_view>
 #include <turbo/arch/instruction.h>
 #include <turbo/arch/isadetection.h>
 #include <turbo/macros/macros.h>
@@ -24,6 +28,9 @@
 
 namespace turbo {
 
+    ////////////////////////////////
+    /// Bitmask of SIMD ISAs this translation unit was compiled against, from
+    /// `KUMO_SIMD_*`. Independent of what the current CPU actually supports.
     inline uint32_t make_compiled_architectures() {
         uint32_t result = InstructionSet::DEFAULT;
 #if KUMO_SIMD_NEON
@@ -83,48 +90,63 @@ namespace turbo {
         return result;
     }
 
+    /// One SIMD (or scalar) kernel that a domain can register.
+    ///
+    /// Fill `compiled`, `failback`, `required_isa`, `isa_name`, and `engine`.
+    /// The register fills `current_compiled`, `current_isa`, and `rank`.
     struct IsaInfo {
+        /// True if this kernel's sources were built into the library.
+        bool compiled { false };
 
-        bool compiled{false};
+        /// True for the portable scalar path. Rank is always 1 when compiled.
+        bool failback { false };
 
-        bool failback{false};
+        /// InstructionSet bits this kernel needs at runtime.
+        uint32_t required_isa { 0 };
 
-        uint32_t required_isa{0};
-        const char* isa_name{""};
+        /// Stable id used by force-select and dump, e.g. "arm64", "haswell".
+        const char* isa_name { "" };
 
-        void *engine{nullptr};
+        /// Domain engine instance, or nullptr if this kernel was not compiled.
+        void* engine { nullptr };
 
-        /////////////////////////////////////////
-        /// user no need fill below, by framework
-        /// this should init in a header, to touch
-        /// the current defines
-        uint32_t current_compiled{0};
-        /// by current detect_supported_architectures
-        uint32_t current_isa{0};
-        /// 0 means no rank no available
-        /// 1 mean no simd
-        /// users no need care it
-        uint32_t rank{0};
+        /// Set by IsaRegister: `make_compiled_architectures()` for this TU.
+        uint32_t current_compiled { 0 };
+
+        /// Set by IsaRegister: `detect_supported_architectures()` for this CPU.
+        uint32_t current_isa { 0 };
+
+        /// Set by IsaRegister via `make_isa_rank`. 0 = unusable, 1 = fallback,
+        /// higher = preferred SIMD. Best-of-avail is the max rank (unless forced).
+        uint32_t rank { 0 };
     };
 
-
+    /// Rank for `info` on this CPU. 0 if missing engine, not compiled, or the
+    /// CPU/compile mask cannot satisfy `required_isa`. Fallback is 1.
     uint32_t make_isa_rank(const IsaInfo& info);
 
+    /// CRTP runtime dispatcher. `Sub` is the domain registry (e.g. UnicodeRegistry).
+    /// `T` is the engine base type (e.g. UnicodeImplement).
+    ///
+    /// Construct with every known kernel (compiled or not). Optional `force_isa`
+    /// must match an available `isa_name` with a non-null engine, else abort.
+    /// Meyers singleton: `get_isa()` builds one `Sub` on first use.
     template <typename Sub, typename T>
     class IsaRegister {
     public:
-       // static_assert(std::is_base_of_v<Sub, IsaRegister<Sub,T>>, "must");
-    public:
-       virtual  ~IsaRegister() = default;
+        virtual ~IsaRegister() = default;
 
+        /// Highest-rank compiled kernel that this CPU can run, or the forced one.
         static T* get_best_isa() {
             return static_cast<T*>(get_isa()->_isa_best.engine);
         }
 
+        /// Scalar fallback kernel, or nullptr if none was registered as failback.
         static T* get_failback_isa() {
             return static_cast<T*>(get_isa()->_isa_failback.engine);
         }
 
+        /// Kernels with rank > 0 (compiled, engine present, ISA satisfied).
         static std::vector<IsaInfo> get_avail_isa_info() {
             return get_isa()->_avail_isa_info;
         }
@@ -138,6 +160,7 @@ namespace turbo {
             return ret;
         }
 
+        /// Every registered kernel, including not compiled / rank 0.
         static std::vector<IsaInfo> get_all_isa_info() {
             return get_isa()->_all_isa_info;
         }
@@ -156,9 +179,56 @@ namespace turbo {
             return &ins;
         }
 
+        /// Human-readable table: force/best/fallback plus every IsaInfo.
+        static std::string dump() {
+            const Sub* self = get_isa();
+            std::ostringstream os;
+            os << "IsaRegister dump\n";
+            os << "  force=" << (self->_force_isa.empty() ? "(none)" : self->_force_isa)
+               << '\n';
+            os << "  best=" << self->_isa_best.isa_name
+               << " engine=" << self->_isa_best.engine
+               << " rank=" << self->_isa_best.rank << '\n';
+            os << "  fallback=" << self->_isa_failback.isa_name
+               << " engine=" << self->_isa_failback.engine
+               << " rank=" << self->_isa_failback.rank << '\n';
+            os << "  all (" << self->_all_isa_info.size() << "):\n";
+            for (size_t i = 0; i < self->_all_isa_info.size(); ++i) {
+                const IsaInfo& info = self->_all_isa_info[i];
+                const bool is_best = info.engine != nullptr && info.engine == self->_isa_best.engine;
+                const bool is_fallback = info.failback || (info.engine != nullptr && info.engine == self->_isa_failback.engine);
+                const bool is_force = !self->_force_isa.empty() && self->_force_isa == info.isa_name;
+                os << "  [" << i << "] name=" << info.isa_name
+                   << " compiled=" << static_cast<int>(info.compiled)
+                   << " failback=" << static_cast<int>(info.failback)
+                   << " required_isa=0x" << std::hex << info.required_isa << std::dec
+                   << " engine=" << info.engine
+                   << " current_compiled=0x" << std::hex << info.current_compiled
+                   << " current_isa=0x" << info.current_isa << std::dec
+                   << " rank=" << info.rank;
+                if (is_best) {
+                    os << " [best]";
+                }
+                if (is_fallback) {
+                    os << " [fallback]";
+                }
+                if (is_force) {
+                    os << " [force]";
+                }
+                os << '\n';
+            }
+            os << "  avail=" << self->_avail_isa_info.size()
+               << " unavail=" << self->_unavail_isa_info.size() << '\n';
+            return os.str();
+        }
+
     protected:
-       explicit IsaRegister(std::vector<IsaInfo> engines)
-            :_all_isa_info(std::move(engines)) {
+        /// @param engines all domain kernels; order does not matter except ties
+        ///        keep the first highest rank.
+        /// @param force_isa if non-empty, must be an available `isa_name`.
+        explicit IsaRegister(std::vector<IsaInfo> engines, std::string_view force_isa = "")
+            : _force_isa(force_isa)
+            , _all_isa_info(std::move(engines)) {
             initialize();
         }
 
@@ -166,14 +236,16 @@ namespace turbo {
             initialize_default();
         }
 
-       virtual void initialize_default() {
+        /// Rank every kernel, split avail/unavail, pick best and fallback.
+        /// If `_force_isa` is set, replace best; missing name or null engine aborts.
+        virtual void initialize_default() {
             uint32_t current_compiled = make_compiled_architectures();
             uint32_t current_isa = internal::detect_supported_architectures();
             for (auto& info : _all_isa_info) {
                 info.current_compiled = current_compiled;
                 info.current_isa = current_isa;
                 info.rank = make_isa_rank(info);
-                if (info.rank  == 0) {
+                if (info.rank == 0) {
                     _unavail_isa_info.push_back(info);
                     continue;
                 }
@@ -185,14 +257,29 @@ namespace turbo {
                     _isa_failback = info;
                 }
             }
+            if (!_force_isa.empty()) {
+                const IsaInfo* forced = nullptr;
+                for (const auto& info : _avail_isa_info) {
+                    if (_force_isa == info.isa_name) {
+                        forced = &info;
+                        break;
+                    }
+                }
+                if (forced == nullptr || forced->engine == nullptr) {
+                    abort();
+                }
+                _isa_best = *forced;
+            }
         }
+
     protected:
-        bool _isa_detected{false};
         IsaInfo _isa_failback;
         IsaInfo _isa_best;
 
+        /// Empty means pick by rank. Non-empty must match an available isa_name.
+        std::string _force_isa;
         std::vector<IsaInfo> _all_isa_info;
         std::vector<IsaInfo> _avail_isa_info;
         std::vector<IsaInfo> _unavail_isa_info;
     };
-}  // namespace turbo
+} // namespace turbo

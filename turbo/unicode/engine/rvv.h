@@ -8,11 +8,9 @@
 #include <turbo/unicode/engine/portability.h>
 #include <turbo/arch/isa.h>
 
-#define UNICODE_CAN_ALWAYS_RUN_RVV UNICODE_IS_RVV
-
 #ifndef UNICODE_IMPLEMENTATION_RVV
 #define UNICODE_IMPLEMENTATION_RVV \
-    (UNICODE_CAN_ALWAYS_RUN_RVV || (KUMO_ARCH_RISCV64 && UNICODE_HAS_RVV_INTRINSICS))
+    (UNICODE_IS_RVV || (KUMO_ARCH_RISCV64 && UNICODE_HAS_RVV_INTRINSICS))
 #endif
 
 namespace turbo {
@@ -21,13 +19,13 @@ namespace turbo {
 
 #if UNICODE_IMPLEMENTATION_RVV
 
-#if UNICODE_CAN_ALWAYS_RUN_RVV
+#if UNICODE_IS_RVV
 #define UNICODE_TARGET_RVV
 #else
-#define UNICODE_TARGET_RVV UNICODE_TARGET_REGION("arch=+v")
+#define UNICODE_TARGET_RVV KUMO_TARGET_REGION("arch=+v")
 #endif
 #if !UNICODE_IS_ZVBB && UNICODE_HAS_ZVBB_INTRINSICS
-#define UNICODE_TARGET_ZVBB UNICODE_TARGET_REGION("arch=+v,+zvbb")
+#define UNICODE_TARGET_ZVBB KUMO_TARGET_REGION("arch=+v,+zvbb")
 #endif
 
 namespace turbo {

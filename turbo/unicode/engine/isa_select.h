@@ -20,11 +20,11 @@
 
 namespace turbo {
 
-    class UnicodeRegistry : public IsaRegister<UnicodeRegistry, implementation> {
-        friend class IsaRegister<UnicodeRegistry, implementation>;
+    class UnicodeRegistry : public IsaRegister<UnicodeRegistry, UnicodeImplement> {
+        friend class IsaRegister<UnicodeRegistry, UnicodeImplement>;
     protected:
         UnicodeRegistry();
     };
 
-    static_assert(std::is_base_of_v<IsaRegister<UnicodeRegistry,implementation>, UnicodeRegistry>, "must");
+    static_assert(std::is_base_of_v<IsaRegister<UnicodeRegistry, UnicodeImplement>, UnicodeRegistry>, "must");
 }  // namespace turbo

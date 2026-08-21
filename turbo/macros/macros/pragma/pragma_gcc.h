@@ -35,3 +35,8 @@
 #define KUMO_DISABLE_UNDESIRED_WARNINGS
 
 #define KUMO_RESTORE_UNDESIRED_WARNINGS
+
+#define KUMO_TARGET_REGION(T) \
+    _Pragma("GCC push_options") _Pragma(KUMO_STRINGIFY(GCC target(T)))
+#define KUMO_UNTARGET_REGION _Pragma("GCC pop_options")
+

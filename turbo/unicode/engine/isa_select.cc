@@ -31,6 +31,7 @@ namespace turbo {
     static std::vector<IsaInfo> get_built_infos() {
         std::vector<IsaInfo> infos = {
             get_arm64_info(),
+            get_fallback_info(),
             get_icelake_info(),
             get_haswell_info(),
             get_westmere_info(),
@@ -41,7 +42,7 @@ namespace turbo {
         };
         return infos;
     };
-    UnicodeRegistry::UnicodeRegistry() :IsaRegister<turbo::UnicodeRegistry, turbo::implementation>(get_built_infos()) {
+    UnicodeRegistry::UnicodeRegistry() :IsaRegister<turbo::UnicodeRegistry, turbo::UnicodeImplement>(get_built_infos()) {
 
     }
 }  // namespace turbo

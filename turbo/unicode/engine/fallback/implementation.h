@@ -10,10 +10,10 @@ namespace turbo {
             using namespace turbo;
         }
 
-        class implementation final : public turbo::implementation {
+        class UnicodeImplementFallback final : public turbo::UnicodeImplement {
         public:
-            KUMO_FORCE_INLINE implementation()
-                : turbo::implementation("fallback", "Generic fallback implementation",
+            KUMO_FORCE_INLINE UnicodeImplementFallback()
+                : turbo::UnicodeImplement("fallback", "Generic fallback implementation",
                       0) { }
 
              [[nodiscard]] int detect_encodings(const char* input,

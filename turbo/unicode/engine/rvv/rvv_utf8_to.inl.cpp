@@ -257,7 +257,7 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
     return (size_t)(dst - beg) + ret;
 }
 
- [[nodiscard]] size_t implementation::convert_utf8_to_latin1(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_utf8_to_latin1(
     const char* src, size_t len, char* dst) const noexcept {
     const char* beg = dst;
     uint8_t last = 0;
@@ -316,7 +316,7 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
     return dst - beg;
 }
 
- [[nodiscard]] UnicodeResult implementation::convert_utf8_to_latin1_with_errors(
+ [[nodiscard]] UnicodeResult UnicodeImplementRvv::convert_utf8_to_latin1_with_errors(
     const char* src, size_t len, char* dst) const noexcept {
     size_t res = convert_utf8_to_latin1(src, len, dst);
     if (res)
@@ -324,7 +324,7 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
     return scalar::utf8_to_latin1::convert_with_errors(src, len, dst);
 }
 
- [[nodiscard]] size_t implementation::convert_valid_utf8_to_latin1(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_valid_utf8_to_latin1(
     const char* src, size_t len, char* dst) const noexcept {
     const char* beg = dst;
     uint8_t last = 0;
@@ -347,13 +347,13 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
     return dst - beg;
 }
 
- [[nodiscard]] size_t implementation::convert_utf8_to_utf16le(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_utf8_to_utf16le(
     const char* src, size_t len, char16_t* dst) const noexcept {
     return rvv_utf8_to_common<uint16_t, unicode_ByteFlip::NONE>(src, len,
         (uint16_t*)dst);
 }
 
- [[nodiscard]] size_t implementation::convert_utf8_to_utf16be(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_utf8_to_utf16be(
     const char* src, size_t len, char16_t* dst) const noexcept {
     if (supports_zvbb())
         return rvv_utf8_to_common<uint16_t, unicode_ByteFlip::ZVBB>(
@@ -363,7 +363,7 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
             (uint16_t*)dst);
 }
 
- [[nodiscard]] UnicodeResult implementation::convert_utf8_to_utf16le_with_errors(
+ [[nodiscard]] UnicodeResult UnicodeImplementRvv::convert_utf8_to_utf16le_with_errors(
     const char* src, size_t len, char16_t* dst) const noexcept {
     size_t res = convert_utf8_to_utf16le(src, len, dst);
     if (res)
@@ -372,7 +372,7 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
         src, len, dst);
 }
 
- [[nodiscard]] UnicodeResult implementation::convert_utf8_to_utf16be_with_errors(
+ [[nodiscard]] UnicodeResult UnicodeImplementRvv::convert_utf8_to_utf16be_with_errors(
     const char* src, size_t len, char16_t* dst) const noexcept {
     size_t res = convert_utf8_to_utf16be(src, len, dst);
     if (res)
@@ -381,13 +381,13 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
         dst);
 }
 
- [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf16le(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_valid_utf8_to_utf16le(
     const char* src, size_t len, char16_t* dst) const noexcept {
     return rvv_utf8_to_common<uint16_t, unicode_ByteFlip::NONE, false>(
         src, len, (uint16_t*)dst);
 }
 
- [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf16be(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_valid_utf8_to_utf16be(
     const char* src, size_t len, char16_t* dst) const noexcept {
     if (supports_zvbb())
         return rvv_utf8_to_common<uint16_t, unicode_ByteFlip::ZVBB, false>(
@@ -397,13 +397,13 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
             src, len, (uint16_t*)dst);
 }
 
- [[nodiscard]] size_t implementation::convert_utf8_to_utf32(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_utf8_to_utf32(
     const char* src, size_t len, char32_t* dst) const noexcept {
     return rvv_utf8_to_common<uint32_t, unicode_ByteFlip::NONE>(src, len,
         (uint32_t*)dst);
 }
 
- [[nodiscard]] UnicodeResult implementation::convert_utf8_to_utf32_with_errors(
+ [[nodiscard]] UnicodeResult UnicodeImplementRvv::convert_utf8_to_utf32_with_errors(
     const char* src, size_t len, char32_t* dst) const noexcept {
     size_t res = convert_utf8_to_utf32(src, len, dst);
     if (res)
@@ -411,7 +411,7 @@ KUMO_FORCE_INLINE static size_t rvv_utf8_to_common(char const* src,
     return scalar::utf8_to_utf32::convert_with_errors(src, len, dst);
 }
 
- [[nodiscard]] size_t implementation::convert_valid_utf8_to_utf32(
+ [[nodiscard]] size_t UnicodeImplementRvv::convert_valid_utf8_to_utf32(
     const char* src, size_t len, char32_t* dst) const noexcept {
     return rvv_utf8_to_common<uint32_t, unicode_ByteFlip::NONE, false>(
         src, len, (uint32_t*)dst);

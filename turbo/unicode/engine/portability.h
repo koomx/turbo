@@ -52,52 +52,6 @@
 #endif
 #endif
 
-// We are going to use runtime dispatch.
-#if KUMO_ARCH_X86_64 || KUMO_SIMD_LSX
-#ifdef __clang__
-// clang does not have GCC push pop
-// warning: clang attribute push can't be used within a namespace in clang
-// up til 8.0 so UNICODE_TARGET_REGION and UNICODE_UNTARGET_REGION must be
-// *outside* of a namespace.
-#define UNICODE_TARGET_REGION(T)                    \
-    _Pragma(KUMO_STRINGIFY(clang attribute push( \
-        __attribute__((target(T))), apply_to = function)))
-#define UNICODE_UNTARGET_REGION _Pragma("clang attribute pop")
-#elif defined(__GNUC__)
-// GCC is easier
-#define UNICODE_TARGET_REGION(T) \
-    _Pragma("GCC push_options") _Pragma(KUMO_STRINGIFY(GCC target(T)))
-#define UNICODE_UNTARGET_REGION _Pragma("GCC pop_options")
-#endif // clang then gcc
-
-#endif // KUMO_ARCH_X86_64 || KUMO_SIMD_LSX
-
-// Default target region macros don't do anything.
-#ifndef UNICODE_TARGET_REGION
-#define UNICODE_TARGET_REGION(T)
-#define UNICODE_UNTARGET_REGION
-#endif
-
-// Is threading enabled?
-#if defined(_REENTRANT) || defined(_MT)
-#ifndef UNICODE_THREADS_ENABLED
-#define UNICODE_THREADS_ENABLED
-#endif
-#endif
-
-// workaround for large stack sizes under -O0.
-// https://github.com/simdutf/simdutf/issues/691
-#ifdef __APPLE__
-#ifndef __OPTIMIZE__
-// Apple systems have small stack sizes in secondary threads.
-// Lack of compiler optimization may generate high stack usage.
-// Users may want to disable threads for safety, but only when
-// in debug mode which we detect by the fact that the __OPTIMIZE__
-// macro is not defined.
-#undef UNICODE_THREADS_ENABLED
-#endif
-#endif
-
 #if KUMO_COMPILER_MSVC_ENV
 // This is one case where we do not distinguish between
 // regular visual studio and clang under visual studio.
@@ -125,9 +79,5 @@
 #define UNICODE_GCC9OROLDER 1
 #endif //  __GNUC__ == 10
 #endif // defined(__GNUC__) && !defined(__clang__)
-
-#ifndef UNICODE_NO_THREADS
-#define UNICODE_NO_THREADS 0
-#endif
 
 #endif // UNICODE_PORTABILITY_H

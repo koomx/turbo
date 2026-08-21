@@ -147,7 +147,7 @@ void CommandLine::print_help() { print_help(stdout); }
 
 void CommandLine::print_help(FILE *file) {
   fputs(R"txt(
-Benchmark utility for simdutf
+Benchmark utility for unicode
 
 Usage:
 

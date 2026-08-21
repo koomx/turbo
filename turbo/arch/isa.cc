@@ -17,7 +17,11 @@
 
 namespace turbo {
 
+    // Per-arch ranks are comparable only on that arch. Fallback is always 1
+    // (see make_isa_rank). SIMD ranks start at 10 so they beat fallback.
+
 #if KUMO_ARCH_ARM
+    /// NEON = 10; anything else on ARM that is not fallback is unusable here.
     static uint32_t make_arm(const IsaInfo& info) {
         if (info.required_isa & InstructionSet::NEON) {
             return 10;
@@ -27,6 +31,7 @@ namespace turbo {
 #endif
 
 #if KUMO_ARCH_X86
+    /// SSE4.2 = 10, AVX2 = 20, any AVX-512 bit = 50; extra bits add +1 each.
     static uint32_t make_amd(const IsaInfo& info) {
         const uint32_t r = info.required_isa;
         constexpr uint32_t k_avx512 = InstructionSet::AVX512F | InstructionSet::AVX512DQ | InstructionSet::AVX512IFMA | InstructionSet::AVX512PF | InstructionSet::AVX512ER | InstructionSet::AVX512CD | InstructionSet::AVX512BW | InstructionSet::AVX512VL | InstructionSet::AVX512VBMI2 | InstructionSet::AVX512VPOPCNTDQ;
@@ -85,6 +90,7 @@ namespace turbo {
 #endif
 
 #if KUMO_ARCH_PPC
+    /// AltiVec = 10.
     static uint32_t make_ppc(const IsaInfo& info) {
         if (info.required_isa & InstructionSet::ALTIVEC) {
             return 10;
@@ -94,6 +100,7 @@ namespace turbo {
 #endif
 
 #if KUMO_ARCH_LOONGARCH
+    /// LSX (128-bit) = 10, LASX (256-bit) = 20.
     static uint32_t make_loongarch(const IsaInfo& info) {
         if (info.required_isa & InstructionSet::LASX) {
             return 20;
@@ -106,6 +113,7 @@ namespace turbo {
 #endif
 
 #if KUMO_ARCH_RISCV
+    /// RVV = 10, plus 1 if Zvbb is required.
     static uint32_t make_riscv(const IsaInfo& info) {
         if ((info.required_isa & InstructionSet::RVV) == 0) {
             return 0;
@@ -119,6 +127,8 @@ namespace turbo {
 #endif
 
     uint32_t make_isa_rank(const IsaInfo& info) {
+        // Uncompiled or no engine: never selected.
+        // Fallback skips the required_isa check so it always ranks 1.
         if (info.engine == nullptr || !info.compiled) {
             return 0;
         }
@@ -126,6 +136,7 @@ namespace turbo {
             return 1;
         }
         const uint32_t avail = info.current_compiled & info.current_isa;
+        // Need every required bit both compiled in and present on the CPU.
         if ((info.required_isa & avail) != info.required_isa) {
             return 0;
         }

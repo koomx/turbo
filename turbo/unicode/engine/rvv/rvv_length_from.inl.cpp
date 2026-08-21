@@ -1,24 +1,24 @@
  [[nodiscard]] size_t
-implementation::count_utf16le(const char16_t* src, size_t len) const noexcept {
+UnicodeImplementRvv::count_utf16le(const char16_t* src, size_t len) const noexcept {
     return utf32_length_from_utf16le(src, len);
 }
 
  [[nodiscard]] size_t
-implementation::count_utf16be(const char16_t* src, size_t len) const noexcept {
+UnicodeImplementRvv::count_utf16be(const char16_t* src, size_t len) const noexcept {
     return utf32_length_from_utf16be(src, len);
 }
 
  [[nodiscard]] size_t
-implementation::count_utf8(const char* src, size_t len) const noexcept {
+UnicodeImplementRvv::count_utf8(const char* src, size_t len) const noexcept {
     return utf32_length_from_utf8(src, len);
 }
 
- [[nodiscard]] size_t implementation::latin1_length_from_utf8(
+ [[nodiscard]] size_t UnicodeImplementRvv::latin1_length_from_utf8(
     const char* src, size_t len) const noexcept {
     return utf32_length_from_utf8(src, len);
 }
 
- [[nodiscard]] size_t implementation::utf32_length_from_utf8(
+ [[nodiscard]] size_t UnicodeImplementRvv::utf32_length_from_utf8(
     const char* src, size_t len) const noexcept {
     size_t count = 0;
     for (size_t vl; len > 0; len -= vl, src += vl) {
@@ -45,12 +45,12 @@ rvv_utf32_length_from_utf16(const char16_t* src, size_t len) {
     return count;
 }
 
- [[nodiscard]] size_t implementation::utf32_length_from_utf16le(
+ [[nodiscard]] size_t UnicodeImplementRvv::utf32_length_from_utf16le(
     const char16_t* src, size_t len) const noexcept {
     return rvv_utf32_length_from_utf16<unicode_ByteFlip::NONE>(src, len);
 }
 
- [[nodiscard]] size_t implementation::utf32_length_from_utf16be(
+ [[nodiscard]] size_t UnicodeImplementRvv::utf32_length_from_utf16be(
     const char16_t* src, size_t len) const noexcept {
     if (supports_zvbb())
         return rvv_utf32_length_from_utf16<unicode_ByteFlip::ZVBB>(src, len);
@@ -58,7 +58,7 @@ rvv_utf32_length_from_utf16(const char16_t* src, size_t len) {
         return rvv_utf32_length_from_utf16<unicode_ByteFlip::V>(src, len);
 }
 
- [[nodiscard]] size_t implementation::utf8_length_from_latin1(
+ [[nodiscard]] size_t UnicodeImplementRvv::utf8_length_from_latin1(
     const char* src, size_t len) const noexcept {
     size_t count = len;
     for (size_t vl; len > 0; len -= vl, src += vl) {
@@ -87,12 +87,12 @@ rvv_utf8_length_from_utf16(const char16_t* src, size_t len) {
     return count;
 }
 
- [[nodiscard]] size_t implementation::utf8_length_from_utf16le(
+ [[nodiscard]] size_t UnicodeImplementRvv::utf8_length_from_utf16le(
     const char16_t* src, size_t len) const noexcept {
     return rvv_utf8_length_from_utf16<unicode_ByteFlip::NONE>(src, len);
 }
 
- [[nodiscard]] size_t implementation::utf8_length_from_utf16be(
+ [[nodiscard]] size_t UnicodeImplementRvv::utf8_length_from_utf16be(
     const char16_t* src, size_t len) const noexcept {
     if (supports_zvbb())
         return rvv_utf8_length_from_utf16<unicode_ByteFlip::ZVBB>(src, len);
@@ -100,7 +100,7 @@ rvv_utf8_length_from_utf16(const char16_t* src, size_t len) {
         return rvv_utf8_length_from_utf16<unicode_ByteFlip::V>(src, len);
 }
 
- [[nodiscard]] size_t implementation::utf8_length_from_utf32(
+ [[nodiscard]] size_t UnicodeImplementRvv::utf8_length_from_utf32(
     const char32_t* src, size_t len) const noexcept {
     size_t count = 0;
     for (size_t vl; len > 0; len -= vl, src += vl) {
@@ -114,7 +114,7 @@ rvv_utf8_length_from_utf16(const char16_t* src, size_t len) {
     return count;
 }
 
- [[nodiscard]] size_t implementation::utf16_length_from_utf8(
+ [[nodiscard]] size_t UnicodeImplementRvv::utf16_length_from_utf8(
     const char* src, size_t len) const noexcept {
     size_t count = 0;
     for (size_t vl; len > 0; len -= vl, src += vl) {
@@ -128,7 +128,7 @@ rvv_utf8_length_from_utf16(const char16_t* src, size_t len) {
     return count;
 }
 
- [[nodiscard]] size_t implementation::utf16_length_from_utf32(
+ [[nodiscard]] size_t UnicodeImplementRvv::utf16_length_from_utf32(
     const char32_t* src, size_t len) const noexcept {
     size_t count = 0;
     for (size_t vl; len > 0; len -= vl, src += vl) {

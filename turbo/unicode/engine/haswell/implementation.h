@@ -4,16 +4,16 @@
 #include <turbo/unicode/engine/implementation.h>
 
 // The constructor may be executed on any host, so we take care not to use
-// UNICODE_TARGET_REGION
+// KUMO_TARGET_REGION
 namespace turbo {
     namespace haswell {
 
         using namespace turbo;
 
-        class implementation final : public turbo::implementation {
+        class UnicodeImplementHaswell final : public turbo::UnicodeImplement {
         public:
-            KUMO_FORCE_INLINE implementation()
-                : turbo::implementation("haswell", "Intel/AMD AVX2",
+            KUMO_FORCE_INLINE UnicodeImplementHaswell()
+                : turbo::UnicodeImplement("haswell", "Intel/AMD AVX2",
                       InstructionSet::AVX2 | InstructionSet::BMI1 | InstructionSet::BMI2) { }
 
              [[nodiscard]] int detect_encodings(const char* input,

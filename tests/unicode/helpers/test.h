@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <turbo/unicode/utf.h>
+#include <turbo/unicode/engine/isa_select.h>
 #include <vector>
 
 namespace turbo {
@@ -25,12 +26,12 @@ namespace turbo {
         int main(int argc, char* argv[]);
         void run(const CommandLine& cmdline);
 
-        using test_procedure = void (*)(const turbo::implementation& impl);
+        using test_procedure = void (*)(const turbo::UnicodeImplement& impl);
         struct test_entry {
             std::string name;
             test_procedure procedure;
 
-            void operator()(const turbo::implementation& impl);
+            void operator()(const turbo::UnicodeImplement& impl);
         };
 
         std::list<test_entry>& test_procedures();
@@ -107,18 +108,17 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
 }
 
 #define TEST(name)                                                       \
-    void test_impl_##name(const turbo::implementation& impl);            \
-    void name(const turbo::implementation& impl) {                       \
-        turbo::get_active_implementation() = &impl;                      \
+    void test_impl_##name(const turbo::UnicodeImplement& impl);            \
+    void name(const turbo::UnicodeImplement& impl) {                       \
         test_impl_##name(impl);                                          \
     }                                                                    \
     static turbo::test::register_test test_register_##name(#name, name); \
     void test_impl_##name(                                               \
-        [[maybe_unused]] const turbo::implementation& implementation)
+        [[maybe_unused]] const turbo::UnicodeImplement& implementation)
 
 #define TEST_LOOP(name)                                                      \
-    void test_impl_##name(const turbo::implementation& impl, uint32_t seed); \
-    void name(const turbo::implementation& impl) {                           \
+    void test_impl_##name(const turbo::UnicodeImplement& impl, uint32_t seed); \
+    void name(const turbo::UnicodeImplement& impl) {                           \
         for (size_t trial = 0; trial < turbo::test::trials; trial++) {       \
             const uint32_t seed { 1234 + uint32_t(trial) };                  \
             if ((trial % 100) == 0) {                                        \
@@ -129,7 +129,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
         }                                                                    \
     }                                                                        \
     static turbo::test::register_test test_register_##name(#name, name);     \
-    void test_impl_##name(const turbo::implementation& implementation,       \
+    void test_impl_##name(const turbo::UnicodeImplement& implementation,       \
         [[maybe_unused]] uint32_t seed)
 
 #define ASSERT_EQUAL(a, b)                                                       \

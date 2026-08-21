@@ -16,10 +16,10 @@ namespace turbo {
             }
         } // namespace
 
-        class implementation final : public turbo::implementation {
+        class UnicodeImplementPpc64 final : public turbo::UnicodeImplement {
         public:
-            KUMO_FORCE_INLINE implementation()
-                : turbo::implementation("ppc64", "PPC64 ALTIVEC",
+            KUMO_FORCE_INLINE UnicodeImplementPpc64()
+                : turbo::UnicodeImplement("ppc64", "PPC64 ALTIVEC",
                       InstructionSet::ALTIVEC) { }
 
              [[nodiscard]] int detect_encodings(const char* input,

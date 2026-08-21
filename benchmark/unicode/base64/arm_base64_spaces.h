@@ -2,7 +2,7 @@
 // base64 whitespace characters (' ', '\t', '\n', '\r') from the input before
 // handing the cleaned-up stream to a whitespace-unaware base64 decoder.
 //
-// The compaction is done the same way the simdutf NEON base64 decoder removes
+// The compaction is done the same way the unicode NEON base64 decoder removes
 // "bad" (ignorable) characters internally: for every 16-byte block we build a
 // 16-bit mask of the bytes to drop and shuffle the survivors to the front using
 // the `thintable_epi8` / `pshufb_combine_table` tables.  See
@@ -37,7 +37,7 @@
 namespace arm_base64_spaces {
 
 // Maps an 8-bit "drop" mask to a byte shuffle that packs the kept bytes of an
-// 8-byte lane to the front. Copied from simdutf (base64_tables.h).
+// 8-byte lane to the front. Copied from unicode (base64_tables.h).
 static const uint64_t thintable_epi8[256] = {
     0x0706050403020100, 0x0007060504030201, 0x0007060504030200,
     0x0000070605040302, 0x0007060504030100, 0x0000070605040301,
@@ -179,7 +179,7 @@ static inline uint16_t whitespace_mask(uint8x16_t v) {
 
 // Pack the bytes of `data` whose mask bit is 0 to the front of `output`,
 // writing a full 16-byte vector (only the leading kept bytes are meaningful).
-// Mirrors simdutf's NEON `compress`.
+// Mirrors unicode's NEON `compress`.
 static inline void compress(uint8x16_t data, uint16_t mask, char *output) {
   if (mask == 0) {
     vst1q_u8((uint8_t *)output, data);
@@ -216,7 +216,7 @@ static inline int ctz16(uint16_t mask) {
 // Fast path for a block with exactly one byte to drop (at index `pos`): keep
 // bytes [0, pos) in place and shift bytes (pos, 16) left by one with a single
 // table lookup. Writes a full 16-byte vector; only the leading 15 bytes are
-// meaningful. Mirrors simdutf's NEON `compress_block_single`.
+// meaningful. Mirrors unicode's NEON `compress_block_single`.
 static inline void compress_single(uint8x16_t data, int pos, char *output) {
   static const uint8_t iota_arr[16] = {0, 1, 2,  3,  4,  5,  6,  7,
                                        8, 9, 10, 11, 12, 13, 14, 15};

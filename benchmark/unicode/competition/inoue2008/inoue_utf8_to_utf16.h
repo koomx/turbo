@@ -4,7 +4,7 @@
  *
  * Not to be released as part of our public API. This is private code.
  * Do not use this code for any other purpose than for benchmarking within
- * simdutf.
+ * unicode.
  *
  */
 
@@ -68,7 +68,7 @@
 #include <tmmintrin.h>
 #endif // KUMO_COMPILER_MSVC_CLANG
 
-#define UNICODE_TARGET_WESTMERE UNICODE_TARGET_REGION("sse4.2,pclmul")
+#define UNICODE_TARGET_WESTMERE KUMO_TARGET_REGION("sse4.2,pclmul")
 
 
 #include <x86intrin.h>
@@ -439,6 +439,6 @@ static inline void inoue_test() {
 
 
 #ifdef __x86_64__
-UNICODE_UNTARGET_REGION
+KUMO_UNTARGET_REGION
 #endif // __x86_64__
 #endif // INOUE_UTF8_TO_UTF16_H

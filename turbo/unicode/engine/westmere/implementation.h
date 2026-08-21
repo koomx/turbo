@@ -4,7 +4,7 @@
 #include <turbo/unicode/engine/implementation.h>
 
 // The constructor may be executed on any host, so we take care not to use
-// UNICODE_TARGET_REGION
+// KUMO_TARGET_REGION
 namespace turbo {
     namespace westmere {
 
@@ -12,10 +12,10 @@ namespace turbo {
             using namespace turbo;
         }
 
-        class implementation final : public turbo::implementation {
+        class UnicodeImplementWestmere final : public turbo::UnicodeImplement {
         public:
-            KUMO_FORCE_INLINE implementation()
-                : turbo::implementation("westmere", "Intel/AMD SSE4.2",
+            KUMO_FORCE_INLINE UnicodeImplementWestmere()
+                : turbo::UnicodeImplement("westmere", "Intel/AMD SSE4.2",
                       InstructionSet::SSE42) { }
 
              [[nodiscard]] int detect_encodings(const char* input,

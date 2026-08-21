@@ -9,12 +9,13 @@
 
 #include <turbo/macros/macros/pragma/pragma.h>
 #include <turbo/unicode/utf.h>
+#include <turbo/unicode/engine/isa_select.h>
 
 std::string input;
 
 // useful for debugging
 static void print_input(const std::string &s,
-                        const turbo::implementation *const e) {
+                        const turbo::UnicodeImplement *const e) {
   printf("We are about to abort on the following input: ");
   for (auto c : s) {
     printf("%02x ", (unsigned char)c);
@@ -69,12 +70,9 @@ int validate_tests(const char *databytes, size_t size_in_bytes) {
   const auto size = size_in_bytes / sizeof(T);
 
   turbo::UnicodeResult reference_result{};
-  const turbo::implementation *reference_impl{};
+  const turbo::UnicodeImplement *reference_impl{};
 
-  for (auto &e : turbo::get_available_implementations()) {
-    if (!e->supported_by_runtime_system()) {
-      continue;
-    }
+  for (auto *e : turbo::UnicodeRegistry::get_avail_isa()) {
     const char *message = "unknown";
     turbo::UnicodeResult result{};
     if (std::is_same<T, char>::value == true) {
@@ -134,10 +132,7 @@ size_t valid_base64 = 0;
 bool fuzz_this(const char *data, size_t size) {
   std::string source(data, size);
   input = source;
-  for (auto &e : turbo::get_available_implementations()) {
-    if (!e->supported_by_runtime_system()) {
-      continue;
-    }
+  for (auto *e : turbo::UnicodeRegistry::get_avail_isa()) {
     /**
      * Transcoding from UTF-8 to UTF-16LE.
      */
@@ -689,7 +684,7 @@ bool fuzz_this(const char *data, size_t size) {
         }
       }
     }
-  } // for (auto &e : turbo::get_available_implementations()) {
+  } // for (auto *e : turbo::UnicodeRegistry::get_avail_isa()) {
 
   return true;
 } // extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
@@ -748,10 +743,7 @@ int main(int argc, char *argv[]) {
   return EXIT_FAILURE;
 #endif
   puts("testing the library on 'random garbage'");
-  for (auto &e : turbo::get_available_implementations()) {
-    if (!e->supported_by_runtime_system()) {
-      continue;
-    }
+  for (auto *e : turbo::UnicodeRegistry::get_avail_isa()) {
     printf("testing: %.*s\n", int(e->name().size()), e->name().data());
   }
 #ifndef UNICODE_TEST_FUZZER_TRIALS

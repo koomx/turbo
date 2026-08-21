@@ -65,7 +65,7 @@ protected:
                    size_t iterations) override;
 
 private:
-  using unicode_fn = void (Benchmark::*)(const turbo::implementation &,
+  using unicode_fn = void (Benchmark::*)(const turbo::UnicodeImplement &,
                                          size_t);
   using thirdparty_fn = void (Benchmark::*)(size_t);
 
@@ -90,139 +90,139 @@ private:
                     turbo::TextEncoding enc2, turbo::TextEncoding enc3);
 
 private:
-  void run_naive_validate_ascii(const turbo::implementation &implementation,
+  void run_naive_validate_ascii(const turbo::UnicodeImplement &implementation,
                                 size_t iterations);
-  void run_validate_ascii(const turbo::implementation &implementation,
+  void run_validate_ascii(const turbo::UnicodeImplement &implementation,
                           size_t iterations);
   void
-  run_validate_ascii_with_errors(const turbo::implementation &implementation,
+  run_validate_ascii_with_errors(const turbo::UnicodeImplement &implementation,
                                  size_t iterations);
-  void run_validate_utf8(const turbo::implementation &implementation,
+  void run_validate_utf8(const turbo::UnicodeImplement &implementation,
                          size_t iterations);
   void
-  run_validate_utf8_with_errors(const turbo::implementation &implementation,
+  run_validate_utf8_with_errors(const turbo::UnicodeImplement &implementation,
                                 size_t iterations);
-  void run_validate_utf16le(const turbo::implementation &implementation,
+  void run_validate_utf16le(const turbo::UnicodeImplement &implementation,
                             size_t iterations);
   void run_validate_utf16le_with_errors(
-      const turbo::implementation &implementation, size_t iterations);
-  void run_validate_utf32(const turbo::implementation &implementation,
+      const turbo::UnicodeImplement &implementation, size_t iterations);
+  void run_validate_utf32(const turbo::UnicodeImplement &implementation,
                           size_t iterations);
-  void run_to_well_formed_utf16le(const turbo::implementation &implementation,
+  void run_to_well_formed_utf16le(const turbo::UnicodeImplement &implementation,
                                   size_t iterations);
   void
-  run_validate_utf32_with_errors(const turbo::implementation &implementation,
+  run_validate_utf32_with_errors(const turbo::UnicodeImplement &implementation,
                                  size_t iterations);
-  void run_count_utf8(const turbo::implementation &implementation,
+  void run_count_utf8(const turbo::UnicodeImplement &implementation,
                       size_t iterations);
-  void run_count_utf16le(const turbo::implementation &implementation,
+  void run_count_utf16le(const turbo::UnicodeImplement &implementation,
                          size_t iterations);
   void
-  run_utf8_length_from_latin1(const turbo::implementation &implementation,
+  run_utf8_length_from_latin1(const turbo::UnicodeImplement &implementation,
                               size_t iterations);
   void
-  run_utf8_length_from_utf16le(const turbo::implementation &implementation,
+  run_utf8_length_from_utf16le(const turbo::UnicodeImplement &implementation,
                                size_t iterations);
   void
-  run_utf8_length_from_utf16be(const turbo::implementation &implementation,
+  run_utf8_length_from_utf16be(const turbo::UnicodeImplement &implementation,
                                size_t iterations);
   void run_utf8_length_from_utf16le_with_replacement(
-      const turbo::implementation &implementation, size_t iterations);
+      const turbo::UnicodeImplement &implementation, size_t iterations);
   void run_utf8_length_from_utf16be_with_replacement(
-      const turbo::implementation &implementation, size_t iterations);
-  void run_utf8_length_from_utf32(const turbo::implementation &implementation,
+      const turbo::UnicodeImplement &implementation, size_t iterations);
+  void run_utf8_length_from_utf32(const turbo::UnicodeImplement &implementation,
                                   size_t iterations);
-  void run_utf16_length_from_utf8(const turbo::implementation &implementation,
+  void run_utf16_length_from_utf8(const turbo::UnicodeImplement &implementation,
                                   size_t iterations);
-  void run_convert_latin1_to_utf8(const turbo::implementation &implementation,
+  void run_convert_latin1_to_utf8(const turbo::UnicodeImplement &implementation,
                                   size_t iterations);
   void
-  run_convert_latin1_to_utf16le(const turbo::implementation &implementation,
+  run_convert_latin1_to_utf16le(const turbo::UnicodeImplement &implementation,
                                 size_t iterations);
   void
-  run_convert_latin1_to_utf32(const turbo::implementation &implementation,
+  run_convert_latin1_to_utf32(const turbo::UnicodeImplement &implementation,
                               size_t iterations);
-  void run_convert_utf8_to_latin1(const turbo::implementation &implementation,
+  void run_convert_utf8_to_latin1(const turbo::UnicodeImplement &implementation,
                                   size_t iterations);
   void run_convert_utf8_to_latin1_with_errors(
-      const turbo::implementation &implementation, size_t iterations);
+      const turbo::UnicodeImplement &implementation, size_t iterations);
   void
-  run_convert_utf8_to_utf16le(const turbo::implementation &implementation,
+  run_convert_utf8_to_utf16le(const turbo::UnicodeImplement &implementation,
                               size_t iterations);
   void run_convert_utf8_to_utf16le_with_errors(
-      const turbo::implementation &implementation, size_t iterations);
-  void run_convert_utf8_to_utf32(const turbo::implementation &implementation,
+      const turbo::UnicodeImplement &implementation, size_t iterations);
+  void run_convert_utf8_to_utf32(const turbo::UnicodeImplement &implementation,
                                  size_t iterations);
   void run_convert_utf8_to_utf32_with_errors(
-      const turbo::implementation &implementation, size_t iterations);
+      const turbo::UnicodeImplement &implementation, size_t iterations);
   void run_convert_utf8_to_utf16le_with_dynamic_allocation(
-      const turbo::implementation &implementation, size_t iterations);
+      const turbo::UnicodeImplement &implementation, size_t iterations);
   void run_convert_utf8_to_utf32_with_dynamic_allocation(
-      const turbo::implementation &implementation, size_t iterations);
+      const turbo::UnicodeImplement &implementation, size_t iterations);
   void run_convert_valid_utf8_to_latin1(
-      const turbo::implementation &implementation, size_t iterations);
+      const turbo::UnicodeImplement &implementation, size_t iterations);
   void run_convert_valid_utf8_to_utf16le(
-      const turbo::implementation &implementation, size_t iterations);
+      const turbo::UnicodeImplement &implementation, size_t iterations);
   void
-  run_convert_valid_utf8_to_utf32(const turbo::implementation &implementation,
+  run_convert_valid_utf8_to_utf32(const turbo::UnicodeImplement &implementation,
                                   size_t iterations);
   void
-  run_convert_utf16le_to_latin1(const turbo::implementation &implementation,
+  run_convert_utf16le_to_latin1(const turbo::UnicodeImplement &implementation,
                                 size_t iterations);
   void run_convert_utf16le_to_latin1_with_errors(
-      const turbo::implementation &implementation, size_t iterations);
+      const turbo::UnicodeImplement &implementation, size_t iterations);
   void
-  run_convert_utf16le_to_utf8(const turbo::implementation &implementation,
+  run_convert_utf16le_to_utf8(const turbo::UnicodeImplement &implementation,
                               size_t iterations);
   void
-  run_convert_utf16_to_utf8_safe(const turbo::implementation &implementation,
+  run_convert_utf16_to_utf8_safe(const turbo::UnicodeImplement &implementation,
                                  size_t iterations);
   void run_convert_utf16le_to_utf8_with_errors(
-      const turbo::implementation &implementation, size_t iterations);
+      const turbo::UnicodeImplement &implementation, size_t iterations);
   void run_convert_utf16le_to_utf8_with_replacement(
-      const turbo::implementation &implementation, size_t iterations);
+      const turbo::UnicodeImplement &implementation, size_t iterations);
   void
-  run_convert_utf16le_to_utf32(const turbo::implementation &implementation,
+  run_convert_utf16le_to_utf32(const turbo::UnicodeImplement &implementation,
                                size_t iterations);
   void run_convert_utf16le_to_utf32_with_errors(
-      const turbo::implementation &implementation, size_t iterations);
+      const turbo::UnicodeImplement &implementation, size_t iterations);
   void run_convert_utf16le_to_utf8_with_dynamic_allocation(
-      const turbo::implementation &implementation, size_t iterations);
+      const turbo::UnicodeImplement &implementation, size_t iterations);
   void run_convert_utf16le_to_utf32_with_dynamic_allocation(
-      const turbo::implementation &implementation, size_t iterations);
+      const turbo::UnicodeImplement &implementation, size_t iterations);
   void run_convert_valid_utf16le_to_latin1(
-      const turbo::implementation &implementation, size_t iterations);
+      const turbo::UnicodeImplement &implementation, size_t iterations);
   void run_convert_valid_utf16le_to_utf8(
-      const turbo::implementation &implementation, size_t iterations);
+      const turbo::UnicodeImplement &implementation, size_t iterations);
   void
-  run_convert_utf32_to_latin1(const turbo::implementation &implementation,
+  run_convert_utf32_to_latin1(const turbo::UnicodeImplement &implementation,
                               size_t iterations);
   void run_convert_utf32_to_latin1_with_errors(
-      const turbo::implementation &implementation, size_t iterations);
-  void run_convert_utf32_to_utf8(const turbo::implementation &implementation,
+      const turbo::UnicodeImplement &implementation, size_t iterations);
+  void run_convert_utf32_to_utf8(const turbo::UnicodeImplement &implementation,
                                  size_t iterations);
   void run_convert_utf32_to_utf8_with_errors(
-      const turbo::implementation &implementation, size_t iterations);
+      const turbo::UnicodeImplement &implementation, size_t iterations);
   void run_convert_valid_utf32_to_latin1(
-      const turbo::implementation &implementation, size_t iterations);
+      const turbo::UnicodeImplement &implementation, size_t iterations);
   void
-  run_convert_valid_utf32_to_utf8(const turbo::implementation &implementation,
+  run_convert_valid_utf32_to_utf8(const turbo::UnicodeImplement &implementation,
                                   size_t iterations);
 
   template <Endian byte_order>
-  void run_convert_utf32_to_utf16(const turbo::implementation &implementation,
+  void run_convert_utf32_to_utf16(const turbo::UnicodeImplement &implementation,
                                   size_t iterations);
   template <Endian byte_order>
   void run_convert_utf32_to_utf16_with_errors(
-      const turbo::implementation &implementation, size_t iterations);
+      const turbo::UnicodeImplement &implementation, size_t iterations);
 
   template <Endian byte_order>
   void run_convert_valid_utf32_to_utf16(
-      const turbo::implementation &implementation, size_t iterations);
+      const turbo::UnicodeImplement &implementation, size_t iterations);
 
   void run_convert_valid_utf16le_to_utf32(
-      const turbo::implementation &implementation, size_t iterations);
-  void run_detect_encodings(const turbo::implementation &implementation,
+      const turbo::UnicodeImplement &implementation, size_t iterations);
+  void run_detect_encodings(const turbo::UnicodeImplement &implementation,
                             size_t iterations);
   void run_utf8_length_from_latin1_node(size_t iterations);
 #if ICU_AVAILABLE

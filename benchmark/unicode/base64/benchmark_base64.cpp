@@ -642,7 +642,7 @@ private:
   void lengths() {
     if (benchmark_mode != BenchmarkMode::list) {
       printf("# lengths\n");
-      printf("# Benchmark only simdutf length functions (maximal and exact)\n");
+      printf("# Benchmark only unicode length functions (maximal and exact)\n");
     }
 
     for (auto &e : turbo::get_available_implementations()) {

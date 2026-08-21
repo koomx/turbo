@@ -69,3 +69,16 @@
 #define KUMO_PRAGMA_CLANG_LOOP_UNROLL_COUNT(N)     _Pragma(KUMO_STRINGIFY(clang loop unroll_count(N)))
 #define KUMO_PRAGMA_CLANG_LOOP_VECTORIZE           _Pragma("clang loop vectorize(enable)")
 #define KUMO_PRAGMA_CLANG_LOOP_INTERLEAVE          _Pragma("clang loop interleave(enable)")
+
+// ---------------------------------------------------------------------------
+// Function-level ISA target region (must be outside a namespace on Clang < 8)
+//
+//   KUMO_TARGET_REGION("avx2,bmi,lzcnt,popcnt")
+//   ... functions ...
+//   KUMO_UNTARGET_REGION
+// ---------------------------------------------------------------------------
+
+#define KUMO_TARGET_REGION(T) \
+    _Pragma(KUMO_STRINGIFY(clang attribute push(__attribute__((target(T))), apply_to = function)))
+#define KUMO_UNTARGET_REGION _Pragma("clang attribute pop")
+

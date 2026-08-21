@@ -100,3 +100,7 @@
 #if !defined(KUMO_ALLOW_UNUSED)
 #define KUMO_ALLOW_UNUSED                   __pragma(warning(suppress:4100))
 #endif
+
+#define KUMO_TARGET_REGION(T)
+#define KUMO_UNTARGET_REGION
+

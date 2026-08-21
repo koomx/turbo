@@ -311,6 +311,8 @@
 
 /// @defgroup pragma Pragma Wrappers
 /// @{
+/// @brief KUMO_TARGET_REGION(T) — compiler target-ISA region (Clang attribute / GCC target); empty on MSVC
+/// @brief KUMO_UNTARGET_REGION  — end target-ISA region
 /// @brief KUMO_PRAGMA_DIAG_PUSH           — save diagnostic state
 /// @brief KUMO_PRAGMA_DIAG_POP            — restore diagnostic state
 /// @brief KUMO_PRAGMA_DIAG_IGNORED(str)   — suppress warning by string

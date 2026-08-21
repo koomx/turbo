@@ -45,7 +45,7 @@ namespace turbo {
 #include <turbo/unicode/engine/rvv/rvv_utf16fix.cpp>
 
          [[nodiscard]] int
-        implementation::detect_encodings(const char* input,
+        UnicodeImplementRvv::detect_encodings(const char* input,
             size_t length) const noexcept {
             // If there is a BOM, then we trust it.
             auto bom_encoding = turbo::BOM::check_bom(input, length);
@@ -67,61 +67,61 @@ namespace turbo {
             return out;
         }
 
-         [[nodiscard]] UnicodeResult implementation::base64_to_binary(
+         [[nodiscard]] UnicodeResult UnicodeImplementRvv::base64_to_binary(
             const char* input, size_t length, char* output, Base64Options options,
             last_chunk_handling_options last_chunk_options) const noexcept {
             return turbo::scalar::base64::base64_to_binary_details_impl(
                 input, length, output, options, last_chunk_options);
         }
 
-         [[nodiscard]] UnicodeResult implementation::base64_to_binary(
+         [[nodiscard]] UnicodeResult UnicodeImplementRvv::base64_to_binary(
             const char16_t* input, size_t length, char* output, Base64Options options,
             last_chunk_handling_options last_chunk_options) const noexcept {
             return turbo::scalar::base64::base64_to_binary_details_impl(
                 input, length, output, options, last_chunk_options);
         }
 
-         [[nodiscard]] full_result implementation::base64_to_binary_details(
+         [[nodiscard]] full_result UnicodeImplementRvv::base64_to_binary_details(
             const char* input, size_t length, char* output, Base64Options options,
             last_chunk_handling_options last_chunk_options) const noexcept {
             return turbo::scalar::base64::base64_to_binary_details_impl(
                 input, length, output, options, last_chunk_options);
         }
 
-         [[nodiscard]] full_result implementation::base64_to_binary_details(
+         [[nodiscard]] full_result UnicodeImplementRvv::base64_to_binary_details(
             const char16_t* input, size_t length, char* output, Base64Options options,
             last_chunk_handling_options last_chunk_options) const noexcept {
             return turbo::scalar::base64::base64_to_binary_details_impl(
                 input, length, output, options, last_chunk_options);
         }
 
-        size_t implementation::binary_to_base64(const char* input, size_t length,
+        size_t UnicodeImplementRvv::binary_to_base64(const char* input, size_t length,
             char* output,
             Base64Options options) const noexcept {
             return encode_base64(output, input, length, options);
         }
 
-        size_t implementation::binary_to_base64_with_lines(
+        size_t UnicodeImplementRvv::binary_to_base64_with_lines(
             const char* input, size_t length, char* output, size_t line_length,
             Base64Options options) const noexcept {
             return encode_base64_rvv<true>(output, input, length, options, line_length);
         }
          [[nodiscard]] UnicodeResult
-        implementation::utf8_length_from_utf16le_with_replacement(
+        UnicodeImplementRvv::utf8_length_from_utf16le_with_replacement(
             const char16_t* input, size_t length) const noexcept {
             return scalar::utf16::utf8_length_from_utf16_with_replacement<
                 Endian::little>(input, length);
         }
 
          [[nodiscard]] UnicodeResult
-        implementation::utf8_length_from_utf16be_with_replacement(
+        UnicodeImplementRvv::utf8_length_from_utf16be_with_replacement(
             const char16_t* input, size_t length) const noexcept {
             return scalar::utf16::utf8_length_from_utf16_with_replacement<
                 Endian::big>(input, length);
         }
 
          [[nodiscard]] size_t
-        implementation::convert_utf16le_to_utf8_with_replacement(
+        UnicodeImplementRvv::convert_utf16le_to_utf8_with_replacement(
             const char16_t* input, size_t length, char* utf8_buffer) const noexcept {
             return utf16_to_utf8::convert_with_replacement_via(
                 [this](const char16_t* b, size_t l, char* o) {
@@ -134,7 +134,7 @@ namespace turbo {
         }
 
          [[nodiscard]] size_t
-        implementation::convert_utf16be_to_utf8_with_replacement(
+        UnicodeImplementRvv::convert_utf16be_to_utf8_with_replacement(
             const char16_t* input, size_t length, char* utf8_buffer) const noexcept {
             return utf16_to_utf8::convert_with_replacement_via(
                 [this](const char16_t* b, size_t l, char* o) {
@@ -149,8 +149,8 @@ namespace turbo {
 
     } // namespace UNICODE_IMPLEMENTATION
 
-    static turbo::implementation *get_rvv_instance() {
-        static rvv::implementation ins;
+    static turbo::UnicodeImplement *get_rvv_instance() {
+        static rvv::UnicodeImplementRvv ins;
         return &ins;
     }
 } // namespace turbo
@@ -158,7 +158,7 @@ namespace turbo {
 #include <turbo/unicode/engine/rvv/end.h>
 #else
 namespace turbo {
-    static turbo::implementation *get_rvv_instance() {
+    static turbo::UnicodeImplement *get_rvv_instance() {
         return nullptr;
     }
 }

@@ -2,9 +2,7 @@
 
 #include <turbo/macros/macros/pragma/pragma.h>
 
-#if UNICODE_CAN_ALWAYS_RUN_ICELAKE
-// nothing needed.
-#else
+#if UNICODE_IMPLEMENTATION_ICELAKE
 UNICODE_TARGET_ICELAKE
 #endif
 

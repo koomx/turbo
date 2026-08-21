@@ -77,12 +77,12 @@ void rvv_to_well_formed_utf16(const char16_t* in, size_t n, char16_t* out) {
         : out[n - 1];
 }
 
-void implementation::to_well_formed_utf16le(const char16_t* input, size_t len,
+void UnicodeImplementRvv::to_well_formed_utf16le(const char16_t* input, size_t len,
     char16_t* output) const noexcept {
     return rvv_to_well_formed_utf16<Endian::little>(input, len, output);
 }
 
-void implementation::to_well_formed_utf16be(const char16_t* input, size_t len,
+void UnicodeImplementRvv::to_well_formed_utf16be(const char16_t* input, size_t len,
     char16_t* output) const noexcept {
     return rvv_to_well_formed_utf16<Endian::big>(input, len, output);
 }
@@ -97,7 +97,7 @@ rvv_change_endianness_utf16(const char16_t* src, size_t len, char16_t* dst) {
     }
 }
 
-void implementation::change_endianness_utf16(const char16_t* src, size_t len,
+void UnicodeImplementRvv::change_endianness_utf16(const char16_t* src, size_t len,
     char16_t* dst) const noexcept {
     if (supports_zvbb())
         return rvv_change_endianness_utf16<unicode_ByteFlip::ZVBB>(src, len, dst);

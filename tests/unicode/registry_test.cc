@@ -23,6 +23,7 @@ namespace {
 
 constexpr const char* kExpectedNames[] = {
     "arm64",
+    "fallback",
     "icelake",
     "haswell",
     "westmere",
@@ -34,30 +35,50 @@ constexpr const char* kExpectedNames[] = {
 
 TEST(UnicodeRegistry, AllInfosRegistered) {
     const auto all = turbo::UnicodeRegistry::get_all_isa_info();
-    ASSERT_EQ(all.size(), 8u);
+    ASSERT_EQ(all.size(), 9u);
     for (size_t i = 0; i < all.size(); ++i) {
         EXPECT_STREQ(all[i].isa_name, kExpectedNames[i]);
-        EXPECT_FALSE(all[i].failback);
+        if (std::string_view(all[i].isa_name) == "fallback") {
+            EXPECT_TRUE(all[i].failback);
+        } else {
+            EXPECT_FALSE(all[i].failback);
+        }
     }
 }
 
-TEST(UnicodeRegistry, AvailIsArm64Only) {
+TEST(UnicodeRegistry, AvailBestIsArm64WithFallback) {
     const auto avail = turbo::UnicodeRegistry::get_avail_isa_info();
 #if KUMO_ARCH_ARM
-    ASSERT_EQ(avail.size(), 1u);
+    ASSERT_EQ(avail.size(), 2u);
     EXPECT_STREQ(avail[0].isa_name, "arm64");
     EXPECT_TRUE(avail[0].compiled);
     EXPECT_NE(avail[0].engine, nullptr);
-    EXPECT_GT(avail[0].rank, 0u);
+    EXPECT_EQ(avail[0].rank, 10u);
+    EXPECT_STREQ(avail[1].isa_name, "fallback");
+    EXPECT_TRUE(avail[1].failback);
+    EXPECT_TRUE(avail[1].compiled);
+    EXPECT_NE(avail[1].engine, nullptr);
+    EXPECT_EQ(avail[1].rank, 1u);
 
     auto* best = turbo::UnicodeRegistry::get_best_isa();
     ASSERT_NE(best, nullptr);
     EXPECT_EQ(best->name(), std::string_view("arm64"));
+    auto* fallback = turbo::UnicodeRegistry::get_failback_isa();
+    ASSERT_NE(fallback, nullptr);
+    EXPECT_EQ(fallback->name(), std::string_view("fallback"));
 #else
+    bool saw_fallback = false;
     for (const auto& info : avail) {
         EXPECT_STRNE(info.isa_name, "arm64");
+        if (std::string_view(info.isa_name) == "fallback") {
+            saw_fallback = true;
+        }
     }
+    EXPECT_TRUE(saw_fallback);
 #endif
 }
 
+TEST(UnicodeRegistry, Dump) {
+    std::cerr<<turbo::UnicodeRegistry::dump()<<std::endl;
+}
 }  // namespace

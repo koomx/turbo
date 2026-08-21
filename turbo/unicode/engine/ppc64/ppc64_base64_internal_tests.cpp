@@ -7,7 +7,7 @@ namespace base64tests {
 } // namespace base64tests
 
 [[maybe_unused]] static void
-base64_encoding_translate_6bit_values(const turbo::implementation&) {
+base64_encoding_translate_6bit_values(const turbo::UnicodeImplement&) {
     using turbo::ppc64::encoding_translate_6bit_values;
     using turbo::ppc64::vector_u8;
 
@@ -45,7 +45,7 @@ base64_encoding_translate_6bit_values(const turbo::implementation&) {
 }
 
 [[maybe_unused]] static void
-base64_encoding_expand_6bit_fields(const turbo::implementation&) {
+base64_encoding_expand_6bit_fields(const turbo::UnicodeImplement&) {
     using turbo::ppc64::encoding_expand_6bit_fields;
     using turbo::ppc64::vector_u8;
 
@@ -97,7 +97,7 @@ base64_encoding_expand_6bit_fields(const turbo::implementation&) {
 }
 
 [[maybe_unused]] static void
-base64_decoding_valid(const turbo::implementation&) {
+base64_decoding_valid(const turbo::UnicodeImplement&) {
     using turbo::ppc64::block64;
     using turbo::ppc64::vector_u8;
     using turbo::ppc64::with_base64_std;
@@ -255,7 +255,7 @@ static void unittest_decoding_invalid_strict_errors(const char* base64) {
 }
 
 [[maybe_unused]] static void
-base64_decoding_invalid_ignore_errors(const turbo::implementation&) {
+base64_decoding_invalid_ignore_errors(const turbo::UnicodeImplement&) {
     using turbo::ppc64::with_base64_std;
 
     unittest_decoding_invalid_ignore_errors<with_base64_std>(
@@ -263,7 +263,7 @@ base64_decoding_invalid_ignore_errors(const turbo::implementation&) {
 }
 
 [[maybe_unused]] static void
-base64url_decoding_invalid_ignore_errors(const turbo::implementation&) {
+base64url_decoding_invalid_ignore_errors(const turbo::UnicodeImplement&) {
     using turbo::ppc64::with_base64_url;
 
     unittest_decoding_invalid_ignore_errors<with_base64_url>(
@@ -271,7 +271,7 @@ base64url_decoding_invalid_ignore_errors(const turbo::implementation&) {
 }
 
 [[maybe_unused]] static void
-base64_decoding_invalid_strict_errors(const turbo::implementation&) {
+base64_decoding_invalid_strict_errors(const turbo::UnicodeImplement&) {
     using turbo::ppc64::with_base64_std;
 
     unittest_decoding_invalid_strict_errors<with_base64_std>(
@@ -279,7 +279,7 @@ base64_decoding_invalid_strict_errors(const turbo::implementation&) {
 }
 
 [[maybe_unused]] static void
-base64url_decoding_invalid_strict_errors(const turbo::implementation&) {
+base64url_decoding_invalid_strict_errors(const turbo::UnicodeImplement&) {
     using turbo::ppc64::with_base64_url;
 
     unittest_decoding_invalid_strict_errors<with_base64_url>(
@@ -287,7 +287,7 @@ base64url_decoding_invalid_strict_errors(const turbo::implementation&) {
 }
 
 [[maybe_unused]] static void
-base64_decoding_pack(const turbo::implementation&) {
+base64_decoding_pack(const turbo::UnicodeImplement&) {
     using turbo::ppc64::decoding_pack;
     using turbo::ppc64::vector_u8;
 
@@ -359,7 +359,7 @@ scalar_compress(const turbo::ppc64::vector_u8 data, uint16_t nmask,
 }
 
 [[maybe_unused]] static void
-base64_compress(const turbo::implementation&) {
+base64_compress(const turbo::UnicodeImplement&) {
     using turbo::ppc64::compress;
     using turbo::ppc64::vector_u8;
 
