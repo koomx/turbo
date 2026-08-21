@@ -59,7 +59,7 @@ extern "C" {
 KUMO_ATTRIBUTE_WEAK void TURBO_INTERNAL_C_SYMBOL(TurboInternalSpinLockDelay)(
     std::atomic<uint32_t>* w, uint32_t value, int,
     turbo::base_internal::SchedulingMode) {
-    turbo::base_internal::ErrnoSaver errno_saver;
+    turbo::ErrnoSaver errno_saver;
     syscall(SYS_futex, w, FUTEX_WAIT | FUTEX_PRIVATE_FLAG, value, nullptr);
 }
 

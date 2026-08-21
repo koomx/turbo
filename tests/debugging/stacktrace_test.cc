@@ -311,7 +311,7 @@ const void* g_return_address = nullptr;
 bool g_sigusr2_raised = false;
 
 void SigUsr2Handler(int, siginfo_t*, void* uc) {
-  turbo::base_internal::ErrnoSaver errno_saver;
+  turbo::ErrnoSaver errno_saver;
   // Many platforms don't support this by default.
   bool support_is_expected = false;
   constexpr int kMaxStackDepth = 64;

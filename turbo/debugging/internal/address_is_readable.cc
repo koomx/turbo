@@ -60,7 +60,7 @@ bool AddressIsReadable(const void *addr) {
   // rt_sigprocmask below will succeed for this input.
   if (addr == nullptr) return false;
 
-  turbo::base_internal::ErrnoSaver errno_saver;
+  turbo::ErrnoSaver errno_saver;
 
   // Here we probe with some syscall which
   // - accepts an 8-byte region of user memory as input
