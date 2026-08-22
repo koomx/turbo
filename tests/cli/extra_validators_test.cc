@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "app_helper.hpp"
-
+#include <turbo/macros/macros.h>
 #include <cmath>
 
 #include <chrono>
@@ -545,7 +545,6 @@ TEST_CASE_METHOD(TApp, "AsSizeValue1024", "[transform]") {
 
 #if (defined(XCLI_ENABLE_EXTRA_VALIDATORS) && XCLI_ENABLE_EXTRA_VALIDATORS == 1)
 
-#if defined XCLI_HAS_FILESYSTEM && XCLI_HAS_FILESYSTEM > 0
 #include <filesystem>
 
 TEST_CASE_METHOD(TApp, "FileExistsForRead", "[validate]") {
@@ -809,6 +808,5 @@ TEST_CASE_METHOD(TApp, "NonEmptyFileFail", "[validate]") {
 
     std::filesystem::remove(emptyfile);
 }
-#endif
 #endif
 #endif

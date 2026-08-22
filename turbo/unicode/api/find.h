@@ -19,7 +19,6 @@
 #include <turbo/unicode/engine/portability.h>
 
 #include <turbo/unicode/error.h>
-#include <turbo/unicode/scalar/base64.h>
 #include <turbo/unicode/text_encoding.h>
 
 #include <array>

@@ -140,4 +140,16 @@ namespace turbo {
 #endif
     }
 
+    size_t utf8_bytes_before_code_point(const uint8_t* data, size_t size,
+    size_t limit) noexcept {
+         size_t code_point = 0;
+         size_t bytes = 0;
+
+         while (bytes < size && code_point < limit) {
+             bytes += seq_length(data[bytes]);
+             ++code_point;
+         }
+
+         return std::min(bytes, size);
+     }
 }  // namespace turbo

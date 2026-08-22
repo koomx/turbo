@@ -97,6 +97,13 @@ namespace turbo {
         return (ascii_internal::kPropertyBits[c] & 0x04) != 0;
     }
 
+    // ascii_isword()
+    //
+    // Determines whether the given character is an alphanumeric character.
+    inline bool ascii_isword(unsigned char c) {
+        return (ascii_internal::kPropertyBits[c] & 0x04) != 0 || c == '_';
+    }
+
     // ascii_isspace()
     //
     // Determines whether the given character is a whitespace character (space,

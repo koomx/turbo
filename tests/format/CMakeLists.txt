@@ -15,7 +15,6 @@
 
 set(STRINGS_TESTS
         str_format_test
-        utf8_test
         stringify_stream_test
         ostringstream_test
 )

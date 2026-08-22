@@ -388,7 +388,6 @@ TEST_CASE_METHOD(TApp, "stringLikeTests", "[optiontype]") {
 #if (defined(XCLI_ENABLE_EXTRA_VALIDATORS) && XCLI_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
     (!defined(XCLI_DISABLE_EXTRA_VALIDATORS) || XCLI_DISABLE_EXTRA_VALIDATORS == 0)
 
-#if XCLI_HAS_FILESYSTEM
 #include <string_view>
 // test code from https://github.com/CLIUtils/CLI11/issues/881
 // https://github.com/Jean1995
@@ -422,7 +421,6 @@ TEST_CASE_METHOD(TApp, "AsStringRef", "[app]") {
     CHECK(inputStr2 == "optC");
 }
 
-#endif
 
 TEST_CASE_METHOD(TApp, "VectorExpectedRange", "[optiontype]") {
     std::vector<std::string> strvec;

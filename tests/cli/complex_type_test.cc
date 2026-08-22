@@ -9,6 +9,7 @@
 #include <complex>
 #include <cstdint>
 #include <string>
+#include <turbo/strings/strip.h>
 
 using cx = std::complex<double>;
 
@@ -100,11 +101,11 @@ template <> bool lexical_cast<std::complex<double>>(const std::string &input, st
     } else {
         if((input.back() == 'j') || (input.back() == 'i')) {
             auto strval = input.substr(0, input.size() - 1);
-            xcli::detail::trim(strval);
+            turbo::trim_all(&strval);
             worked = xcli::detail::lexical_cast(strval, y);
         } else {
             std::string ival = input;
-            xcli::detail::trim(ival);
+            turbo::trim_all(&ival);
             worked = xcli::detail::lexical_cast(ival, x);
         }
     }
@@ -161,8 +162,8 @@ class complex_new {
   public:
     complex_new() = default;
     complex_new(double v1, double v2) : val1_{v1}, val2_{v2} {};
-    XCLI_NODISCARD double real() const { return val1_; }
-    XCLI_NODISCARD double imag() const { return val2_; }
+    [[nodiscard]] double real() const { return val1_; }
+    [[nodiscard]] double imag() const { return val2_; }
 
   private:
     double val1_{0.0};

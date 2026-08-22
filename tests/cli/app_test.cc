@@ -1997,7 +1997,7 @@ TEST_CASE_METHOD(TApp, "FileNotExists", "[app]") {
     CHECK(!xcli::ExistingFile(myfile).empty());
 }
 
-#if defined XCLI_HAS_FILESYSTEM && XCLI_HAS_FILESYSTEM > 0 && defined(_MSC_VER)
+#if defined(_MSC_VER)
 TEST_CASE_METHOD(TApp, "filesystemWideName", "[app]") {
     std::filesystem::path myfile{L"voil\u20ac.txt"};
 
@@ -2081,7 +2081,7 @@ TEST_CASE_METHOD(TApp, "ExistingFileEmptyStringIsRejected", "[app]") {
 }
 
 // Test for file name using std::filesystem::path
-#if defined XCLI_HAS_FILESYSTEM && XCLI_HAS_FILESYSTEM > 0
+
 TEST_CASE_METHOD(TApp, "ExistingFileEmptyFilesystemPathIsRejected", "[app]") {
     std::filesystem::path filename{"initial_value"};
 
@@ -2093,7 +2093,7 @@ TEST_CASE_METHOD(TApp, "ExistingFileEmptyFilesystemPathIsRejected", "[app]") {
 
     CHECK(filename == std::filesystem::path{"initial_value"});
 }
-#endif
+
 
 TEST_CASE_METHOD(TApp, "DefaultedResult", "[app]") {
     std::string sval = "NA";

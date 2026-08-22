@@ -195,4 +195,11 @@ TEST(Strip, trim_all) {
   EXPECT_EQ(test6, "foo");  // already stripped
 }
 
+TEST(Strip, trim_all_copy) {
+  EXPECT_EQ("foo", turbo::trim_all_copy("\t  \f\r\n\vfoo \t\f\r\v\n"));
+  EXPECT_EQ("bar", turbo::trim_all_copy("bar"));
+  EXPECT_EQ("", turbo::trim_all_copy(" \t\n"));
+  EXPECT_EQ("foo", turbo::trim_all_copy(std::string("  foo  ").substr(0, 5)));
+}
+
 }  // namespace

@@ -116,8 +116,9 @@ namespace turbo {
         UnicodeError error;
         size_t input_count;
         size_t output_count;
-        bool padding_error = false; // true if the error is due to padding, only
-                                    // meaningful when error is not SUCCESS
+        /// true if the error is due to padding, only
+        /// meaningful when error is not SUCCESS
+        bool padding_error = false;
 
         KUMO_FORCE_INLINE  full_result() noexcept
             : error { UnicodeError::SUCCESS }

@@ -55,6 +55,18 @@ set(BITS_SRC
         bits/casts.cc
 )
 
+set(CLI_SRC
+        cli/app.cc
+        cli/argv.cc
+        cli/config.cc
+        cli/extra_validators.cc
+        cli/formatter.cc
+        cli/split.cc
+        cli/option.cc
+        cli/string_tools.cc
+        cli/validators.cc
+)
+
 
 set(CRC_SRC
         crc/crc32c.cc
@@ -84,7 +96,6 @@ set(DBG_SRC
         debugging/internal/stacktrace_unimplemented-inl.inc
         debugging/internal/stacktrace_win32-inl.inc
         debugging/internal/stacktrace_x86-inl.inc
-        debugging/internal/utf8_for_code_point.cc
         debugging/internal/vdso_support.cc
         debugging/leak_check.cc
         debugging/stacktrace.cc
@@ -179,6 +190,7 @@ set(STRINGS_SRC
         strings/internal/memutil.cc
         strings/internal/pow10_helper.cc
         strings/internal/stringify_sink.cc
+        strings/lexer.cc
         strings/match.cc
         strings/numbers.cc
         strings/str_cat.cc
@@ -206,7 +218,6 @@ set(FORMAT_SRC
         format/str_format/float_conversion.cc
         format/str_format/output.cc
         format/str_format/parser.cc
-        format/internal/utf8.cc
         format/ostringstream.cc
         format/fast_to_buffer.cc
 )
@@ -247,9 +258,12 @@ set(UNICODE_SRC
         unicode/api/detect.cc
         unicode/api/find.cc
         unicode/api/latin1.cc
+        unicode/api/terminal.cc
         unicode/api/utf8.cc
+        unicode/api/utf8_for_code_point.cc
         unicode/api/utf16.cc
         unicode/api/utf32.cc
+        unicode/api/wchar.cc
         unicode/engine/isa_select.cc
         unicode/engine/interface.cc
         unicode/engine/arm64/implementation.cc
@@ -267,6 +281,7 @@ set(TURBO_SRC
         ${ARCH_SRC}
         ${BASE_SRC}
         ${BITS_SRC}
+        ${CLI_SRC}
         ${CORD_SRC}
         ${CRC_SRC}
         ${DBG_SRC}

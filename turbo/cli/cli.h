@@ -11,9 +11,7 @@
 
 // IWYU pragma: begin_exports
 
-#include <turbo/cli/macros.h>
-
-#include <turbo/cli/encoding.h>
+#include <turbo/macros/macros.h>
 
 #include <turbo/cli/argv.h>
 
@@ -29,7 +27,7 @@
 
 #include <turbo/cli/validators.h>
 
-#include <turbo/cli/formatter_fwd.h>
+#include <turbo/cli/formatter.h>
 
 #include <turbo/cli/option.h>
 

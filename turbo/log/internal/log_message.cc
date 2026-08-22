@@ -52,7 +52,8 @@
 #include <turbo/log/log_entry.h>
 #include <turbo/log/log_sink.h>
 #include <turbo/log/log_sink_registry.h>
-#include <turbo/format/internal/utf8.h>
+#include <turbo/unicode/api/utf8.h>
+#include <turbo/unicode/api/wchar.h>
 #include <string_view>
 #include <turbo/time/clock.h>
 #include <turbo/time/time.h>
@@ -705,7 +706,7 @@ namespace turbo {
                                               ? ValueTag::kStringLiteral
                                               : ValueTag::kString;
             size_t max_str_byte_length =
-                    turbo::strings_internal::kMaxEncodedUTF8Size * str.length();
+                    turbo::kMaxEncodedUTF8Size * str.length();
             auto value_start =
                     EncodeMessageStart(EventTag::kValue,
                                        BufferSizeFor(tag_value, WireType::kLengthDelimited) +

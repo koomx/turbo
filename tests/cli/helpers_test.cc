@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <turbo/strings/strip.h>
 
 class NotStreamable {};
 
@@ -516,52 +517,28 @@ TEST_CASE("StringTools: close_sequence", "[helpers]") {
 TEST_CASE("Trim: Various", "[helpers]") {
     std::string s1{"  sdlfkj sdflk sd s  "};
     std::string a1{"sdlfkj sdflk sd s"};
-    xcli::detail::trim(s1);
+    turbo::trim_all(&s1);
     CHECK(s1 == a1);
 
     std::string s2{" a \t"};
-    xcli::detail::trim(s2);
+    turbo::trim_all(&s2);
     CHECK(s2 == "a");
 
     std::string s3{" a \n"};
-    xcli::detail::trim(s3);
+    turbo::trim_all(&s3);
     CHECK(s3 == "a");
 
     std::string s4{" a b "};
-    CHECK(xcli::detail::trim(s4) == "a b");
-}
-
-TEST_CASE("Trim: VariousFilters", "[helpers]") {
-    std::string s1{"  sdlfkj sdflk sd s  "};
-    std::string a1{"sdlfkj sdflk sd s"};
-    xcli::detail::trim(s1, " ");
-    CHECK(s1 == a1);
-
-    std::string s2{" a \t"};
-    xcli::detail::trim(s2, " ");
-    CHECK(s2 == "a \t");
-
-    std::string s3{"abdavda"};
-    xcli::detail::trim(s3, "a");
-    CHECK(s3 == "bdavd");
-
-    std::string s4{"abcabcabc"};
-    CHECK(xcli::detail::trim(s4, "ab") == "cabcabc");
+    CHECK(std::string(turbo::trim_all(s4)) == std::string("a b"));
 }
 
 TEST_CASE("Trim: TrimCopy", "[helpers]") {
     std::string orig{" cabc  "};
-    std::string trimmed = xcli::detail::trim_copy(orig);
+    std::string trimmed;
+    trimmed = turbo::trim_all(orig);
     CHECK(trimmed == "cabc");
     CHECK(trimmed != orig);
-    xcli::detail::trim(orig);
-    CHECK(orig == trimmed);
-
-    orig = "abcabcabc";
-    trimmed = xcli::detail::trim_copy(orig, "ab");
-    CHECK(trimmed == "cabcabc");
-    CHECK(trimmed != orig);
-    xcli::detail::trim(orig, "ab");
+    turbo::trim_all(&orig);
     CHECK(orig == trimmed);
 }
 
@@ -1382,7 +1359,9 @@ TEST_CASE("Types: TypeNameStrings", "[helpers]") {
     auto wsclass = xcli::detail::classify_object<std::wstring>::value;
     CHECK(xcli::detail::object_category::wstring_assignable == wsclass);
 
-#if defined XCLI_HAS_FILESYSTEM && XCLI_HAS_FILESYSTEM > 0 && defined(_MSC_VER)
+
+
+#if defined(_MSC_VER)
     auto fspclass = xcli::detail::classify_object<std::filesystem::path>::value;
     CHECK(xcli::detail::object_category::wstring_assignable == fspclass);
 #endif

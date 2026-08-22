@@ -47,6 +47,7 @@
 #include <turbo/unicode/api/utf32.h>
 #include <turbo/unicode/api/latin1.h>
 #include <turbo/unicode/api/base64.h>
+#include <turbo/unicode/api/wchar.h>
 #include <turbo/unicode/engine/interface.h>
 
 

@@ -161,6 +161,52 @@ kmcmake_cc_test(
 )
 
 kmcmake_cc_test(
+        NAME utf8_test
+        MODULE unicode
+        SOURCES
+        utf8_test.cc
+        CXXOPTS
+        ${KMCMAKE_CXX_OPTIONS}
+        LINKS
+        GTest::gtest
+        GTest::gmock
+        GTest::gtest_main
+        turbo::turbo_static
+        ${KMCMAKE_DEPS_LINK}
+)
+
+
+kmcmake_cc_test(
+        NAME utf8_for_code_point_test
+        MODULE unicode
+        SOURCES
+        utf8_for_code_point_test.cc
+        CXXOPTS
+        ${KMCMAKE_CXX_OPTIONS}
+        LINKS
+        GTest::gtest
+        GTest::gmock
+        GTest::gtest_main
+        turbo::turbo_static
+        ${KMCMAKE_DEPS_LINK}
+)
+
+kmcmake_cc_test(
+        NAME wchar_test
+        MODULE unicode
+        SOURCES
+        wchar_test.cc
+        CXXOPTS
+        ${KMCMAKE_CXX_OPTIONS}
+        LINKS
+        GTest::gtest
+        GTest::gmock
+        GTest::gtest_main
+        turbo::turbo_static
+        ${KMCMAKE_DEPS_LINK}
+)
+
+kmcmake_cc_test(
         NAME straight_c_test
         MODULE unicode
         SOURCES

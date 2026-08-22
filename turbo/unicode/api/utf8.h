@@ -15,7 +15,10 @@
 
 #pragma once
 
-
+#include <cstddef>
+#include <cstdint>
+#include <optional>
+#include <turbo/bits/bits.h>
 #include <turbo/unicode/engine/portability.h>
 #include <turbo/unicode/text_encoding.h>
 #include <turbo/unicode/error.h>
@@ -343,4 +346,91 @@ namespace turbo {
         size_t length) noexcept;
 
 
+
+    static constexpr uint8_t CONTINUATION_OCTET_MASK = 0b11000000u;
+    static constexpr uint8_t CONTINUATION_OCTET = 0b10000000u;
+
+    /// return true if `octet` binary repr starts with 10 (octet is a UTF-8 sequence continuation)
+    inline bool is_continuation_octet(const uint8_t octet) {
+        return (octet & CONTINUATION_OCTET_MASK) == CONTINUATION_OCTET;
+    }
+
+    /// moves `s` backward until either first non-continuation octet or begin
+    inline void sync_backward(const uint8_t * & s, const uint8_t * const begin) {
+        while (is_continuation_octet(*s) && s > begin)
+            --s;
+    }
+
+
+
+    /// moves `s` forward until either first non-continuation octet or string end is met
+    inline void sync_forward(const uint8_t * & s, const uint8_t * const end) {
+        while (s < end && is_continuation_octet(*s))
+            ++s;
+    }
+
+    /// Byte length of a UTF-8 sequence from its first octet. ASCII, continuation
+    /// bytes, and illegal leads (>= 0xF8) are reported as 1.
+    inline size_t seq_length(uint8_t first_octet) {
+        if (first_octet < 0x80 || first_octet >= 0xF8) {
+            return 1;
+        }
+        return static_cast<size_t>(turbo::countl_one(first_octet));
+    }
+
+    /// Decode one UTF-8 sequence to a code point. Returns nullopt if the prefix is
+    /// not a well-formed scalar value (truncated, overlong, surrogate, or too large).
+    inline std::optional<char32_t> decode_utf8_to_utf32(const char* in_bytes,
+        size_t in_length) {
+        if (in_bytes == nullptr || in_length == 0) {
+            return std::nullopt;
+        }
+        const auto* in = reinterpret_cast<const uint8_t*>(in_bytes);
+        const uint8_t first = in[0];
+        if (first < 0x80) {
+            return static_cast<char32_t>(first);
+        }
+        if (is_continuation_octet(first) || first >= 0xF8) {
+            return std::nullopt;
+        }
+        const size_t need = seq_length(first);
+        if (in_length < need) {
+            return std::nullopt;
+        }
+        for (size_t i = 1; i < need; ++i) {
+            if (!is_continuation_octet(in[i])) {
+                return std::nullopt;
+            }
+        }
+        char32_t cp = 0;
+        switch (need) {
+        case 2:
+            cp = static_cast<char32_t>((first & 0x1F) << 6 | (in[1] & 0x3F));
+            if (cp < 0x80) {
+                return std::nullopt;
+            }
+            break;
+        case 3:
+            cp = static_cast<char32_t>(
+                (first & 0x0F) << 12 | (in[1] & 0x3F) << 6 | (in[2] & 0x3F));
+            if (cp < 0x800 || (cp >= 0xD800 && cp <= 0xDFFF)) {
+                return std::nullopt;
+            }
+            break;
+        case 4:
+            cp = static_cast<char32_t>((first & 0x07) << 18 | (in[1] & 0x3F) << 12 |
+                (in[2] & 0x3F) << 6 | (in[3] & 0x3F));
+            if (cp < 0x10000 || cp > 0x10FFFF) {
+                return std::nullopt;
+            }
+            break;
+        default:
+            return std::nullopt;
+        }
+        return cp;
+    }
+
+    /// Byte offset of the `limit`-th code point (or `size` if there are fewer).
+    size_t utf8_bytes_before_code_point(const uint8_t* data, size_t size,
+        size_t limit) noexcept;
 }  // namespace turbo

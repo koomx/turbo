@@ -1,58 +1,30 @@
-// Copyright 2017 The Abseil Authors.
+// Copyright (C) 2026 Kumo inc. and its affiliates. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      https://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 
-// UTF8 utilities, implemented to reduce dependencies.
+#include <turbo/unicode/api/wchar.h>
+#include <turbo/unicode/api/utf16.h>
+#include <turbo/unicode/api/utf32.h>
+#include <turbo/unicode/api/utf8.h>
 
-#include <turbo/format/internal/utf8.h>
-
-#include <cstddef>
-#include <cstdint>
-#include <limits>
-
-#include <turbo/macros/config.h>
+#include <string>
+#include <string_view>
 
 namespace turbo {
-    namespace strings_internal {
-        size_t EncodeUTF8Char(char* buffer, char32_t utf8_char) {
-            if (utf8_char <= 0x7F) {
-                *buffer = static_cast<char>(utf8_char);
-                return 1;
-            } else if (utf8_char <= 0x7FF) {
-                buffer[1] = static_cast<char>(0x80 | (utf8_char & 0x3F));
-                utf8_char >>= 6;
-                buffer[0] = static_cast<char>(0xC0 | utf8_char);
-                return 2;
-            } else if (utf8_char <= 0xFFFF) {
-                buffer[2] = static_cast<char>(0x80 | (utf8_char & 0x3F));
-                utf8_char >>= 6;
-                buffer[1] = static_cast<char>(0x80 | (utf8_char & 0x3F));
-                utf8_char >>= 6;
-                buffer[0] = static_cast<char>(0xE0 | utf8_char);
-                return 3;
-            } else {
-                buffer[3] = static_cast<char>(0x80 | (utf8_char & 0x3F));
-                utf8_char >>= 6;
-                buffer[2] = static_cast<char>(0x80 | (utf8_char & 0x3F));
-                utf8_char >>= 6;
-                buffer[1] = static_cast<char>(0x80 | (utf8_char & 0x3F));
-                utf8_char >>= 6;
-                buffer[0] = static_cast<char>(0xF0 | utf8_char);
-                return 4;
-            }
-        }
 
-        size_t WideToUtf8(wchar_t wc, char* buf, ShiftState& s) {
+
+        size_t convert_wchar_to_utf8(wchar_t wc, char* buf, ShiftState& s) {
             // Reinterpret the output buffer `buf` as `unsigned char*` for subsequent
             // bitwise operations. This ensures well-defined behavior for bit
             // manipulations (avoiding issues with signed `char`) and is safe under C++
@@ -140,5 +112,39 @@ namespace turbo {
             s = { }; // Reset surrogate state.
             return kError;
         }
-    } // namespace strings_internal
-} // namespace turbo
+
+    std::string convert_wchar_to_utf8(std::wstring_view wc) {
+        if (wc.empty()) {
+            return {};
+        }
+        if constexpr (sizeof(wchar_t) == 2) {
+            const auto* in = reinterpret_cast<const char16_t*>(wc.data());
+            std::string out(utf8_length_from_utf16(in, wc.size()), '\0');
+            out.resize(convert_utf16_to_utf8(in, wc.size(), out.data()));
+            return out;
+        } else {
+            const auto* in = reinterpret_cast<const char32_t*>(wc.data());
+            std::string out(utf8_length_from_utf32(in, wc.size()), '\0');
+            out.resize(convert_utf32_to_utf8(in, wc.size(), out.data()));
+            return out;
+        }
+    }
+
+    std::wstring convert_utf8_to_wchar(std::string_view utf8) {
+        if (utf8.empty()) {
+            return {};
+        }
+        if constexpr (sizeof(wchar_t) == 2) {
+            std::wstring out(utf16_length_from_utf8(utf8.data(), utf8.size()), L'\0');
+            out.resize(convert_utf8_to_utf16(utf8.data(), utf8.size(),
+                reinterpret_cast<char16_t*>(out.data())));
+            return out;
+        } else {
+            std::wstring out(utf32_length_from_utf8(utf8.data(), utf8.size()), L'\0');
+            out.resize(convert_utf8_to_utf32(utf8.data(), utf8.size(),
+                reinterpret_cast<char32_t*>(out.data())));
+            return out;
+        }
+    }
+}  // namespace turbo
+
