@@ -764,8 +764,8 @@ namespace turbo {
                         return lhs.inline_size() < rhs.inline_size() ? -1 : 1;
                     }
                 }
-                x = turbo::big_endian::FromHost64(x);
-                y = turbo::big_endian::FromHost64(y);
+                x = turbo::big_endian::from_host64(x);
+                y = turbo::big_endian::from_host64(y);
                 return x < y ? -1 : 1;
             }
 

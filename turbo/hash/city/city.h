@@ -42,37 +42,29 @@
 // of a+b is easily derived from the hashes of a and b.  This property
 // doesn't hold for any hash functions in this file.
 
-#ifndef TURBO_HASH_INTERNAL_CITY_H_
-#define TURBO_HASH_INTERNAL_CITY_H_
+#pragma once
 
 #include <stdint.h>
-#include <stdlib.h>  // for size_t.
-
+#include <stdlib.h> // for size_t.
+#include <turbo/macros/config.h>
 #include <utility>
 
-#include <turbo/macros/config.h>
+namespace turbo::hash_internal {
 
-namespace turbo {
+    // Hash function for a byte array.
+    uint64_t CityHash64(const char* s, size_t len);
 
-namespace hash_internal {
+    // Hash function for a byte array.  For convenience, a 64-bit seed is also
+    // hashed into the result.
+    uint64_t CityHash64WithSeed(const char* s, size_t len, uint64_t seed);
 
-// Hash function for a byte array.
-uint64_t CityHash64(const char *s, size_t len);
+    // Hash function for a byte array.  For convenience, two seeds are also
+    // hashed into the result.
+    uint64_t CityHash64WithSeeds(const char* s, size_t len, uint64_t seed0,
+        uint64_t seed1);
 
-// Hash function for a byte array.  For convenience, a 64-bit seed is also
-// hashed into the result.
-uint64_t CityHash64WithSeed(const char *s, size_t len, uint64_t seed);
+    // Hash function for a byte array.  Most useful in 32-bit binaries.
+    uint32_t CityHash32(const char* s, size_t len);
 
-// Hash function for a byte array.  For convenience, two seeds are also
-// hashed into the result.
-uint64_t CityHash64WithSeeds(const char *s, size_t len, uint64_t seed0,
-                             uint64_t seed1);
 
-// Hash function for a byte array.  Most useful in 32-bit binaries.
-uint32_t CityHash32(const char *s, size_t len);
-
-}  // namespace hash_internal
-
-}  // namespace turbo
-
-#endif  // TURBO_HASH_INTERNAL_CITY_H_
+} // namespace turbo::hash_internal

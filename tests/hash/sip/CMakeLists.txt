@@ -12,17 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-###########################################################################
-# below are examples, after initialization, modify it to your own.
-###########################################################################
-###kmcmake_example
 
-kmcmake_cc_interface(
-        NAMESPACE ${PROJECT_NAME}
-        NAME xmacros
-        HEADERS
-        xmacros.h
-        CXXOPTS
-        ${KMCMAKE_CXX_OPTIONS}
-        PUBLIC
+set(SIP_HASH_TESTS
+        siphash_test
 )
+
+foreach (case IN LISTS SIP_HASH_TESTS)
+    kmcmake_cc_test(
+            NAME ${case}
+            MODULE hash_sip
+            SOURCES
+            ${case}.cc
+            CXXOPTS
+            ${KMCMAKE_CXX_OPTIONS}
+            LINKS
+            GTest::gtest
+            GTest::gmock
+            GTest::gtest_main
+            turbo::turbo_static
+            ${KMCMAKE_DEPS_LINK}
+    )
+endforeach ()

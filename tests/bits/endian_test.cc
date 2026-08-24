@@ -180,21 +180,21 @@ namespace turbo {
 
         TEST(EndianessTest, little_endian) {
             // Check little_endian uint16_t.
-            uint64_t comp = little_endian::FromHost16(k16Value);
+            uint64_t comp = little_endian::from_host16(k16Value);
             EXPECT_EQ(comp, k16ValueLE);
-            comp = little_endian::ToHost16(k16ValueLE);
+            comp = little_endian::to_host16(k16ValueLE);
             EXPECT_EQ(comp, k16Value);
 
             // Check little_endian uint32_t.
-            comp = little_endian::FromHost32(k32Value);
+            comp = little_endian::from_host32(k32Value);
             EXPECT_EQ(comp, k32ValueLE);
-            comp = little_endian::ToHost32(k32ValueLE);
+            comp = little_endian::to_host32(k32ValueLE);
             EXPECT_EQ(comp, k32Value);
 
             // Check little_endian uint64_t.
-            comp = little_endian::FromHost64(k64Value);
+            comp = little_endian::from_host64(k64Value);
             EXPECT_EQ(comp, k64ValueLE);
-            comp = little_endian::ToHost64(k64ValueLE);
+            comp = little_endian::to_host64(k64ValueLE);
             EXPECT_EQ(comp, k64Value);
 
             // Check little-endian Load and store functions.

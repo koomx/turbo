@@ -126,7 +126,15 @@ set(FLAGS_SRC
 )
 
 set(HASH_SRC
-        hash/internal/city.cc
+        hash/city/city.cc
+        hash/sip/half.cc
+        hash/xxh/xxhash.cc
+        hash/xxh/types.cc
+        hash/xxh/hash32.cc
+        hash/xxh/hash64.cc
+        hash/xxh/hash128.cc
+        hash/sip/siphash.cc
+        hash/algo/murmur3.cc
         hash/internal/hash.cc
 )
 
