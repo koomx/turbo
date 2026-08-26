@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -77,7 +78,7 @@ namespace xcli {
 
         /// Parse a config file, throw an error (ParseError:ConfigParseError or FileError) on failure
         [[nodiscard]] std::vector<ConfigItem> from_file(const std::string& name) const {
-            std::ifstream input { std::filesystem::path(name) };
+            std::ifstream input(name.c_str());
             if (!input.good())
                 throw FileError::Missing(name);
 
