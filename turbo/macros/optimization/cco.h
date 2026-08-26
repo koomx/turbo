@@ -37,6 +37,11 @@
 #  define KUMO_CCO_BARRIER(var) ((void)0)
 #endif
 
+#if defined(__clang__) && defined(__ARM_ARCH) && !defined(__wasm__)
+#  define KUMO_CCO_BARRIER_CLANG_NEON(var) __asm__("" : "+w" (var))
+#else
+#  define KUMO_CCO_BARRIER_CLANG_NEON(var) ((void)0)
+#endif
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -71,6 +76,4 @@
 #  else
 #    define KUMO_CCO_SIZE_OPT 0
 #  endif
-#elif KUMO_CCO_SIZE_OPT !=0 && KUMO_CCO_SIZE_OPT != 1
-#error "KUMO_CCO_SIZE_OPT must be defined as 0 or 1"
 #endif

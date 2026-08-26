@@ -13,10 +13,19 @@
 // limitations under the License.
 //
 
-#include <cstdlib>
-#include <turbo/hash/xxh/hash128.h>
+#pragma once
+
+#include <turbo/arch/isa.h>
+#include <turbo/hash/xx/interface.h>
 
 namespace turbo {
 
+    class XXHashRegistry : public IsaRegister<XXHashRegistry, xxhash::XXHashEngine> {
+        friend class IsaRegister<XXHashRegistry, xxhash::XXHashEngine>;
 
-}  // namespace turbo
+    protected:
+        XXHashRegistry();
+    };
+
+    static_assert(std::is_base_of_v<IsaRegister<XXHashRegistry, xxhash::XXHashEngine>, XXHashRegistry>, "must");
+} // namespace turbo

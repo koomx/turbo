@@ -128,11 +128,19 @@ set(FLAGS_SRC
 set(HASH_SRC
         hash/city/city.cc
         hash/sip/half.cc
-        hash/xxh/xxhash.cc
-        hash/xxh/types.cc
-        hash/xxh/hash32.cc
-        hash/xxh/hash64.cc
-        hash/xxh/hash128.cc
+        hash/xx/xxhash_scalar.cc
+        hash/xx/isa_select.cc
+        hash/xx/xxh3.cc
+        hash/xx/engine/fallback/interface.cc
+        hash/xx/engine/neon/interface.cc
+        hash/xx/engine/sse2/interface.cc
+        hash/xx/engine/avx2/interface.cc
+        hash/xx/engine/avx512/interface.cc
+        hash/xx/engine/lasx/interface.cc
+        hash/xx/engine/lsx/interface.cc
+        hash/xx/engine/rvv/interface.cc
+        hash/xx/engine/ppc64/interface.cc
+        hash/xx/engine/sve/interface.cc
         hash/sip/siphash.cc
         hash/algo/murmur3.cc
         hash/internal/hash.cc
