@@ -20,6 +20,7 @@
 #define PLATFORM_TEXT(x) _PLATFORM_TEXT(x)
 #define _PLATFORM_TEXT(x) L##x
 using tchar = wchar_t;
+#include <windows.h>
 #include <process.h>
 #else
 #define PLATFORM_TEXT(x) x
