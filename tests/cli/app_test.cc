@@ -3089,11 +3089,14 @@ static int spawn_subprocess_win32(const wchar_t *path, wchar_t *commandline) {
     STARTUPINFOW si{};
     si.cb = sizeof(si);
     PROCESS_INFORMATION pi{};
-    REQUIRE(CreateProcessW(path, commandline, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi));
+    BOOL created = CreateProcessW(path, commandline, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
+    REQUIRE(created);
     WaitForSingleObject(pi.hProcess, INFINITE);
 
-    DWORD exitcode;  // NOLINT(cppcoreguidelines-init-variables)
+    DWORD exitcode = 0;
     REQUIRE(GetExitCodeProcess(pi.hProcess, &exitcode));
+    CloseHandle(pi.hThread);
+    CloseHandle(pi.hProcess);
 
     return static_cast<int>(exitcode);
 }
@@ -3142,8 +3145,11 @@ static int spawn_subprocess_posix(const char *path, char *const *argv) {
 
 static int spawn_app_exe(const tchar *path) {
 #ifdef _WIN32
-    std::wstring args{L"app_exe 1234 false \"hello world\""};
-    return spawn_subprocess_win32(path, &args[0]);
+    std::wstring args;
+    args += L'"';
+    args += path;
+    args += L"\" 1234 false \"hello world\"";
+    return spawn_subprocess_win32(nullptr, args.data());
 #else
     std::string arg0{"app_exe"};
     std::string arg1{"1234"};
