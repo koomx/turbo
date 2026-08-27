@@ -43,7 +43,7 @@
 
 #elif defined(__aarch64__) && defined(__LITTLE_ENDIAN__) &&                 \
     defined(__ARM_FEATURE_CRC32) && defined(TURBO_INTERNAL_HAVE_ARM_NEON) && \
-    KUMO_SIMD_AES
+    KUMO_SIMD_ARM_AES
 
 #include <arm_acle.h>
 #include <arm_neon.h>

@@ -38,7 +38,7 @@
 
 #ifdef TURBO_AES_INTERNAL_HAVE_ARM_SIMD
 #error TURBO_AES_INTERNAL_HAVE_ARM_SIMD cannot be directly set
-#elif KUMO_SIMD_NEON && KUMO_SIMD_AES
+#elif KUMO_SIMD_NEON && KUMO_SIMD_ARM_AES
 #include <arm_neon.h>
 #define TURBO_AES_INTERNAL_HAVE_ARM_SIMD
 #endif // KUMO_SIMD_NEON

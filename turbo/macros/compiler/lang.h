@@ -83,3 +83,51 @@
 #else
 #define KUMO_CPLUSPLUS_STD11 0
 #endif
+
+
+
+#if __cplusplus >= 202302L
+#define KUMO_CXX_STANDARD       23
+#define KUMO_CXX_STANDARD_STRING "C++23"
+#elif __cplusplus >= 202002L
+#define KUMO_CXX_STANDARD       20
+#define KUMO_CXX_STANDARD_STRING "C++20"
+#elif __cplusplus >= 201703L
+#define KUMO_CXX_STANDARD       17
+#define KUMO_CXX_STANDARD_STRING "C++17"
+#elif __cplusplus >= 201402L
+#define KUMO_CXX_STANDARD       14
+#define KUMO_CXX_STANDARD_STRING "C++14"
+#elif __cplusplus >= 201103L
+#define KUMO_CXX_STANDARD       11
+#define KUMO_CXX_STANDARD_STRING "C++11"
+#else
+#define KUMO_CXX_STANDARD       98
+#define KUMO_CXX_STANDARD_STRING "C++98"
+#endif
+
+
+#ifdef __has_attribute
+#define KUMO_HAVE_ATTRIBUTE(x)  __has_attribute(x)
+#else
+#define KUMO_HAVE_ATTRIBUTE(x)  0
+#endif
+
+// C++-only: scoped args like clang::fallthrough are not valid in C TUs.
+#if defined(__cplusplus) && defined(__has_cpp_attribute)
+#define KUMO_HAVE_CPP_ATTRIBUTE(x) __has_cpp_attribute(x)
+#else
+#define KUMO_HAVE_CPP_ATTRIBUTE(x) 0
+#endif
+
+#ifdef __has_builtin
+#define KUMO_HAVE_BUILTIN(x)    __has_builtin(x)
+#else
+#define KUMO_HAVE_BUILTIN(x)    0
+#endif
+
+#ifdef __has_include
+#define KUMO_HAVE_INCLUDE(x)    __has_include(x)
+#else
+#define KUMO_HAVE_INCLUDE(x)    0
+#endif

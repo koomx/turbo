@@ -16,19 +16,7 @@
 
 #if defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64) || \
     defined(_M_ARM64EC)
-
-#define KUMO_ARCH_X86        0
 #define KUMO_ARCH_ARM        1
-#define KUMO_ARCH_RISCV      0
-#define KUMO_ARCH_LOONGARCH  0
-#define KUMO_ARCH_PPC        0
-#define KUMO_ARCH_S390       0
-#define KUMO_ARCH_MIPS       0
-#define KUMO_ARCH_E2K        0
-#define KUMO_ARCH_WASM       0
-
-#define KUMO_ARCH_X86_64     0
-#define KUMO_ARCH_X86_32     0
 #define KUMO_ARCH_ARM64      1
 #define KUMO_ARCH_ARM32      0
 #if defined(_M_ARM64EC)
@@ -36,47 +24,6 @@
 #else
 #define KUMO_ARCH_ARM64EC    0
 #endif
-#define KUMO_ARCH_RISCV64    0
-#define KUMO_ARCH_RISCV32    0
-#define KUMO_ARCH_LOONGARCH64 0
-#define KUMO_ARCH_LOONGARCH32 0
-#define KUMO_ARCH_PPC64      0
-#define KUMO_ARCH_PPC32      0
-#define KUMO_ARCH_PPC64LE    0
-#define KUMO_ARCH_S390X      0
-#define KUMO_ARCH_S390_31    0
-#define KUMO_ARCH_MIPS64     0
-#define KUMO_ARCH_MIPS32     0
-#define KUMO_ARCH_WASM64     0
-#define KUMO_ARCH_WASM32     0
-
-#define KUMO_ARCH_32_BIT     0
-#define KUMO_ARCH_64_BIT     1
-
-#define KUMO_SIMD_SSE        0
-#define KUMO_SIMD_SSE2       0
-#define KUMO_SIMD_SSE3       0
-#define KUMO_SIMD_SSSE3      0
-#define KUMO_SIMD_SSE4_1     0
-#define KUMO_SIMD_SSE4_2     0
-#define KUMO_SIMD_AVX        0
-#define KUMO_SIMD_AVX2       0
-#define KUMO_SIMD_AVX512F    0
-#define KUMO_SIMD_AVX512BW   0
-#define KUMO_SIMD_AVX512VL   0
-#define KUMO_SIMD_AVX512DQ   0
-#define KUMO_SIMD_AVX512IFMA 0
-#define KUMO_SIMD_AVX512CD   0
-#define KUMO_SIMD_AVX512VBMI 0
-#define KUMO_SIMD_AVX512VBMI2 0
-#define KUMO_SIMD_AVX512VNNI 0
-#define KUMO_SIMD_AVX512BITALG 0
-#define KUMO_SIMD_AVX512VPOPCNTDQ 0
-#define KUMO_SIMD_FMA        0
-#define KUMO_SIMD_BMI1       0
-#define KUMO_SIMD_BMI2       0
-#define KUMO_SIMD_POPCNT     0
-#define KUMO_SIMD_LZCNT      0
 
 #if defined(__ARM_NEON) || defined(__ARM_NEON__)
 #if !(defined(__NVCC__) && defined(__CUDACC__) && defined(__CUDA_ARCH__))
@@ -106,18 +53,10 @@
 
 #if (defined(__ARM_FEATURE_CRYPTO) || defined(__ARM_FEATURE_AES)) && \
     !(defined(__NVCC__) && defined(__CUDACC__) && defined(__CUDA_ARCH__))
-#define KUMO_SIMD_AES        1
+#define KUMO_SIMD_ARM_AES        1
 #else
-#define KUMO_SIMD_AES        0
+#define KUMO_SIMD_ARM_AES        0
 #endif
-#define KUMO_SIMD_PCLMUL     0
-#define KUMO_SIMD_RVV        0
-#define KUMO_SIMD_LSX        0
-#define KUMO_SIMD_LASX       0
-#define KUMO_SIMD_ALTIVEC    0
-#define KUMO_SIMD_VSX        0
-#define KUMO_SIMD_CRYPTO     0
-
 
 #define KUMO_CACHELINE_SIZE 64
 
@@ -137,4 +76,64 @@
 #define KUMO_ARCH_NAME       "ARM64"
 #endif
 
+
+#elif (defined(__arm__) || defined(__ARMEL__) || defined(_M_ARM)) && \
+    !defined(__aarch64__) && !defined(_M_ARM64) && !defined(_M_ARM64EC)
+#define KUMO_ARCH_ARM        1
+#define KUMO_ARCH_ARM64      0
+#define KUMO_ARCH_ARM32      1
+
+#if (defined(__ARM_NEON) || defined(__ARM_NEON__)) && \
+    !(defined(__NVCC__) && defined(__CUDACC__) && defined(__CUDA_ARCH__))
+#define KUMO_SIMD_NEON       1
+#else
+#define KUMO_SIMD_NEON       0
 #endif
+
+#if defined(__ARM_FEATURE_SVE)
+#define KUMO_SIMD_SVE        1
+#else
+#define KUMO_SIMD_SVE        0
+#endif
+#if defined(__ARM_FEATURE_SVE2)
+#define KUMO_SIMD_SVE2       1
+#else
+#define KUMO_SIMD_SVE2       0
+#endif
+
+#if (defined(__ARM_FEATURE_CRYPTO) || defined(__ARM_FEATURE_AES)) && \
+    !(defined(__NVCC__) && defined(__CUDACC__) && defined(__CUDA_ARCH__))
+#define KUMO_SIMD_ARM_AES        1
+#else
+#define KUMO_SIMD_ARM_AES        0
+#endif
+
+// Match KUMO_CACHELINE_SIZE in turbo/base/optimization.h.
+#if defined(__ARM_ARCH_5T__)
+#define KUMO_CACHELINE_SIZE 32
+#elif defined(__ARM_ARCH_7A__)
+#define KUMO_CACHELINE_SIZE 64
+#else
+#define KUMO_CACHELINE_SIZE 64
+#endif
+
+#if KUMO_SIMD_NEON
+#define KUMO_SIMD_LEVEL      "NEON"
+#else
+#define KUMO_SIMD_LEVEL      "NONE"
+#endif
+
+#define KUMO_ARCH_NAME       "ARM32"
+
+#else
+
+#define KUMO_ARCH_ARM        0
+#define KUMO_ARCH_ARM32      0
+#define KUMO_ARCH_ARM64      0
+#define KUMO_ARCH_ARM64EC    0
+#define KUMO_SIMD_NEON       0
+#define KUMO_SIMD_SVE        0
+#define KUMO_SIMD_ARM_AES        0
+
+#endif
+

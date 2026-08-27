@@ -403,7 +403,7 @@ TEST(LowLevelHashTest, VerifyGolden) {
       0x724110fb509e4376, 0xebe74b016b5cfb88, 0x3b0fe11dcf175fc9,
       0x20b737b9c0490538, 0x0db21c429b45fd17,
   };
-#elif (KUMO_SIMD_NEON && KUMO_SIMD_AES)
+#elif (KUMO_SIMD_NEON && KUMO_SIMD_ARM_AES)
   constexpr uint64_t kGolden[kNumGoldenOutputs] = {
       0xe3de56d839559570, 0x77afbb8906ccf19a, 0xe66e02ad8e92c12f,
       0x36cc6f2fe751bc64, 0xf4d28aea3ed69ade, 0xf246fd6a4ca33ab3,

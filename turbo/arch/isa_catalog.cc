@@ -134,7 +134,7 @@ namespace turbo {
             insert(catalog, x86(kX86Popcnt, "popcnt", "sse4", { "-mpopcnt" }, { }, { "KUMO_SIMD_POPCNT" }));
             insert(catalog, x86(kX86Lzcnt, "lzcnt", "sse4", { "-mlzcnt" }, { }, { "KUMO_SIMD_LZCNT" }));
             insert(catalog, x86(kX86Pclmulqdq, "pclmulqdq", "sse4", { "-mpclmul" }, { }, { "KUMO_SIMD_PCLMUL" }));
-            insert(catalog, x86(kX86Aes, "aes", "sse4", { "-maes" }, { }, { "KUMO_SIMD_AES" }));
+            insert(catalog, x86(kX86Aes, "aes", "sse4", { "-maes" }, { }, { "KUMO_SIMD_X86_AES" }));
 
             insert(catalog, x86(kX86Avx, "avx", "avx", { "-mavx" }, { "/arch:AVX" }, { "KUMO_SIMD_AVX" }));
             insert(catalog, x86(kX86Fma3, "fma3", "avx", { "-mfma" }, { }, { "KUMO_SIMD_FMA" }));
@@ -211,7 +211,7 @@ namespace turbo {
             insert(catalog, arm(kArmJscvt, "jscvt", "neon"));
             insert(catalog, arm(kArmFcma, "fcma", "neon"));
             insert(catalog, arm(kArmFhm, "fhm", "neon"));
-            insert(catalog, arm(kArmAes, "aes", "neon", { "-march=armv8-a+crypto" }, { "KUMO_SIMD_AES" }));
+            insert(catalog, arm(kArmAes, "aes", "neon", { "-march=armv8-a+crypto" }, { "KUMO_SIMD_ARM_AES" }));
             insert(catalog, arm(kArmSha1, "sha1", "neon", { "-march=armv8-a+crypto" }));
             insert(catalog, arm(kArmSha2, "sha2", "neon", { "-march=armv8-a+crypto" }));
             insert(catalog, arm(kArmPmull, "pmull", "neon", { "-march=armv8-a+crypto" }));
@@ -1745,7 +1745,7 @@ namespace turbo {
         isa.bmi2 = KUMO_SIMD_BMI2;
         isa.popcnt = KUMO_SIMD_POPCNT;
         isa.lzcnt = KUMO_SIMD_LZCNT;
-        isa.aes = KUMO_SIMD_AES;
+        isa.aes = KUMO_SIMD_X86_AES;
         isa.pclmulqdq = KUMO_SIMD_PCLMUL;
         isa.prefetch = KUMO_X86_C_PREFETCH;
         isa.prefetchw = KUMO_X86_C_PRFCHW;
@@ -1797,7 +1797,7 @@ namespace turbo {
         isa.neon = KUMO_SIMD_NEON;
         isa.sve = KUMO_SIMD_SVE;
         isa.sve2 = KUMO_SIMD_SVE2;
-        isa.aes = KUMO_SIMD_AES;
+        isa.aes = KUMO_SIMD_ARM_AES;
 #elif KUMO_ARCH_LOONGARCH64
         info.loong_isa.is_this_arch = true;
         info.loong_isa.lsx = KUMO_SIMD_LSX;

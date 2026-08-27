@@ -39,9 +39,7 @@
 
 #include <turbo/macros/arch/riscv.h>
 #include <turbo/macros/arch/x86.h>
-#include <turbo/macros/arch/x64.h>
-#include <turbo/macros/arch/arm32.h>
-#include <turbo/macros/arch/arm64.h>
+#include <turbo/macros/arch/arm.h>
 #include <turbo/macros/arch/loongarch.h>
 #include <turbo/macros/arch/ppc.h>
 #include <turbo/macros/arch/s390.h>
@@ -49,13 +47,33 @@
 #include <turbo/macros/arch/e2k.h>
 #include <turbo/macros/arch/wasm.h>
 
+
+#if KUMO_ARCH_ARM64 || KUMO_ARCH_E2K || KUMO_ARCH_LOONGARCH64 \
+    || KUMO_ARCH_MIPS64 \
+    || KUMO_ARCH_PPC64 \
+    || KUMO_ARCH_RISCV64 \
+    || KUMO_ARCH_S390X || KUMO_ARCH_WASM64 || KUMO_ARCH_X86_64
+#define KUMO_ARCH_128_BIT    0
+#define KUMO_ARCH_64_BIT     1
+#define KUMO_ARCH_32_BIT     0
+#elif KUMO_ARCH_ARM32 || KUMO_ARCH_LOONGARCH32 \
+    || KUMO_ARCH_MIPS32 \
+    || KUMO_ARCH_PPC32 \
+    || KUMO_ARCH_RISCV32 \
+    || KUMO_ARCH_S390_31 || KUMO_ARCH_WASM32 || KUMO_ARCH_X86_32
+#define KUMO_ARCH_64_BIT     0
+#define KUMO_ARCH_32_BIT     1
+#define KUMO_ARCH_128_BIT    0
+#endif
+
+
 // Alias used by some internal modules (TURBO_ARCH_AARCH64).
 #ifndef KUMO_ARCH_AARCH64
 #define KUMO_ARCH_AARCH64 KUMO_ARCH_ARM64
 #endif
 
 // Accelerated AES detection (x86_64 treats AVX as a stand-in; keep that OR with AES-NI).
-#if KUMO_SIMD_AES || (KUMO_ARCH_X86_64 && KUMO_SIMD_AVX)
+#if KUMO_SIMD_X86_AES || (KUMO_ARCH_X86_64 && KUMO_SIMD_AVX)
 #define KUMO_HAVE_ACCELERATED_AES 1
 #else
 #define KUMO_HAVE_ACCELERATED_AES 0
@@ -236,8 +254,16 @@
 #ifndef KUMO_SIMD_SVE2
 #error "KUMO_SIMD_SVE2 is not defined"
 #endif
-#ifndef KUMO_SIMD_AES
-#error "KUMO_SIMD_AES is not defined"
+#ifndef KUMO_SIMD_X86_AES
+#error "KUMO_SIMD_X86_AES is not defined"
+#endif
+
+#ifndef KUMO_SIMD_ARM_AES
+#error "KUMO_SIMD_ARM_AES is not defined"
+#endif
+
+#ifndef KUMO_SIMD_PPC_AES
+#error "KUMO_SIMD_PPC_AES is not defined"
 #endif
 #ifndef KUMO_SIMD_PCLMUL
 #error "KUMO_SIMD_PCLMUL is not defined"
