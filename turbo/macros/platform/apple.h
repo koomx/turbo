@@ -18,28 +18,53 @@
 #include <TargetConditionals.h>
 #if defined(TARGET_OS_IOS) && TARGET_OS_IOS
 
+#define KUMO_OS_APPLE            1
 #define KUMO_OS_IOS              1
+#define KUMO_OS_MACOSX           0
+#define KUMO_OS_VISIONOS         0
+#define KUMO_OS_WATCHOS          0
+#define KUMO_OS_TVOS             0
 
 #define KUMO_PLATFORM_NAME     "iOS"
 #elif defined(TARGET_OS_VISION) && TARGET_OS_VISION
 
+#define KUMO_OS_APPLE            1
 #define KUMO_OS_VISIONOS         1
+#define KUMO_OS_IOS              0
+#define KUMO_OS_MACOSX           0
+#define KUMO_OS_WATCHOS          0
+#define KUMO_OS_TVOS             0
 
 #define KUMO_PLATFORM_NAME     "visionOS"
 #elif defined(TARGET_OS_WATCH) && TARGET_OS_WATCH
 
+#define KUMO_OS_APPLE            1
 #define KUMO_OS_WATCHOS          1
+#define KUMO_OS_IOS              0
+#define KUMO_OS_MACOSX           0
+#define KUMO_OS_VISIONOS         0
+#define KUMO_OS_TVOS             0
 
 #define KUMO_PLATFORM_NAME     "watchOS"
 #elif defined(TARGET_OS_TV) && TARGET_OS_TV
 
+#define KUMO_OS_APPLE            1
 #define KUMO_OS_TVOS             1
+#define KUMO_OS_IOS              0
+#define KUMO_OS_MACOSX           0
+#define KUMO_OS_VISIONOS         0
+#define KUMO_OS_WATCHOS          0
 
 #define KUMO_PLATFORM_NAME     "tvOS"
 
 #else !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 
+#define KUMO_OS_APPLE            1
 #define KUMO_OS_MACOSX           1
+#define KUMO_OS_IOS              0
+#define KUMO_OS_VISIONOS         0
+#define KUMO_OS_WATCHOS          0
+#define KUMO_OS_TVOS             0
 
 #define KUMO_PLATFORM_NAME     "OSX"
 #endif  // target
@@ -56,6 +81,7 @@
 #endif
 
 #else
+#define KUMO_OS_APPLE            0
 #define KUMO_OS_IOS              0
 #define KUMO_OS_MACOSX           0
 #define KUMO_OS_VISIONOS         0
