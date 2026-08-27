@@ -18,8 +18,8 @@
 #include <map>
 #include <string>
 #include <turbo/macros/macros.h>
+#include <turbo/cli/encoding.h>
 #include <turbo/cli/string_tools.h>
-#include <turbo/cli/type_tools.h>
 #include <utility>
 
 namespace xcli {
@@ -128,7 +128,7 @@ namespace xcli {
 
         path_type check_path(const char* file) noexcept {
             std::error_code ec;
-            auto stat = std::filesystem::status(std::filesystem::path(file), ec);
+            auto stat = std::filesystem::status(to_path(file), ec);
             if (ec) {
                 return path_type::nonexistent;
             }

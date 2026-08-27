@@ -15,6 +15,8 @@
 
 #include <turbo/cli/argv.h>
 
+#include <turbo/cli/encoding.h>
+
 #include <turbo/cli/string_tools.h>
 
 #include <turbo/cli/error.h>

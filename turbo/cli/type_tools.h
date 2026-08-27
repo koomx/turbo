@@ -20,6 +20,7 @@
 #include <vector>
 
 
+#include <turbo/cli/encoding.h>
 #include <turbo/unicode/api/wchar.h>
 #include <turbo/cli/string_tools.h>
 
@@ -1262,6 +1263,11 @@ namespace xcli {
             enable_if_t<classify_object<T>::value == object_category::string_constructible, detail::enabler> = detail::dummy>
         bool lexical_cast(const std::string& input, T& output) {
             output = T(input);
+            return true;
+        }
+
+        inline bool lexical_cast(const std::string& input, std::filesystem::path& output) {
+            output = to_path(input);
             return true;
         }
 

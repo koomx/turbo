@@ -19,6 +19,7 @@
 #if (defined(XCLI_ENABLE_EXTRA_VALIDATORS) && XCLI_ENABLE_EXTRA_VALIDATORS == 1) || (!defined(XCLI_DISABLE_EXTRA_VALIDATORS) || XCLI_DISABLE_EXTRA_VALIDATORS == 0)
 
 #include <turbo/macros/macros.h>
+#include <turbo/cli/encoding.h>
 #include <turbo/cli/string_tools.h>
 #include <turbo/cli/type_tools.h>
 
@@ -122,7 +123,7 @@ namespace xcli {
             }
             func_ = [permission_code](std::string& path) {
                 std::error_code ec;
-                auto p = std::filesystem::path(path);
+                auto p = to_path(path);
                 if (!std::filesystem::exists(p, ec)) {
                     return std::string("Path does not exist: ") + path;
                 }
@@ -155,7 +156,7 @@ namespace xcli {
         description(desc);
         func_ = [min_size, max_size](std::string& path) {
             std::error_code ec;
-            auto p = std::filesystem::path(path);
+            auto p = to_path(path);
             if (!std::filesystem::exists(p, ec)) {
                 return std::string("File does not exist: ") + path;
             }
