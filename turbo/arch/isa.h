@@ -102,7 +102,7 @@ namespace turbo {
         bool failback { false };
 
         /// InstructionSet bits this kernel needs at runtime.
-        uint32_t required_isa { 0 };
+        std::vector<uint32_t> required_isa {};
 
         /// Stable id used by force-select and dump, e.g. "arm64", "haswell".
         const char* isa_name { "" };
@@ -201,8 +201,20 @@ namespace turbo {
                 os << "  [" << i << "] name=" << info.isa_name
                    << " compiled=" << static_cast<int>(info.compiled)
                    << " failback=" << static_cast<int>(info.failback)
-                   << " required_isa=0x" << std::hex << info.required_isa << std::dec
-                   << " engine=" << info.engine
+                   << " required_isa=[";
+                for (size_t j = 0; j < info.required_isa.size(); ++j) {
+                    if (j != 0) {
+                        os << ',';
+                    }
+                    const uint32_t fno = info.required_isa[j];
+                    const CpuIsaMeta* meta = cpu_isa_meta(fno);
+                    if (meta != nullptr && meta->name != nullptr && meta->name[0] != '\0') {
+                        os << meta->name << '(' << fno << ')';
+                    } else {
+                        os << fno;
+                    }
+                }
+                os << "] engine=" << info.engine
                    << " current_compiled=0x" << std::hex << info.current_compiled
                    << " current_isa=0x" << info.current_isa << std::dec
                    << " rank=" << info.rank;

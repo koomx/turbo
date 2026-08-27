@@ -147,7 +147,7 @@ namespace turbo::xxhash {
         static IsaInfo ins = {
             KUMO_SIMD_SSE2 == 1,
             false,
-            static_cast<uint32_t>(InstructionSet::SSE42),
+            { kX86Sse2 },
             "sse2",
             get_xxhash_sse2_instance(),
         };

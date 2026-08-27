@@ -193,7 +193,7 @@ namespace turbo::xxhash {
         static IsaInfo ins = {
             KUMO_SIMD_VSX == 1,
             false,
-            static_cast<uint32_t>(InstructionSet::ALTIVEC),
+            { kPpcVsx },
             "ppc64",
             get_xxhash_ppc64_instance(),
         };

@@ -164,7 +164,7 @@ namespace turbo::xxhash {
         static IsaInfo ins = {
             KUMO_SIMD_RVV == 1,
             false,
-            static_cast<uint32_t>(InstructionSet::RVV),
+            { kRiscvV },
             "rvv",
             get_xxhash_rvv_instance(),
         };

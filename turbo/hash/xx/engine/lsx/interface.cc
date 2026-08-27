@@ -112,7 +112,7 @@ namespace turbo::xxhash {
         static IsaInfo ins = {
             KUMO_SIMD_LSX == 1,
             false,
-            static_cast<uint32_t>(InstructionSet::LSX),
+            { kLoongLsx },
             "lsx",
             get_xxhash_lsx_instance(),
         };

@@ -126,7 +126,7 @@ namespace turbo::xxhash {
         static IsaInfo ins = {
             KUMO_SIMD_AVX512F == 1,
             false,
-            static_cast<uint32_t>(InstructionSet::AVX512F),
+            { kX86Avx512F },
             "avx512",
             get_xxhash_avx512_instance(),
         };

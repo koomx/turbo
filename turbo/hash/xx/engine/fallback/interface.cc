@@ -44,7 +44,7 @@ namespace turbo::xxhash {
         static IsaInfo ins = {
             true,
             true,
-            static_cast<uint32_t>(InstructionSet::DEFAULT),
+            {},
             "fallback",
             get_xxhash_fallback_instance(),
         };

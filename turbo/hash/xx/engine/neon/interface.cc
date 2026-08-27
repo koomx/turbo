@@ -198,7 +198,7 @@ namespace turbo::xxhash {
         static IsaInfo ins = {
             KUMO_SIMD_NEON == 1,
             false,
-            static_cast<uint32_t>(InstructionSet::NEON),
+            { kArmNeon },
             "neon",
             get_xxhash_neon_instance(),
         };

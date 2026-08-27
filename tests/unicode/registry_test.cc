@@ -53,7 +53,7 @@ TEST(UnicodeRegistry, AvailBestIsArm64WithFallback) {
     EXPECT_STREQ(avail[0].isa_name, "arm64");
     EXPECT_TRUE(avail[0].compiled);
     EXPECT_NE(avail[0].engine, nullptr);
-    EXPECT_EQ(avail[0].rank, 10u);
+    EXPECT_EQ(avail[0].rank, 10100u);
     EXPECT_STREQ(avail[1].isa_name, "fallback");
     EXPECT_TRUE(avail[1].failback);
     EXPECT_TRUE(avail[1].compiled);

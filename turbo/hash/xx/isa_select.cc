@@ -24,12 +24,14 @@
 #include <turbo/hash/xx/engine/ppc64/interface.h>
 #include <turbo/hash/xx/engine/rvv/interface.h>
 #include <turbo/hash/xx/engine/sse2/interface.h>
+#include <turbo/hash/xx/engine/sve/interface.h>
 
 namespace turbo {
 
     static std::vector<IsaInfo> get_built_infos() {
         std::vector<IsaInfo> infos = {
             xxhash::get_xxhash_neon_info(),
+            xxhash::get_xxhash_sve_info(),
             xxhash::get_xxhash_avx512_info(),
             xxhash::get_xxhash_avx2_info(),
             xxhash::get_xxhash_sse2_info(),

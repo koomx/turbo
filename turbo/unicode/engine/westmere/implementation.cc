@@ -1302,7 +1302,7 @@ namespace turbo {
         static IsaInfo ins = {
             UNICODE_IMPLEMENTATION_WESTMERE == 1,
             false,
-            static_cast<uint32_t>(InstructionSet::SSE42),
+            { kX86Sse4_2 },
              "westmere",
             get_westmere_instance(),
         };

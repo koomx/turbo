@@ -166,7 +166,7 @@ namespace turbo::xxhash {
         static IsaInfo ins = {
             KUMO_SIMD_SVE == 1,
             false,
-            static_cast<uint32_t>(InstructionSet::NEON),
+            { kArmSve },
             "sve",
             get_xxhash_sve_instance(),
         };
