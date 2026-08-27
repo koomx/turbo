@@ -131,6 +131,9 @@
 #ifndef KUMO_OS_LINUX
 #error "KUMO_OS_LINUX is not defined — no platform header matched this target"
 #endif
+#ifndef KUMO_OS_APPLE
+#error "KUMO_OS_APPLE is not defined — no platform header matched this target"
+#endif
 #ifndef KUMO_OS_MACOSX
 #error "KUMO_OS_MACOSX is not defined — no platform header matched this target"
 #endif
