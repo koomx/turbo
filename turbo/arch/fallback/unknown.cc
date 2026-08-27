@@ -72,3 +72,17 @@ namespace turbo {
 
 } // namespace turbo
 #endif
+
+#if !(KUMO_ARCH_ARM64 && (KUMO_OS_MACOSX || KUMO_OS_IOS || KUMO_OS_TVOS || \
+        KUMO_OS_WATCHOS || KUMO_OS_VISIONOS)) && \
+    !(KUMO_ARCH_ARM64 && (KUMO_OS_LINUX || KUMO_OS_ANDROID)) && \
+    !KUMO_ARCH_LOONGARCH && !KUMO_ARCH_PPC64 && !KUMO_ARCH_RISCV64 && \
+    !KUMO_ARCH_X86_64
+namespace turbo {
+
+    CpuIsaInfo detect_cpu_isa_info_internal() {
+        return CpuIsaInfo{};
+    }
+
+} // namespace turbo
+#endif

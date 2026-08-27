@@ -37,5 +37,14 @@ namespace turbo {
         return host_isa;
     }
 
+    CpuIsaInfo detect_cpu_isa_info_internal() {
+        CpuIsaInfo info{};
+        info.riscv_isa.is_this_arch = true;
+#if UNICODE_IS_RVV || defined(RUN_IN_SPIKE_SIMULATOR)
+        info.riscv_isa.v = true;
+#endif
+        return info;
+    }
+
 } // namespace turbo
 #endif

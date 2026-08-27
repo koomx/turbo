@@ -19,6 +19,7 @@
 
 set(ARCH_SRC
         arch/isa.cc
+        arch/isa_catalog.cc
         arch/arm64/apple.cc
         arch/arm64/general.cc
         arch/arm64/linux.cc

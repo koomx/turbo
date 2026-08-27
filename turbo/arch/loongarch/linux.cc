@@ -45,5 +45,14 @@ namespace turbo {
         return host_isa;
     }
 
+    CpuIsaInfo detect_cpu_isa_info_internal() {
+        CpuIsaInfo info{};
+        info.loong_isa.is_this_arch = true;
+        const uint64_t hwcap = getauxval(AT_HWCAP);
+        info.loong_isa.lsx = (hwcap & HWCAP_LOONGARCH_LSX) != 0;
+        info.loong_isa.lasx = (hwcap & HWCAP_LOONGARCH_LASX) != 0;
+        return info;
+    }
+
 } // namespace turbo
 #endif

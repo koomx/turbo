@@ -72,4 +72,5 @@ namespace turbo {
     int num_contexts_per_cpu();
 
     uint32_t detect_supported_architectures();
+
 } // namespace turbo

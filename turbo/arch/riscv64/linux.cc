@@ -16,6 +16,7 @@
 #include <turbo/arch/cpu_detect.h>
 #if KUMO_ARCH_RISCV64 && (KUMO_OS_LINUX || KUMO_OS_ANDROID)
 #include <cstdint>
+#include <sys/auxv.h>
 #include <unistd.h>
 
 #include <turbo/arch/instruction.h>
@@ -28,6 +29,21 @@ struct unicode_riscv_hwprobe {
 #define UNICODE_RISCV_HWPROBE_KEY_IMA_EXT_0 4
 #define UNICODE_RISCV_HWPROBE_IMA_V (1 << 2)
 #define UNICODE_RISCV_HWPROBE_EXT_ZVBB (1 << 17)
+#ifndef UNICODE_RISCV_HWPROBE_EXT_ZFH
+#define UNICODE_RISCV_HWPROBE_EXT_ZFH (1ULL << 27)
+#endif
+#ifndef UNICODE_RISCV_HWPROBE_EXT_ZVFH
+#define UNICODE_RISCV_HWPROBE_EXT_ZVFH (1ULL << 29)
+#endif
+
+#define COMPAT_HWCAP_ISA_I (1 << ('I' - 'A'))
+#define COMPAT_HWCAP_ISA_E (1 << ('E' - 'A'))
+#define COMPAT_HWCAP_ISA_M (1 << ('M' - 'A'))
+#define COMPAT_HWCAP_ISA_A (1 << ('A' - 'A'))
+#define COMPAT_HWCAP_ISA_F (1 << ('F' - 'A'))
+#define COMPAT_HWCAP_ISA_D (1 << ('D' - 'A'))
+#define COMPAT_HWCAP_ISA_C (1 << ('C' - 'A'))
+#define COMPAT_HWCAP_ISA_V (1 << ('V' - 'A'))
 
 namespace turbo {
 
@@ -57,6 +73,41 @@ namespace turbo {
         host_isa |= InstructionSet::RVV;
 #endif
         return host_isa;
+    }
+
+    CpuIsaInfo detect_cpu_isa_info_internal() {
+        CpuIsaInfo info{};
+        CpuIsaRiscv& isa = info.riscv_isa;
+        isa.is_this_arch = true;
+
+        const unsigned long hwcap = getauxval(AT_HWCAP);
+        isa.i = (hwcap & COMPAT_HWCAP_ISA_I) != 0;
+        isa.e = (hwcap & COMPAT_HWCAP_ISA_E) != 0;
+        isa.m = (hwcap & COMPAT_HWCAP_ISA_M) != 0;
+        isa.a = (hwcap & COMPAT_HWCAP_ISA_A) != 0;
+        isa.f = (hwcap & COMPAT_HWCAP_ISA_F) != 0;
+        isa.d = (hwcap & COMPAT_HWCAP_ISA_D) != 0;
+        isa.c = (hwcap & COMPAT_HWCAP_ISA_C) != 0;
+        isa.v = (hwcap & COMPAT_HWCAP_ISA_V) != 0;
+
+        unicode_riscv_hwprobe probes[] = { { UNICODE_RISCV_HWPROBE_KEY_IMA_EXT_0, 0 } };
+        const long ret = unicode_riscv_hwprobe(&probes, sizeof probes / sizeof *probes, 0, nullptr, 0);
+        if (ret == 0) {
+            const uint64_t extensions = probes[0].value;
+            if (extensions & UNICODE_RISCV_HWPROBE_IMA_V) {
+                isa.v = true;
+            }
+            if (extensions & UNICODE_RISCV_HWPROBE_EXT_ZFH) {
+                isa.zfh = true;
+            }
+            if (extensions & UNICODE_RISCV_HWPROBE_EXT_ZVFH) {
+                isa.zvfh = true;
+            }
+        }
+#if defined(RUN_IN_SPIKE_SIMULATOR)
+        isa.v = true;
+#endif
+        return info;
     }
 
 } // namespace turbo

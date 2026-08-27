@@ -30,6 +30,8 @@ namespace turbo {
             kUnknown,
             kIntel,
             kAmd,
+            kHygon,
+            kVia,
         };
 
         Vendor GetVendor() {
@@ -45,6 +47,10 @@ namespace turbo {
                 return Vendor::kIntel;
             } else if (vendor == "AuthenticAMD") {
                 return Vendor::kAmd;
+            } else if (vendor == "HygonGenuine") {
+                return Vendor::kHygon;
+            } else if (vendor == "CentaurHauls") {
+                return Vendor::kVia;
             } else {
                 return Vendor::kUnknown;
             }
@@ -337,6 +343,179 @@ namespace turbo {
 #endif
         }
 
+        struct CpuidRegs {
+            uint32_t eax{0};
+            uint32_t ebx{0};
+            uint32_t ecx{0};
+            uint32_t edx{0};
+        };
+
+        CpuidRegs run_cpuid(uint32_t leaf, uint32_t subleaf) {
+            CpuidRegs r;
+            r.eax = leaf;
+            r.ecx = subleaf;
+            isa_cpuid(&r.eax, &r.ebx, &r.ecx, &r.edx);
+            return r;
+        }
+
+        void fill_x86_isa(CpuIsaX86& isa, Vendor vendor) {
+            const CpuidRegs max_info = run_cpuid(0, 0);
+            const uint32_t max_base = max_info.eax;
+            const CpuidRegs ext_max = run_cpuid(0x80000000u, 0);
+            const uint32_t max_extended = ext_max.eax;
+            const CpuidRegs basic = run_cpuid(1, 0);
+            const CpuidRegs extended =
+                (max_extended >= 0x80000001u) ? run_cpuid(0x80000001u, 0) : CpuidRegs{};
+            const CpuidRegs feat0 = (max_base >= 7) ? run_cpuid(7, 0) : CpuidRegs{};
+            const CpuidRegs feat1 = (max_base >= 7) ? run_cpuid(7, 1) : CpuidRegs{};
+            const CpuidRegs feat24 = (max_base >= 0x24) ? run_cpuid(0x24, 0) : CpuidRegs{};
+            const CpuidRegs tmm1 = (max_base >= 0x1E) ? run_cpuid(0x1E, 1) : CpuidRegs{};
+            const CpuidRegs cap =
+                (max_extended >= 0x80000008u) ? run_cpuid(0x80000008u, 0) : CpuidRegs{};
+
+            bool avx_regs = false;
+            bool avx512_regs = false;
+            bool mpx_regs = false;
+            const uint32_t osxsave_mask = 0x0C000000u;
+            if ((basic.ecx & osxsave_mask) == osxsave_mask) {
+                uint64_t xcr0_valid_bits = 0;
+                if (max_base >= 0xD) {
+                    const CpuidRegs xsave = run_cpuid(0xD, 0);
+                    xcr0_valid_bits = (static_cast<uint64_t>(xsave.edx) << 32) | xsave.eax;
+                }
+                const uint64_t xcr0 = xgetbv();
+                const uint64_t avx_regs_mask = 0x6ull;
+                if ((xcr0_valid_bits & avx_regs_mask) == avx_regs_mask) {
+                    avx_regs = (xcr0 & avx_regs_mask) == avx_regs_mask;
+                }
+                const uint64_t avx512_regs_mask = 0xE6ull;
+                if ((xcr0_valid_bits & avx512_regs_mask) == avx512_regs_mask) {
+                    avx512_regs = (xcr0 & avx512_regs_mask) == avx512_regs_mask;
+                }
+                const uint64_t mpx_regs_mask = 0x18ull;
+                if ((xcr0_valid_bits & mpx_regs_mask) == mpx_regs_mask) {
+                    mpx_regs = (xcr0 & mpx_regs_mask) == mpx_regs_mask;
+                }
+            }
+
+            isa.rdtsc = ((basic.edx | extended.edx) & 0x00000010u) != 0;
+            isa.sysenter = (basic.edx & 0x00000800u) != 0;
+            isa.syscall = (extended.edx & 0x00000800u) != 0;
+            isa.msr = ((basic.edx | extended.edx) & 0x00000020u) != 0;
+            isa.clzero = (cap.ebx & 0x00000001u) != 0;
+            isa.clflush = (basic.edx & 0x00080000u) != 0;
+            isa.clflushopt = (feat0.ebx & 0x00800000u) != 0;
+            isa.mwait = (basic.ecx & 0x00000008u) != 0;
+            isa.mwaitx = (extended.ecx & 0x20000000u) != 0;
+            isa.fxsave = ((basic.edx | extended.edx) & 0x01000000u) != 0;
+            isa.xsave = (basic.ecx & 0x04000000u) != 0;
+            isa.fpu = ((basic.edx | extended.edx) & 0x00000001u) != 0;
+            isa.mmx = ((basic.edx | extended.edx) & 0x00800000u) != 0;
+            isa.mmx_plus = ((basic.edx & 0x02000000u) | (extended.edx & 0x00400000u)) != 0;
+            isa.three_d_now = (extended.edx & 0x80000000u) != 0;
+            isa.three_d_now_plus = (extended.edx & 0x40000000u) != 0;
+
+            if (vendor == Vendor::kAmd || vendor == Vendor::kHygon) {
+                isa.prefetch = ((extended.ecx & 0x00000100u) | (extended.edx & 0xE0000000u)) != 0;
+                isa.prefetchw = ((extended.ecx & 0x00000100u) | (extended.edx & 0xE0000000u)) != 0;
+            } else if (vendor != Vendor::kIntel) {
+                isa.prefetch = (extended.edx & 0xC0000000u) != 0;
+                isa.prefetchw = ((extended.ecx & 0x00000100u) | (extended.edx & 0xC0000000u)) != 0;
+            } else {
+                isa.prefetchw = ((extended.ecx & 0x00000100u) | (extended.edx & 0xC0000000u)) != 0;
+            }
+            isa.prefetchwt1 = (feat0.ecx & 0x00000001u) != 0;
+
+            isa.sse = (basic.edx & 0x02000000u) != 0;
+            isa.sse2 = (basic.edx & 0x04000000u) != 0;
+            isa.sse3 = (basic.ecx & 0x00000001u) != 0;
+            isa.daz = isa.sse3 || isa.sse2;
+            isa.ssse3 = (basic.ecx & 0x00000200u) != 0;
+            isa.sse4_1 = (basic.ecx & 0x00080000u) != 0;
+            isa.sse4_2 = (basic.ecx & 0x00100000u) != 0;
+            isa.sse4a = (extended.ecx & 0x00000040u) != 0;
+            isa.misaligned_sse = (extended.ecx & 0x00000080u) != 0;
+
+            isa.avx = avx_regs && (basic.ecx & 0x10000000u) != 0;
+            isa.fma3 = avx_regs && (basic.ecx & 0x00001000u) != 0;
+            isa.fma4 = avx_regs && (extended.ecx & 0x00010000u) != 0;
+            isa.xop = avx_regs && (extended.ecx & 0x00000800u) != 0;
+            isa.f16c = avx_regs && (basic.ecx & 0x20000000u) != 0;
+            isa.avx2 = avx_regs && (feat0.ebx & 0x00000020u) != 0;
+
+            isa.avx512f = avx512_regs && (feat0.ebx & 0x00010000u) != 0;
+            isa.avx10_1 = avx512_regs && (feat1.edx & 0x00080000u) != 0;
+            isa.avx10_2 = isa.avx10_1 && ((feat24.ebx & 0xFFu) >= 2);
+            isa.avx512pf = avx512_regs && (feat0.ebx & 0x04000000u) != 0;
+            isa.avx512er = avx512_regs && (feat0.ebx & 0x08000000u) != 0;
+            isa.avx512cd = avx512_regs && (feat0.ebx & 0x10000000u) != 0;
+            isa.avx512dq = avx512_regs && (feat0.ebx & 0x00020000u) != 0;
+            isa.avx512bw = avx512_regs && (feat0.ebx & 0x40000000u) != 0;
+            isa.avx512vl = avx512_regs && (feat0.ebx & 0x80000000u) != 0;
+            isa.avx512ifma = avx512_regs && (feat0.ebx & 0x00200000u) != 0;
+            isa.avx512vbmi = avx512_regs && (feat0.ecx & 0x00000002u) != 0;
+            isa.avx512vbmi2 = avx512_regs && (feat0.ecx & 0x00000040u) != 0;
+            isa.avx512bitalg = avx512_regs && (feat0.ecx & 0x00001000u) != 0;
+            isa.avx512vpopcntdq = avx512_regs && (feat0.ecx & 0x00004000u) != 0;
+            isa.avx512vnni = avx512_regs && (feat0.ecx & 0x00000800u) != 0;
+            isa.avx512_4vnniw = avx512_regs && (feat0.edx & 0x00000004u) != 0;
+            isa.avx512_4fmaps = avx512_regs && (feat0.edx & 0x00000008u) != 0;
+            isa.avx512vp2intersect = avx512_regs && (feat0.edx & 0x00000100u) != 0;
+            isa.avx512fp16 = avx512_regs && (feat0.edx & 0x00800000u) != 0;
+            isa.avxvnni = avx_regs && (feat1.eax & 0x00000010u) != 0;
+            isa.avx512bf16 = avx512_regs && (feat1.eax & 0x00000020u) != 0;
+            isa.amx_bf16 = avx512_regs && (feat0.edx & 0x00400000u) != 0;
+            isa.amx_tile = avx512_regs && (feat0.edx & 0x01000000u) != 0;
+            isa.amx_int8 = avx512_regs && (feat0.edx & 0x02000000u) != 0;
+            isa.amx_fp16 = avx512_regs && (feat1.eax & 0x00200000u) != 0;
+            isa.amx_fp8 = avx512_regs && (tmm1.eax & 0x00000010u) != 0;
+            isa.avx_vnni_int8 = avx_regs && (feat1.edx & 0x00000010u) != 0;
+            isa.avx_vnni_int16 = avx_regs && (feat1.edx & 0x00000400u) != 0;
+            isa.avx_ne_convert = avx_regs && (feat1.edx & 0x00000020u) != 0;
+
+            isa.hle = (feat0.ebx & 0x00000010u) != 0;
+            isa.rtm = (feat0.ebx & 0x00000800u) != 0;
+            isa.xtest = isa.hle || isa.rtm;
+            isa.mpx = mpx_regs && (feat0.ebx & 0x00004000u) != 0;
+            isa.cmov = ((basic.edx | extended.edx) & 0x00008000u) != 0;
+            isa.cmpxchg8b = ((basic.edx | extended.edx) & 0x00000100u) != 0;
+            isa.cmpxchg16b = (basic.ecx & 0x00002000u) != 0;
+            isa.clwb = (feat0.ebx & 0x01000000u) != 0;
+            isa.movbe = (basic.ecx & 0x00400000u) != 0;
+            isa.lahf_sahf = (extended.ecx & 0x00000001u) != 0;
+            isa.fs_gs_base = (feat0.ebx & 0x00000001u) != 0;
+            isa.lzcnt = (extended.ecx & 0x00000020u) != 0;
+            isa.popcnt = (basic.ecx & 0x00800000u) != 0;
+            isa.tbm = (extended.ecx & 0x00200000u) != 0;
+            isa.bmi = (feat0.ebx & 0x00000008u) != 0;
+            isa.bmi2 = (feat0.ebx & 0x00000100u) != 0;
+            isa.adx = (feat0.ebx & 0x00080000u) != 0;
+            isa.aes = (basic.ecx & 0x02000000u) != 0;
+            isa.vaes = (feat0.ecx & 0x00000200u) != 0;
+            isa.pclmulqdq = (basic.ecx & 0x00000002u) != 0;
+            isa.vpclmulqdq = (feat0.ecx & 0x00000400u) != 0;
+            isa.gfni = (feat0.ecx & 0x00000100u) != 0;
+            isa.rdrand = (basic.ecx & 0x40000000u) != 0;
+            isa.rdseed = (feat0.ebx & 0x00040000u) != 0;
+            isa.sha = (feat0.ebx & 0x20000000u) != 0;
+
+            if (vendor == Vendor::kVia) {
+                const CpuidRegs padlock_meta = run_cpuid(0xC0000000u, 0);
+                if (padlock_meta.eax >= 0xC0000001u) {
+                    const CpuidRegs padlock = run_cpuid(0xC0000001u, 0);
+                    isa.rng = (padlock.edx & 0x0000000Cu) == 0x0000000Cu;
+                    isa.ace = (padlock.edx & 0x000000C0u) == 0x000000C0u;
+                    isa.ace2 = (padlock.edx & 0x00000300u) == 0x00000300u;
+                    isa.phe = (padlock.edx & 0x00000C00u) == 0x00000C00u;
+                    isa.pmm = (padlock.edx & 0x00003000u) == 0x00003000u;
+                }
+            }
+
+            isa.lwp = (extended.ecx & 0x00008000u) != 0;
+            isa.rdtscp = (extended.edx & 0x08000000u) != 0;
+            isa.rdpid = (feat0.ecx & 0x00400000u) != 0;
+        }
+
     } // namespace
 
     uint32_t detect_supported_architectures() {
@@ -403,6 +582,13 @@ namespace turbo {
             host_isa |= InstructionSet::AVX512VPOPCNTDQ;
         }
         return host_isa;
+    }
+
+    CpuIsaInfo detect_cpu_isa_info_internal() {
+        CpuIsaInfo info{};
+        info.x86_isa.is_this_arch = true;
+        fill_x86_isa(info.x86_isa, GetVendor());
+        return info;
     }
 
 } // namespace turbo

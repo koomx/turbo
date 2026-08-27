@@ -27,5 +27,11 @@ namespace turbo {
         return InstructionSet::DEFAULT;
     }
 
+    CpuIsaInfo detect_cpu_isa_info_internal() {
+        CpuIsaInfo info{};
+        info.loong_isa.is_this_arch = true;
+        return info;
+    }
+
 } // namespace turbo
 #endif
