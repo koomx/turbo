@@ -46,11 +46,7 @@
 // More-specific variants first.
 #include <turbo/macros/platform/fuchsia.h>
 #include <turbo/macros/platform/ros.h>
-#include <turbo/macros/platform/visionos.h>
-#include <turbo/macros/platform/watchos.h>
-#include <turbo/macros/platform/tvos.h>
-#include <turbo/macros/platform/ios.h>
-#include <turbo/macros/platform/osx.h>
+#include <turbo/macros/platform/apple.h>
 #include <turbo/macros/platform/bsd.h>
 #include <turbo/macros/platform/nacl.h>
 #include <turbo/macros/platform/solaris.h>

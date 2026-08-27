@@ -1443,272 +1443,6 @@ namespace turbo {
     CpuIsaInfo detect_current_enabled_isa_info() {
         CpuIsaInfo info{};
 #if KUMO_ARCH_X86_64
-#ifndef KUMO_X86_C_PRFCHW
-#if defined(__PRFCHW__) || defined(__3dNOW__) || defined(__3dNOW_A__)
-#define KUMO_X86_C_PRFCHW 1
-#else
-#define KUMO_X86_C_PRFCHW 0
-#endif
-#endif
-#ifndef KUMO_X86_C_PREFETCH
-#if defined(__3dNOW__) || defined(__3dNOW_A__)
-#define KUMO_X86_C_PREFETCH 1
-#else
-#define KUMO_X86_C_PREFETCH 0
-#endif
-#endif
-#ifndef KUMO_X86_C_PREFETCHWT1
-#if defined(__PREFETCHWT1__)
-#define KUMO_X86_C_PREFETCHWT1 1
-#else
-#define KUMO_X86_C_PREFETCHWT1 0
-#endif
-#endif
-#ifndef KUMO_X86_C_CX16
-#if defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_16) || defined(__CX16__) || defined(_MSC_VER)
-#define KUMO_X86_C_CX16 1
-#else
-#define KUMO_X86_C_CX16 0
-#endif
-#endif
-#ifndef KUMO_X86_C_MOVBE
-#if defined(__MOVBE__)
-#define KUMO_X86_C_MOVBE 1
-#else
-#define KUMO_X86_C_MOVBE 0
-#endif
-#endif
-#ifndef KUMO_X86_C_XSAVE
-#if defined(__XSAVE__)
-#define KUMO_X86_C_XSAVE 1
-#else
-#define KUMO_X86_C_XSAVE 0
-#endif
-#endif
-#ifndef KUMO_X86_C_F16C
-#if defined(__F16C__)
-#define KUMO_X86_C_F16C 1
-#else
-#define KUMO_X86_C_F16C 0
-#endif
-#endif
-#ifndef KUMO_X86_C_RDRND
-#if defined(__RDRND__)
-#define KUMO_X86_C_RDRND 1
-#else
-#define KUMO_X86_C_RDRND 0
-#endif
-#endif
-#ifndef KUMO_X86_C_RDSEED
-#if defined(__RDSEED__)
-#define KUMO_X86_C_RDSEED 1
-#else
-#define KUMO_X86_C_RDSEED 0
-#endif
-#endif
-#ifndef KUMO_X86_C_FSGSBASE
-#if defined(__FSGSBASE__)
-#define KUMO_X86_C_FSGSBASE 1
-#else
-#define KUMO_X86_C_FSGSBASE 0
-#endif
-#endif
-#ifndef KUMO_X86_C_SHA
-#if defined(__SHA__)
-#define KUMO_X86_C_SHA 1
-#else
-#define KUMO_X86_C_SHA 0
-#endif
-#endif
-#ifndef KUMO_X86_C_ADX
-#if defined(__ADX__)
-#define KUMO_X86_C_ADX 1
-#else
-#define KUMO_X86_C_ADX 0
-#endif
-#endif
-#ifndef KUMO_X86_C_CLFLUSHOPT
-#if defined(__CLFLUSHOPT__)
-#define KUMO_X86_C_CLFLUSHOPT 1
-#else
-#define KUMO_X86_C_CLFLUSHOPT 0
-#endif
-#endif
-#ifndef KUMO_X86_C_CLWB
-#if defined(__CLWB__)
-#define KUMO_X86_C_CLWB 1
-#else
-#define KUMO_X86_C_CLWB 0
-#endif
-#endif
-#ifndef KUMO_X86_C_CLZERO
-#if defined(__CLZERO__)
-#define KUMO_X86_C_CLZERO 1
-#else
-#define KUMO_X86_C_CLZERO 0
-#endif
-#endif
-#ifndef KUMO_X86_C_RDTSCP
-#if defined(__RDTSCP__)
-#define KUMO_X86_C_RDTSCP 1
-#else
-#define KUMO_X86_C_RDTSCP 0
-#endif
-#endif
-#ifndef KUMO_X86_C_RDPID
-#if defined(__RDPID__)
-#define KUMO_X86_C_RDPID 1
-#else
-#define KUMO_X86_C_RDPID 0
-#endif
-#endif
-#ifndef KUMO_X86_C_HLE
-#if defined(__HLE__)
-#define KUMO_X86_C_HLE 1
-#else
-#define KUMO_X86_C_HLE 0
-#endif
-#endif
-#ifndef KUMO_X86_C_RTM
-#if defined(__RTM__)
-#define KUMO_X86_C_RTM 1
-#else
-#define KUMO_X86_C_RTM 0
-#endif
-#endif
-#ifndef KUMO_X86_C_MPX
-#if defined(__MPX__)
-#define KUMO_X86_C_MPX 1
-#else
-#define KUMO_X86_C_MPX 0
-#endif
-#endif
-#ifndef KUMO_X86_C_SSE4A
-#if defined(__SSE4A__)
-#define KUMO_X86_C_SSE4A 1
-#else
-#define KUMO_X86_C_SSE4A 0
-#endif
-#endif
-#ifndef KUMO_X86_C_FMA4
-#if defined(__FMA4__)
-#define KUMO_X86_C_FMA4 1
-#else
-#define KUMO_X86_C_FMA4 0
-#endif
-#endif
-#ifndef KUMO_X86_C_XOP
-#if defined(__XOP__)
-#define KUMO_X86_C_XOP 1
-#else
-#define KUMO_X86_C_XOP 0
-#endif
-#endif
-#ifndef KUMO_X86_C_TBM
-#if defined(__TBM__)
-#define KUMO_X86_C_TBM 1
-#else
-#define KUMO_X86_C_TBM 0
-#endif
-#endif
-#ifndef KUMO_X86_C_LWP
-#if defined(__LWP__)
-#define KUMO_X86_C_LWP 1
-#else
-#define KUMO_X86_C_LWP 0
-#endif
-#endif
-#ifndef KUMO_X86_C_VAES
-#if defined(__VAES__)
-#define KUMO_X86_C_VAES 1
-#else
-#define KUMO_X86_C_VAES 0
-#endif
-#endif
-#ifndef KUMO_X86_C_VPCLMUL
-#if defined(__VPCLMULQDQ__)
-#define KUMO_X86_C_VPCLMUL 1
-#else
-#define KUMO_X86_C_VPCLMUL 0
-#endif
-#endif
-#ifndef KUMO_X86_C_GFNI
-#if defined(__GFNI__)
-#define KUMO_X86_C_GFNI 1
-#else
-#define KUMO_X86_C_GFNI 0
-#endif
-#endif
-#ifndef KUMO_X86_C_AVXVNNI
-#if defined(__AVXVNNI__)
-#define KUMO_X86_C_AVXVNNI 1
-#else
-#define KUMO_X86_C_AVXVNNI 0
-#endif
-#endif
-#ifndef KUMO_X86_C_AVX512PF
-#if defined(__AVX512PF__)
-#define KUMO_X86_C_AVX512PF 1
-#else
-#define KUMO_X86_C_AVX512PF 0
-#endif
-#endif
-#ifndef KUMO_X86_C_AVX512ER
-#if defined(__AVX512ER__)
-#define KUMO_X86_C_AVX512ER 1
-#else
-#define KUMO_X86_C_AVX512ER 0
-#endif
-#endif
-#ifndef KUMO_X86_C_AVX512BF16
-#if defined(__AVX512BF16__)
-#define KUMO_X86_C_AVX512BF16 1
-#else
-#define KUMO_X86_C_AVX512BF16 0
-#endif
-#endif
-#ifndef KUMO_X86_C_AVX512FP16
-#if defined(__AVX512FP16__)
-#define KUMO_X86_C_AVX512FP16 1
-#else
-#define KUMO_X86_C_AVX512FP16 0
-#endif
-#endif
-#ifndef KUMO_X86_C_AVX512VP2
-#if defined(__AVX512VP2INTERSECT__)
-#define KUMO_X86_C_AVX512VP2 1
-#else
-#define KUMO_X86_C_AVX512VP2 0
-#endif
-#endif
-#ifndef KUMO_X86_C_AMX_TILE
-#if defined(__AMX_TILE__)
-#define KUMO_X86_C_AMX_TILE 1
-#else
-#define KUMO_X86_C_AMX_TILE 0
-#endif
-#endif
-#ifndef KUMO_X86_C_AMX_INT8
-#if defined(__AMX_INT8__)
-#define KUMO_X86_C_AMX_INT8 1
-#else
-#define KUMO_X86_C_AMX_INT8 0
-#endif
-#endif
-#ifndef KUMO_X86_C_AMX_BF16
-#if defined(__AMX_BF16__)
-#define KUMO_X86_C_AMX_BF16 1
-#else
-#define KUMO_X86_C_AMX_BF16 0
-#endif
-#endif
-#ifndef KUMO_X86_C_AMX_FP16
-#if defined(__AMX_FP16__)
-#define KUMO_X86_C_AMX_FP16 1
-#else
-#define KUMO_X86_C_AMX_FP16 0
-#endif
-#endif
         CpuIsaX86& isa = info.x86_isa;
         isa.is_this_arch = true;
         isa.fpu = true;
@@ -1747,46 +1481,46 @@ namespace turbo {
         isa.lzcnt = KUMO_SIMD_LZCNT;
         isa.aes = KUMO_SIMD_X86_AES;
         isa.pclmulqdq = KUMO_SIMD_PCLMUL;
-        isa.prefetch = KUMO_X86_C_PREFETCH;
-        isa.prefetchw = KUMO_X86_C_PRFCHW;
-        isa.prefetchwt1 = KUMO_X86_C_PREFETCHWT1;
-        isa.cmpxchg16b = KUMO_X86_C_CX16;
+        isa.prefetch = KUMO_SIMD_PREFETCH;
+        isa.prefetchw = KUMO_SIMD_PRFCHW;
+        isa.prefetchwt1 = KUMO_SIMD_PREFETCHWT1;
+        isa.cmpxchg16b = KUMO_SIMD_CX16;
         isa.lahf_sahf = true;
-        isa.movbe = KUMO_X86_C_MOVBE;
-        isa.xsave = KUMO_X86_C_XSAVE || KUMO_SIMD_AVX;
-        isa.f16c = KUMO_X86_C_F16C;
-        isa.rdrand = KUMO_X86_C_RDRND;
-        isa.rdseed = KUMO_X86_C_RDSEED;
-        isa.fs_gs_base = KUMO_X86_C_FSGSBASE;
-        isa.sha = KUMO_X86_C_SHA;
-        isa.adx = KUMO_X86_C_ADX;
-        isa.clflushopt = KUMO_X86_C_CLFLUSHOPT;
-        isa.clwb = KUMO_X86_C_CLWB;
-        isa.clzero = KUMO_X86_C_CLZERO;
-        isa.rdtscp = KUMO_X86_C_RDTSCP;
-        isa.rdpid = KUMO_X86_C_RDPID;
-        isa.hle = KUMO_X86_C_HLE;
-        isa.rtm = KUMO_X86_C_RTM;
+        isa.movbe = KUMO_SIMD_MOVBE;
+        isa.xsave = KUMO_SIMD_XSAVE || KUMO_SIMD_AVX;
+        isa.f16c = KUMO_SIMD_F16C;
+        isa.rdrand = KUMO_SIMD_RDRND;
+        isa.rdseed = KUMO_SIMD_RDSEED;
+        isa.fs_gs_base = KUMO_SIMD_FSGSBASE;
+        isa.sha = KUMO_SIMD_SHA;
+        isa.adx = KUMO_SIMD_ADX;
+        isa.clflushopt = KUMO_SIMD_CLFLUSHOPT;
+        isa.clwb = KUMO_SIMD_CLWB;
+        isa.clzero = KUMO_SIMD_CLZERO;
+        isa.rdtscp = KUMO_SIMD_RDTSCP;
+        isa.rdpid = KUMO_SIMD_RDPID;
+        isa.hle = KUMO_SIMD_HLE;
+        isa.rtm = KUMO_SIMD_RTM;
         isa.xtest = isa.hle || isa.rtm;
-        isa.mpx = KUMO_X86_C_MPX;
-        isa.sse4a = KUMO_X86_C_SSE4A;
-        isa.fma4 = KUMO_X86_C_FMA4;
-        isa.xop = KUMO_X86_C_XOP;
-        isa.tbm = KUMO_X86_C_TBM;
-        isa.lwp = KUMO_X86_C_LWP;
-        isa.vaes = KUMO_X86_C_VAES;
-        isa.vpclmulqdq = KUMO_X86_C_VPCLMUL;
-        isa.gfni = KUMO_X86_C_GFNI;
-        isa.avxvnni = KUMO_X86_C_AVXVNNI;
-        isa.avx512pf = KUMO_X86_C_AVX512PF;
-        isa.avx512er = KUMO_X86_C_AVX512ER;
-        isa.avx512bf16 = KUMO_X86_C_AVX512BF16;
-        isa.avx512fp16 = KUMO_X86_C_AVX512FP16;
-        isa.avx512vp2intersect = KUMO_X86_C_AVX512VP2;
-        isa.amx_tile = KUMO_X86_C_AMX_TILE;
-        isa.amx_int8 = KUMO_X86_C_AMX_INT8;
-        isa.amx_bf16 = KUMO_X86_C_AMX_BF16;
-        isa.amx_fp16 = KUMO_X86_C_AMX_FP16;
+        isa.mpx = KUMO_SIMD_MPX;
+        isa.sse4a = KUMO_SIMD_SSE4A;
+        isa.fma4 = KUMO_SIMD_FMA4;
+        isa.xop = KUMO_SIMD_XOP;
+        isa.tbm = KUMO_SIMD_TBM;
+        isa.lwp = KUMO_SIMD_LWP;
+        isa.vaes = KUMO_SIMD_VAES;
+        isa.vpclmulqdq = KUMO_SIMD_VPCLMUL;
+        isa.gfni = KUMO_SIMD_GFNI;
+        isa.avxvnni = KUMO_SIMD_AVXVNNI;
+        isa.avx512pf = KUMO_SIMD_AVX512PF;
+        isa.avx512er = KUMO_SIMD_AVX512ER;
+        isa.avx512bf16 = KUMO_SIMD_AVX512BF16;
+        isa.avx512fp16 = KUMO_SIMD_AVX512FP16;
+        isa.avx512vp2intersect = KUMO_SIMD_AVX512VP2;
+        isa.amx_tile = KUMO_SIMD_AMX_TILE;
+        isa.amx_int8 = KUMO_SIMD_AMX_INT8;
+        isa.amx_bf16 = KUMO_SIMD_AMX_BF16;
+        isa.amx_fp16 = KUMO_SIMD_AMX_FP16;
 #elif KUMO_ARCH_ARM64
         CpuIsaArm& isa = info.arm_isa;
         isa.is_this_arch = true;
