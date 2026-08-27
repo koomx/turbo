@@ -133,6 +133,7 @@
 #define KUMO_ARCH_ARM64EC    0
 #define KUMO_SIMD_NEON       0
 #define KUMO_SIMD_SVE        0
+#define KUMO_SIMD_SVE2.     0
 #define KUMO_SIMD_ARM_AES        0
 
 #endif
