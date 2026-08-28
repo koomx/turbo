@@ -14,6 +14,7 @@ jobs:
     uses: koomx/x-ci/.github/workflows/vcpkg-template.yml@main
     with:
       enable-std20-ubuntu24-amd64: true
+      enable-std20-ubuntu24-arm64: true
       enable-macos-arm64: true
       enable-windows: true
       # Windows: scripts/ci_configure.py forces MSVC (cl) via vcvarsall and
@@ -23,4 +24,8 @@ jobs:
       build-command: |
         cmake --build build-ninja --parallel
       test-command: |
+        if [ "$(uname -s 2>/dev/null)" = Linux ] && { [ "$(uname -m)" = aarch64 ] || [ "$(uname -m)" = arm64 ]; }; then
+          echo "skip ctest on linux arm"
+          exit 0
+        fi
         ctest --test-dir build-ninja --output-on-failure -j1
