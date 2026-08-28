@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -58,7 +57,6 @@ namespace turbo {
 
         const unsigned char* ni = (const unsigned char*)in;
 
-        assert((outlen == 4) || (outlen == 8));
         uint32_t v0 = 0;
         uint32_t v1 = 0;
         uint32_t v2 = UINT32_C(0x6c796765);
@@ -123,7 +121,6 @@ namespace turbo {
 
         const unsigned char* ni = (const unsigned char*)in;
 
-        assert((outlen == 4) || (outlen == 8));
         uint32_t v0 = 0;
         uint32_t v1 = 0;
         uint32_t v2 = UINT32_C(0x6c796765);

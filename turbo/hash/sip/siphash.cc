@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <turbo/hash/sip/siphash.h>
@@ -59,7 +58,6 @@ namespace turbo {
 
         const unsigned char* ni = (const unsigned char*)in;
 
-        assert((outlen == 8) || (outlen == 16));
         uint64_t v0 = UINT64_C(0x736f6d6570736575);
         uint64_t v1 = UINT64_C(0x646f72616e646f6d);
         uint64_t v2 = UINT64_C(0x6c7967656e657261);
@@ -134,7 +132,6 @@ namespace turbo {
 
         const unsigned char* ni = (const unsigned char*)in;
 
-        assert((outlen == 8) || (outlen == 16));
         uint64_t v0 = UINT64_C(0x736f6d6570736575);
         uint64_t v1 = UINT64_C(0x646f72616e646f6d);
         uint64_t v2 = UINT64_C(0x6c7967656e657261);
