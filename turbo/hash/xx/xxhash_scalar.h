@@ -60,7 +60,7 @@ namespace turbo {
         return turbo::big_endian::from_host(hh);
     }
 
-    struct XXH32_state_t {
+    struct ScalarHash32 {
         uint32_t total_len_32; /*!< Total length hashed, modulo 2^32 */
         uint32_t large_len; /*!< Whether the hash is >= 16 (handles @ref total_len_32 overflow) */
         uint32_t acc[4]; /*!< Accumulator lanes */
@@ -74,7 +74,7 @@ namespace turbo {
         uint32_t digest();
     };
 
-    struct XXH64_state_s {
+    struct ScalarHash64 {
         uint64_t total_len; /*!< Total length hashed. This is always 64-bit. */
         uint64_t acc[4]; /*!< Accumulator lanes */
         unsigned char buffer[32]; /*!< Internal buffer for partial reads.. */

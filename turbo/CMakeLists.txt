@@ -132,6 +132,8 @@ set(HASH_SRC
         hash/xx/xxhash_scalar.cc
         hash/xx/isa_select.cc
         hash/xx/xxh3.cc
+        hash/xx/interface.cc
+        hash/xx/common.cc
         hash/xx/engine/fallback/interface.cc
         hash/xx/engine/neon/interface.cc
         hash/xx/engine/sse2/interface.cc

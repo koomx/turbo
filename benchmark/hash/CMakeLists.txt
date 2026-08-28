@@ -13,14 +13,15 @@
 # limitations under the License.
 #
 
-configure_file(${PROJECT_SOURCE_DIR}/benchmark/config.h.in
-               ${PROJECT_SOURCE_DIR}/benchmark/config.h @ONLY)
-
-if (NOT TARGET benchmark::benchmark)
-    find_package(benchmark REQUIRED)
-endif ()
-
-
-add_subdirectory(log)
-add_subdirectory(hash)
-#add_subdirectory(unicode)
+kmcmake_cc_benchmark(
+        MODULE hash
+        NAME xxhash_benchmark
+        SOURCES
+        xxhash_benchmark.cc
+        CXXOPTS
+        ${KMCMAKE_CXX_OPTIONS}
+        LINKS
+        benchmark::benchmark
+        turbo::turbo_static
+        ${KMCMAKE_DEPS_LINK}
+)

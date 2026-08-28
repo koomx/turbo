@@ -18,21 +18,21 @@
 namespace turbo::xxhash {
 
     void XXHashEngineScalar::init_custom_secret(void* KUMO_RESTRICT customSecret, uint64_t seed64) {
-        XXH3_initCustomSecret_scalar(customSecret, seed64);
+        xxhash_init_custom_secret_scalar(customSecret, seed64);
     }
 
     void XXHashEngineScalar::accumulate(uint64_t* KUMO_RESTRICT acc, const uint8_t* KUMO_RESTRICT input,
         const uint8_t* KUMO_RESTRICT secret, size_t nbStripes) {
-        XXH3_accumulate_scalar(acc, input, secret, nbStripes);
+        xxhash_accumulate_scalar<xxhash::kDefaultXxhPrefetchDist>(acc, input, secret, nbStripes);
     }
 
     void XXHashEngineScalar::scramble_acc(void* KUMO_RESTRICT acc, const void* secret) {
-        XXH3_scrambleAcc_scalar(acc, secret);
+        xxhash_scramble_acc_scalar(acc, secret);
     }
 
     void XXHashEngineScalar::accumulate_512(void* KUMO_RESTRICT acc, const void* KUMO_RESTRICT input,
         const void* KUMO_RESTRICT secret) {
-        XXH3_accumulate_512_scalar(acc, input, secret);
+        xxhash_accumulate_512_scalar(acc, input, secret);
     }
 
     static XXHashEngineScalar* get_xxhash_fallback_instance() {

@@ -57,7 +57,7 @@
 
 #define KUMO_PLATFORM_NAME     "tvOS"
 
-#else !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#elif !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 
 #define KUMO_OS_APPLE            1
 #define KUMO_OS_MACOSX           1
@@ -67,6 +67,8 @@
 #define KUMO_OS_TVOS             0
 
 #define KUMO_PLATFORM_NAME     "OSX"
+#else
+#error bad apple platform
 #endif  // target
 
 #if defined(__wasm64__) || defined(_WIN64) || defined(__LP64__) || \

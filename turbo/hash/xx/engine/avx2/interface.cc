@@ -18,14 +18,14 @@
 #if KUMO_SIMD_AVX2
 #include <immintrin.h>
 
-#if defined(__GNUC__) && !defined(__clang__) && defined(__OPTIMIZE__) && XXH_SIZE_OPT <= 0
+#if defined(__GNUC__) && !defined(__clang__) && defined(__OPTIMIZE__)
 #pragma GCC push_options
 #pragma GCC optimize("-O2")
 #endif
 
 namespace turbo::xxhash {
 
-    KUMO_FORCE_INLINE void XXH3_accumulate_512_avx2(void* KUMO_RESTRICT acc,
+    KUMO_FORCE_INLINE void xxhash_accumulate_512_avx2(void* KUMO_RESTRICT acc,
         const void* KUMO_RESTRICT input,
         const void* KUMO_RESTRICT secret) {
         KUMO_DASSERT((((size_t)acc) & 31) == 0);
@@ -35,7 +35,7 @@ namespace turbo::xxhash {
             const __m256i* const xsecret = (const __m256i*)secret;
 
             size_t i;
-            for (i = 0; i < XXH_STRIPE_LEN / sizeof(__m256i); i++) {
+            for (i = 0; i < kXxhStripeLen / sizeof(__m256i); i++) {
                 __m256i const data_vec = _mm256_loadu_si256(xinput + i);
                 __m256i const key_vec = _mm256_loadu_si256(xsecret + i);
                 __m256i const data_key = _mm256_xor_si256(data_vec, key_vec);
@@ -48,27 +48,27 @@ namespace turbo::xxhash {
         }
     }
 
-    KUMO_FORCE_INLINE void XXH3_accumulate_avx2(uint64_t* KUMO_RESTRICT acc,
+    KUMO_FORCE_INLINE void xxhash_accumulate_avx2(uint64_t* KUMO_RESTRICT acc,
         const uint8_t* KUMO_RESTRICT input,
         const uint8_t* KUMO_RESTRICT secret,
         size_t nbStripes) {
         size_t n;
         for (n = 0; n < nbStripes; n++) {
-            const uint8_t* const in = input + n * XXH_STRIPE_LEN;
-            XXH_PREFETCH(in + XXH_PREFETCH_DIST);
-            XXH3_accumulate_512_avx2(acc, in, secret + n * XXH_SECRET_CONSUME_RATE);
+            const uint8_t* const in = input + n * kXxhStripeLen;
+            prefetch_to_local_cache(in + kDefaultXxhPrefetchDist);
+            xxhash_accumulate_512_avx2(acc, in, secret + n * kXxhSecretConsumeRate);
         }
     }
 
-    KUMO_FORCE_INLINE void XXH3_scrambleAcc_avx2(void* KUMO_RESTRICT acc, const void* KUMO_RESTRICT secret) {
+    KUMO_FORCE_INLINE void xxhash_scramble_acc_avx2(void* KUMO_RESTRICT acc, const void* KUMO_RESTRICT secret) {
         KUMO_DASSERT((((size_t)acc) & 31) == 0);
         {
             __m256i* const xacc = (__m256i*)acc;
             const __m256i* const xsecret = (const __m256i*)secret;
-            const __m256i prime32 = _mm256_set1_epi32((int)XXH_PRIME32_1);
+            const __m256i prime32 = _mm256_set1_epi32((int)kXxhPrime32_1);
 
             size_t i;
-            for (i = 0; i < XXH_STRIPE_LEN / sizeof(__m256i); i++) {
+            for (i = 0; i < kXxhStripeLen / sizeof(__m256i); i++) {
                 __m256i const acc_vec = xacc[i];
                 __m256i const shifted = _mm256_srli_epi64(acc_vec, 47);
                 __m256i const data_vec = _mm256_xor_si256(acc_vec, shifted);
@@ -83,16 +83,15 @@ namespace turbo::xxhash {
         }
     }
 
-    KUMO_FORCE_INLINE void XXH3_initCustomSecret_avx2(void* KUMO_RESTRICT customSecret, uint64_t seed64) {
-        static_assert((XXH_SECRET_DEFAULT_SIZE & 31) == 0, "(XXH_SECRET_DEFAULT_SIZE & 31) == 0");
-        static_assert((XXH_SECRET_DEFAULT_SIZE / sizeof(__m256i)) == 6, "XXH_SECRET_DEFAULT_SIZE / sizeof(__m256i)) == 6");
-        static_assert(XXH_SEC_ALIGN <= 64, "XXH_SEC_ALIGN <= 64");
+    KUMO_FORCE_INLINE void xxhash_init_custom_secret_avx2(void* KUMO_RESTRICT customSecret, uint64_t seed64) {
+        static_assert((kXxhSecretDefaultSize & 31) == 0, "(kXxhSecretDefaultSize & 31) == 0");
+        static_assert((kXxhSecretDefaultSize / sizeof(__m256i)) == 6, "kXxhSecretDefaultSize / sizeof(__m256i)) == 6");
         (void)(&turbo::little_endian::Store64);
-        XXH_PREFETCH(customSecret);
+        prefetch_to_local_cache(customSecret);
         {
             __m256i const seed = _mm256_set_epi64x((int64_t)(0U - seed64), (int64_t)seed64, (int64_t)(0U - seed64), (int64_t)seed64);
 
-            const __m256i* const src = (const __m256i*)((const void*)XXH3_kSecret);
+            const __m256i* const src = (const __m256i*)((const void*)kXxhSecret);
             __m256i* dest = (__m256i*)customSecret;
 
 #if defined(__GNUC__) || defined(__clang__)
@@ -111,21 +110,21 @@ namespace turbo::xxhash {
     }
 
     void XXHashEngineAvx2::init_custom_secret(void* KUMO_RESTRICT customSecret, uint64_t seed64) {
-        XXH3_initCustomSecret_avx2(customSecret, seed64);
+        xxhash_init_custom_secret_avx2(customSecret, seed64);
     }
 
     void XXHashEngineAvx2::accumulate(uint64_t* KUMO_RESTRICT acc, const uint8_t* KUMO_RESTRICT input,
         const uint8_t* KUMO_RESTRICT secret, size_t nbStripes) {
-        XXH3_accumulate_avx2(acc, input, secret, nbStripes);
+        xxhash_accumulate_avx2(acc, input, secret, nbStripes);
     }
 
     void XXHashEngineAvx2::scramble_acc(void* KUMO_RESTRICT acc, const void* secret) {
-        XXH3_scrambleAcc_avx2(acc, secret);
+        xxhash_scramble_acc_avx2(acc, secret);
     }
 
     void XXHashEngineAvx2::accumulate_512(void* KUMO_RESTRICT acc, const void* KUMO_RESTRICT input,
         const void* KUMO_RESTRICT secret) {
-        XXH3_accumulate_512_avx2(acc, input, secret);
+        xxhash_accumulate_512_avx2(acc, input, secret);
     }
 
     static XXHashEngine* get_xxhash_avx2_instance() {
@@ -134,7 +133,7 @@ namespace turbo::xxhash {
     }
 } // namespace turbo::xxhash
 
-#if defined(__GNUC__) && !defined(__clang__) && defined(__OPTIMIZE__) && XXH_SIZE_OPT <= 0
+#if defined(__GNUC__) && !defined(__clang__) && defined(__OPTIMIZE__)
 #pragma GCC pop_options
 #endif
 

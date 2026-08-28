@@ -50,7 +50,7 @@ namespace turbo {
         namespace {
 
             void PrefetchFutureDataToLocalCache(const uint8_t* ptr) {
-                PrefetchToLocalCache(ptr + 5 * KUMO_CACHELINE_SIZE);
+                prefetch_to_local_cache(ptr + 5 * KUMO_CACHELINE_SIZE);
             }
 
 #if defined(TURBO_AES_INTERNAL_HAVE_X86_SIMD) || defined(TURBO_AES_INTERNAL_HAVE_ARM_SIMD)

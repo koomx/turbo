@@ -161,3 +161,8 @@
 #define KUMO_REQUIRE_STACK_ALIGN_TRAMPOLINE (0)
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+#define KUMO_ALIASING __attribute__((__may_alias__))
+#else
+#define KUMO_ALIASING /* nothing */
+#endif

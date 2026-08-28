@@ -22,7 +22,7 @@
 
 namespace turbo::xxhash {
 
-    KUMO_FORCE_INLINE void XXH3_accumulate_512_lasx(void* KUMO_RESTRICT acc,
+    KUMO_FORCE_INLINE void xxhash_accumulate_512_lasx(void* KUMO_RESTRICT acc,
         const void* KUMO_RESTRICT input,
         const void* KUMO_RESTRICT secret) {
         KUMO_DASSERT((((size_t)acc) & 31) == 0);
@@ -32,7 +32,7 @@ namespace turbo::xxhash {
             const __m256i* const xinput = (const __m256i*)input;
             const __m256i* const xsecret = (const __m256i*)secret;
 
-            for (i = 0; i < XXH_STRIPE_LEN / sizeof(__m256i); i++) {
+            for (i = 0; i < kXxhStripeLen / sizeof(__m256i); i++) {
                 __m256i const data_vec = __lasx_xvld(xinput + i, 0);
                 __m256i const key_vec = __lasx_xvld(xsecret + i, 0);
                 __m256i const data_key = __lasx_xvxor_v(data_vec, key_vec);
@@ -45,27 +45,27 @@ namespace turbo::xxhash {
         }
     }
 
-    KUMO_FORCE_INLINE void XXH3_accumulate_lasx(uint64_t* KUMO_RESTRICT acc,
+    KUMO_FORCE_INLINE void xxhash_accumulate_lasx(uint64_t* KUMO_RESTRICT acc,
         const uint8_t* KUMO_RESTRICT input,
         const uint8_t* KUMO_RESTRICT secret,
         size_t nbStripes) {
         size_t n;
         for (n = 0; n < nbStripes; n++) {
-            const uint8_t* const in = input + n * XXH_STRIPE_LEN;
-            XXH_PREFETCH(in + XXH_PREFETCH_DIST);
-            XXH3_accumulate_512_lasx(acc, in, secret + n * XXH_SECRET_CONSUME_RATE);
+            const uint8_t* const in = input + n * kXxhStripeLen;
+            prefetch_to_local_cache(in + kDefaultXxhPrefetchDist);
+            xxhash_accumulate_512_lasx(acc, in, secret + n * kXxhSecretConsumeRate);
         }
     }
 
-    KUMO_FORCE_INLINE void XXH3_scrambleAcc_lasx(void* KUMO_RESTRICT acc, const void* KUMO_RESTRICT secret) {
+    KUMO_FORCE_INLINE void xxhash_scramble_acc_lasx(void* KUMO_RESTRICT acc, const void* KUMO_RESTRICT secret) {
         KUMO_DASSERT((((size_t)acc) & 31) == 0);
         {
             __m256i* const xacc = (__m256i*)acc;
             const __m256i* const xsecret = (const __m256i*)secret;
-            const __m256i prime32 = __lasx_xvreplgr2vr_d(XXH_PRIME32_1);
+            const __m256i prime32 = __lasx_xvreplgr2vr_d(kXxhPrime32_1);
             size_t i;
 
-            for (i = 0; i < XXH_STRIPE_LEN / sizeof(__m256i); i++) {
+            for (i = 0; i < kXxhStripeLen / sizeof(__m256i); i++) {
                 __m256i const acc_vec = xacc[i];
                 __m256i const shifted = __lasx_xvsrli_d(acc_vec, 47);
                 __m256i const data_vec = __lasx_xvxor_v(acc_vec, shifted);
@@ -77,21 +77,21 @@ namespace turbo::xxhash {
     }
 
     void XXHashEngineLasx::init_custom_secret(void* KUMO_RESTRICT customSecret, uint64_t seed64) {
-        XXH3_initCustomSecret_scalar(customSecret, seed64);
+        xxhash_init_custom_secret_scalar(customSecret, seed64);
     }
 
     void XXHashEngineLasx::accumulate(uint64_t* KUMO_RESTRICT acc, const uint8_t* KUMO_RESTRICT input,
         const uint8_t* KUMO_RESTRICT secret, size_t nbStripes) {
-        XXH3_accumulate_lasx(acc, input, secret, nbStripes);
+        xxhash_accumulate_lasx(acc, input, secret, nbStripes);
     }
 
     void XXHashEngineLasx::scramble_acc(void* KUMO_RESTRICT acc, const void* secret) {
-        XXH3_scrambleAcc_lasx(acc, secret);
+        xxhash_scramble_acc_lasx(acc, secret);
     }
 
     void XXHashEngineLasx::accumulate_512(void* KUMO_RESTRICT acc, const void* KUMO_RESTRICT input,
         const void* KUMO_RESTRICT secret) {
-        XXH3_accumulate_512_lasx(acc, input, secret);
+        xxhash_accumulate_512_lasx(acc, input, secret);
     }
 
     static XXHashEngine* get_xxhash_lasx_instance() {

@@ -127,14 +127,14 @@
 #define KUMO_TEST_DLL
 #endif  // defined(_MSC_VER)
 
-#ifndef KUMO_HAS_INCLUDE
+#ifndef KUMO_HAVE_INCLUDE
 #ifdef __has_include
     /*
      * Not defined as XXH_HAS_INCLUDE(x) (function-like) because
      * this causes segfaults in Apple Clang 4.2 (on Mac OS X 10.7 Lion)
      */
-#define KUMO_HAS_INCLUDE __has_include
+#define KUMO_HAVE_INCLUDE __has_include
 #else
-#define KUMO_HAS_INCLUDE(x) 0
+#define KUMO_HAVE_INCLUDE(x) 0
 #endif
 #endif

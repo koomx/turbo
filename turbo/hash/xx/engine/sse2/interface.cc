@@ -20,7 +20,7 @@
 
 namespace turbo::xxhash {
 
-    KUMO_FORCE_INLINE void XXH3_accumulate_512_sse2(void* KUMO_RESTRICT acc,
+    KUMO_FORCE_INLINE void xxhash_accumulate_512_sse2(void* KUMO_RESTRICT acc,
         const void* KUMO_RESTRICT input,
         const void* KUMO_RESTRICT secret) {
         KUMO_DASSERT((((size_t)acc) & 15) == 0);
@@ -30,7 +30,7 @@ namespace turbo::xxhash {
             const __m128i* const xsecret = (const __m128i*)secret;
 
             size_t i;
-            for (i = 0; i < XXH_STRIPE_LEN / sizeof(__m128i); i++) {
+            for (i = 0; i < kXxhStripeLen / sizeof(__m128i); i++) {
                 __m128i const data_vec = _mm_loadu_si128(xinput + i);
                 __m128i const key_vec = _mm_loadu_si128(xsecret + i);
                 __m128i const data_key = _mm_xor_si128(data_vec, key_vec);
@@ -43,27 +43,27 @@ namespace turbo::xxhash {
         }
     }
 
-    KUMO_FORCE_INLINE void XXH3_accumulate_sse2(uint64_t* KUMO_RESTRICT acc,
+    KUMO_FORCE_INLINE void xxhash_accumulate_sse2(uint64_t* KUMO_RESTRICT acc,
         const uint8_t* KUMO_RESTRICT input,
         const uint8_t* KUMO_RESTRICT secret,
         size_t nbStripes) {
         size_t n;
         for (n = 0; n < nbStripes; n++) {
-            const uint8_t* const in = input + n * XXH_STRIPE_LEN;
-            XXH_PREFETCH(in + XXH_PREFETCH_DIST);
-            XXH3_accumulate_512_sse2(acc, in, secret + n * XXH_SECRET_CONSUME_RATE);
+            const uint8_t* const in = input + n * kXxhStripeLen;
+            prefetch_to_local_cache(in + kDefaultXxhPrefetchDist);
+            xxhash_accumulate_512_sse2(acc, in, secret + n * kXxhSecretConsumeRate);
         }
     }
 
-    KUMO_FORCE_INLINE void XXH3_scrambleAcc_sse2(void* KUMO_RESTRICT acc, const void* KUMO_RESTRICT secret) {
+    KUMO_FORCE_INLINE void xxhash_scramble_acc_sse2(void* KUMO_RESTRICT acc, const void* KUMO_RESTRICT secret) {
         KUMO_DASSERT((((size_t)acc) & 15) == 0);
         {
             __m128i* const xacc = (__m128i*)acc;
             const __m128i* const xsecret = (const __m128i*)secret;
-            const __m128i prime32 = _mm_set1_epi32((int)XXH_PRIME32_1);
+            const __m128i prime32 = _mm_set1_epi32((int)kXxhPrime32_1);
 
             size_t i;
-            for (i = 0; i < XXH_STRIPE_LEN / sizeof(__m128i); i++) {
+            for (i = 0; i < kXxhStripeLen / sizeof(__m128i); i++) {
                 __m128i const acc_vec = xacc[i];
                 __m128i const shifted = _mm_srli_epi64(acc_vec, 47);
                 __m128i const data_vec = _mm_xor_si128(acc_vec, shifted);
@@ -78,11 +78,11 @@ namespace turbo::xxhash {
         }
     }
 
-    KUMO_FORCE_INLINE void XXH3_initCustomSecret_sse2(void* KUMO_RESTRICT customSecret, uint64_t seed64) {
-        static_assert((XXH_SECRET_DEFAULT_SIZE & 15) == 0, "(XXH_SECRET_DEFAULT_SIZE & 15) == 0");
+    KUMO_FORCE_INLINE void xxhash_initCustomSecret_sse2(void* KUMO_RESTRICT customSecret, uint64_t seed64) {
+        static_assert((kXxhSecretDefaultSize & 15) == 0, "(kXxhSecretDefaultSize & 15) == 0");
         (void)(&turbo::little_endian::Store64);
         {
-            int const nbRounds = XXH_SECRET_DEFAULT_SIZE / sizeof(__m128i);
+            int const nbRounds = kXxhSecretDefaultSize / sizeof(__m128i);
 
 #if defined(_MSC_VER) && defined(_M_IX86) && _MSC_VER <= 1900
             uint64_t const seed64_unsigned = (uint64_t)seed64;
@@ -97,7 +97,7 @@ namespace turbo::xxhash {
 #endif
             int i;
 
-            const void* const src16 = XXH3_kSecret;
+            const void* const src16 = kXxhSecret;
             __m128i* dst16 = (__m128i*)customSecret;
 #if defined(__GNUC__) || defined(__clang__)
             KUMO_CCO_BARRIER(dst16);
@@ -112,21 +112,21 @@ namespace turbo::xxhash {
     }
 
     void XXHashEngineSse2::init_custom_secret(void* KUMO_RESTRICT customSecret, uint64_t seed64) {
-        XXH3_initCustomSecret_sse2(customSecret, seed64);
+        xxhash_initCustomSecret_sse2(customSecret, seed64);
     }
 
     void XXHashEngineSse2::accumulate(uint64_t* KUMO_RESTRICT acc, const uint8_t* KUMO_RESTRICT input,
         const uint8_t* KUMO_RESTRICT secret, size_t nbStripes) {
-        XXH3_accumulate_sse2(acc, input, secret, nbStripes);
+        xxhash_accumulate_sse2(acc, input, secret, nbStripes);
     }
 
     void XXHashEngineSse2::scramble_acc(void* KUMO_RESTRICT acc, const void* secret) {
-        XXH3_scrambleAcc_sse2(acc, secret);
+        xxhash_scramble_acc_sse2(acc, secret);
     }
 
     void XXHashEngineSse2::accumulate_512(void* KUMO_RESTRICT acc, const void* KUMO_RESTRICT input,
         const void* KUMO_RESTRICT secret) {
-        XXH3_accumulate_512_sse2(acc, input, secret);
+        xxhash_accumulate_512_sse2(acc, input, secret);
     }
 
     static XXHashEngine* get_xxhash_sse2_instance() {

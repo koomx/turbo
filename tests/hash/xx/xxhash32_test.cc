@@ -1,0 +1,34 @@
+// Copyright (C) 2026 Kumo inc. and its affiliates. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+#include <tests/hash/xx/testdata_xxhash32.h>
+#include <turbo/hash/xx/xxhash_scalar.h>
+
+#include <cstdint>
+#include <vector>
+
+#include <gtest/gtest.h>
+
+TEST(XxHash32, Vectors) {
+    std::vector<uint8_t> buf(4096 + 64 + 1);
+    turbo::xxtest::fill_buffer(buf.data(), buf.size());
+    for (auto const& t : turbo::xxtest::xxhash32_testdata) {
+        EXPECT_EQ(turbo::xxhash32_scalar(buf.data(), t.len, t.seed), t.nresult) << t.len << ' ' << t.seed;
+        turbo::ScalarHash32 st;
+        st.reset(t.seed);
+        st.update(buf.data(), t.len);
+        EXPECT_EQ(st.digest(), t.nresult) << t.len << ' ' << t.seed;
+    }
+}

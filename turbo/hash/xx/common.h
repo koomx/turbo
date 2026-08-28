@@ -15,22 +15,103 @@
 
 #pragma once
 
+#include <array>
 #include <cstdint>
+#include <cstring>
 #include <turbo/hash/xx/config.h>
 #include <turbo/bits/bits.h>
 
+
+namespace turbo {
+    namespace xxhash {
+        class XXHashEngine;
+    } // namespace xxhash
+
+    struct XxHash128 {
+        /// `value & 0xFFFFFFFFFFFFFFFF`
+        uint64_t low64;
+        /// `value >> 64`
+        uint64_t high64;
+
+        bool operator==(XxHash128 o) const {
+            return low64 == o.low64 && high64 == o.high64;
+        }
+        bool operator!=(XxHash128 o) const {
+            return !(*this == o);
+        }
+        int compare(XxHash128 o) const {
+            if (high64 != o.high64) {
+                return (high64 > o.high64) - (o.high64 > high64);
+            }
+            return (low64 > o.low64) - (o.low64 > low64);
+        }
+        bool operator<(XxHash128 o) const {
+            return compare(o) < 0;
+        }
+        bool operator<=(XxHash128 o) const {
+            return compare(o) <= 0;
+        }
+        bool operator>(XxHash128 o) const {
+            return compare(o) > 0;
+        }
+        bool operator>=(XxHash128 o) const {
+            return compare(o) >= 0;
+        }
+
+        /// Writes 16 canonical bytes. `dst` must point to at least 16 bytes.
+        void write(uint8_t* dst) const {
+            uint64_t hi = high64;
+            uint64_t lo = low64;
+            if constexpr (KUMO_ENDIAN_LITTLE) {
+                hi = turbo::byteswap(hi);
+                lo = turbo::byteswap(lo);
+            }
+            memcpy(dst, &hi, sizeof(hi));
+            memcpy(dst + sizeof(hi), &lo, sizeof(lo));
+        }
+        void write(std::array<uint8_t, 16>& dst) const {
+            write(dst.data());
+        }
+
+        /// Reads 16 canonical bytes. `src` must point to at least 16 bytes.
+        static XxHash128 read(const uint8_t* src) {
+            XxHash128 h;
+            h.high64 = turbo::big_endian::Load64(src);
+            h.low64 = turbo::big_endian::Load64(src + 8);
+            return h;
+        }
+        static XxHash128 read(const std::array<uint8_t, 16>& src) {
+            return read(src.data());
+        }
+    };
+
+    class XxHashStateCore {
+    protected:
+        alignas(64) uint64_t acc[8];
+        alignas(64) unsigned char custom_secret[xxhash::kXxh3SecretDefaultSize];
+        alignas(64) unsigned char buffer[xxhash::kXxh3InternalBufferSize];
+        uint32_t buffered_size;
+        uint32_t use_seed;
+        size_t nb_stripes_so_far;
+        uint64_t totalLen;
+        size_t nb_stripes_per_block;
+        size_t secret_limit;
+        uint64_t seed;
+        uint64_t reserved64;
+        const unsigned char* ext_secret;
+
+        void reset(uint64_t sd, const uint8_t* secret, size_t secretSize);
+    private:
+        friend class xxhash::XXHashEngine;
+    };
+}  // namespace turbo
+
 namespace turbo::xxhash {
-    typedef enum {
-        XXH_aligned,  /*!< Aligned */
-        XXH_unaligned /*!< Possibly unaligned */
-    } XXH_alignment;
-
-
     KUMO_FORCE_INLINE uint64_t xxhash_scalar_avalanche64(uint64_t hash) {
         hash ^= hash >> 33;
-        hash *= XXH_PRIME64_2;
+        hash *= kXxhPrime64_2;
         hash ^= hash >> 29;
-        hash *= XXH_PRIME64_3;
+        hash *= kXxhPrime64_3;
         hash ^= hash >> 32;
         return hash;
     }
@@ -42,10 +123,10 @@ namespace turbo::xxhash {
         return v64 ^ (v64 >> shift);
     }
 
-    KUMO_FORCE_INLINE uint64_t XXH3_avalanche(uint64_t h64)
+    KUMO_FORCE_INLINE uint64_t xxhash_avalanche(uint64_t h64)
     {
         h64 = xxhash_scalar_xorshift64(h64, 37);
-        h64 *= turbo::xxhash::PRIME_MX1;
+        h64 *= turbo::xxhash::kXxhPrimeMX1;
         h64 = xxhash_scalar_xorshift64(h64, 32);
         return h64;
     }
@@ -54,24 +135,19 @@ namespace turbo::xxhash {
     {
         /* this mix is inspired by Pelle Evensen's rrmxmx */
         h64 ^= turbo::rotl(h64, 49) ^ turbo::rotl(h64, 24);
-        h64 *= turbo::xxhash::PRIME_MX2;
+        h64 *= turbo::xxhash::kXxhPrimeMX2;
         h64 ^= (h64 >> 35) + len ;
-        h64 *= turbo::xxhash::PRIME_MX2;
+        h64 *= turbo::xxhash::kXxhPrimeMX2;
         return xxhash_scalar_xorshift64(h64, 28);
     }
-
-    typedef struct {
-        uint64_t low64;   /*!< `value & 0xFFFFFFFFFFFFFFFF` */
-        uint64_t high64;  /*!< `value >> 64` */
-    } XXH128_hash_t;
 
 
     ///////////////////////////////////////////////////////////////////////
     /// @internal
-    /// @def XXH3_kSecret
+    /// @def kXxhSecret
     /// @brief Pseudorandom secret taken directly from FARSH.
     ///
-    alignas(64) static constexpr uint8_t XXH3_kSecret[XXH_SECRET_DEFAULT_SIZE] = {
+    alignas(64) static constexpr uint8_t kXxhSecret[kXxhSecretDefaultSize] = {
         0xb8, 0xfe, 0x6c, 0x39, 0x23, 0xa4, 0x4b, 0xbe, 0x7c, 0x01, 0x81, 0x2c, 0xf7, 0x21, 0xad, 0x1c,
         0xde, 0xd4, 0x6d, 0xe9, 0x83, 0x90, 0x97, 0xdb, 0x72, 0x40, 0xa4, 0xa4, 0xb7, 0xb3, 0x67, 0x1f,
         0xcb, 0x79, 0xe6, 0x4e, 0xcc, 0xc0, 0xe5, 0x78, 0x82, 0x5a, 0xd0, 0x7d, 0xcc, 0xff, 0x72, 0x21,
@@ -87,15 +163,15 @@ namespace turbo::xxhash {
     };
 
 #if defined(_MSC_VER) && defined(_M_IX86)
-#    define XXH_mult32to64(x, y) __emulu((unsigned)(x), (unsigned)(y))
+#    define xxhash_mult32to64(x, y) __emulu((unsigned)(x), (unsigned)(y))
 #else
 
-#    define XXH_mult32to64(x, y) ((uint64_t)(uint32_t)(x) * (uint64_t)(uint32_t)(y))
+#    define xxhash_mult32to64(x, y) ((uint64_t)(uint32_t)(x) * (uint64_t)(uint32_t)(y))
 #endif
 
 
     KUMO_FORCE_INLINE uint64_t
-    XXH_mult32to64_add64(uint64_t lhs, uint64_t rhs, uint64_t acc) {
+    xxhash_mult32to64_add64(uint64_t lhs, uint64_t rhs, uint64_t acc) {
 #if defined(__aarch64__) && (defined(__GNUC__) || defined(__clang__))
 
         uint64_t ret;
@@ -103,24 +179,25 @@ namespace turbo::xxhash {
         __asm__("umaddl %x0, %w1, %w2, %x3" : "=r" (ret) : "r" (lhs), "r" (rhs), "r" (acc));
         return ret;
 #else
-        return XXH_mult32to64((uint32_t)lhs, (uint32_t)rhs) + acc;
+        return xxhash_mult32to64((uint32_t)lhs, (uint32_t)rhs) + acc;
 #endif
     }
 
-    KUMO_FORCE_INLINE void XXH3_combine16(void* dst, turbo::xxhash::XXH128_hash_t h128) {
+    KUMO_FORCE_INLINE void xxhash_combine16_add64(void* dst, XxHash128 h128) {
         turbo::little_endian::Store64( dst, turbo::little_endian::Load64(dst) ^ h128.low64 );
         turbo::little_endian::Store64( (char*)dst+8, turbo::little_endian::Load64((char*)dst+8) ^ h128.high64 );
     }
 
-    typedef enum {
-        XXH_OK = 0, /*!< OK */
-        XXH_ERROR   /*!< Error */
-    } XXH_errorcode;
 
-    struct XXH128_canonical_t{ unsigned char digest[sizeof(turbo::xxhash::XXH128_hash_t)]; };
+    static  constexpr std::array<uint64_t,kXxhAccNb> kXxhashAcc = {
+        kXxhPrime32_3,
+        kXxhPrime64_1,
+        kXxhPrime64_2,
+        kXxhPrime64_3,
+        kXxhPrime64_4,
+        kXxhPrime32_2,
+        kXxhPrime64_5,
+        kXxhPrime32_1
+    };
 
 }  // namespace turbo::xxhash
-
-
-#define XXH3_INIT_ACC { XXH_PRIME32_3, XXH_PRIME64_1, XXH_PRIME64_2, XXH_PRIME64_3, \
-    XXH_PRIME64_4, XXH_PRIME32_2, XXH_PRIME64_5, XXH_PRIME32_1 }

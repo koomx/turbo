@@ -13,14 +13,29 @@
 # limitations under the License.
 #
 
-configure_file(${PROJECT_SOURCE_DIR}/benchmark/config.h.in
-               ${PROJECT_SOURCE_DIR}/benchmark/config.h @ONLY)
+set(HASH_XX_TESTS
+        xxhash32_test
+        xxhash64_test
+        xxh3_64_test
+        xxh3_64_secret_test
+        xxh3_128_test
+        xxh3_128_secret_test
+        xxhash_generate_secret_test
+)
 
-if (NOT TARGET benchmark::benchmark)
-    find_package(benchmark REQUIRED)
-endif ()
-
-
-add_subdirectory(log)
-add_subdirectory(hash)
-#add_subdirectory(unicode)
+foreach (case IN LISTS HASH_XX_TESTS)
+    kmcmake_cc_test(
+            NAME ${case}
+            MODULE hash_xx
+            SOURCES
+            ${case}.cc
+            CXXOPTS
+            ${KMCMAKE_CXX_OPTIONS}
+            LINKS
+            GTest::gtest
+            GTest::gmock
+            GTest::gtest_main
+            turbo::turbo_static
+            ${KMCMAKE_DEPS_LINK}
+    )
+endforeach ()
