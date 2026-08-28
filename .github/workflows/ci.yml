@@ -24,8 +24,4 @@ jobs:
       build-command: |
         cmake --build build-ninja --parallel
       test-command: |
-        if [ "$(uname -s 2>/dev/null)" = Linux ] && { [ "$(uname -m)" = aarch64 ] || [ "$(uname -m)" = arm64 ]; }; then
-          echo "skip ctest on linux arm"
-          exit 0
-        fi
-        ctest --test-dir build-ninja --output-on-failure -j1
+        python3 scripts/ci_ctest.py
