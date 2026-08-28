@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include <turbo/cli/cli.h>
-
+#include <turbo/macros/macros.h>
 #include <iostream>
 
 int main() {
@@ -14,11 +14,6 @@ int main() {
     std::cout << "  C++ standard: ";
 #if defined(XCLI_CPP20)
     std::cout << 20;
-#elif defined(XCLI_CPP17)
-    std::cout << 17;
-#elif defined(XCLI_CPP14)
-    std::cout << 14;
-#else
     std::cout << 11;
 #endif
     std::cout << "\n";

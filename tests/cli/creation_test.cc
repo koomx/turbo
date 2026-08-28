@@ -782,7 +782,7 @@ class Unstreamable {
 
   public:
     Unstreamable() = default;
-    XCLI_NODISCARD int get_x() const { return x_; }
+    [[nodiscard]] int get_x() const { return x_; }
     void set_x(int x) { x_ = x; }
 };
 

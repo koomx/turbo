@@ -135,8 +135,8 @@
 /// AI:   turbo/cli/split.h        — String splitting utilities
 /// AI:   turbo/cli/string_tools.h — String utilities
 /// AI:   turbo/cli/type_tools.h   — Type traits
-/// AI:   turbo/cli/macros.h       — Utility macros (XCLI_INLINE, etc.)
-/// AI:   turbo/cli/encoding.h     — Encoding utilities
+/// AI:   turbo/cli/macros.h       — Utility macros (inline, etc.)
+/// AI:   turbo/cli/encoding.h     — to_path (UTF-8 → native path)
 /// AI:   turbo/cli/argv.h         — Windows UTF-8 argv helpers (ensure_utf8)
 /// AI:   turbo/cli/version_cli.h  — CLI version (2.6.2, tracks CLI11)
 /// AI:   turbo/cli/version.h      — Generated build info + SIMD macros

@@ -1282,7 +1282,7 @@ namespace turbo {
         static IsaInfo ins = {
             UNICODE_IMPLEMENTATION_HASWELL == 1,
             false,
-            static_cast<uint32_t>(InstructionSet::AVX2 | InstructionSet::BMI1 | InstructionSet::BMI2),
+            { kX86Avx2, kX86Bmi, kX86Bmi2 },
              "haswell",
             get_haswell_instance(),
         };

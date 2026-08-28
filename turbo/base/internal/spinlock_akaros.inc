@@ -23,13 +23,13 @@ extern "C" {
 KUMO_ATTRIBUTE_WEAK void TURBO_INTERNAL_C_SYMBOL(TurboInternalSpinLockDelay)(
     std::atomic<uint32_t>* /* lock_word */, uint32_t /* value */,
     int /* loop */, turbo::base_internal::SchedulingMode /* mode */) {
-  // In Akaros, one must take care not to call anything that could cause a
-  // malloc(), a blocking system call, or a uthread_yield() while holding a
-  // spinlock. Our callers assume will not call into libraries or other
-  // arbitrary code.
+    // In Akaros, one must take care not to call anything that could cause a
+    // malloc(), a blocking system call, or a uthread_yield() while holding a
+    // spinlock. Our callers assume will not call into libraries or other
+    // arbitrary code.
 }
 
 KUMO_ATTRIBUTE_WEAK void TURBO_INTERNAL_C_SYMBOL(TurboInternalSpinLockWake)(
-    std::atomic<uint32_t>* /* lock_word */, bool /* all */) {}
+    std::atomic<uint32_t>* /* lock_word */, bool /* all */) { }
 
-}  // extern "C"
+} // extern "C"

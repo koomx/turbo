@@ -556,7 +556,7 @@ namespace turbo {
         static IsaInfo ins = {
             UNICODE_IMPLEMENTATION_FALLBACK == 1,
             true,
-            static_cast<uint32_t>(InstructionSet::NEON),
+            {},
             "fallback",
             get_fallback_instance(),
        };

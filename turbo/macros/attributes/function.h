@@ -386,3 +386,33 @@
 #define KUMO_XRAY_LOG_ARGS(N)
 #endif
 
+////////////////////////////////////////////////////////////
+/// @brief Indicates that a function returns a pointer that does not alias
+///        any other pointer.
+///
+/// This is a hint to the compiler that the returned pointer points to newly
+/// allocated memory (or similar) which is not accessible via any other pointer
+/// in the current scope. This enables better optimization by allowing the
+/// compiler to assume that writes through the returned pointer do not affect
+/// other memory locations, and to eliminate redundant loads.
+///
+/// @note This attribute is supported by GCC and Clang.
+///       It has no effect in other compilers.
+/// @see https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-malloc-function-attribute
+///
+/// @example
+/// // Allocator functions should use this attribute:
+/// void* KUMO_ATTRIBUTE_MALLOC_FUNCTION my_alloc(size_t size) {
+///     return malloc(size);
+/// }
+///
+/// // This allows the compiler to optimize:
+/// // void* p1 = my_alloc(100);
+/// // void* p2 = my_alloc(100);
+/// // // p1 and p2 are known to not overlap.
+///
+#if defined(__GNUC__) || defined(__clang__)
+#  define KUMO_ATTRIBUTE_MALLOC_FUNCTION __attribute__((__malloc__))
+#else
+#  define KUMO_ATTRIBUTE_MALLOC_FUNCTION
+#endif

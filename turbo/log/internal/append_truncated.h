@@ -20,7 +20,8 @@
 #include <string_view>
 
 #include <turbo/macros/config.h>
-#include <turbo/format/internal/utf8.h>
+#include <turbo/unicode/api/utf32.h>
+#include <turbo/unicode/api/wchar.h>
 #include <string_view>
 #include <turbo/types/span.h>
 
@@ -42,18 +43,18 @@ namespace turbo {
         // - On platforms where `wchar_t` is 4 bytes (e.g., Linux, macOS), the input
         //   is treated as UTF-32.
         inline size_t append_truncated(std::wstring_view src, turbo::Span<char> &dst) {
-            turbo::strings_internal::ShiftState state;
+            turbo::ShiftState state;
             size_t total_bytes_written = 0;
             for (const wchar_t wc: src) {
                 // If the destination buffer might not be large enough to write the next
                 // character, stop.
-                if (dst.size() < turbo::strings_internal::kMaxEncodedUTF8Size) break;
+                if (dst.size() < turbo::kMaxEncodedUTF8Size) break;
                 size_t bytes_written =
-                        turbo::strings_internal::WideToUtf8(wc, dst.data(), state);
+                        turbo::convert_wchar_to_utf8(wc, dst.data(), state);
                 if (bytes_written == static_cast<size_t>(-1)) {
                     // Invalid character. Encode REPLACEMENT CHARACTER (U+FFFD) instead.
                     constexpr wchar_t kReplacementCharacter = L'\uFFFD';
-                    bytes_written = turbo::strings_internal::WideToUtf8(kReplacementCharacter,
+                    bytes_written = turbo::convert_wchar_to_utf8(kReplacementCharacter,
                                                                         dst.data(), state);
                 }
                 dst.remove_prefix(bytes_written);

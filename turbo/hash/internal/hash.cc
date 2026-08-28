@@ -21,7 +21,7 @@
 
 #include <turbo/bits/prefetch.h>
 #include <turbo/bits/unaligned_access.h>
-#include <turbo/hash/internal/city.h>
+#include <turbo/hash/city/city.h>
 #include <turbo/macros/config.h>
 
 #ifdef TURBO_AES_INTERNAL_HAVE_X86_SIMD
@@ -38,7 +38,7 @@
 
 #ifdef TURBO_AES_INTERNAL_HAVE_ARM_SIMD
 #error TURBO_AES_INTERNAL_HAVE_ARM_SIMD cannot be directly set
-#elif KUMO_SIMD_NEON && KUMO_SIMD_AES
+#elif KUMO_SIMD_NEON && KUMO_SIMD_ARM_AES
 #include <arm_neon.h>
 #define TURBO_AES_INTERNAL_HAVE_ARM_SIMD
 #endif // KUMO_SIMD_NEON
@@ -50,7 +50,7 @@ namespace turbo {
         namespace {
 
             void PrefetchFutureDataToLocalCache(const uint8_t* ptr) {
-                PrefetchToLocalCache(ptr + 5 * KUMO_CACHELINE_SIZE);
+                prefetch_to_local_cache(ptr + 5 * KUMO_CACHELINE_SIZE);
             }
 
 #if defined(TURBO_AES_INTERNAL_HAVE_X86_SIMD) || defined(TURBO_AES_INTERNAL_HAVE_ARM_SIMD)
@@ -212,7 +212,6 @@ namespace turbo {
                 return Mix4x16Vectors(na, nb, nc, nd);
             }
 
-
             // Mixing two 128-bit vectors at a time with corresponding states.
             // All variables are mixed slightly differently to avoid hash collision
             // due to trivial byte rotation.
@@ -220,12 +219,12 @@ namespace turbo {
             // AES encryption to make hash function dependent on the order of the blocks.
             // See comments in LowLevelHash33To64 for more considerations.
 
-           KUMO_FORCE_INLINE void mix_ab (const uint8_t* p,Vector128& state0, Vector128& state1) {
+            KUMO_FORCE_INLINE void mix_ab(const uint8_t* p, Vector128& state0, Vector128& state1) {
                 Vector128 a = Load128(p);
                 Vector128 b = Load128(p + 16);
                 state0 = MixA(a, state0);
                 state1 = MixB(b, state1);
-                      };
+            };
 
             KUMO_FORCE_INLINE void mix_cd(const uint8_t* p, Vector128& state2, Vector128& state3) {
                 Vector128 c = Load128(p);
@@ -251,7 +250,7 @@ namespace turbo {
                 do {
                     PrefetchFutureDataToLocalCache(ptr);
                     mix_ab(ptr, state0, state1);
-                    mix_cd(ptr + 32,state2, state3);
+                    mix_cd(ptr + 32, state2, state3);
 
                     ptr += 64;
                     len -= 64;
@@ -261,7 +260,7 @@ namespace turbo {
                 if (len > 32) {
                     mix_ab(ptr, state0, state1);
                 }
-                mix_cd(last_32_ptr,state2, state3);
+                mix_cd(last_32_ptr, state2, state3);
 
                 return Mix4x16Vectors(state0, state1, state2, state3);
             }

@@ -31,6 +31,7 @@
 #include <turbo/macros/optimization/assume.h>
 #include <turbo/macros/optimization/unreachable.h>
 #include <turbo/macros/optimization/unique_name.h>
+#include <turbo/macros/optimization/cco.h>
 
 // KUMO_BLOCK_TAIL_CALL_OPTIMIZATION
 //

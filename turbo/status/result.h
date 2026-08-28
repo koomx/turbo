@@ -511,8 +511,8 @@ namespace turbo {
 
         Status status() &&;
 
-        turbo::Span<const turbo::SourceLocation> GetSourceLocations() const {
-            return this->status_.GetSourceLocations();
+        turbo::Span<const turbo::SourceLocation> get_source_locations() const {
+            return this->status_.get_source_locations();
         }
 
         // Appends the `loc` to the current location chain inside the status, iff the
@@ -539,6 +539,40 @@ namespace turbo {
         KUMO_MUST_USE_RESULT Result<T> &&with_source_location(
             turbo::SourceLocation loc = turbo::SourceLocation::current()) && {
             add_source_location(loc);
+            return std::move(*this);
+        }
+
+        SubStatusType sub_type() const { return this->status_.sub_type(); }
+        int32_t sub_code() const { return this->status_.sub_code(); }
+
+        void add_sub_code(int32_t code, int8_t type = kSubUser) {
+            this->status_.add_sub_code(code, type);
+        }
+
+        KUMO_MUST_USE_RESULT Result<T> &&with_sub_code(int32_t code,
+            int8_t type = kSubUser) && {
+            add_sub_code(code, type);
+            return std::move(*this);
+        }
+
+        void add_errno(int32_t code) { this->status_.add_errno(code); }
+
+        KUMO_MUST_USE_RESULT Result<T> &&with_errno(int32_t code) && {
+            add_errno(code);
+            return std::move(*this);
+        }
+
+        void add_signal(int32_t code) { this->status_.add_signal(code); }
+
+        KUMO_MUST_USE_RESULT Result<T> &&with_signal(int32_t code) && {
+            add_signal(code);
+            return std::move(*this);
+        }
+
+        void clear_sub_code() { this->status_.clear_sub_code(); }
+
+        KUMO_MUST_USE_RESULT Result<T> &&without_sub_code() && {
+            clear_sub_code();
             return std::move(*this);
         }
 

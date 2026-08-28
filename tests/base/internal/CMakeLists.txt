@@ -16,14 +16,10 @@
 set(BASE_INT_TESTS
         atomic_hook_test
         cmake_thread_test
-        cpu_detect_test
-        errno_saver_test
         hardening_test
         low_level_alloc_test
         nullability_traits_test
         poison_test
-        scoped_set_env_test
-        strerror_test
         sysinfo_test
         thread_identity_test
         tracing_strong_test

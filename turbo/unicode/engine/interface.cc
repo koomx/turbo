@@ -19,7 +19,7 @@ namespace turbo {
 
     bool UnicodeImplement::supported_by_runtime_system() const {
         uint32_t required_instruction_sets = this->required_instruction_sets();
-        uint32_t supported_instruction_sets = internal::detect_supported_architectures();
+        uint32_t supported_instruction_sets = detect_supported_architectures();
         return ((supported_instruction_sets & required_instruction_sets) == required_instruction_sets);
     }
 

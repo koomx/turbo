@@ -1,54 +1,33 @@
-// Copyright (c) 2017-2026, University of Cincinnati, developed by Henry Schreiner
-// under NSF AWARD 1414736 and by the respective contributors.
-// All rights reserved.
+// Copyright (C) 2026 Kumo inc. and its affiliates. All Rights Reserved.
 //
-// SPDX-License-Identifier: BSD-3-Clause
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 
 #pragma once
 
-// IWYU pragma: private, include "CLI/CLI.hpp"
-#include <turbo/cli/macros.h>
-
-// [CLI11:public_includes:set]
-#include <string>
-// [CLI11:public_includes:end]
-
-// [CLI11:encoding_includes:verbatim]
-#if defined(XCLI_CPP17) || (defined(XCLI_HAS_FILESYSTEM) && XCLI_HAS_FILESYSTEM > 0)
-#include <string_view>
-#if defined XCLI_HAS_FILESYSTEM && XCLI_HAS_FILESYSTEM > 0
 #include <filesystem>
-#endif
-#endif
-
-// [CLI11:encoding_includes:end]
+#include <string_view>
+#include <turbo/unicode/api/wchar.h>
 
 namespace xcli {
-// [CLI11:encoding_hpp:verbatim]
 
-/// Convert a wide string to a narrow string.
-XCLI_INLINE std::string narrow(const std::wstring &str);
-XCLI_INLINE std::string narrow(const wchar_t *str);
-XCLI_INLINE std::string narrow(const wchar_t *str, std::size_t size);
-
-/// Convert a narrow string to a wide string.
-XCLI_INLINE std::wstring widen(const std::string &str);
-XCLI_INLINE std::wstring widen(const char *str);
-XCLI_INLINE std::wstring widen(const char *str, std::size_t size);
-
-#ifdef XCLI_CPP17
-XCLI_INLINE std::string narrow(std::wstring_view str);
-XCLI_INLINE std::wstring widen(std::string_view str);
-#endif  // XCLI_CPP17
-
-#if defined XCLI_HAS_FILESYSTEM && XCLI_HAS_FILESYSTEM > 0
-/// Convert a char-string to a native path correctly.
-XCLI_INLINE std::filesystem::path to_path(std::string_view str);
-#endif  // XCLI_HAS_FILESYSTEM
-
-// [CLI11:encoding_hpp:end]
-}  // namespace xcli
-
-#ifndef XCLI_COMPILE
-#include <turbo/cli/impl/encoding_inl.h>  // IWYU pragma: export
+    /// UTF-8 command-line text to a native filesystem path.
+    inline std::filesystem::path to_path(std::string_view utf8) {
+#ifdef _WIN32
+        return std::filesystem::path(turbo::convert_utf8_to_wchar(utf8));
+#else
+        return std::filesystem::path(utf8.begin(), utf8.end());
 #endif
+    }
+
+} // namespace xcli

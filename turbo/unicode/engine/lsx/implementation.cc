@@ -1255,7 +1255,7 @@ namespace turbo {
         static IsaInfo ins = {
             UNICODE_IMPLEMENTATION_LSX == 1,
             false,
-            static_cast<uint32_t>(InstructionSet::LSX),
+            { kLoongLsx },
              "lsx",
             get_lsx_instance(),
         };

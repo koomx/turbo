@@ -1743,11 +1743,8 @@ namespace turbo {
         static IsaInfo ins = {
             UNICODE_IMPLEMENTATION_ICELAKE == 1,
             false,
-            static_cast<uint32_t>(
-                InstructionSet::AVX2 | InstructionSet::BMI1 | InstructionSet::BMI2 |
-                InstructionSet::AVX512BW | InstructionSet::AVX512CD |
-                InstructionSet::AVX512VL | InstructionSet::AVX512VBMI2 |
-                InstructionSet::AVX512VPOPCNTDQ),
+            { kX86Avx2, kX86Bmi, kX86Bmi2, kX86Avx512Bw, kX86Avx512Cd, kX86Avx512Vl,
+              kX86Avx512Vbmi2, kX86Avx512Vpopcntdq },
              "icelake",
             get_icelake_instance(),
         };

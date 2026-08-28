@@ -223,8 +223,7 @@
 // No-op except for being a human readable signal.
 #define TURBO_POINTERS_DEFAULT_NONNULL
 
-#if defined(__clang__) && !defined(__OBJC__) && \
-    KUMO_HAVE_FEATURE(nullability_on_classes)
+#if defined(__clang__) && !defined(__OBJC__) && KUMO_HAVE_FEATURE(nullability_on_classes)
 // turbo_nonnull (default with `TURBO_POINTERS_DEFAULT_NONNULL`)
 //
 // The indicated pointer is never null. It is the responsibility of the provider
@@ -315,4 +314,4 @@
 #define TURBO_NULLABILITY_COMPATIBLE
 #endif
 
-#endif  // TURBO_BASE_NULLABILITY_H_
+#endif // TURBO_BASE_NULLABILITY_H_

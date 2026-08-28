@@ -919,7 +919,7 @@ namespace turbo {
         static IsaInfo ins = {
             UNICODE_IMPLEMENTATION_PPC64 == 1,
             false,
-            static_cast<uint32_t>(InstructionSet::ALTIVEC),
+            { kPpcAltivec },
              "ppc64",
             get_ppc64_instance(),
         };

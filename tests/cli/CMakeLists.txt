@@ -45,7 +45,6 @@ set(CLI_TESTS
         locale_test
         option_group_test
         extra_validators_test
-        encoding_test
         flag_bind_test
 )
 

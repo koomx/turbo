@@ -25,11 +25,11 @@
 #include <type_traits>
 #include <utility>
 
-#include <turbo/types/source_location.h>
 #include <turbo/macros/config.h>
 #include <turbo/status/result.h>
 #include <turbo/status/status.h>
 #include <turbo/status/status_builder.h> // IWYU pragma: export
+#include <turbo/types/source_location.h>
 
 // Evaluates an expression that produces a `turbo::Status`. If the status is not
 // ok, returns it from the current function.
@@ -159,7 +159,7 @@
     expr)                                                                                \
     TURBO_INTERNAL_STATUS_MACROS_IMPL_ELSE_BLOCKER_                                      \
     if (auto status_macro_internal_adaptor = turbo::status_macro_internal::MacroAdaptor( \
-            (expr), turbo::SourceLocation::current())) {                                  \
+            (expr), turbo::SourceLocation::current())) {                                 \
     } else /* NOLINT */                                                                  \
         return_keyword status_macro_internal_adaptor.Consume()
 
@@ -231,7 +231,7 @@ namespace turbo {
             std::move(TURBO_INTERNAL_STATUS_MACROS_IMPL_CONCAT_(_status_or_value, \
                           __LINE__))                                              \
                 .status(),                                                        \
-            turbo::SourceLocation::current());                                     \
+            turbo::SourceLocation::current());                                    \
         (void)_; /* error_expression is allowed to not use this variable */       \
         return_keyword(error_expression))
 
@@ -249,9 +249,9 @@ namespace turbo {
     }                                                                                                   \
     {                                                                                                   \
         static_assert(                                                                                  \
-            turbo::status_macro_internal::IsAllowedResultMacroType<                                   \
+            turbo::status_macro_internal::IsAllowedResultMacroType<                                     \
                 std::remove_const_t<decltype(statusor)>>(),                                             \
-            "TURBO_ASSIGN_OR_RETURN should only be used with turbo::Result<>");                       \
+            "TURBO_ASSIGN_OR_RETURN should only be used with turbo::Result<>");                         \
     }                                                                                                   \
     TURBO_INTERNAL_STATUS_MACROS_IMPL_UNPARENTHESIZE_IF_PARENTHESIZED(lhs) = (*std::move(statusor))
 

@@ -20,9 +20,7 @@
 #endif
 
 // The following platforms have an implementation of a hardware counter.
-#if defined(__i386__) || defined(__x86_64__) || defined(__aarch64__) || \
-    defined(__powerpc__) || defined(__ppc__) || defined(_M_IX86) ||     \
-    (defined(_M_X64) && !defined(_M_ARM64EC))
+#if defined(__i386__) || defined(__x86_64__) || defined(__aarch64__) || defined(__powerpc__) || defined(__ppc__) || defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
 #define TURBO_HAVE_UNSCALED_CYCLECLOCK_IMPLEMENTATION 1
 #else
 #define TURBO_HAVE_UNSCALED_CYCLECLOCK_IMPLEMENTATION 0
@@ -34,8 +32,7 @@
 // CycleClock that runs at atleast 1 MHz. We've found some Android
 // ARM64 devices where this is not the case, so we disable it by
 // default on Android ARM64.
-#if defined(__APPLE__) || \
-    (defined(__ANDROID__) && defined(__aarch64__))
+#if defined(__APPLE__) || (defined(__ANDROID__) && defined(__aarch64__))
 #define TURBO_USE_UNSCALED_CYCLECLOCK_DEFAULT 0
 #else
 #define TURBO_USE_UNSCALED_CYCLECLOCK_DEFAULT 1
@@ -45,18 +42,16 @@
 // Use "#if TURBO_USE_UNSCALED_CYCLECLOCK" to test for its presence.
 // Can be overridden at compile-time via -DTURBO_USE_UNSCALED_CYCLECLOCK=0|1
 #if !defined(TURBO_USE_UNSCALED_CYCLECLOCK)
-#define TURBO_USE_UNSCALED_CYCLECLOCK               \
-  (TURBO_HAVE_UNSCALED_CYCLECLOCK_IMPLEMENTATION && \
-   TURBO_USE_UNSCALED_CYCLECLOCK_DEFAULT)
+#define TURBO_USE_UNSCALED_CYCLECLOCK \
+    (TURBO_HAVE_UNSCALED_CYCLECLOCK_IMPLEMENTATION && TURBO_USE_UNSCALED_CYCLECLOCK_DEFAULT)
 #endif
 
 #if TURBO_USE_UNSCALED_CYCLECLOCK
 // This macro can be used to test if UnscaledCycleClock::Frequency()
 // is NominalCPUFrequency() on a particular platform.
-#if (defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || \
-     defined(_M_X64))
+#if (defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64))
 #define TURBO_INTERNAL_UNSCALED_CYCLECLOCK_FREQUENCY_IS_CPU_FREQUENCY
 #endif
 #endif
 
-#endif  // TURBO_BASE_INTERNAL_UNSCALEDCYCLECLOCK_CONFIG_H_
+#endif // TURBO_BASE_INTERNAL_UNSCALEDCYCLECLOCK_CONFIG_H_

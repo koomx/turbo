@@ -16,86 +16,22 @@
 
 #if defined(__riscv)
 
-#define KUMO_ARCH_X86        0
-#define KUMO_ARCH_ARM        0
 #define KUMO_ARCH_RISCV      1
-#define KUMO_ARCH_LOONGARCH  0
-#define KUMO_ARCH_PPC        0
-#define KUMO_ARCH_S390       0
-#define KUMO_ARCH_MIPS       0
-#define KUMO_ARCH_E2K        0
-#define KUMO_ARCH_WASM       0
-
-#define KUMO_ARCH_X86_64     0
-#define KUMO_ARCH_X86_32     0
-#define KUMO_ARCH_ARM64      0
-#define KUMO_ARCH_ARM32      0
-#define KUMO_ARCH_ARM64EC    0
 #if __riscv_xlen == 64
 #define KUMO_ARCH_RISCV64    1
 #define KUMO_ARCH_RISCV32    0
-#define KUMO_ARCH_32_BIT     0
-#define KUMO_ARCH_64_BIT     1
 #elif __riscv_xlen == 32
 #define KUMO_ARCH_RISCV64    0
 #define KUMO_ARCH_RISCV32    1
-#define KUMO_ARCH_32_BIT     1
-#define KUMO_ARCH_64_BIT     0
 #else
 #error "unsupported __riscv_xlen"
 #endif
-#define KUMO_ARCH_LOONGARCH64 0
-#define KUMO_ARCH_LOONGARCH32 0
-#define KUMO_ARCH_PPC64      0
-#define KUMO_ARCH_PPC32      0
-#define KUMO_ARCH_PPC64LE    0
-#define KUMO_ARCH_S390X      0
-#define KUMO_ARCH_S390_31    0
-#define KUMO_ARCH_MIPS64     0
-#define KUMO_ARCH_MIPS32     0
-#define KUMO_ARCH_WASM64     0
-#define KUMO_ARCH_WASM32     0
 
-#define KUMO_SIMD_SSE        0
-#define KUMO_SIMD_SSE2       0
-#define KUMO_SIMD_SSE3       0
-#define KUMO_SIMD_SSSE3      0
-#define KUMO_SIMD_SSE4_1     0
-#define KUMO_SIMD_SSE4_2     0
-#define KUMO_SIMD_AVX        0
-#define KUMO_SIMD_AVX2       0
-#define KUMO_SIMD_AVX512F    0
-#define KUMO_SIMD_AVX512BW   0
-#define KUMO_SIMD_AVX512VL   0
-#define KUMO_SIMD_AVX512DQ   0
-#define KUMO_SIMD_AVX512IFMA 0
-#define KUMO_SIMD_AVX512CD   0
-#define KUMO_SIMD_AVX512VBMI 0
-#define KUMO_SIMD_AVX512VBMI2 0
-#define KUMO_SIMD_AVX512VNNI 0
-#define KUMO_SIMD_AVX512BITALG 0
-#define KUMO_SIMD_AVX512VPOPCNTDQ 0
-#define KUMO_SIMD_FMA        0
-#define KUMO_SIMD_BMI1       0
-#define KUMO_SIMD_BMI2       0
-#define KUMO_SIMD_POPCNT     0
-#define KUMO_SIMD_LZCNT      0
-#define KUMO_SIMD_NEON       0
-#define KUMO_SIMD_SVE        0
-#define KUMO_SIMD_SVE2       0
-#define KUMO_SIMD_AES        0
-#define KUMO_SIMD_PCLMUL     0
 #if defined(__riscv_v) || defined(__riscv_vector)
 #define KUMO_SIMD_RVV        1
 #else
 #define KUMO_SIMD_RVV        0
 #endif
-#define KUMO_SIMD_LSX        0
-#define KUMO_SIMD_LASX       0
-#define KUMO_SIMD_ALTIVEC    0
-#define KUMO_SIMD_VSX        0
-#define KUMO_SIMD_CRYPTO     0
-
 
 #define KUMO_CACHELINE_SIZE 64
 
@@ -111,4 +47,9 @@
 #define KUMO_ARCH_NAME       "RISCV32"
 #endif
 
+#else
+#define KUMO_ARCH_RISCV      0
+#define KUMO_ARCH_RISCV64    0
+#define KUMO_ARCH_RISCV32    0
+#define KUMO_SIMD_RVV        0
 #endif

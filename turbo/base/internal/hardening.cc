@@ -21,13 +21,11 @@
 
 namespace turbo {
 
+    namespace base_internal {
 
-namespace base_internal {
+        void SetTurboHardeningEnabled([[maybe_unused]] bool enabled) {
+        }
 
-void SetTurboHardeningEnabled([[maybe_unused]] bool enabled) {
-}
+    } // namespace base_internal
 
-}  // namespace base_internal
-
-
-}  // namespace turbo
+} // namespace turbo

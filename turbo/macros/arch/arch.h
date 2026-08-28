@@ -29,7 +29,7 @@
 //   KUMO_ARCH_PPC64 / PPC32 / PPC64LE / S390X / MIPS64 / WASM32 / ...
 //
 // SIMD (always 0|1 on every target):
-//   KUMO_SIMD_SSE..AVX512* / NEON / SVE / AES / PCLMUL / RVV / LSX / LASX /
+//   KUMO_SIMD_SSE..AVX512* / NEON / SVE / AES / PCLMUL / x86 extras / RVV / LSX / LASX /
 //   ALTIVEC / VSX / CRYPTO
 //
 // Also: KUMO_CACHELINE_SIZE, KUMO_SIMD_LEVEL, KUMO_ARCH_NAME
@@ -39,9 +39,7 @@
 
 #include <turbo/macros/arch/riscv.h>
 #include <turbo/macros/arch/x86.h>
-#include <turbo/macros/arch/x64.h>
-#include <turbo/macros/arch/arm32.h>
-#include <turbo/macros/arch/arm64.h>
+#include <turbo/macros/arch/arm.h>
 #include <turbo/macros/arch/loongarch.h>
 #include <turbo/macros/arch/ppc.h>
 #include <turbo/macros/arch/s390.h>
@@ -49,13 +47,33 @@
 #include <turbo/macros/arch/e2k.h>
 #include <turbo/macros/arch/wasm.h>
 
+
+#if KUMO_ARCH_ARM64 || KUMO_ARCH_E2K || KUMO_ARCH_LOONGARCH64 \
+    || KUMO_ARCH_MIPS64 \
+    || KUMO_ARCH_PPC64 \
+    || KUMO_ARCH_RISCV64 \
+    || KUMO_ARCH_S390X || KUMO_ARCH_WASM64 || KUMO_ARCH_X86_64
+#define KUMO_ARCH_128_BIT    0
+#define KUMO_ARCH_64_BIT     1
+#define KUMO_ARCH_32_BIT     0
+#elif KUMO_ARCH_ARM32 || KUMO_ARCH_LOONGARCH32 \
+    || KUMO_ARCH_MIPS32 \
+    || KUMO_ARCH_PPC32 \
+    || KUMO_ARCH_RISCV32 \
+    || KUMO_ARCH_S390_31 || KUMO_ARCH_WASM32 || KUMO_ARCH_X86_32
+#define KUMO_ARCH_64_BIT     0
+#define KUMO_ARCH_32_BIT     1
+#define KUMO_ARCH_128_BIT    0
+#endif
+
+
 // Alias used by some internal modules (TURBO_ARCH_AARCH64).
 #ifndef KUMO_ARCH_AARCH64
 #define KUMO_ARCH_AARCH64 KUMO_ARCH_ARM64
 #endif
 
 // Accelerated AES detection (x86_64 treats AVX as a stand-in; keep that OR with AES-NI).
-#if KUMO_SIMD_AES || (KUMO_ARCH_X86_64 && KUMO_SIMD_AVX)
+#if KUMO_SIMD_X86_AES || (KUMO_ARCH_X86_64 && KUMO_SIMD_AVX)
 #define KUMO_HAVE_ACCELERATED_AES 1
 #else
 #define KUMO_HAVE_ACCELERATED_AES 0
@@ -236,11 +254,133 @@
 #ifndef KUMO_SIMD_SVE2
 #error "KUMO_SIMD_SVE2 is not defined"
 #endif
-#ifndef KUMO_SIMD_AES
-#error "KUMO_SIMD_AES is not defined"
+#ifndef KUMO_SIMD_X86_AES
+#error "KUMO_SIMD_X86_AES is not defined"
+#endif
+
+#ifndef KUMO_SIMD_ARM_AES
+#error "KUMO_SIMD_ARM_AES is not defined"
+#endif
+
+#ifndef KUMO_SIMD_PPC_AES
+#error "KUMO_SIMD_PPC_AES is not defined"
 #endif
 #ifndef KUMO_SIMD_PCLMUL
 #error "KUMO_SIMD_PCLMUL is not defined"
+#endif
+#ifndef KUMO_SIMD_PRFCHW
+#error "KUMO_SIMD_PRFCHW is not defined"
+#endif
+#ifndef KUMO_SIMD_PREFETCH
+#error "KUMO_SIMD_PREFETCH is not defined"
+#endif
+#ifndef KUMO_SIMD_PREFETCHWT1
+#error "KUMO_SIMD_PREFETCHWT1 is not defined"
+#endif
+#ifndef KUMO_SIMD_CX16
+#error "KUMO_SIMD_CX16 is not defined"
+#endif
+#ifndef KUMO_SIMD_MOVBE
+#error "KUMO_SIMD_MOVBE is not defined"
+#endif
+#ifndef KUMO_SIMD_XSAVE
+#error "KUMO_SIMD_XSAVE is not defined"
+#endif
+#ifndef KUMO_SIMD_F16C
+#error "KUMO_SIMD_F16C is not defined"
+#endif
+#ifndef KUMO_SIMD_RDRND
+#error "KUMO_SIMD_RDRND is not defined"
+#endif
+#ifndef KUMO_SIMD_RDSEED
+#error "KUMO_SIMD_RDSEED is not defined"
+#endif
+#ifndef KUMO_SIMD_FSGSBASE
+#error "KUMO_SIMD_FSGSBASE is not defined"
+#endif
+#ifndef KUMO_SIMD_SHA
+#error "KUMO_SIMD_SHA is not defined"
+#endif
+#ifndef KUMO_SIMD_ADX
+#error "KUMO_SIMD_ADX is not defined"
+#endif
+#ifndef KUMO_SIMD_CLFLUSHOPT
+#error "KUMO_SIMD_CLFLUSHOPT is not defined"
+#endif
+#ifndef KUMO_SIMD_CLWB
+#error "KUMO_SIMD_CLWB is not defined"
+#endif
+#ifndef KUMO_SIMD_CLZERO
+#error "KUMO_SIMD_CLZERO is not defined"
+#endif
+#ifndef KUMO_SIMD_RDTSCP
+#error "KUMO_SIMD_RDTSCP is not defined"
+#endif
+#ifndef KUMO_SIMD_RDPID
+#error "KUMO_SIMD_RDPID is not defined"
+#endif
+#ifndef KUMO_SIMD_HLE
+#error "KUMO_SIMD_HLE is not defined"
+#endif
+#ifndef KUMO_SIMD_RTM
+#error "KUMO_SIMD_RTM is not defined"
+#endif
+#ifndef KUMO_SIMD_MPX
+#error "KUMO_SIMD_MPX is not defined"
+#endif
+#ifndef KUMO_SIMD_SSE4A
+#error "KUMO_SIMD_SSE4A is not defined"
+#endif
+#ifndef KUMO_SIMD_FMA4
+#error "KUMO_SIMD_FMA4 is not defined"
+#endif
+#ifndef KUMO_SIMD_XOP
+#error "KUMO_SIMD_XOP is not defined"
+#endif
+#ifndef KUMO_SIMD_TBM
+#error "KUMO_SIMD_TBM is not defined"
+#endif
+#ifndef KUMO_SIMD_LWP
+#error "KUMO_SIMD_LWP is not defined"
+#endif
+#ifndef KUMO_SIMD_VAES
+#error "KUMO_SIMD_VAES is not defined"
+#endif
+#ifndef KUMO_SIMD_VPCLMUL
+#error "KUMO_SIMD_VPCLMUL is not defined"
+#endif
+#ifndef KUMO_SIMD_GFNI
+#error "KUMO_SIMD_GFNI is not defined"
+#endif
+#ifndef KUMO_SIMD_AVXVNNI
+#error "KUMO_SIMD_AVXVNNI is not defined"
+#endif
+#ifndef KUMO_SIMD_AVX512PF
+#error "KUMO_SIMD_AVX512PF is not defined"
+#endif
+#ifndef KUMO_SIMD_AVX512ER
+#error "KUMO_SIMD_AVX512ER is not defined"
+#endif
+#ifndef KUMO_SIMD_AVX512BF16
+#error "KUMO_SIMD_AVX512BF16 is not defined"
+#endif
+#ifndef KUMO_SIMD_AVX512FP16
+#error "KUMO_SIMD_AVX512FP16 is not defined"
+#endif
+#ifndef KUMO_SIMD_AVX512VP2
+#error "KUMO_SIMD_AVX512VP2 is not defined"
+#endif
+#ifndef KUMO_SIMD_AMX_TILE
+#error "KUMO_SIMD_AMX_TILE is not defined"
+#endif
+#ifndef KUMO_SIMD_AMX_INT8
+#error "KUMO_SIMD_AMX_INT8 is not defined"
+#endif
+#ifndef KUMO_SIMD_AMX_BF16
+#error "KUMO_SIMD_AMX_BF16 is not defined"
+#endif
+#ifndef KUMO_SIMD_AMX_FP16
+#error "KUMO_SIMD_AMX_FP16 is not defined"
 #endif
 #ifndef KUMO_SIMD_RVV
 #error "KUMO_SIMD_RVV is not defined"

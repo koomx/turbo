@@ -44,26 +44,80 @@
 #pragma once
 
 // More-specific variants first.
-#include <turbo/macros/platform/android.h>
 #include <turbo/macros/platform/fuchsia.h>
 #include <turbo/macros/platform/ros.h>
-#include <turbo/macros/platform/visionos.h>
-#include <turbo/macros/platform/watchos.h>
-#include <turbo/macros/platform/tvos.h>
-#include <turbo/macros/platform/ios.h>
-#include <turbo/macros/platform/osx.h>
+#include <turbo/macros/platform/apple.h>
 #include <turbo/macros/platform/bsd.h>
 #include <turbo/macros/platform/nacl.h>
 #include <turbo/macros/platform/solaris.h>
 #include <turbo/macros/platform/qnx.h>
 #include <turbo/macros/platform/haiku.h>
 #include <turbo/macros/platform/aix.h>
-#include <turbo/macros/platform/cygwin.h>
 #include <turbo/macros/platform/web.h>
 #include <turbo/macros/platform/linux.h>
 #include <turbo/macros/platform/windows.h>
 
 #include <turbo/macros/platform/endian.h>
+
+#if KUMO_OS_MACOSX || KUMO_OS_IOS || KUMO_OS_AIX \
+    || KUMO_OS_FUCHSIA || KUMO_OS_HAIKU || KUMO_OS_NACL \
+    || KUMO_OS_QNX || KUMO_OS_SOLARIS || KUMO_OS_WEB || KUMO_OS_TVOS \
+    || KUMO_OS_WATCHOS || KUMO_OS_VISIONOS || KUMO_OS_CYGWIN || KUMO_OS_ROS \
+    || KUMO_OS_ANDROID || KUMO_OS_BSD
+#define KUMO_OS_POSIX            1
+#else
+#define KUMO_OS_POSIX            0
+#endif
+
+#if KUMO_OS_MACOSX || KUMO_OS_IOS || KUMO_OS_AIX \
+    || KUMO_OS_FUCHSIA || KUMO_OS_HAIKU || KUMO_OS_NACL \
+    || KUMO_OS_QNX || KUMO_OS_SOLARIS || KUMO_OS_TVOS \
+    || KUMO_OS_WATCHOS || KUMO_OS_VISIONOS || KUMO_OS_CYGWIN \
+    || KUMO_OS_ROS || KUMO_OS_ANDROID || KUMO_OS_BSD
+#define KUMO_OS_UNIX             1
+#else
+#define KUMO_OS_UNIX             0
+#endif
+
+#if KUMO_OS_WINDOWS
+#define KUMO_OS_MICROSOFT        1
+#else
+#define KUMO_OS_MICROSOFT        0
+#endif
+
+
+#if KUMO_OS_IOS || KUMO_OS_TVOS || KUMO_OS_WATCHOS || KUMO_OS_VISIONOS || KUMO_OS_ANDROID
+#define KUMO_PLATFORM_MOBILE       1
+#else
+#define KUMO_PLATFORM_MOBILE       0
+#endif
+
+#if KUMO_OS_MACOSX || KUMO_OS_AIX | KUMO_OS_FUCHSIA || KUMO_OS_HAIKU \
+    || KUMO_OS_QNX || KUMO_OS_SOLARIS || KUMO_OS_MICROSOFT \
+    || KUMO_OS_CYGWIN || KUMO_OS_ROS || KUMO_OS_BSD
+#define KUMO_PLATFORM_DESKTOP      1
+#else
+#define KUMO_PLATFORM_DESKTOP      0
+#endif
+
+
+#if KUMO_OS_MACOSX || KUMO_OS_IOS || KUMO_OS_AIX || KUMO_OS_FUCHSIA \
+    || KUMO_OS_HAIKU || KUMO_OS_NACL || KUMO_OS_QNX || KUMO_OS_SOLARIS \
+    || KUMO_OS_WEB || KUMO_OS_TVOS || KUMO_OS_WATCHOS || KUMO_OS_VISIONOS \
+    || KUMO_OS_CYGWIN || KUMO_OS_ROS || KUMO_OS_ANDROID || KUMO_OS_BSD
+#define KUMO_PLATFORM_POSIX_API    1
+#else
+#define KUMO_PLATFORM_POSIX_API    1
+#endif
+
+#if KUMO_OS_MACOSX || KUMO_OS_IOS || KUMO_OS_AIX || KUMO_OS_FUCHSIA \
+    || KUMO_OS_HAIKU || KUMO_OS_NACL || KUMO_OS_QNX || KUMO_OS_SOLARIS \
+    || KUMO_OS_WEB || KUMO_OS_TVOS || KUMO_OS_WATCHOS || KUMO_OS_VISIONOS \
+    || KUMO_OS_CYGWIN || KUMO_OS_ROS || KUMO_OS_ANDROID || KUMO_OS_BSD
+#define KUMO_PLATFORM_POSIX_SOCKETS 1
+#else
+#define KUMO_PLATFORM_POSIX_SOCKETS 0
+#endif
 
 // Alias: skills / callers may use JS for the Emscripten/Wasm OS.
 #ifndef KUMO_PLATFORM_JS
@@ -76,6 +130,9 @@
 
 #ifndef KUMO_OS_LINUX
 #error "KUMO_OS_LINUX is not defined — no platform header matched this target"
+#endif
+#ifndef KUMO_OS_APPLE
+#error "KUMO_OS_APPLE is not defined — no platform header matched this target"
 #endif
 #ifndef KUMO_OS_MACOSX
 #error "KUMO_OS_MACOSX is not defined — no platform header matched this target"

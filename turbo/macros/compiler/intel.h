@@ -16,56 +16,13 @@
 
 #if defined(__INTEL_COMPILER) && !defined(__clang__)
 
-#define KUMO_COMPILER_GCC       0
-#define KUMO_COMPILER_CLANG     0
-#define KUMO_COMPILER_MSVC      0
 #define KUMO_COMPILER_INTEL     1
-
-#define KUMO_COMPILER_APPLECLANG 0
 
 #define KUMO_COMPILER_VERSION       __INTEL_COMPILER
 #define KUMO_COMPILER_VERSION_MAJOR (__INTEL_COMPILER / 100)
 #define KUMO_COMPILER_VERSION_MINOR (__INTEL_COMPILER % 100)
 
-#if __cplusplus >= 202302L
-#define KUMO_CXX_STANDARD       23
-#define KUMO_CXX_STANDARD_STRING "C++23"
-#elif __cplusplus >= 202002L
-#define KUMO_CXX_STANDARD       20
-#define KUMO_CXX_STANDARD_STRING "C++20"
-#elif __cplusplus >= 201703L
-#define KUMO_CXX_STANDARD       17
-#define KUMO_CXX_STANDARD_STRING "C++17"
-#elif __cplusplus >= 201402L
-#define KUMO_CXX_STANDARD       14
-#define KUMO_CXX_STANDARD_STRING "C++14"
-#elif __cplusplus >= 201103L
-#define KUMO_CXX_STANDARD       11
-#define KUMO_CXX_STANDARD_STRING "C++11"
-#else
-#define KUMO_CXX_STANDARD       98
-#define KUMO_CXX_STANDARD_STRING "C++98"
-#endif
-
-#ifdef __has_attribute
-#define KUMO_HAVE_ATTRIBUTE(x)  __has_attribute(x)
-#else
-#define KUMO_HAVE_ATTRIBUTE(x)  0
-#endif
-
-// C++-only: scoped args like gnu::pure are not valid in C TUs.
-#if defined(__cplusplus) && defined(__has_cpp_attribute)
-#define KUMO_HAVE_CPP_ATTRIBUTE(x) __has_cpp_attribute(x)
-#else
-#define KUMO_HAVE_CPP_ATTRIBUTE(x) 0
-#endif
-
-#ifdef __has_builtin
-#define KUMO_HAVE_BUILTIN(x)    __has_builtin(x)
-#else
-#define KUMO_HAVE_BUILTIN(x)    0
-#endif
-
 #define KUMO_COMPILER_NAME      "Intel"
-
+#else
+#define KUMO_COMPILER_INTEL     0
 #endif

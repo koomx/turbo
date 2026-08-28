@@ -17,39 +17,38 @@
 
 #include <cstdint>
 
-#include <turbo/macros/config.h>
 #include <turbo/base/internal/unscaledcycleclock_config.h>
+#include <turbo/macros/config.h>
 
 namespace turbo {
 
-namespace base_internal {
+    namespace base_internal {
 
 #if TURBO_USE_UNSCALED_CYCLECLOCK
 #ifdef NDEBUG
 #ifdef TURBO_INTERNAL_UNSCALED_CYCLECLOCK_FREQUENCY_IS_CPU_FREQUENCY
-// Not debug mode and the UnscaledCycleClock frequency is the CPU
-// frequency.  Scale the CycleClock to prevent overflow if someone
-// tries to represent the time as cycles since the Unix epoch.
-inline constexpr int32_t kCycleClockShift = 1;
+        // Not debug mode and the UnscaledCycleClock frequency is the CPU
+        // frequency.  Scale the CycleClock to prevent overflow if someone
+        // tries to represent the time as cycles since the Unix epoch.
+        inline constexpr int32_t kCycleClockShift = 1;
 #else
-// Not debug mode and the UnscaledCycleClock isn't operating at the
-// raw CPU frequency. There is no need to do any scaling, so don't
-// needlessly sacrifice precision.
-inline constexpr int32_t kCycleClockShift = 0;
+        // Not debug mode and the UnscaledCycleClock isn't operating at the
+        // raw CPU frequency. There is no need to do any scaling, so don't
+        // needlessly sacrifice precision.
+        inline constexpr int32_t kCycleClockShift = 0;
 #endif
-#else   // NDEBUG
-// In debug mode use a different shift to discourage depending on a
-// particular shift value.
-inline constexpr int32_t kCycleClockShift = 2;
-#endif  // NDEBUG
+#else // NDEBUG
+      // In debug mode use a different shift to discourage depending on a
+      // particular shift value.
+        inline constexpr int32_t kCycleClockShift = 2;
+#endif // NDEBUG
 
-inline constexpr double kCycleClockFrequencyScale =
-    1.0 / (1 << kCycleClockShift);
+        inline constexpr double kCycleClockFrequencyScale = 1.0 / (1 << kCycleClockShift);
 
-#endif  // TURBO_USE_UNSCALED_CYCLECLOCK
+#endif // TURBO_USE_UNSCALED_CYCLECLOCK
 
-}  // namespace base_internal
+    } // namespace base_internal
 
-}  // namespace turbo
+} // namespace turbo
 
-#endif  // TURBO_BASE_INTERNAL_CYCLECLOCK_CONFIG_H_
+#endif // TURBO_BASE_INTERNAL_CYCLECLOCK_CONFIG_H_

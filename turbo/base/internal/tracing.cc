@@ -18,21 +18,21 @@
 
 namespace turbo {
 
-namespace base_internal {
+    namespace base_internal {
 
-extern "C" {
+        extern "C" {
 
-KUMO_ATTRIBUTE_WEAK void TURBO_INTERNAL_C_SYMBOL(TurboInternalTraceWait)(
-    const void*, ObjectKind) {}
-KUMO_ATTRIBUTE_WEAK void TURBO_INTERNAL_C_SYMBOL(TurboInternalTraceContinue)(
-    const void*, ObjectKind) {}
-KUMO_ATTRIBUTE_WEAK void TURBO_INTERNAL_C_SYMBOL(TurboInternalTraceSignal)(
-    const void*, ObjectKind) {}
-KUMO_ATTRIBUTE_WEAK void TURBO_INTERNAL_C_SYMBOL(TurboInternalTraceObserved)(
-    const void*, ObjectKind) {}
+        KUMO_ATTRIBUTE_WEAK void TURBO_INTERNAL_C_SYMBOL(TurboInternalTraceWait)(
+            const void*, ObjectKind) { }
+        KUMO_ATTRIBUTE_WEAK void TURBO_INTERNAL_C_SYMBOL(TurboInternalTraceContinue)(
+            const void*, ObjectKind) { }
+        KUMO_ATTRIBUTE_WEAK void TURBO_INTERNAL_C_SYMBOL(TurboInternalTraceSignal)(
+            const void*, ObjectKind) { }
+        KUMO_ATTRIBUTE_WEAK void TURBO_INTERNAL_C_SYMBOL(TurboInternalTraceObserved)(
+            const void*, ObjectKind) { }
 
-}  // extern "C"
+        } // extern "C"
 
-}  // namespace base_internal
+    } // namespace base_internal
 
-}  // namespace turbo
+} // namespace turbo

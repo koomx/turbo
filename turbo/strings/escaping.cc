@@ -31,7 +31,8 @@
 #include <turbo/base/nullability.h>
 #include <turbo/bits/endian.h>
 #include <turbo/bits/unaligned_access.h>
-#include <turbo/format/internal/utf8.h>
+#include <turbo/unicode/api/utf32.h>
+#include <turbo/unicode/api/wchar.h>
 #include <turbo/macros/config.h>
 #include <turbo/strings/ascii.h>
 #include <turbo/strings/charset.h>
@@ -217,7 +218,7 @@ namespace turbo {
                         if (IsSurrogate(rune, src.substr(hex_start, 5), error)) {
                             return false;
                         }
-                        d += strings_internal::EncodeUTF8Char(dst + d, rune);
+                        d += encode_utf32_to_utf8(dst + d, rune);
                         break;
                     }
                     case 'U': {
@@ -263,7 +264,7 @@ namespace turbo {
                         if (IsSurrogate(rune, src.substr(hex_start, 9), error)) {
                             return false;
                         }
-                        d += strings_internal::EncodeUTF8Char(dst + d, rune);
+                        d += encode_utf32_to_utf8(dst + d, rune);
                         break;
                     }
                     default: {

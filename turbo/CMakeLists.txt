@@ -19,24 +19,32 @@
 
 set(ARCH_SRC
         arch/isa.cc
+        arch/isa_catalog.cc
+        arch/arm64/apple.cc
+        arch/arm64/general.cc
+        arch/arm64/linux.cc
+        arch/fallback/unknown.cc
+        arch/loongarch/general.cc
+        arch/loongarch/linux.cc
+        arch/ppc64/general.cc
+        arch/riscv64/general.cc
+        arch/riscv64/linux.cc
+        arch/x64/general.cc
 )
 set(BASE_SRC
         base/log_severity.cc
         base/throw_delegate.cc
-        base/internal/cpu_detect.cc
         base/internal/cycleclock.cc
         base/internal/hardening.cc
         base/internal/low_level_alloc.cc
         base/internal/poison.cc
         base/internal/raw_logging.cc
-        base/internal/scoped_set_env.cc
         base/internal/spinlock_akaros.inc
         base/internal/spinlock.cc
         base/internal/spinlock_linux.inc
         base/internal/spinlock_posix.inc
         base/internal/spinlock_wait.cc
         base/internal/spinlock_win32.inc
-        base/internal/strerror.cc
         base/internal/sysinfo.cc
         base/internal/thread_identity.cc
         base/internal/tracing.cc
@@ -46,6 +54,18 @@ set(BASE_SRC
 
 set(BITS_SRC
         bits/casts.cc
+)
+
+set(CLI_SRC
+        cli/app.cc
+        cli/argv.cc
+        cli/config.cc
+        cli/extra_validators.cc
+        cli/formatter.cc
+        cli/split.cc
+        cli/option.cc
+        cli/string_tools.cc
+        cli/validators.cc
 )
 
 
@@ -77,7 +97,6 @@ set(DBG_SRC
         debugging/internal/stacktrace_unimplemented-inl.inc
         debugging/internal/stacktrace_win32-inl.inc
         debugging/internal/stacktrace_x86-inl.inc
-        debugging/internal/utf8_for_code_point.cc
         debugging/internal/vdso_support.cc
         debugging/leak_check.cc
         debugging/stacktrace.cc
@@ -108,7 +127,25 @@ set(FLAGS_SRC
 )
 
 set(HASH_SRC
-        hash/internal/city.cc
+        hash/city/city.cc
+        hash/sip/half.cc
+        hash/xx/xxhash_scalar.cc
+        hash/xx/isa_select.cc
+        hash/xx/xxh3.cc
+        hash/xx/interface.cc
+        hash/xx/common.cc
+        hash/xx/engine/fallback/interface.cc
+        hash/xx/engine/neon/interface.cc
+        hash/xx/engine/sse2/interface.cc
+        hash/xx/engine/avx2/interface.cc
+        hash/xx/engine/avx512/interface.cc
+        hash/xx/engine/lasx/interface.cc
+        hash/xx/engine/lsx/interface.cc
+        hash/xx/engine/rvv/interface.cc
+        hash/xx/engine/ppc64/interface.cc
+        hash/xx/engine/sve/interface.cc
+        hash/sip/siphash.cc
+        hash/algo/murmur3.cc
         hash/internal/hash.cc
 )
 
@@ -148,7 +185,10 @@ set(NUM_SRC
         numeric/int128_no_intrinsic.inc
 )
 
-
+set(PLATFORM_SRC
+        platform/environment.cc
+        platform/strerror.cc
+)
 
 set(STATUS_SRC
         status/internal/status_internal.cc
@@ -169,6 +209,7 @@ set(STRINGS_SRC
         strings/internal/memutil.cc
         strings/internal/pow10_helper.cc
         strings/internal/stringify_sink.cc
+        strings/lexer.cc
         strings/match.cc
         strings/numbers.cc
         strings/str_cat.cc
@@ -196,7 +237,6 @@ set(FORMAT_SRC
         format/str_format/float_conversion.cc
         format/str_format/output.cc
         format/str_format/parser.cc
-        format/internal/utf8.cc
         format/ostringstream.cc
         format/fast_to_buffer.cc
 )
@@ -237,9 +277,12 @@ set(UNICODE_SRC
         unicode/api/detect.cc
         unicode/api/find.cc
         unicode/api/latin1.cc
+        unicode/api/terminal.cc
         unicode/api/utf8.cc
+        unicode/api/utf8_for_code_point.cc
         unicode/api/utf16.cc
         unicode/api/utf32.cc
+        unicode/api/wchar.cc
         unicode/engine/isa_select.cc
         unicode/engine/interface.cc
         unicode/engine/arm64/implementation.cc
@@ -257,6 +300,7 @@ set(TURBO_SRC
         ${ARCH_SRC}
         ${BASE_SRC}
         ${BITS_SRC}
+        ${CLI_SRC}
         ${CORD_SRC}
         ${CRC_SRC}
         ${DBG_SRC}
@@ -266,6 +310,7 @@ set(TURBO_SRC
         ${HASH_SRC}
         ${LOG_SRC}
         ${NUM_SRC}
+        ${PLATFORM_SRC}
         ${STATUS_SRC}
         ${STRINGS_SRC}
         ${TIME_SRC}

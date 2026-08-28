@@ -1,5 +1,5 @@
-#ifndef UNICODE_BASE64_H
-#define UNICODE_BASE64_H
+
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -836,5 +836,3 @@ namespace turbo {
         } // unnamed namespace
     } // namespace scalar
 } // namespace turbo
-
-#endif

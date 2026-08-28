@@ -2,7 +2,7 @@
 #define UNICODE_RVV_IMPLEMENTATION_H
 
 #include <turbo/unicode/utf.h>
-#include <turbo/arch/isadetection.h>
+#include <turbo/arch/cpu_detect.h>
 
 namespace turbo {
     namespace rvv {
@@ -16,7 +16,7 @@ namespace turbo {
             KUMO_FORCE_INLINE UnicodeImplementRvv()
                 : turbo::UnicodeImplement("rvv", "RISC-V Vector Extension",
                       InstructionSet::RVV)
-                , _supports_zvbb(internal::detect_supported_architectures() & InstructionSet::ZVBB) { }
+                , _supports_zvbb(detect_supported_architectures() & InstructionSet::ZVBB) { }
              [[nodiscard]] int detect_encodings(const char* input,
                 size_t length) const noexcept final;
              [[nodiscard]] bool validate_utf8(const char* buf,

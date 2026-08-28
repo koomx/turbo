@@ -35,7 +35,7 @@
 
 #include <turbo/macros/config.h>
 #include <turbo/base/internal/raw_logging.h>
-#include <turbo/base/internal/strerror.h>
+#include <turbo/platform/strerror.h>
 #include <turbo/base/internal/sysinfo.h>
 #include <turbo/base/log_severity.h>
 #include <turbo/base/nullability.h>
@@ -52,7 +52,8 @@
 #include <turbo/log/log_entry.h>
 #include <turbo/log/log_sink.h>
 #include <turbo/log/log_sink_registry.h>
-#include <turbo/format/internal/utf8.h>
+#include <turbo/unicode/api/utf8.h>
+#include <turbo/unicode/api/wchar.h>
 #include <string_view>
 #include <turbo/time/clock.h>
 #include <turbo/time/time.h>
@@ -506,7 +507,7 @@ namespace turbo {
             if (data_->entry.log_severity() < turbo::min_log_level()) return;
 
             if (data_->is_perror) {
-                internal_stream() << ": " << turbo::base_internal::StrError(errno_saver_())
+                internal_stream() << ": " << turbo::str_error(errno_saver_())
                         << " [" << errno_saver_() << "]";
             }
 
@@ -705,7 +706,7 @@ namespace turbo {
                                               ? ValueTag::kStringLiteral
                                               : ValueTag::kString;
             size_t max_str_byte_length =
-                    turbo::strings_internal::kMaxEncodedUTF8Size * str.length();
+                    turbo::kMaxEncodedUTF8Size * str.length();
             auto value_start =
                     EncodeMessageStart(EventTag::kValue,
                                        BufferSizeFor(tag_value, WireType::kLengthDelimited) +

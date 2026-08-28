@@ -17,15 +17,8 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-#if defined(XCLI_CPP17)
-#if defined(__has_include)
-#if __has_include(<string_view>)
 #include <string_view>
-#define XCLI_HAS_STRING_VIEW
-#endif
-#endif
-#endif
+
 
 #if (defined(XCLI_ENABLE_EXTRA_VALIDATORS) && XCLI_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
     (!defined(XCLI_DISABLE_EXTRA_VALIDATORS) || XCLI_DISABLE_EXTRA_VALIDATORS == 0)
@@ -257,7 +250,6 @@ TEST_CASE_METHOD(TApp, "SimpleNumericalTransformFnArray", "[transform]") {
     CHECK(1 == value);
 }
 
-#ifdef XCLI_CPP14
 // zero copy constexpr array operation with transformer example and test
 TEST_CASE_METHOD(TApp, "SimpleNumericalTransformFnconstexprArray", "[transform]") {
     constexpr std::pair<const char *, int> p1{"one", 1};
@@ -278,7 +270,6 @@ TEST_CASE_METHOD(TApp, "SimpleNumericalTransformFnconstexprArray", "[transform]"
     CHECK(opt->count() == 1u);
     CHECK(2 == value);
 }
-#endif
 
 TEST_CASE_METHOD(TApp, "EnumTransformFn", "[transform]") {
     enum class test_cli : std::int16_t { val1 = 3, val2 = 4, val3 = 17 };

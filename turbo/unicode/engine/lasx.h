@@ -24,7 +24,7 @@
 #endif
 #endif
 
-#include <turbo/arch/isadetection.h>
+#include <turbo/arch/cpu_detect.h>
 
 namespace turbo {
     IsaInfo get_lasx_info();

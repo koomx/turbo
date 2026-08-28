@@ -178,3 +178,29 @@
 #define KUMO_ATTRIBUTE_WARN_UNUSED
 #endif
 
+
+
+#if defined(__cplusplus) && (__cplusplus >= 201103L) /* >= C++11 */
+/// In C++ alignas() is a keyword
+#define KUMO_ALIGN(n)      alignas(n)
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) /* > C11 */
+#define KUMO_ALIGN(n)      _Alignas(n)
+#elif defined(__GNUC__)
+#define KUMO_ALIGN(n)      __attribute__ ((aligned(n)))
+#elif defined(_MSC_VER)
+#define KUMO_ALIGN(n)      __declspec(align(n))
+#else
+/// disabled
+#define KUMO_ALIGN(n)
+#endif
+
+/// Old GCC versions only accept the attribute after the type in structures.
+///  C11+
+///  >= C++11
+#if !(defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)) \
+    && ! (defined(__cplusplus) && (__cplusplus >= 201103L))  \
+    && defined(__GNUC__)
+#   define KUMO_ALIGN_MEMBER(align, type) type KUMO_ALIGN(align)
+#else
+#   define KUMO_ALIGN_MEMBER(align, type) KUMO_ALIGN(align) type
+#endif

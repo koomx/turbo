@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, ecoding_dev]
+    branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -24,4 +24,4 @@ jobs:
       build-command: |
         cmake --build build-ninja --parallel
       test-command: |
-        ctest --test-dir build-ninja --output-on-failure -j1
+        python3 scripts/ci_ctest.py

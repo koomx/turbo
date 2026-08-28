@@ -98,7 +98,8 @@ namespace turbo {
             if (payloads_->empty() && message_.empty()) {
                 // Special case: If this can be represented inlined, it MUST be inlined
                 // (== depends on this behavior).
-                EraseResult result = {true, Status::code_to_inlined_rep(code_)};
+                EraseResult result = {true,
+                    Status::pack_inlined_rep(code_, sub_type_, sub_code_)};
                 Unref();
                 return result;
             }
@@ -129,7 +130,7 @@ namespace turbo {
             }
         }
 
-        turbo::Span<const turbo::SourceLocation> StatusRep::GetSourceLocations() const {
+        turbo::Span<const turbo::SourceLocation> StatusRep::get_source_locations() const {
             return turbo::make_span(source_locations_);
         }
 
@@ -139,7 +140,8 @@ namespace turbo {
 
         std::string StatusRep::ToString(StatusToStringMode mode) const {
             std::string text;
-            turbo::str_append(&text, turbo::status_code_to_string(code()), ": ", message());
+            turbo::str_append(&text, turbo::status_code_to_string(code()), "(s",
+                static_cast<unsigned>(sub_type_), ":", sub_code_, "): ", message());
 
             const bool with_payload = (mode & StatusToStringMode::kWithPayload) ==
                                       StatusToStringMode::kWithPayload;
@@ -164,7 +166,7 @@ namespace turbo {
                 std::string_view whitespace = (turbo::Hash<int>{}(42) % 2 == 0) ? "" : " ";
                 turbo::str_append(&text, "\n=== Source Location Trace: ===", whitespace,
                                  "\n");
-                for (const turbo::SourceLocation loc: GetSourceLocations()) {
+                for (const turbo::SourceLocation loc: get_source_locations()) {
                     turbo::str_append(&text, loc.file_name(), ":", loc.line(), "\n");
                 }
             }
@@ -175,6 +177,8 @@ namespace turbo {
         bool StatusRep::operator==(const StatusRep &other) const {
             assert(this != &other);
             if (code_ != other.code_) return false;
+            if (sub_type_ != other.sub_type_) return false;
+            if (sub_code_ != other.sub_code_) return false;
             if (message_ != other.message_) return false;
             const status_internal::Payloads *this_payloads = payloads_.get();
             const status_internal::Payloads *other_payloads = other.payloads_.get();
@@ -224,7 +228,8 @@ namespace turbo {
                 payloads = std::make_unique<status_internal::Payloads>(*payloads_);
             }
             auto *new_rep =
-                    new StatusRep(code_, new_message.value_or(message_), std::move(payloads));
+                    new StatusRep(code_, new_message.value_or(message_), std::move(payloads),
+                        sub_type_, sub_code_);
             if (include_source_locations) {
                 new_rep->source_locations_ = source_locations_;
             }

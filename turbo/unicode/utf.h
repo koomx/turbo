@@ -31,7 +31,7 @@ KUMO_DISABLE_UNDESIRED_WARNINGS
 // included, it might be put inside the #ifdef
 // UNICODE_IMPLEMENTATION_ARM64/FALLBACK/etc., which means the other
 // implementations can't compile unless that implementation is turned on).
-#include <turbo/arch/isadetection.h>
+#include <turbo/arch/cpu_detect.h>
 
 KUMO_RESTORE_UNDESIRED_WARNINGS
 

@@ -61,4 +61,23 @@
 
 #define KUMO_PLATFORM_NAME     "Linux"
 
+#elif defined(__ANDROID__)
+#define KUMO_OS_LINUX            1
+#define KUMO_OS_ANDROID          1
+
+#if defined(__wasm64__) || defined(_WIN64) || defined(__LP64__) || \
+    defined(_LP64) || defined(__x86_64__) || defined(_M_X64) || \
+    defined(_M_AMD64) || defined(__aarch64__) || defined(_M_ARM64) || \
+    defined(__powerpc64__) || defined(__PPC64__) || defined(__s390x__) || \
+    defined(__mips64) || defined(__loongarch64) || \
+    (defined(__riscv) && (__riscv_xlen == 64))
+#define KUMO_PTR_SIZE          8
+#else
+#define KUMO_PTR_SIZE          4
+#endif
+
+#define KUMO_PLATFORM_NAME     "Android"
+#else
+#define KUMO_OS_LINUX            0
+#define KUMO_OS_ANDROID          0
 #endif

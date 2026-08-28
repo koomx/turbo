@@ -1273,7 +1273,7 @@ namespace turbo {
         static IsaInfo ins = {
             UNICODE_IMPLEMENTATION_ARM64 == 1,
             false,
-            static_cast<uint32_t>(InstructionSet::NEON),
+            { kArmNeon },
             "arm64",
             get_arm64_instance(),
        };

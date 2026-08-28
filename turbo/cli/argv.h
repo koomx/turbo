@@ -6,26 +6,17 @@
 
 #pragma once
 
-// IWYU pragma: private, include "CLI/CLI.hpp"
 
-// [CLI11:public_includes:set]
 #include <string>
 #include <vector>
-// [CLI11:public_includes:end]
-
-#include <turbo/cli/macros.h>
+#include <turbo/macros/macros.h>
 
 namespace xcli {
-// [CLI11:argv_hpp:verbatim]
-namespace detail {
+    namespace detail {
 #ifdef _WIN32
-/// Decode and return UTF-8 argv from GetCommandLineW.
-XCLI_INLINE std::vector<std::string> compute_win32_argv();
+        /// Decode and return UTF-8 argv from GetCommandLineW.
+        std::vector<std::string> compute_win32_argv();
 #endif
-}  // namespace detail
-// [CLI11:argv_hpp:end]
-}  // namespace xcli
+    } // namespace detail
 
-#ifndef XCLI_COMPILE
-#include <turbo/cli/impl/argv_inl.h>  // IWYU pragma: export
-#endif
+} // namespace xcli

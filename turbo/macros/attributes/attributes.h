@@ -195,5 +195,10 @@
 #error "KUMO_XRAY_LOG_ARGS is not defined"
 #endif
 
+#ifndef KUMO_ATTRIBUTE_NOESCAPE
+#error "KUMO_ATTRIBUTE_NOESCAPE is not defined"
+#endif
 
-
+#ifndef KUMO_ATTRIBUTE_MALLOC_FUNCTION
+#error "KUMO_ATTRIBUTE_MALLOC_FUNCTION is not defined"
+#endif

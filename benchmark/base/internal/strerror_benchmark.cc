@@ -16,13 +16,13 @@
 #include <cstdio>
 #include <string>
 
-#include <turbo/base/internal/strerror.h>
+#include <turbo/platform/strerror.h>
 #include "benchmark/benchmark.h"
 
 namespace {
 void BM_TurboStrError(benchmark::State& state) {
   for (auto _ : state) {
-    benchmark::DoNotOptimize(turbo::base_internal::StrError(ERANGE));
+    benchmark::DoNotOptimize(turbo::str_error(ERANGE));
   }
 }
 BENCHMARK(BM_TurboStrError);

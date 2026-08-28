@@ -21,18 +21,18 @@
 
 namespace turbo {
 
-namespace hash_internal {
+    namespace hash_internal {
 
-// Contains an integer that will be mixed into a hash state more weakly than
-// regular integers. It is useful for cases in which an integer is a part of a
-// larger object and needs to be mixed as a supplement. E.g., std::string_view
-// and turbo::Span are mixing their size wrapped with WeaklyMixedInteger.
-struct WeaklyMixedInteger {
-  size_t value;
-};
+        // Contains an integer that will be mixed into a hash state more weakly than
+        // regular integers. It is useful for cases in which an integer is a part of a
+        // larger object and needs to be mixed as a supplement. E.g., std::string_view
+        // and turbo::Span are mixing their size wrapped with WeaklyMixedInteger.
+        struct WeaklyMixedInteger {
+            size_t value;
+        };
 
-}  // namespace hash_internal
+    } // namespace hash_internal
 
-}  // namespace turbo
+} // namespace turbo
 
-#endif  // TURBO_HASH_INTERNAL_WEAKLY_MIXED_INTEGER_H_
+#endif // TURBO_HASH_INTERNAL_WEAKLY_MIXED_INTEGER_H_

@@ -89,7 +89,7 @@ log = "base, bits, cleanup, debugging, format, functional, hash, macros, meta, s
 #######################################
 # L10 — CLI (command-line frontend; binds turbo::Flag)
 #######################################
-cli = "base, flags, format, macros, strings, utility"
+cli = "base, flags, format, macros, strings, unicode, utility"
 
 # Modules temporarily skipped by `check` (still visible to `list`).
 [unchecked]

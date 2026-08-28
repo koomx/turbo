@@ -13,7 +13,7 @@
 #define UNICODE_IMPLEMENTATION_LSX (KUMO_SIMD_LSX)
 #endif
 
-#include <turbo/arch/isadetection.h>
+#include <turbo/arch/cpu_detect.h>
 
 namespace turbo {
     IsaInfo get_lsx_info();

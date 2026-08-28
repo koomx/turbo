@@ -59,12 +59,12 @@
 #include <type_traits>
 #include <utility>
 
-#include <turbo/types/source_location.h>
 #include <string_view>
 #include <turbo/base/nullability.h>
 #include <turbo/functional/function_ref.h>
 #include <turbo/macros/config.h>
 #include <turbo/status/internal/status_internal.h>
+#include <turbo/types/source_location.h>
 #include <turbo/types/span.h>
 
 namespace turbo {
@@ -93,10 +93,10 @@ namespace turbo {
     // If your error handling code requires more context, you can attach payloads
     // to your status. See `turbo::Status::set_payload()` and
     // `turbo::Status::get_payload()` below.
-    enum class StatusCode : int {
+    enum class StatusCode : uint8_t {
         // StatusCode::kOk
         //
-        // kOK (gRPC code "OK") does not indicate an error; this value is returned on
+        // kOK (code "OK") does not indicate an error; this value is returned on
         // success. It is typical to check for this value before proceeding on any
         // given call across an API or RPC boundary. To check this value, use the
         // `turbo::Status::ok()` member function rather than inspecting the raw code.
@@ -104,13 +104,13 @@ namespace turbo {
 
         // StatusCode::kCancelled
         //
-        // kCancelled (gRPC code "CANCELLED") indicates the operation was cancelled,
+        // kCancelled (code "CANCELLED") indicates the operation was cancelled,
         // typically by the caller.
         kCancelled = 1,
 
         // StatusCode::kUnknown
         //
-        // kUnknown (gRPC code "UNKNOWN") indicates an unknown error occurred. In
+        // kUnknown (code "UNKNOWN") indicates an unknown error occurred. In
         // general, more specific errors should be raised, if possible. Errors raised
         // by APIs that do not return enough error information may be converted to
         // this error.
@@ -118,7 +118,7 @@ namespace turbo {
 
         // StatusCode::kInvalidArgument
         //
-        // kInvalidArgument (gRPC code "INVALID_ARGUMENT") indicates the caller
+        // kInvalidArgument (code "INVALID_ARGUMENT") indicates the caller
         // specified an invalid argument, such as a malformed filename. Note that use
         // of such errors should be narrowly limited to indicate the invalid nature of
         // the arguments themselves. Errors with validly formed arguments that may
@@ -128,7 +128,7 @@ namespace turbo {
 
         // StatusCode::kDeadlineExceeded
         //
-        // kDeadlineExceeded (gRPC code "DEADLINE_EXCEEDED") indicates a deadline
+        // kDeadlineExceeded (code "DEADLINE_EXCEEDED") indicates a deadline
         // expired before the operation could complete. For operations that may change
         // state within a system, this error may be returned even if the operation has
         // completed successfully. For example, a successful response from a server
@@ -137,7 +137,7 @@ namespace turbo {
 
         // StatusCode::kNotFound
         //
-        // kNotFound (gRPC code "NOT_FOUND") indicates some requested entity (such as
+        // kNotFound (code "NOT_FOUND") indicates some requested entity (such as
         // a file or directory) was not found.
         //
         // `kNotFound` is useful if a request should be denied for an entire class of
@@ -148,14 +148,14 @@ namespace turbo {
 
         // StatusCode::kAlreadyExists
         //
-        // kAlreadyExists (gRPC code "ALREADY_EXISTS") indicates that the entity a
+        // kAlreadyExists (code "ALREADY_EXISTS") indicates that the entity a
         // caller attempted to create (such as a file or directory) is already
         // present.
         kAlreadyExists = 6,
 
         // StatusCode::kPermissionDenied
         //
-        // kPermissionDenied (gRPC code "PERMISSION_DENIED") indicates that the caller
+        // kPermissionDenied (code "PERMISSION_DENIED") indicates that the caller
         // does not have permission to execute the specified operation. Note that this
         // error is different than an error due to an *un*authenticated user. This
         // error code does not imply the request is valid or the requested entity
@@ -169,14 +169,14 @@ namespace turbo {
 
         // StatusCode::kResourceExhausted
         //
-        // kResourceExhausted (gRPC code "RESOURCE_EXHAUSTED") indicates some resource
+        // kResourceExhausted (code "RESOURCE_EXHAUSTED") indicates some resource
         // has been exhausted, perhaps a per-user quota, or perhaps the entire file
         // system is out of space.
         kResourceExhausted = 8,
 
         // StatusCode::kFailedPrecondition
         //
-        // kFailedPrecondition (gRPC code "FAILED_PRECONDITION") indicates that the
+        // kFailedPrecondition (code "FAILED_PRECONDITION") indicates that the
         // operation was rejected because the system is not in a state required for
         // the operation's execution. For example, a directory to be deleted may be
         // non-empty, an "rmdir" operation is applied to a non-directory, etc.
@@ -197,7 +197,7 @@ namespace turbo {
 
         // StatusCode::kAborted
         //
-        // kAborted (gRPC code "ABORTED") indicates the operation was aborted,
+        // kAborted (code "ABORTED") indicates the operation was aborted,
         // typically due to a concurrency issue such as a sequencer check failure or a
         // failed transaction.
         //
@@ -207,7 +207,7 @@ namespace turbo {
 
         // StatusCode::kOutOfRange
         //
-        // kOutOfRange (gRPC code "OUT_OF_RANGE") indicates the operation was
+        // kOutOfRange (code "OUT_OF_RANGE") indicates the operation was
         // attempted past the valid range, such as seeking or reading past an
         // end-of-file.
         //
@@ -227,21 +227,21 @@ namespace turbo {
 
         // StatusCode::kUnimplemented
         //
-        // kUnimplemented (gRPC code "UNIMPLEMENTED") indicates the operation is not
+        // kUnimplemented (code "UNIMPLEMENTED") indicates the operation is not
         // implemented or supported in this service. In this case, the operation
         // should not be re-attempted.
         kUnimplemented = 12,
 
         // StatusCode::kInternal
         //
-        // kInternal (gRPC code "INTERNAL") indicates an internal error has occurred
+        // kInternal (code "INTERNAL") indicates an internal error has occurred
         // and some invariants expected by the underlying system have not been
         // satisfied. This error code is reserved for serious errors.
         kInternal = 13,
 
         // StatusCode::kUnavailable
         //
-        // kUnavailable (gRPC code "UNAVAILABLE") indicates the service is currently
+        // kUnavailable (code "UNAVAILABLE") indicates the service is currently
         // unavailable and that this is most likely a transient condition. An error
         // such as this can be corrected by retrying with a backoff scheme. Note that
         // it is not always safe to retry non-idempotent operations.
@@ -252,14 +252,14 @@ namespace turbo {
 
         // StatusCode::kDataLoss
         //
-        // kDataLoss (gRPC code "DATA_LOSS") indicates that unrecoverable data loss or
+        // kDataLoss (code "DATA_LOSS") indicates that unrecoverable data loss or
         // corruption has occurred. As this error is serious, proper alerting should
         // be attached to errors such as this.
         kDataLoss = 15,
 
         // StatusCode::kUnauthenticated
         //
-        // kUnauthenticated (gRPC code "UNAUTHENTICATED") indicates that the request
+        // kUnauthenticated (code "UNAUTHENTICATED") indicates that the request
         // does not have valid authentication credentials for the operation. Correct
         // the authentication and try again.
         kUnauthenticated = 16,
@@ -291,6 +291,59 @@ namespace turbo {
     // Streams status_code_to_string(code) to `os`.
     std::ostream& operator<<(std::ostream& os, StatusCode code);
 
+    ////////////////////////////////////////////////////////////
+    /// larger than 2, leave for user define
+    /// range, eg:
+    ///     define io error Sub No. to 3
+    ///     define logical error Sub No. to 4
+    ///
+    using SubStatusType = uint8_t;
+
+    static constexpr SubStatusType kSubErrno = 0;
+    static constexpr SubStatusType kSubSignal = 1;
+    static constexpr SubStatusType kSubUser = 2;
+
+    /// s[num]
+    std::string to_string(SubStatusType s);
+
+    struct InlineStatus {
+        StatusCode code { StatusCode::kOk };
+        uint8_t type { 0 };
+        int32_t sub_code { 0 };
+        bool is_inlined { false };
+    };
+
+    // Inlined rep_ (bit0=1), low → high:
+    //   [1:0]   inlined | moved-from   (unchanged)
+    //   [9:2]   StatusCode
+    //   [17:10] SubStatusType          (1 byte)
+    //   [49:18] int32 sub_code         (4 bytes)
+    //   [63:50] unused
+    inline constexpr int kStatusCodeShift = 2;
+    inline constexpr int kSubTypeShift = 10;
+    inline constexpr int kSubCodeShift = 18;
+    inline constexpr uintptr_t kStatusCodeBits = 0xFFu;
+    inline constexpr uintptr_t kSubTypeBits = 0xFFu;
+    inline constexpr uintptr_t kSubCodeBits = 0xFFFFFFFFu;
+    // After is_inlined: drop bit0/bit1 and the middle 5 bytes; leftover is StatusCode.
+    inline constexpr uintptr_t kOkIgnoreMask = 0x3u | (kSubTypeBits << kSubTypeShift) | (kSubCodeBits << kSubCodeShift);
+
+    //////////////////////////////////////////////////////////////////////////
+    /// format
+    ///     |status|SubStatusType|code|inline spec|
+    ///     | 8    | 8           |32. | 16        |
+    //////////////////////////////////////////////////////////////////////////
+    /// InlineStatus string format
+    ///     StatusString(s[type string]:sub_code)
+    /// eg.
+    ///     UNIMPLEMENTED(s0:11)
+    //////////////////////////////////////////////////////////////////////////
+    /// Status string format
+    ///     UNIMPLEMENTED(s0:11): xxxx
+    /// UNIMPLEMENTED(s0:0): xxxx
+    /// OK(s0:11)
+
+    /////////////////////////////////////////
     // turbo::StatusToStringMode
     //
     // An `turbo::StatusToStringMode` is an enumerated type indicating how
@@ -444,6 +497,12 @@ namespace turbo {
         // with `turbo::ok_status()`.
         Status();
 
+        Status(turbo::StatusCode code, SubStatusType type, int32_t sub_code);
+
+        Status(turbo::StatusCode code, SubStatusType type, int32_t sub_code,
+            std::string_view msg,
+            turbo::SourceLocation loc = turbo::SourceLocation::current());
+
         // Creates a status in the canonical error space with the specified
         // `turbo::StatusCode` and error message.  If `code == turbo::StatusCode::kOk`,
         // `msg` is ignored and an object identical to an OK status is constructed.
@@ -520,6 +579,10 @@ namespace turbo {
         //
         // Returns the canonical error code of type `turbo::StatusCode` of this status.
         turbo::StatusCode code() const;
+
+        SubStatusType sub_type() const;
+
+        int32_t sub_code() const;
 
         // Status::raw_code()
         //
@@ -644,10 +707,10 @@ namespace turbo {
             turbo::FunctionRef<void(std::string_view, const std::string&)> visitor)
             const;
 
-        turbo::Span<const turbo::SourceLocation> GetSourceLocations() const {
+        turbo::Span<const turbo::SourceLocation> get_source_locations() const {
             if (is_inlined(rep_))
                 return { };
-            return rep_to_pointer(rep_)->GetSourceLocations();
+            return rep_to_pointer(rep_)->get_source_locations();
         }
 
         // Appends the `loc` to the current location chain inside the status, iff the
@@ -700,6 +763,62 @@ namespace turbo {
             return std::move(*this);
         }
 
+        void add_sub_code(int32_t code, int8_t type = kSubUser) {
+            rep_ = set_sub_impl(rep_, static_cast<SubStatusType>(type), code);
+        }
+
+        Status with_sub_code(int32_t code, int8_t type = kSubUser) const& {
+            Status out(*this);
+            out.add_sub_code(code, type);
+            return out;
+        }
+
+        KUMO_MUST_USE_RESULT Status&& with_sub_code(int32_t code, int8_t type = kSubUser) && {
+            add_sub_code(code, type);
+            return std::move(*this);
+        }
+
+        void add_errno(int32_t code) { add_sub_code(code, kSubErrno); }
+
+        Status with_errno(int32_t code) const& {
+            Status out(*this);
+            out.add_errno(code);
+            return out;
+        }
+
+        KUMO_MUST_USE_RESULT Status&& with_errno(int32_t code) && {
+            add_errno(code);
+            return std::move(*this);
+        }
+
+        void add_signal(int32_t code) { add_sub_code(code, kSubSignal); }
+
+        Status with_signal(int32_t code) const& {
+            Status out(*this);
+            out.add_signal(code);
+            return out;
+        }
+
+        KUMO_MUST_USE_RESULT Status&& with_signal(int32_t code) && {
+            add_signal(code);
+            return std::move(*this);
+        }
+
+        void clear_sub_code() { add_sub_code(0, 0); }
+
+        Status without_sub_code() const& {
+            Status out(*this);
+            out.clear_sub_code();
+            return out;
+        }
+
+        KUMO_MUST_USE_RESULT Status&& without_sub_code() && {
+            clear_sub_code();
+            return std::move(*this);
+        }
+
+        InlineStatus inline_status() const;
+
     private:
         friend Status cancelled_error();
 
@@ -727,7 +846,7 @@ namespace turbo {
             turbo::SourceLocation loc);
 
         // Same as above but for rvalue string.
-        static uintptr_t MakeRepFromStringRvalue(uintptr_t inlined_rep,
+        static uintptr_t make_rep_from_string_rvalue(uintptr_t inlined_rep,
             std::string&& msg,
             turbo::SourceLocation loc);
 
@@ -744,21 +863,23 @@ namespace turbo {
         static uintptr_t add_source_location_impl(uintptr_t rep,
             turbo::SourceLocation loc);
 
+        static uintptr_t set_sub_impl(uintptr_t rep, SubStatusType type, int32_t sub_code);
+
         static void Ref(uintptr_t rep);
 
         static void Unref(uintptr_t rep);
 
         // REQUIRES: !ok()
         // Ensures rep is not inlined or shared with any other Status.
-        static status_internal::StatusRep* turbo_nonnull PrepareToModify(
+        static status_internal::StatusRep* turbo_nonnull prepare_to_modify(
             uintptr_t rep);
 
         // MSVC 14.0 limitation requires the const.
         static constexpr const char kMovedFromString[] = "Status accessed after move.";
 
-        static const std::string* turbo_nonnull EmptyString();
+        static const std::string* turbo_nonnull empty_string();
 
-        static const std::string* turbo_nonnull MovedFromString();
+        static const std::string* turbo_nonnull moved_from_string();
 
         // Returns whether rep contains an inlined representation.
         // See rep_ for details.
@@ -774,7 +895,14 @@ namespace turbo {
         // by rep_. See rep_ for details.
         static constexpr uintptr_t code_to_inlined_rep(turbo::StatusCode code);
 
+        static constexpr uintptr_t pack_inlined_rep(turbo::StatusCode code,
+            SubStatusType type, int32_t sub_code, bool moved_from = false);
+
         static constexpr turbo::StatusCode inlined_rep_to_code(uintptr_t rep);
+
+        static constexpr SubStatusType inlined_rep_to_sub_type(uintptr_t rep);
+
+        static constexpr int32_t inlined_rep_to_sub_code(uintptr_t rep);
 
         // Converts between StatusRep* and the external uintptr_t representation used
         // by rep_. See rep_ for details.
@@ -787,8 +915,7 @@ namespace turbo {
 
         // Status supports two different representations.
         //  - When the low bit is set it is an inlined representation.
-        //    It uses the canonical error space, no message or payload.
-        //    The error code is (rep_ >> 2).
+        //    StatusCode at (rep >> 2) & 0xff; type at bits [17:10]; sub_code [49:18].
         //    The (rep_ & 2) bit is the "moved from" indicator, used in is_moved_from().
         //  - When the low bit is off it is an external representation.
         //    In this case all the data comes from a heap allocated Rep object.
@@ -948,6 +1075,8 @@ namespace turbo {
     Status ErrnoToStatus(int error_number, std::string_view message,
         turbo::SourceLocation loc = turbo::SourceLocation::current());
 
+    Status ErrnoToStatus(int error_number);
+
     //------------------------------------------------------------------------------
     // Implementation details follow
     //------------------------------------------------------------------------------
@@ -960,6 +1089,16 @@ namespace turbo {
         : Status(code_to_inlined_rep(code)) {
     }
 
+    inline Status::Status(turbo::StatusCode code, SubStatusType type, int32_t sub_code)
+        : Status(pack_inlined_rep(code, type, sub_code)) {
+    }
+
+    inline Status::Status(turbo::StatusCode code, SubStatusType type, int32_t sub_code,
+        std::string_view msg, turbo::SourceLocation loc)
+        : Status(make_rep_from_string_view(pack_inlined_rep(code, type, sub_code),
+              msg, loc)) {
+    }
+
     inline Status::Status(turbo::StatusCode code, std::string_view msg,
         turbo::SourceLocation loc)
         : Status(make_rep_from_string_view(code_to_inlined_rep(code), msg, loc)) {
@@ -968,7 +1107,7 @@ namespace turbo {
     template <typename String, typename>
     inline Status::Status(turbo::StatusCode code, String&& msg,
         turbo::SourceLocation loc)
-        : Status(MakeRepFromStringRvalue(code_to_inlined_rep(code),
+        : Status(make_rep_from_string_rvalue(code_to_inlined_rep(code),
               std::forward<String>(msg), loc)) {
     }
 
@@ -1019,11 +1158,28 @@ namespace turbo {
     }
 
     inline bool Status::ok() const {
-        return rep_ == code_to_inlined_rep(turbo::StatusCode::kOk);
+        if (!is_inlined(rep_)) {
+            return false;
+        }
+        return (rep_ & ~kOkIgnoreMask) == 0;
     }
 
     inline turbo::StatusCode Status::code() const {
         return status_internal::MapToLocalCode(raw_code());
+    }
+
+    inline SubStatusType Status::sub_type() const {
+        if (is_inlined(rep_)) {
+            return inlined_rep_to_sub_type(rep_);
+        }
+        return rep_to_pointer(rep_)->sub_type();
+    }
+
+    inline int32_t Status::sub_code() const {
+        if (is_inlined(rep_)) {
+            return inlined_rep_to_sub_code(rep_);
+        }
+        return rep_to_pointer(rep_)->sub_code();
     }
 
     inline int Status::raw_code() const {
@@ -1055,7 +1211,10 @@ namespace turbo {
     }
 
     inline std::string Status::ToString(StatusToStringMode mode) const {
-        return ok() ? "OK" : to_string_slow(rep_, mode);
+        if (ok() && sub_type() == 0 && sub_code() == 0) {
+            return "OK";
+        }
+        return to_string_slow(rep_, mode);
     }
 
     inline void Status::ignore_error() const {
@@ -1077,7 +1236,7 @@ namespace turbo {
     inline void Status::set_payload(std::string_view type_url, std::string payload) {
         if (ok())
             return;
-        status_internal::StatusRep* rep = PrepareToModify(rep_);
+        status_internal::StatusRep* rep = prepare_to_modify(rep_);
         rep->set_payload(type_url, std::move(payload));
         rep_ = pointer_to_rep(rep);
     }
@@ -1085,7 +1244,7 @@ namespace turbo {
     inline bool Status::erase_payload(std::string_view type_url) {
         if (is_inlined(rep_))
             return false;
-        status_internal::StatusRep* rep = PrepareToModify(rep_);
+        status_internal::StatusRep* rep = prepare_to_modify(rep_);
         auto res = rep->erase_payload(type_url);
         rep_ = res.new_rep;
         return res.erased;
@@ -1108,12 +1267,36 @@ namespace turbo {
     }
 
     constexpr uintptr_t Status::code_to_inlined_rep(turbo::StatusCode code) {
-        return (static_cast<uintptr_t>(code) << 2) + 1;
+        return (static_cast<uintptr_t>(code) << kStatusCodeShift) | 1u;
+    }
+
+    constexpr uintptr_t Status::pack_inlined_rep(turbo::StatusCode code,
+        SubStatusType type, int32_t sub_code, bool moved_from) {
+        uintptr_t rep = code_to_inlined_rep(code);
+        rep |= (static_cast<uintptr_t>(type) & kSubTypeBits) << kSubTypeShift;
+        rep |= (static_cast<uintptr_t>(static_cast<uint32_t>(sub_code)) & kSubCodeBits)
+            << kSubCodeShift;
+        if (moved_from) {
+            rep |= 2u;
+        }
+        return rep;
     }
 
     constexpr turbo::StatusCode Status::inlined_rep_to_code(uintptr_t rep) {
         KUMO_ASSERT(is_inlined(rep));
-        return static_cast<turbo::StatusCode>(rep >> 2);
+        return static_cast<turbo::StatusCode>(
+            (rep >> kStatusCodeShift) & kStatusCodeBits);
+    }
+
+    constexpr SubStatusType Status::inlined_rep_to_sub_type(uintptr_t rep) {
+        KUMO_ASSERT(is_inlined(rep));
+        return static_cast<SubStatusType>((rep >> kSubTypeShift) & kSubTypeBits);
+    }
+
+    constexpr int32_t Status::inlined_rep_to_sub_code(uintptr_t rep) {
+        KUMO_ASSERT(is_inlined(rep));
+        return static_cast<int32_t>(
+            static_cast<uint32_t>((rep >> kSubCodeShift) & kSubCodeBits));
     }
 
     constexpr uintptr_t Status::moved_from_rep() {
@@ -1129,6 +1312,15 @@ namespace turbo {
     inline uintptr_t Status::pointer_to_rep(
         status_internal::StatusRep* turbo_nonnull rep) {
         return reinterpret_cast<uintptr_t>(rep);
+    }
+
+    inline InlineStatus Status::inline_status() const {
+        if (is_inlined(rep_)) {
+            return { inlined_rep_to_code(rep_), inlined_rep_to_sub_type(rep_),
+                inlined_rep_to_sub_code(rep_), true };
+        }
+        const status_internal::StatusRep* p = rep_to_pointer(rep_);
+        return { p->code(), p->sub_type(), p->sub_code(), false };
     }
 
     inline void Status::Ref(uintptr_t rep) {
@@ -1236,14 +1428,12 @@ namespace turbo {
 
     inline Status deadline_exceeded_error(std::string_view message,
         turbo::SourceLocation loc) {
-        return status_internal::make_error<StatusCode::kDeadlineExceeded>(message,
-            loc);
+        return status_internal::make_error<StatusCode::kDeadlineExceeded>(message, loc);
     }
 
     inline Status failed_precondition_error(std::string_view message,
         turbo::SourceLocation loc) {
-        return status_internal::make_error<StatusCode::kFailedPrecondition>(message,
-            loc);
+        return status_internal::make_error<StatusCode::kFailedPrecondition>(message, loc);
     }
 
     inline Status internal_error(std::string_view message,

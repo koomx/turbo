@@ -65,12 +65,10 @@
 
 namespace turbo {
 
+    enum ConstInitType {
+        kConstInit,
+    };
 
-enum ConstInitType {
-  kConstInit,
-};
+} // namespace turbo
 
-
-}  // namespace turbo
-
-#endif  // TURBO_BASE_CONST_INIT_H_
+#endif // TURBO_BASE_CONST_INIT_H_

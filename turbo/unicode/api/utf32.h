@@ -344,4 +344,31 @@ namespace turbo {
         size_t length) noexcept;
 
 
+    /// Surrogate code points are reserved for UTF-16 and are not Unicode scalar values,
+    /// so they have no valid UTF-8 encoding. `convertCodePointToUTF8` doesn't check that,
+    /// it encodes them as CESU-8, so callers must reject them beforehand.
+    constexpr bool is_surrogate_code_point(char32_t code_point){
+        return code_point >= 0xD800 && code_point <= 0xDFFF;
+    }
+
+
+    /// For Unicode code points 0 through 0x10FFFF, encode_utf32_to_utf8 writes
+    /// out the UTF-8 encoding into buffer, and returns the number of chars
+    /// it wrote.
+    ///
+    /// As described in https://tools.ietf.org/html/rfc3629#section-3 , the encodings
+    /// are:
+    ///    00 -     7F : 0xxxxxxx
+    ///    80 -    7FF : 110xxxxx 10xxxxxx
+    ///   800 -   FFFF : 1110xxxx 10xxxxxx 10xxxxxx
+    /// 10000 - 10FFFF : 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+    ///
+    /// Values greater than 0x10FFFF are not supported and may or may not write
+    /// characters into buffer, however never will more than kMaxEncodedUTF8Size
+    /// bytes be written, regardless of the value of utf8_char.
+    enum { kMaxEncodedUTF8Size = 4 };
+
+    size_t encode_utf32_to_utf8(char* buffer, char32_t utf8_char);
+    size_t encode_utf32_to_utf8(char* buffer, size_t out_length, char32_t utf8_char);
+
 }  // namespace turbo

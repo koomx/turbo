@@ -6,50 +6,43 @@
 
 #pragma once
 
-// IWYU pragma: private, include "CLI/CLI.hpp"
-
-// [CLI11:public_includes:set]
 #include <algorithm>
 #include <cctype>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
-// [CLI11:public_includes:end]
+
 
 #include <turbo/cli/app.h>
 #include <turbo/cli/config_fwd.h>
 #include <turbo/cli/string_tools.h>
 
 namespace xcli {
-// [CLI11:config_hpp:verbatim]
-namespace detail {
 
-std::string convert_arg_for_ini(const std::string &arg,
-                                char stringQuote = '"',
-                                char literalQuote = '\'',
-                                bool disable_multi_line = false);
+    namespace detail {
 
-/// Comma separated join, adds quotes if needed
-std::string ini_join(const std::vector<std::string> &args,
-                     char sepChar = ',',
-                     char arrayStart = '[',
-                     char arrayEnd = ']',
-                     char stringQuote = '"',
-                     char literalQuote = '\'');
+        std::string convert_arg_for_ini(const std::string& arg,
+            char stringQuote = '"',
+            char literalQuote = '\'',
+            bool disable_multi_line = false);
 
-void clean_name_string(std::string &name, const std::string &keyChars);
+        /// Comma separated join, adds quotes if needed
+        std::string ini_join(const std::vector<std::string>& args,
+            char sepChar = ',',
+            char arrayStart = '[',
+            char arrayEnd = ']',
+            char stringQuote = '"',
+            char literalQuote = '\'');
 
-std::vector<std::string> generate_parents(const std::string &section, std::string &name, char parentSeparator);
+        void clean_name_string(std::string& name, const std::string& keyChars);
 
-/// assuming non default segments do a check on the close and open of the segments in a configItem structure
-void checkParentSegments(std::vector<ConfigItem> &output, const std::string &currentSection, char parentSeparator);
-}  // namespace detail
+        std::vector<std::string> generate_parents(const std::string& section, std::string& name, char parentSeparator);
 
-// [CLI11:config_hpp:end]
-}  // namespace xcli
+        /// assuming non default segments do a check on the close and open of the segments in a configItem structure
+        void checkParentSegments(std::vector<ConfigItem>& output, const std::string& currentSection, char parentSeparator);
+    } // namespace detail
 
-#ifndef XCLI_COMPILE
-#include <turbo/cli/impl/config_inl.h>  // IWYU pragma: export
-#endif
+} // namespace xcli

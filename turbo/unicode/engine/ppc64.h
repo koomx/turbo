@@ -8,7 +8,7 @@
 #define UNICODE_IMPLEMENTATION_PPC64 (KUMO_ARCH_PPC64 && KUMO_SIMD_ALTIVEC)
 #endif
 
-#include <turbo/arch/isadetection.h>
+#include <turbo/arch/cpu_detect.h>
 
 namespace turbo {
     IsaInfo get_ppc64_info();

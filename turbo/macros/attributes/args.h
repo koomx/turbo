@@ -200,3 +200,29 @@ struct KumoInternal_YouForgotToExplicitlyInitializeAField {
 // clang-format on
 #endif
 
+
+////////////////////////////////////////////////////////////
+/// @brief Marks a function parameter as not escaping the function scope.
+///
+/// This attribute is a hint to the compiler that the pointer parameter's
+/// memory will not be stored, captured, or used after the function returns.
+/// It enables more aggressive optimization by allowing the compiler to avoid
+/// unnecessary reloads and to make stronger alias analysis assumptions.
+///
+/// @note As of this writing, this attribute is only supported by Clang.
+///       It has no effect in other compilers.
+/// @see https://clang.llvm.org/docs/AttributeReference.html#noescape
+///
+/// @example
+/// // In a public API, you can use it to annotate input buffers:
+/// void process_data(const uint8_t* KUMO_ATTRIBUTE_NOESCAPE data, size_t len);
+///
+/// // Or for a callback context:
+/// void run_with_context(void* KUMO_ATTRIBUTE_NOESCAPE ctx, void (*callback)(void*));
+///
+#if KUMO_HAVE_ATTRIBUTE(noescape)
+# define KUMO_ATTRIBUTE_NOESCAPE __attribute__((__noescape__))
+#else
+# define KUMO_ATTRIBUTE_NOESCAPE
+#endif
+

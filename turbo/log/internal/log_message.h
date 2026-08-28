@@ -38,7 +38,7 @@
 #include <type_traits>
 #include <turbo/format/str_format.h>
 #include <turbo/macros/config.h>
-#include <turbo/base/internal/errno_saver.h>
+#include <turbo/platform/strerror.h>
 #include <turbo/base/log_severity.h>
 #include <turbo/base/nullability.h>
 #include <turbo/log/internal/nullguard.h>
@@ -337,7 +337,7 @@ namespace turbo {
             // This should be the first data member so that its initializer captures errno
             // before any other initializers alter it (e.g. with calls to new) and so that
             // no other destructors run afterward an alter it (e.g. with calls to delete).
-            turbo::base_internal::ErrnoSaver errno_saver_;
+            turbo::ErrnoSaver errno_saver_;
 
             // We keep the data in a separate struct so that each instance of `LogMessage`
             // uses less stack space.

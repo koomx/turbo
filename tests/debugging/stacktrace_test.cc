@@ -25,7 +25,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <turbo/macros/config.h>
-#include <turbo/base/internal/errno_saver.h>
+#include <turbo/platform/strerror.h>
 #include <turbo/types/span.h>
 
 static int g_should_fixup_calls = 0;
@@ -311,7 +311,7 @@ const void* g_return_address = nullptr;
 bool g_sigusr2_raised = false;
 
 void SigUsr2Handler(int, siginfo_t*, void* uc) {
-  turbo::base_internal::ErrnoSaver errno_saver;
+  turbo::ErrnoSaver errno_saver;
   // Many platforms don't support this by default.
   bool support_is_expected = false;
   constexpr int kMaxStackDepth = 64;

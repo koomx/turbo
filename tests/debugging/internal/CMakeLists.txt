@@ -19,7 +19,6 @@ set(DBG_INTERNAL_TESTS
         demangle_rust_test
         demangle_test
         stack_consumption_test
-        utf8_for_code_point_test
 )
 
 foreach (case IN LISTS DBG_INTERNAL_TESTS)

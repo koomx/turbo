@@ -6,7 +6,7 @@
 #include <turbo/unicode/engine/portability.h>
 #include <turbo/unicode/text_encoding.h>
 #include <turbo/unicode/error.h>
-#include <turbo/arch/isadetection.h>
+#include <turbo/arch/cpu_detect.h>
 #include <turbo/bits/bits.h>
 #include <string_view>
 
@@ -47,6 +47,7 @@
 #include <turbo/unicode/api/utf32.h>
 #include <turbo/unicode/api/latin1.h>
 #include <turbo/unicode/api/base64.h>
+#include <turbo/unicode/api/wchar.h>
 #include <turbo/unicode/engine/interface.h>
 
 

@@ -20,6 +20,7 @@ set(STRINGS_TESTS
         charconv_test
         charset_test
         escaping_test
+        lexer_test
         has_absl_stringify_test
         has_ostream_operator_test
         match_test

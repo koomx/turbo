@@ -1363,7 +1363,7 @@ namespace turbo {
         static IsaInfo ins = {
             UNICODE_IMPLEMENTATION_LASX == 1,
             false,
-            static_cast<uint32_t>(InstructionSet::LSX | InstructionSet::LASX),
+            { kLoongLsx, kLoongLasx },
              "lasx",
             get_lasx_instance(),
         };

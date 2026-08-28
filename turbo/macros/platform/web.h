@@ -18,38 +18,7 @@
     (defined(__wasm__) && !defined(__linux__) && !defined(__APPLE__) && \
      !defined(_WIN32))
 
-#define KUMO_OS_LINUX            0
-#define KUMO_OS_MACOSX           0
-#define KUMO_OS_WINDOWS          0
-#define KUMO_OS_ANDROID          0
-#define KUMO_OS_IOS              0
-#define KUMO_OS_TVOS             0
-#define KUMO_OS_WATCHOS          0
-#define KUMO_OS_VISIONOS         0
-#define KUMO_OS_BSD              0
-#define KUMO_OS_FREEBSD          0
-#define KUMO_OS_OPENBSD          0
-#define KUMO_OS_NETBSD           0
-#define KUMO_OS_DRAGONFLY        0
-#define KUMO_OS_NACL             0
-#define KUMO_OS_NACL_SFI         0
-#define KUMO_OS_NACL_NONSFI      0
-#define KUMO_OS_SOLARIS          0
-#define KUMO_OS_QNX              0
 #define KUMO_OS_WEB              1
-#define KUMO_OS_FUCHSIA          0
-#define KUMO_OS_ROS              0
-#define KUMO_OS_CYGWIN           0
-#define KUMO_OS_HAIKU            0
-#define KUMO_OS_AIX              0
-#define KUMO_OS_POSIX            1
-#define KUMO_OS_UNIX             0
-#define KUMO_OS_MICROSOFT        0
-
-#define KUMO_PLATFORM_DESKTOP      0
-#define KUMO_PLATFORM_MOBILE       0
-#define KUMO_PLATFORM_POSIX_API    1
-#define KUMO_PLATFORM_POSIX_SOCKETS 1
 
 #if defined(__wasm64__) || defined(__LP64__)
 #define KUMO_PTR_SIZE          8
@@ -58,5 +27,6 @@
 #endif
 
 #define KUMO_PLATFORM_NAME     "Web"
-
+#else
+#define KUMO_OS_WEB              0
 #endif

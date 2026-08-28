@@ -22,4 +22,5 @@ endif ()
 
 
 add_subdirectory(log)
+add_subdirectory(hash)
 #add_subdirectory(unicode)

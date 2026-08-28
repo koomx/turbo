@@ -34,7 +34,8 @@
 #include <turbo/numeric/int128.h>
 #include <turbo/format/str_format/extension.h>
 #include <turbo/format/str_format/float_conversion.h>
-#include <turbo/format/internal/utf8.h>
+#include <turbo/unicode/api/utf8.h>
+#include <turbo/unicode/api/wchar.h>
 #include <turbo/format/fast_to_buffer.h>
 #include <string_view>
 
@@ -329,11 +330,11 @@ namespace turbo {
                     return false;
                 }
                 FixedArray<char> mb(len * kMaxUtf8CodeUnitsPerWideChar);
-                strings_internal::ShiftState s;
+                ShiftState s;
                 size_t chars_written = 0;
                 for (size_t i = 0; i < len; ++i) {
                     // A high surrogate must be immediately followed by a low surrogate. If it
-                    // isn't, the UTF-16 input is malformed and WideToUtf8() would otherwise
+                    // isn't, the UTF-16 input is malformed and convert_wchar_to_utf8() would otherwise
                     // leave a partial sequence in the buffer. The single wchar_t path already
                     // rejects an unpaired surrogate, so reject it here too.
                     if (s.saw_high_surrogate) {
@@ -341,7 +342,7 @@ namespace turbo {
                         if (!IsLowSurrogate(cu)) return false;
                     }
                     const size_t chars =
-                            strings_internal::WideToUtf8(v[i], &mb[chars_written], s);
+                            convert_wchar_to_utf8(v[i], &mb[chars_written], s);
                     if (chars == static_cast<size_t>(-1)) { return false; }
                     chars_written += chars;
                 }
@@ -353,8 +354,8 @@ namespace turbo {
             bool ConvertWCharTImpl(wchar_t v, const FormatConversionSpecImpl conv,
                                    FormatSinkImpl *sink) {
                 char mb[4];
-                strings_internal::ShiftState s;
-                const size_t chars_written = strings_internal::WideToUtf8(v, mb, s);
+                ShiftState s;
+                const size_t chars_written = convert_wchar_to_utf8(v, mb, s);
                 return chars_written != static_cast<size_t>(-1) && !s.saw_high_surrogate &&
                        ConvertStringArg(std::string_view(mb, chars_written), conv, sink);
             }

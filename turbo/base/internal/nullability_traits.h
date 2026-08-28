@@ -17,12 +17,12 @@
 
 #include <type_traits>
 
-#include <turbo/macros/config.h>
 #include <turbo/base/nullability.h>
+#include <turbo/macros/config.h>
 
 namespace turbo {
 
-namespace base_internal {
+    namespace base_internal {
 
 // `value` is true if the type `T` is compatible with nullability annotations
 // (is a raw pointer, a smart pointer, or marked with
@@ -31,41 +31,40 @@ namespace base_internal {
 //
 // NOTE: This should not be used to detect if the compiler is Clang (since
 // Clang is the only compiler that supports nullability annotations).
-#if defined(__clang__) && !defined(__OBJC__) && \
-    KUMO_HAVE_FEATURE(nullability_on_classes)
-template <class T, class = void>
-struct IsNullabilityCompatibleType {
-  constexpr static bool value = false;
-};
+#if defined(__clang__) && !defined(__OBJC__) && KUMO_HAVE_FEATURE(nullability_on_classes)
+        template <class T, class = void>
+        struct IsNullabilityCompatibleType {
+            constexpr static bool value = false;
+        };
 
-template <class T>
-struct IsNullabilityCompatibleType<T, std::void_t<turbo_nullable T>> {
-  constexpr static bool value = true;
-};
+        template <class T>
+        struct IsNullabilityCompatibleType<T, std::void_t<turbo_nullable T>> {
+            constexpr static bool value = true;
+        };
 #else
-// False when turbo_nullable is a no-op (for non-Clang compilers or Objective-C.)
-template <class T, class = void>
-struct IsNullabilityCompatibleType {
-  constexpr static bool value = false;
-};
+        // False when turbo_nullable is a no-op (for non-Clang compilers or Objective-C.)
+        template <class T, class = void>
+        struct IsNullabilityCompatibleType {
+            constexpr static bool value = false;
+        };
 #endif
 
-// A trait to add `turbo_nonnull` to a type if it is compatible with nullability
-// annotations.
-template <typename T, bool ShouldAdd = IsNullabilityCompatibleType<T>::value>
-struct AddNonnullIfCompatible;
+        // A trait to add `turbo_nonnull` to a type if it is compatible with nullability
+        // annotations.
+        template <typename T, bool ShouldAdd = IsNullabilityCompatibleType<T>::value>
+        struct AddNonnullIfCompatible;
 
-template <typename T>
-struct AddNonnullIfCompatible<T, false> {
-  using type = T;
-};
-template <typename T>
-struct AddNonnullIfCompatible<T, true> {
-  using type = turbo_nonnull T;
-};
+        template <typename T>
+        struct AddNonnullIfCompatible<T, false> {
+            using type = T;
+        };
+        template <typename T>
+        struct AddNonnullIfCompatible<T, true> {
+            using type = turbo_nonnull T;
+        };
 
-}  // namespace base_internal
+    } // namespace base_internal
 
-}  // namespace turbo
+} // namespace turbo
 
-#endif  // TURBO_BASE_INTERNAL_NULLABILITY_TRAITS_H_
+#endif // TURBO_BASE_INTERNAL_NULLABILITY_TRAITS_H_
