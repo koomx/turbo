@@ -32,8 +32,10 @@ namespace turbo::xxhash {
         {
             uint64_t const data_val = turbo::little_endian::Load64(xinput + lane * 8);
             uint64_t const data_key = data_val ^ turbo::little_endian::Load64(xsecret + lane * 8);
-            xacc[lane ^ 1] += data_val; /* swap adjacent lanes */
-            xacc[lane] = turbo::xxhash::xxhash_mult32to64_add64(data_key /* & 0xFFFFFFFF */, data_key >> 32, xacc[lane]);
+            /// swap adjacent lanes
+            xacc[lane ^ 1] += data_val;
+            /// data_key & 0xFFFFFFFF
+            xacc[lane] = turbo::xxhash::xxhash_mult32to64_add64(data_key, data_key >> 32, xacc[lane]);
         }
     }
 
@@ -41,7 +43,7 @@ namespace turbo::xxhash {
         const void* KUMO_RESTRICT input,
         const void* KUMO_RESTRICT secret) {
         size_t i;
-        /* ARM GCC refuses to unroll this loop, resulting in a 24% slowdown on ARMv6. */
+        /// ARM GCC refuses to unroll this loop, resulting in a 24% slowdown on ARMv6.
 #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8                       \
     && (defined(__arm__) || defined(__thumb2__))                                    \
     && defined(__ARM_FEATURE_UNALIGNED)
@@ -73,8 +75,10 @@ namespace turbo::xxhash {
     xxhash_scalar_scramble_round(void* KUMO_RESTRICT acc,
         void const* KUMO_RESTRICT secret,
         size_t lane) {
-        uint64_t* const xacc = (uint64_t*)acc; /* presumed aligned */
-        const uint8_t* const xsecret = (const uint8_t*)secret; /* no alignment restriction */
+        /// presumed aligned
+        uint64_t* const xacc = (uint64_t*)acc;
+        /// no alignment restriction
+        const uint8_t* const xsecret = (const uint8_t*)secret;
         KUMO_DASSERT((((size_t)acc) & (KUMO_CACHELINE_SIZE - 1)) == 0);
         KUMO_DASSERT(lane < kXxhAccNb);
         {
@@ -87,10 +91,10 @@ namespace turbo::xxhash {
         }
     }
 
-    /*!
-     * @internal
-     * @brief Scrambles the accumulators after a large chunk has been read
-     */
+    ///
+    /// @internal
+    /// @brief Scrambles the accumulators after a large chunk has been read
+    ///
     KUMO_FORCE_INLINE void
     xxhash_scramble_acc_scalar(void* KUMO_RESTRICT acc, const void* KUMO_RESTRICT secret) {
         size_t i;

@@ -1225,7 +1225,8 @@ namespace turbo {
         // on the value of `sizeof(size_t)`.
         inline uint64_t CombineContiguousImpl(
             uint64_t state, const unsigned char* first, size_t len,
-            std::integral_constant<int, 4> /* sizeof_size_t */) {
+            /// sizeof_size_t
+            std::integral_constant<int, 4> ) {
             // For large values we use CityHash, for small ones we use custom low latency
             // hash.
             if (len <= 8) {
@@ -1238,7 +1239,8 @@ namespace turbo {
 #ifdef TURBO_HASH_INTERNAL_HAS_CRC32
         inline uint64_t CombineContiguousImpl(
             uint64_t state, const unsigned char* first, size_t len,
-            std::integral_constant<int, 8> /* sizeof_size_t */) {
+            /// sizeof_size_t
+            std::integral_constant<int, 8> ) {
             if (KUMO_UNLIKELY(len > 32)) {
                 return CombineLargeContiguousImplOn64BitLengthGt32(state, first, len);
             }
@@ -1301,7 +1303,8 @@ namespace turbo {
 #else
         inline uint64_t CombineContiguousImpl(
             uint64_t state, const unsigned char* first, size_t len,
-            std::integral_constant<int, 8> /* sizeof_size_t */) {
+            /// sizeof_size_t
+            std::integral_constant<int, 8> ) {
             // For large values we use LowLevelHash or CityHash depending on the platform,
             // for small ones we use custom low latency hash.
             if (len <= 8) {

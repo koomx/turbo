@@ -34,7 +34,7 @@ namespace turbo::xxhash {
         void accumulate_512(void* KUMO_RESTRICT acc, const void* KUMO_RESTRICT input, const void* KUMO_RESTRICT secret) override;
     };
 
-#endif /* KUMO_SIMD_NEON */
+#endif /// KUMO_SIMD_NEON
 
     IsaInfo get_xxhash_neon_info();
 } // namespace turbo::xxhash

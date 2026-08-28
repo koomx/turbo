@@ -169,14 +169,14 @@ namespace turbo::xxhash {
                 scramble_acc(acc, secret + secretSize - kXxhStripeLen);
             }
 
-            /* last partial block */
+            /// last partial block
             KUMO_DASSERT(len > kXxhStripeLen);
             {
                 size_t const nbStripes = ((len - 1) - (block_len * nb_blocks)) / kXxhStripeLen;
                 KUMO_DASSERT(nbStripes <= (secretSize / kXxhSecretConsumeRate));
                 accumulate(acc, input + nb_blocks * block_len, secret, nbStripes);
 
-                /* last stripe */
+                /// last stripe
                 {
                     const uint8_t* const p = input + len - kXxhStripeLen;
                     accumulate_512(acc, p, secret + secretSize - kXxhStripeLen - kXxhashSecretLastAccStart);
@@ -201,7 +201,7 @@ namespace turbo::xxhash {
 
             xxhash_hash_long_internal_loop(acc.data(), (const uint8_t*)input, len, secret, secretSize);
 
-            /* converge into final hash */
+            /// converge into final hash
             static_assert(sizeof(acc) == 64, "sizeof(acc) == 64");
             KUMO_DASSERT(secretSize >= sizeof(acc) + kXxhSecretMergeAccsStart);
             return turbo::xxhash::xxhash_finalize_long_128b(acc.data(), secret, secretSize, (uint64_t)len);

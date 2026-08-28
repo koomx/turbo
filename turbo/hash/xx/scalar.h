@@ -55,13 +55,13 @@ namespace turbo::xxhash {
 
 #else
 
-        /* First calculate all of the cross products. */
+        /// First calculate all of the cross products.
         uint64_t const lo_lo = xxhash_mult32to64(lhs & 0xFFFFFFFF, rhs & 0xFFFFFFFF);
         uint64_t const hi_lo = xxhash_mult32to64(lhs >> 32, rhs & 0xFFFFFFFF);
         uint64_t const lo_hi = xxhash_mult32to64(lhs & 0xFFFFFFFF, rhs >> 32);
         uint64_t const hi_hi = xxhash_mult32to64(lhs >> 32, rhs >> 32);
 
-        /* Now add the products together. These will never overflow. */
+        /// Now add the products together. These will never overflow.
         uint64_t const cross = (lo_lo >> 32) + (hi_lo & 0xFFFFFFFF) + lo_hi;
         uint64_t const upper = (hi_lo >> 32) + (cross >> 32) + hi_hi;
         uint64_t const lower = (cross << 32) | (lo_lo & 0xFFFFFFFF);
@@ -80,8 +80,8 @@ namespace turbo::xxhash {
 
     KUMO_FORCE_INLINE uint64_t xxhash_mix16_b(const uint8_t* KUMO_RESTRICT input,
         const uint8_t* KUMO_RESTRICT secret, uint64_t seed64) {
-#if defined(__GNUC__) && !defined(__clang__) /* GCC, not Clang */ \
-    && defined(__i386__) && defined(__SSE2__) /* x86 + SSE2 */
+        /// GCC, not Clang && x86 + SSE2
+#if defined(__GNUC__) && !defined(__clang__) && defined(__i386__) && defined(__SSE2__)
         KUMO_CCO_BARRIER(seed64);
 #endif
         {
@@ -200,11 +200,12 @@ namespace turbo::xxhash {
             for (i = 0; i < 8; i++) {
                 acc += xxhash_mix16_b(input + (16 * i), secret + (16 * i), seed);
             }
-            /* last bytes */
+            /// last bytes
             acc_end = xxhash_mix16_b(input + len - 16, secret + kXxh3SecretSizeMin - kXxhashMidSizeLastOffset, seed);
             KUMO_DASSERT(nbRounds >= 8);
             acc = xxhash_avalanche(acc);
-#if defined(__clang__) /* Clang */                               \
+            /// Clang
+#if defined(__clang__)                              \
     && (defined(__ARM_NEON) || defined(__ARM_NEON__))
 #pragma clang loop vectorize(disable)
 #endif
@@ -230,8 +231,8 @@ namespace turbo::xxhash {
             m128.low64 += (uint64_t)(len - 1) << 54;
             input_hi ^= bitfliph;
 
-            if (sizeof(void*) < sizeof(uint64_t)) { /* 32-bit */
-
+            if (sizeof(void*) < sizeof(uint64_t)) {
+                /// 32-bit
                 m128.high64 += (input_hi & 0xFFFFFFFF00000000ULL) + xxhash_mult32to64((uint32_t)input_hi, kXxhPrime32_2);
             } else {
 
@@ -240,7 +241,8 @@ namespace turbo::xxhash {
 
             m128.low64 ^= turbo::byteswap(m128.high64);
 
-            { /* 128x64 multiply: h128 = m128 * kXxhPrime64_2; */
+            {
+                /// 128x64 multiply: h128 = m128 * kXxhPrime64_2;
                 XxHash128 h128 = turbo::xxhash::xxhash_mult64to128(m128.low64, kXxhPrime64_2);
                 h128.high64 += m128.high64 * kXxhPrime64_2;
 
@@ -252,15 +254,13 @@ namespace turbo::xxhash {
     }
 
     KUMO_FORCE_INLINE XxHash128 xxhash_len_1to3_128b(const uint8_t* input, size_t len, const uint8_t* secret, uint64_t seed) {
-        /* A doubled version of 1to3_64b with different constants. */
+        /// A doubled version of 1to3_64b with different constants.
         KUMO_DASSERT(input != NULL);
         KUMO_DASSERT(1 <= len && len <= 3);
         KUMO_DASSERT(secret != NULL);
-        /*
-         * len = 1: combinedl = { input[0], 0x01, input[0], input[0] }
-         * len = 2: combinedl = { input[1], 0x02, input[0], input[1] }
-         * len = 3: combinedl = { input[2], 0x03, input[0], input[1] }
-         */
+         /// len = 1: combinedl = { input[0], 0x01, input[0], input[0] }
+         /// len = 2: combinedl = { input[1], 0x02, input[0], input[1] }
+         /// len = 3: combinedl = { input[2], 0x03, input[0], input[1] }
         {
             uint8_t const c1 = input[0];
             uint8_t const c2 = input[len >> 1];
@@ -291,7 +291,7 @@ namespace turbo::xxhash {
             uint64_t const bitflip = (turbo::little_endian::Load64(secret + 16) ^ turbo::little_endian::Load64(secret + 24)) + seed;
             uint64_t const keyed = input_64 ^ bitflip;
 
-            /* Shift len to the left to ensure it is even, this avoids even multiplies. */
+            /// Shift len to the left to ensure it is even, this avoids even multiplies.
             XxHash128 m128 = turbo::xxhash::xxhash_mult64to128(keyed, kXxhPrime64_1 + (len << 2));
 
             m128.high64 += (m128.low64 << 1);
@@ -399,7 +399,7 @@ namespace turbo::xxhash {
                     secret + kXxhashMidSizeStartOffset + i - 160,
                     seed);
             }
-            /* last bytes */
+            /// last bytes
             acc = xxhash_128_mix32_b(acc,
                 input + len - 16,
                 input + len - 32,
@@ -431,8 +431,9 @@ namespace turbo::xxhash {
 
         for (i = 0; i < 4; i++) {
             result64 += xxhash_mix2_accs(acc + 2 * i, secret + 16 * i);
-#if defined(__clang__) /* Clang */                               \
-    && (defined(__arm__) || defined(__thumb__)) /* ARMv7 */      \
+            /// Clang  && ARMv7
+#if defined(__clang__)                                \
+    && (defined(__arm__) || defined(__thumb__))      \
     && (defined(__ARM_NEON) || defined(__ARM_NEON__))
             KUMO_CCO_BARRIER(result64);
 #endif

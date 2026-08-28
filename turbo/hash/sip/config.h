@@ -21,7 +21,7 @@
 #endif
 
 
-/* default: SipHash-2-4 */
+/// default: SipHash-2-4
 #ifndef cROUNDS
 #define cROUNDS 2
 #endif

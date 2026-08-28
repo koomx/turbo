@@ -61,12 +61,18 @@ namespace turbo {
     }
 
     struct ScalarHash32 {
-        uint32_t total_len_32; /*!< Total length hashed, modulo 2^32 */
-        uint32_t large_len; /*!< Whether the hash is >= 16 (handles @ref total_len_32 overflow) */
-        uint32_t acc[4]; /*!< Accumulator lanes */
-        unsigned char buffer[16]; /*!< Internal buffer for partial reads. */
-        uint32_t bufferedSize; /*!< Amount of data in @ref buffer */
-        uint32_t reserved; /*!< Reserved field. Do not read nor write to it. */
+        /// Total length hashed, modulo 2^32
+        uint32_t total_len_32;
+        /// Whether the hash is >= 16 (handles @ref total_len_32 overflow)
+        uint32_t large_len;
+        /// Accumulator lanes
+        uint32_t acc[4];
+        /// Internal buffer for partial reads.
+        unsigned char buffer[16];
+        /// Amount of data in @ref buffer
+        uint32_t bufferedSize;
+        /// Reserved field. Do not read nor write to it.
+        uint32_t reserved;
 
         void reset(uint32_t seed = 0);
         void update(const uint8_t* input, size_t len);
@@ -75,12 +81,18 @@ namespace turbo {
     };
 
     struct ScalarHash64 {
-        uint64_t total_len; /*!< Total length hashed. This is always 64-bit. */
-        uint64_t acc[4]; /*!< Accumulator lanes */
-        unsigned char buffer[32]; /*!< Internal buffer for partial reads.. */
-        uint32_t bufferedSize; /*!< Amount of data in @ref buffer */
-        uint32_t reserved32; /*!< Reserved field, needed for padding anyways*/
-        uint64_t reserved64; /*!< Reserved field. Do not read or write to it. */
+        /// Total length hashed. This is always 64-bit.
+        uint64_t total_len;
+        /// Accumulator lanes
+        uint64_t acc[4];
+        /// Internal buffer for partial reads..
+        unsigned char buffer[32];
+        /// Amount of data in @ref buffer
+        uint32_t bufferedSize;
+        /// Reserved field, needed for padding anyways
+        uint32_t reserved32;
+        /// Reserved field. Do not read or write to it.
+        uint64_t reserved64;
 
         void reset(uint64_t seed = 0);
         void update(KUMO_ATTRIBUTE_NOESCAPE const uint8_t* input, size_t len);

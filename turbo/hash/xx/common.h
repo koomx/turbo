@@ -116,7 +116,7 @@ namespace turbo::xxhash {
         return hash;
     }
 
-    /*! Seems to produce slightly better code on GCC for some reason. */
+    /// Seems to produce slightly better code on GCC for some reason.
     KUMO_FORCE_INLINE uint64_t xxhash_scalar_xorshift64(uint64_t v64, int shift)
     {
         KUMO_DASSERT(0 <= shift && shift < 64);
@@ -133,7 +133,7 @@ namespace turbo::xxhash {
 
     KUMO_FORCE_INLINE uint64_t xxhash_scalar_rrmxmx(uint64_t h64, uint64_t len)
     {
-        /* this mix is inspired by Pelle Evensen's rrmxmx */
+        /// this mix is inspired by Pelle Evensen's rrmxmx
         h64 ^= turbo::rotl(h64, 49) ^ turbo::rotl(h64, 24);
         h64 *= turbo::xxhash::kXxhPrimeMX2;
         h64 ^= (h64 >> 35) + len ;
