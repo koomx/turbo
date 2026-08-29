@@ -15,6 +15,8 @@
 
 set(CRC_TESTS
         crc32c_test
+        crc16_redis_test
+        checksum_test
 )
 
 foreach (case IN LISTS CRC_TESTS)

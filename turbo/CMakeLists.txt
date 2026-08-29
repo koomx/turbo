@@ -71,6 +71,8 @@ set(CLI_SRC
 
 set(CRC_SRC
         crc/crc32c.cc
+        crc/crc16_redis.cc
+        crc/checksum.cc
         crc/internal/crc.cc
         crc/internal/crc_cord_state.cc
         crc/internal/crc_memcpy_fallback.cc
