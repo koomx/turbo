@@ -29,6 +29,7 @@ foreach (case IN LISTS URI_WPT_TESTS)
             ${case}.cc
             CXXOPTS
             ${KMCMAKE_CXX_OPTIONS}
+            -fno-access-control
             DEFINES
             WPT_DATA_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/wpt/\"
             LINKS

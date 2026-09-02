@@ -49,6 +49,7 @@ namespace turbo {
         friend class WptParser;
         friend class RfcParser;
     protected:
+        explicit UriCommonBase(StandType t) :_standard(t){}
         UriError uri_error { };
 
         bool _opaque_path { false };
@@ -57,9 +58,13 @@ namespace turbo {
 
         SchemaType type { SchemaType::NOT_SPECIAL };
 
-        StandType standard {StandType::STD_NONE};
+        StandType _standard {StandType::STD_NONE};
+
     public:
 
+        StandType standard() const {
+            return _standard;
+        }
         [[nodiscard]] KUMO_FORCE_INLINE bool has_opaque_path() const {
             return _opaque_path;
         }
