@@ -36,7 +36,7 @@ namespace turbo {
 
     std::unique_ptr<NullSink> create_null_sink();
 
-    std::unique_ptr<AnsiColorSink> create_ansi_color_sink(FILE *file);
+    std::unique_ptr<AnsiColorSink> create_ansi_color_sink(std::FILE *file);
 
     std::unique_ptr<DailyFileSink> create_daily_file_sink(
         std::string_view base_filename, uint16_t max_files = 7,

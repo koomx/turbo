@@ -54,8 +54,7 @@ namespace turbo {
     // starts_with()
     //
     // Returns whether a given string `text` begins with `prefix`.
-    inline constexpr bool starts_with(std::string_view text,
-        std::string_view prefix) noexcept {
+    inline constexpr bool starts_with(std::string_view text,std::string_view prefix) noexcept {
         if (prefix.empty()) {
             return true;
         }
@@ -67,8 +66,64 @@ namespace turbo {
         return possible_match == prefix;
     }
 
-    inline constexpr bool starts_with(std::string_view text,
-        char prefix) noexcept {
+    inline constexpr bool starts_with(std::u32string_view text,std::u32string_view prefix) noexcept {
+        if (prefix.empty()) {
+            return true;
+        }
+        if (text.size() < prefix.size()) {
+            return false;
+        }
+        auto possible_match = text.substr(0, prefix.size());
+
+        return possible_match == prefix;
+    }
+
+    inline constexpr bool starts_with(std::u16string_view text,std::u16string_view prefix) noexcept {
+        if (prefix.empty()) {
+            return true;
+        }
+        if (text.size() < prefix.size()) {
+            return false;
+        }
+        auto possible_match = text.substr(0, prefix.size());
+
+        return possible_match == prefix;
+    }
+
+    inline constexpr bool starts_with(std::wstring_view text,std::wstring_view prefix) noexcept {
+        if (prefix.empty()) {
+            return true;
+        }
+        if (text.size() < prefix.size()) {
+            return false;
+        }
+        auto possible_match = text.substr(0, prefix.size());
+
+        return possible_match == prefix;
+    }
+
+    inline constexpr bool starts_with(std::string_view text,char prefix) noexcept {
+        if (text.empty()) {
+            return false;
+        }
+        return text.front() == prefix;
+    }
+
+    inline constexpr bool starts_with(std::u32string_view text,char32_t prefix) noexcept {
+        if (text.empty()) {
+            return false;
+        }
+        return text.front() == prefix;
+    }
+
+    inline constexpr bool starts_with(std::u16string_view text,char16_t prefix) noexcept {
+        if (text.empty()) {
+            return false;
+        }
+        return text.front() == prefix;
+    }
+
+    inline constexpr bool starts_with(std::wstring_view text,wchar_t prefix) noexcept {
         if (text.empty()) {
             return false;
         }
@@ -90,9 +145,69 @@ namespace turbo {
         return possible_match == suffix;
     }
 
+    inline constexpr bool ends_with(std::u32string_view text,
+        std::u32string_view suffix) noexcept {
+        if (suffix.empty()) {
+            return true;
+        }
+        if (text.size() < suffix.size()) {
+            return false;
+        }
+        auto possible_match = text.substr(text.size() - suffix.size());
+        return possible_match == suffix;
+    }
+
+    inline constexpr bool ends_with(std::u16string_view text,
+        std::u16string_view suffix) noexcept {
+        if (suffix.empty()) {
+            return true;
+        }
+        if (text.size() < suffix.size()) {
+            return false;
+        }
+        auto possible_match = text.substr(text.size() - suffix.size());
+        return possible_match == suffix;
+    }
+
+    inline constexpr bool ends_with(std::wstring_view text,
+        std::wstring_view suffix) noexcept {
+        if (suffix.empty()) {
+            return true;
+        }
+        if (text.size() < suffix.size()) {
+            return false;
+        }
+        auto possible_match = text.substr(text.size() - suffix.size());
+        return possible_match == suffix;
+    }
+
     inline constexpr bool ends_with(std::string_view text,
         char suffix) noexcept {
 
+        if (text.empty()) {
+            return false;
+        }
+        return text.back() == suffix;
+    }
+
+    inline constexpr bool ends_with(std::u32string_view text,
+        char32_t suffix) noexcept {
+        if (text.empty()) {
+            return false;
+        }
+        return text.back() == suffix;
+    }
+
+    inline constexpr bool ends_with(std::u16string_view text,
+        char16_t suffix) noexcept {
+        if (text.empty()) {
+            return false;
+        }
+        return text.back() == suffix;
+    }
+
+    inline constexpr bool ends_with(std::wstring_view text,
+        wchar_t suffix) noexcept {
         if (text.empty()) {
             return false;
         }
@@ -147,6 +262,29 @@ namespace turbo {
     // * wildcards may match /
     // * no backslash-escaping
     bool fnmatch(std::string_view pattern, std::string_view str);
+
+
+
+    inline bool has_hex_prefix_unsafe(std::string_view input) {
+        // This is actually efficient code, see has_hex_prefix for the assembly.
+        uint32_t value_one = 1;
+        bool is_little_endian = (reinterpret_cast<char*>(&value_one)[0] == 1);
+        uint16_t word0x{};
+        std::memcpy(&word0x, "0x", 2);  // we would use bit_cast in C++20 and the
+        // function could be constexpr.
+        uint16_t two_first_bytes{};
+        std::memcpy(&two_first_bytes, input.data(), 2);
+        if (is_little_endian) {
+            two_first_bytes |= 0x2000;
+        } else {
+            two_first_bytes |= 0x020;
+        }
+        return two_first_bytes == word0x;
+    }
+
+    inline bool has_hex_prefix(std::string_view input) {
+        return input.size() >= 2 && has_hex_prefix_unsafe(input);
+    }
 
 } // namespace turbo
 

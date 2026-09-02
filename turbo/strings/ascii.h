@@ -52,137 +52,9 @@
 #ifndef TURBO_STRINGS_ASCII_H_
 #define TURBO_STRINGS_ASCII_H_
 
-#include <algorithm>
-#include <cstddef>
-#include <string>
-#include <utility>
-
-#include <string_view>
-#include <turbo/base/nullability.h>
-#include <turbo/macros/config.h>
-#include <turbo/base/resize_and_overwrite.h>
+#include <turbo/unicode/api/ascii.h>
 
 namespace turbo {
-
-    namespace ascii_internal {
-
-        // Declaration for an array of bitfields holding character information.
-        KUMO_DLL extern const unsigned char kPropertyBits[256];
-
-        // Declaration for the array of characters to upper-case characters.
-        KUMO_DLL extern const char kToUpper[256];
-
-        // Declaration for the array of characters to lower-case characters.
-        KUMO_DLL extern const char kToLower[256];
-
-        void str_to_lower(char* turbo_nonnull dst, const char* turbo_nullable src,
-            size_t n);
-
-        void str_to_upper(char* turbo_nonnull dst, const char* turbo_nullable src,
-            size_t n);
-
-    } // namespace ascii_internal
-
-    // ascii_isalpha()
-    //
-    // Determines whether the given character is an alphabetic character.
-    inline bool ascii_isalpha(unsigned char c) {
-        return (ascii_internal::kPropertyBits[c] & 0x01) != 0;
-    }
-
-    // ascii_isalnum()
-    //
-    // Determines whether the given character is an alphanumeric character.
-    inline bool ascii_isalnum(unsigned char c) {
-        return (ascii_internal::kPropertyBits[c] & 0x04) != 0;
-    }
-
-    // ascii_isword()
-    //
-    // Determines whether the given character is an alphanumeric character.
-    inline bool ascii_isword(unsigned char c) {
-        return (ascii_internal::kPropertyBits[c] & 0x04) != 0 || c == '_';
-    }
-
-    // ascii_isspace()
-    //
-    // Determines whether the given character is a whitespace character (space,
-    // tab, vertical tab, formfeed, linefeed, or carriage return).
-    inline bool ascii_isspace(unsigned char c) {
-        return (ascii_internal::kPropertyBits[c] & 0x08) != 0;
-    }
-
-    // ascii_ispunct()
-    //
-    // Determines whether the given character is a punctuation character.
-    inline bool ascii_ispunct(unsigned char c) {
-        return (ascii_internal::kPropertyBits[c] & 0x10) != 0;
-    }
-
-    // ascii_isblank()
-    //
-    // Determines whether the given character is a blank character (tab or space).
-    inline bool ascii_isblank(unsigned char c) {
-        return (ascii_internal::kPropertyBits[c] & 0x20) != 0;
-    }
-
-    // ascii_iscntrl()
-    //
-    // Determines whether the given character is a control character.
-    inline bool ascii_iscntrl(unsigned char c) {
-        return (ascii_internal::kPropertyBits[c] & 0x40) != 0;
-    }
-
-    // ascii_isxdigit()
-    //
-    // Determines whether the given character can be represented as a hexadecimal
-    // digit character (i.e. {0-9} or {A-F} or {a-f}).
-    inline bool ascii_isxdigit(unsigned char c) {
-        return (ascii_internal::kPropertyBits[c] & 0x80) != 0;
-    }
-
-    // ascii_isdigit()
-    //
-    // Determines whether the given character can be represented as a decimal
-    // digit character (i.e. {0-9}).
-    inline constexpr bool ascii_isdigit(unsigned char c) {
-        return c >= '0' && c <= '9';
-    }
-
-    // ascii_isprint()
-    //
-    // Determines whether the given character is printable, including spaces.
-    inline constexpr bool ascii_isprint(unsigned char c) {
-        return c >= 32 && c < 127;
-    }
-
-    // ascii_isgraph()
-    //
-    // Determines whether the given character has a graphical representation.
-    inline constexpr bool ascii_isgraph(unsigned char c) {
-        return c > 32 && c < 127;
-    }
-
-    // ascii_isupper()
-    //
-    // Determines whether the given character is uppercase.
-    inline constexpr bool ascii_isupper(unsigned char c) {
-        return c >= 'A' && c <= 'Z';
-    }
-
-    // ascii_islower()
-    //
-    // Determines whether the given character is lowercase.
-    inline constexpr bool ascii_islower(unsigned char c) {
-        return c >= 'a' && c <= 'z';
-    }
-
-    // ascii_isascii()
-    //
-    // Determines whether the given character is ASCII.
-    inline constexpr bool ascii_isascii(unsigned char c) {
-        return c < 128;
-    }
 
     // ascii_tolower()
     //
@@ -246,28 +118,17 @@ namespace turbo {
         return result;
     }
 
+    bool ascii_has_upper_case(const char* input, size_t length);
 
-    inline bool is_octal_digit(char c) {
-        return ('0' <= c) && (c <= '7');
+    inline bool ascii_has_upper_case(std::string_view str) {
+        return ascii_has_upper_case(str.data(), str.size());
     }
 
-    inline unsigned int hex_digit_to_int(char c) {
-        static_assert('0' == 0x30 && 'A' == 0x41 && 'a' == 0x61,
-            "Character set must be ASCII.");
-        assert(turbo::ascii_isxdigit(static_cast<unsigned char>(c)));
-        unsigned int x = static_cast<unsigned char>(c);
-        if (x > '9') {
-            x += 9;
-        }
-        return x & 0xf;
-    }
+    bool ascii_has_lower_case(const char* input, size_t length);
 
-    inline char int_to_hex_digit(int i) {
-        assert(i >= 0 && i <= 15);
-        return ((i < 10) ? (static_cast<char>(i) + '0')
-                         : (static_cast<char>(i - 10) + 'A'));
+    inline bool ascii_has_lower_case(std::string_view str) {
+        return ascii_has_lower_case(str.data(), str.size());
     }
-
 } // namespace turbo
 
 #endif // TURBO_STRINGS_ASCII_H_

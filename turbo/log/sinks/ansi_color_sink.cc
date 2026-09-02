@@ -38,7 +38,7 @@ namespace {
 
 }  // namespace
 
-    AnsiColorSink::AnsiColorSink(FILE *file) : _file(file) {
+    AnsiColorSink::AnsiColorSink(std::FILE *file) : _file(file) {
         _color_active = log_internal::is_color_terminal(file);
     }
 

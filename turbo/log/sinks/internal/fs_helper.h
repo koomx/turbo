@@ -26,8 +26,8 @@ namespace log_internal {
     bool rename_path(std::string_view from, std::string_view to);
     bool remove_path(std::string_view path);
     std::string parent_dir(std::string_view path);
-    size_t file_size_of(FILE *fp);
-    bool is_color_terminal(FILE *fp);
+    size_t file_size_of(std::FILE *fp);
+    bool is_color_terminal(std::FILE *fp);
 
 }  // namespace log_internal
 }  // namespace turbo

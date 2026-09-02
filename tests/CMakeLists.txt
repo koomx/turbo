@@ -20,6 +20,9 @@ configure_file(${PROJECT_SOURCE_DIR}/tests/config.h.in ${PROJECT_SOURCE_DIR}/tes
 if (NOT TARGET GTest::gtest)
     find_package(GTest REQUIRED)
 endif ()
+if (NOT TARGET simdjson::simdjson)
+    find_package(simdjson CONFIG REQUIRED)
+endif ()
 
 
 add_subdirectory(algorithm)
@@ -49,4 +52,5 @@ add_subdirectory(test_utils)
 add_subdirectory(time)
 add_subdirectory(types)
 add_subdirectory(unicode)
+add_subdirectory(uri)
 

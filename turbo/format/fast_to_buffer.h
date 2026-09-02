@@ -143,4 +143,21 @@ namespace turbo::format_internal {
     // (1.23456e+06). This routine is heavily optimized.
     // Required buffer size is `kSixDigitsToBufferSize`.
     size_t six_digits_to_buffer(double d, char* turbo_nonnull buffer);
+
+
+    inline uint32_t fast_digit_count(uint32_t x) noexcept {
+        auto int_log2 = [](uint32_t z) -> int {
+            return 31 - countl_zero(z | 1);
+        };
+        const static uint64_t kTable[] = {
+            4294967296,  8589934582,  8589934582,  8589934582,  12884901788,
+            12884901788, 12884901788, 17179868184, 17179868184, 17179868184,
+            21474826480, 21474826480, 21474826480, 21474826480, 25769703776,
+            25769703776, 25769703776, 30063771072, 30063771072, 30063771072,
+            34349738368, 34349738368, 34349738368, 34349738368, 38554705664,
+            38554705664, 38554705664, 41949672960, 41949672960, 41949672960,
+            42949672960, 42949672960};
+        return static_cast<uint32_t>((x + kTable[int_log2(x)]) >> 32);
+    }
+
 } // namespace turbo::format_internal

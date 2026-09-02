@@ -298,6 +298,25 @@ set(UNICODE_SRC
         unicode/engine/lsx/implementation.cc
 )
 
+set(URI_SRC
+        uri/idna/idna.cc
+        uri/idna/tables.cc
+        uri/idna/mapping.cc
+        uri/idna/decomposition.cc
+        uri/idna/canonical.cc
+        uri/idna/composition.cc
+        uri/idna/label.cc
+        uri/wpt/state.cc
+        uri/wpt/uri.cc
+        uri/wpt/parser.cc
+        uri/wpt/parse_components.cc
+        uri/rfc/uri_view.cc
+        uri/uri_components.cc
+        uri/uri_base.cc
+        uri/utility.cc
+        uri/ip.cc
+)
+
 set(TURBO_SRC
         ${ARCH_SRC}
         ${BASE_SRC}
@@ -319,6 +338,7 @@ set(TURBO_SRC
         ${CCTZ_SRC}
         ${TYPES_SRC}
         ${UNICODE_SRC}
+        ${URI_SRC}
 )
 
 kmcmake_cc_library(

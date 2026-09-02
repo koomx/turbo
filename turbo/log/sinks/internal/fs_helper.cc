@@ -61,7 +61,7 @@ namespace {
         return ToPath(path).parent_path().string();
     }
 
-    size_t file_size_of(FILE *fp) {
+    size_t file_size_of(std::FILE *fp) {
         if (fp == nullptr) {
             return 0;
         }
@@ -77,7 +77,7 @@ namespace {
         return end > 0 ? static_cast<size_t>(end) : 0;
     }
 
-    bool is_color_terminal(FILE *fp) {
+    bool is_color_terminal(std::FILE *fp) {
         if (fp == nullptr) {
             return false;
         }

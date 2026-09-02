@@ -36,6 +36,16 @@ if (KMCMAKE_BUILD_TEST)
             "BUILD_GMOCK ON"
             "gtest_force_shared_crt ON"
     )
+    CPMAddPackage(
+            NAME simdjson
+            GITHUB_REPOSITORY simdjson/simdjson
+            VERSION 3.12.3
+            GIT_TAG v3.12.3
+            OPTIONS
+            "SIMDJSON_JUST_LIBRARY ON"
+            "SIMDJSON_BUILD_STATIC ON"
+            "SIMDJSON_ENABLE_THREADS OFF"
+    )
 endif ()
 
 if (KMCMAKE_BUILD_BENCHMARK)
