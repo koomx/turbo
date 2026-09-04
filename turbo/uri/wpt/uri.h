@@ -23,7 +23,6 @@
 #include <string_view>
 
 #include <turbo/uri/scheme.h>
-#include <turbo/uri/uri_components.h>
 #include <turbo/uri/uri_base.h>
 #include <turbo/uri/utility.h>
 #include <turbo/format/fast_to_buffer.h>

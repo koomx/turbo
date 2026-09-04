@@ -19,7 +19,6 @@
 #include <turbo/macros/macros.h>
 #include <turbo/uri/scheme.h>
 #include <turbo/uri/uri_error.h>
-#include <turbo/uri/uri_components.h>
 
 namespace turbo {
 

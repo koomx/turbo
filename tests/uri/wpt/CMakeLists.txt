@@ -14,7 +14,6 @@
 #
 
 set(URI_WPT_TESTS
-        url_components_test
         url_search_params_test
         basic_test
         from_file_test
