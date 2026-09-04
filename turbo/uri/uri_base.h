@@ -170,6 +170,7 @@ namespace turbo {
         return path.size();
     }
 
+
     inline void UriBase::update_base_hostname(std::string_view input) {
         host = input;
     }
