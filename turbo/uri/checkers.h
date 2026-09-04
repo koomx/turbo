@@ -60,64 +60,6 @@ namespace turbo {
     }
 
 
-    //////////////////////////////////////////////////////////////////////////
-    ///
-    /// Returns true if an input is an ipv4 address. It is assumed that the string
-    /// does not contain uppercase ASCII characters (the input should have been
-    /// lowered cased before calling this function) and is not empty.
-    ///
-     KUMO_FORCE_INLINE bool is_ipv4(std::string_view view) noexcept {
-        // The string is not empty and does not contain upper case ASCII characters.
-        //
-        // Optimization. To be considered as a possible ipv4, the string must end
-        // with 'x' or a lowercase hex character.
-        // Most of the time, this will be false so this simple check will save a lot
-        // of effort.
-        char last_char = view.back();
-        // If the address ends with a dot, we need to prune it (special case).
-        if (last_char == '.') {
-            view.remove_suffix(1);
-            if (view.empty()) {
-                return false;
-            }
-            last_char = view.back();
-        }
-        bool possible_ipv4 = (last_char >= '0' && last_char <= '9') ||
-                             (last_char >= 'a' && last_char <= 'f') ||
-                             last_char == 'x';
-        if (!possible_ipv4) {
-            return false;
-        }
-        // From the last character, find the last dot.
-        size_t last_dot = view.rfind('.');
-        if (last_dot != std::string_view::npos) {
-            // We have at least one dot.
-            view = view.substr(last_dot + 1);
-        }
-        /** Optimization opportunity: we have basically identified the last number of
-           the ipv4 if we return true here. We might as well parse it and have at
-           least one number parsed when we get to parse_ipv4. */
-        if (std::all_of(view.begin(), view.end(), turbo::ascii_isdigit)) {
-            return true;
-        }
-        // It could be hex (0x), but not if there is a single character.
-        if (view.size() == 1) {
-            return false;
-        }
-        // It must start with 0x.
-        if (!std::equal(view.begin(), view.begin() + 2, "0x")) {
-            return false;
-        }
-        // We must allow "0x".
-        if (view.size() == 2) {
-            return true;
-        }
-        // We have 0x followed by some characters, we need to check that they are
-        // hexadecimals.
-        return std::all_of(view.begin() + 2, view.end(),
-                           turbo::is_lowercase_hex);
-    }
-
     inline constexpr bool is_windows_drive_letter(std::string_view input) noexcept {
         return input.size() >= 2 &&
                (turbo::ascii_isalpha(input[0]) && ((input[1] == ':') || (input[1] == '|'))) &&
@@ -125,12 +67,9 @@ namespace turbo {
                                         input[2] == '?' || input[2] == '#'));
     }
 
-    inline constexpr bool is_normalized_windows_drive_letter(
-    std::string_view input) noexcept {
+    inline constexpr bool is_normalized_windows_drive_letter(std::string_view input) noexcept {
         return input.size() >= 2 && (turbo::ascii_isalpha(input[0]) && (input[1] == ':'));
     }
-
-
 
 
     KUMO_FORCE_INLINE constexpr uint8_t path_signature(std::string_view input) noexcept {
@@ -327,26 +266,6 @@ namespace turbo {
             }();
 
         return is_forbidden_host_code_point_table[uint8_t(c)];
-    }
-
-
-
-
-    KUMO_FORCE_INLINE constexpr bool is_valid_schema_alnum(const char c) noexcept {
-        // std::isalnum(c) || c == '+' || c == '-' || c == '.') is true for
-        constexpr static std::array<bool, 256> is_alnum_plus_table = []() constexpr {
-            std::array<bool, 256> result{};
-            for (size_t c = 0; c < 256; c++) {
-                result[c] = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') ||
-                            (c >= 'A' && c <= 'Z') || c == '+' || c == '-' || c == '.';
-            }
-            return result;
-        }();
-
-        return is_alnum_plus_table[uint8_t(c)];
-        // A table is almost surely much faster than the
-        // following under most compilers: return
-        // return (std::isalnum(c) || c == '+' || c == '-' || c == '.');
     }
 
     KUMO_FORCE_INLINE constexpr bool is_single_dot_path_segment(std::string_view input) noexcept {

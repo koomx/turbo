@@ -221,7 +221,7 @@ namespace turbo {
 
         static Cord MakeSubstring(Cord src, size_t offset, size_t length) {
             KCHECK(src.contents_.is_tree()) << "Can not be inlined";
-            KCHECK(!src.ExpectedChecksum().has_value()) << "Can not be hardened";
+            KCHECK(!src.expected_checksum().has_value()) << "Can not be hardened";
             Cord cord;
             auto* tree = cord_internal::SkipCrcNode(src.contents_.tree());
             auto* rep = CordRepSubstring::Create(CordRep::Ref(tree), offset, length);
@@ -240,7 +240,7 @@ public:
     bool UseCrc() const { return GetParam(); }
     void MaybeHarden(turbo::Cord& c) {
         if (UseCrc()) {
-            c.SetExpectedChecksum(1);
+            c.set_expected_checksum(1);
         }
     }
     turbo::Cord MaybeHardened(turbo::Cord c) {
@@ -403,7 +403,7 @@ TEST_P(CordTest, Assignment) {
     turbo::Cord x(std::string_view("hi there"));
     turbo::Cord y(x);
     MaybeHarden(y);
-    ASSERT_EQ(x.ExpectedChecksum(), std::nullopt);
+    ASSERT_EQ(x.expected_checksum(), std::nullopt);
     ASSERT_EQ(std::string(x), "hi there");
     ASSERT_EQ(std::string(y), "hi there");
     ASSERT_TRUE(x == y);
@@ -531,46 +531,46 @@ TEST_P(CordTest, Find) {
         { "this", " ", "is", " ", "a", " ", "fragmented", " ", "cord" });
     auto empty_haystack = turbo::Cord("");
 
-    EXPECT_EQ(flat_haystack.Find(""), flat_haystack.char_begin());
-    EXPECT_EQ(fragmented_haystack.Find(""), fragmented_haystack.char_begin());
-    EXPECT_EQ(flat_haystack.Find(turbo::Cord("")), flat_haystack.char_begin());
-    EXPECT_EQ(fragmented_haystack.Find(turbo::Cord("")),
+    EXPECT_EQ(flat_haystack.find(""), flat_haystack.char_begin());
+    EXPECT_EQ(fragmented_haystack.find(""), fragmented_haystack.char_begin());
+    EXPECT_EQ(flat_haystack.find(turbo::Cord("")), flat_haystack.char_begin());
+    EXPECT_EQ(fragmented_haystack.find(turbo::Cord("")),
         fragmented_haystack.char_begin());
-    EXPECT_EQ(empty_haystack.Find(""), empty_haystack.char_begin());
-    EXPECT_EQ(empty_haystack.Find(turbo::Cord("")), empty_haystack.char_begin());
-    EXPECT_EQ(empty_haystack.Find(flat_haystack), empty_haystack.char_end());
-    EXPECT_EQ(empty_haystack.Find(fragmented_haystack),
+    EXPECT_EQ(empty_haystack.find(""), empty_haystack.char_begin());
+    EXPECT_EQ(empty_haystack.find(turbo::Cord("")), empty_haystack.char_begin());
+    EXPECT_EQ(empty_haystack.find(flat_haystack), empty_haystack.char_end());
+    EXPECT_EQ(empty_haystack.find(fragmented_haystack),
         empty_haystack.char_end());
 
-    EXPECT_EQ(flat_haystack.Find("z"), flat_haystack.char_end());
-    EXPECT_EQ(fragmented_haystack.Find("z"), fragmented_haystack.char_end());
-    EXPECT_EQ(flat_haystack.Find(turbo::Cord("z")), flat_haystack.char_end());
-    EXPECT_EQ(fragmented_haystack.Find(turbo::Cord("z")),
+    EXPECT_EQ(flat_haystack.find("z"), flat_haystack.char_end());
+    EXPECT_EQ(fragmented_haystack.find("z"), fragmented_haystack.char_end());
+    EXPECT_EQ(flat_haystack.find(turbo::Cord("z")), flat_haystack.char_end());
+    EXPECT_EQ(fragmented_haystack.find(turbo::Cord("z")),
         fragmented_haystack.char_end());
 
-    EXPECT_EQ(flat_haystack.Find("is an"), flat_haystack.char_end());
-    EXPECT_EQ(fragmented_haystack.Find("is an"), fragmented_haystack.char_end());
-    EXPECT_EQ(flat_haystack.Find(turbo::Cord("is an")), flat_haystack.char_end());
-    EXPECT_EQ(fragmented_haystack.Find(turbo::Cord("is an")),
+    EXPECT_EQ(flat_haystack.find("is an"), flat_haystack.char_end());
+    EXPECT_EQ(fragmented_haystack.find("is an"), fragmented_haystack.char_end());
+    EXPECT_EQ(flat_haystack.find(turbo::Cord("is an")), flat_haystack.char_end());
+    EXPECT_EQ(fragmented_haystack.find(turbo::Cord("is an")),
         fragmented_haystack.char_end());
-    EXPECT_EQ(flat_haystack.Find(turbo::MakeFragmentedCord({ "is", " ", "an" })),
+    EXPECT_EQ(flat_haystack.find(turbo::MakeFragmentedCord({ "is", " ", "an" })),
         flat_haystack.char_end());
     EXPECT_EQ(
-        fragmented_haystack.Find(turbo::MakeFragmentedCord({ "is", " ", "an" })),
+        fragmented_haystack.find(turbo::MakeFragmentedCord({ "is", " ", "an" })),
         fragmented_haystack.char_end());
 
-    EXPECT_EQ(flat_haystack.Find("is a"),
+    EXPECT_EQ(flat_haystack.find("is a"),
         std::next(flat_haystack.char_begin(), 5));
-    EXPECT_EQ(fragmented_haystack.Find("is a"),
+    EXPECT_EQ(fragmented_haystack.find("is a"),
         std::next(fragmented_haystack.char_begin(), 5));
-    EXPECT_EQ(flat_haystack.Find(turbo::Cord("is a")),
+    EXPECT_EQ(flat_haystack.find(turbo::Cord("is a")),
         std::next(flat_haystack.char_begin(), 5));
-    EXPECT_EQ(fragmented_haystack.Find(turbo::Cord("is a")),
+    EXPECT_EQ(fragmented_haystack.find(turbo::Cord("is a")),
         std::next(fragmented_haystack.char_begin(), 5));
-    EXPECT_EQ(flat_haystack.Find(turbo::MakeFragmentedCord({ "is", " ", "a" })),
+    EXPECT_EQ(flat_haystack.find(turbo::MakeFragmentedCord({ "is", " ", "a" })),
         std::next(flat_haystack.char_begin(), 5));
     EXPECT_EQ(
-        fragmented_haystack.Find(turbo::MakeFragmentedCord({ "is", " ", "a" })),
+        fragmented_haystack.find(turbo::MakeFragmentedCord({ "is", " ", "a" })),
         std::next(fragmented_haystack.char_begin(), 5));
 }
 
@@ -605,7 +605,7 @@ TEST_P(CordTest, subcord) {
                 std::string(sa))
                 << a;
             if (pos != 0 || end_pos != a.size()) {
-                ASSERT_EQ(sa.ExpectedChecksum(), std::nullopt);
+                ASSERT_EQ(sa.expected_checksum(), std::nullopt);
             }
         }
     }
@@ -650,15 +650,15 @@ TEST_P(CordTest, Swap) {
     MaybeHarden(x);
     swap(x, y);
     if (UseCrc()) {
-        ASSERT_EQ(x.ExpectedChecksum(), std::nullopt);
-        ASSERT_EQ(y.ExpectedChecksum(), 1);
+        ASSERT_EQ(x.expected_checksum(), std::nullopt);
+        ASSERT_EQ(y.expected_checksum(), 1);
     }
     ASSERT_EQ(x, turbo::Cord(b));
     ASSERT_EQ(y, turbo::Cord(a));
     x.swap(y);
     if (UseCrc()) {
-        ASSERT_EQ(x.ExpectedChecksum(), 1);
-        ASSERT_EQ(y.ExpectedChecksum(), std::nullopt);
+        ASSERT_EQ(x.expected_checksum(), 1);
+        ASSERT_EQ(y.expected_checksum(), std::nullopt);
     }
     ASSERT_EQ(x, turbo::Cord(a));
     ASSERT_EQ(y, turbo::Cord(b));
@@ -1080,46 +1080,46 @@ TEST_P(CordAppendBufferTest, GetAppendBufferOnSharedCord) {
 
 TEST_P(CordTest, TryFlatEmpty) {
     turbo::Cord c;
-    EXPECT_EQ(c.TryFlat(), "");
+    EXPECT_EQ(c.try_flat(), "");
 }
 
 TEST_P(CordTest, TryFlatFlat) {
     turbo::Cord c("hello");
     MaybeHarden(c);
-    EXPECT_EQ(c.TryFlat(), "hello");
+    EXPECT_EQ(c.try_flat(), "hello");
 }
 
 TEST_P(CordTest, TryFlatSubstrInlined) {
     turbo::Cord c("hello");
     c.remove_prefix(1);
     MaybeHarden(c);
-    EXPECT_EQ(c.TryFlat(), "ello");
+    EXPECT_EQ(c.try_flat(), "ello");
 }
 
 TEST_P(CordTest, TryFlatSubstrFlat) {
     turbo::Cord c("longer than 15 bytes");
     turbo::Cord sub = turbo::CordTestPeer::MakeSubstring(c, 1, c.size() - 1);
     MaybeHarden(sub);
-    EXPECT_EQ(sub.TryFlat(), "onger than 15 bytes");
+    EXPECT_EQ(sub.try_flat(), "onger than 15 bytes");
 }
 
 TEST_P(CordTest, TryFlatConcat) {
     turbo::Cord c = turbo::MakeFragmentedCord({ "hel", "lo" });
     MaybeHarden(c);
-    EXPECT_EQ(c.TryFlat(), std::nullopt);
+    EXPECT_EQ(c.try_flat(), std::nullopt);
 }
 
 TEST_P(CordTest, TryFlatExternal) {
     turbo::Cord c = turbo::make_cord_from_external("hell", [](std::string_view) { });
     MaybeHarden(c);
-    EXPECT_EQ(c.TryFlat(), "hell");
+    EXPECT_EQ(c.try_flat(), "hell");
 }
 
 TEST_P(CordTest, TryFlatSubstrExternal) {
     turbo::Cord c = turbo::make_cord_from_external("hell", [](std::string_view) { });
     turbo::Cord sub = turbo::CordTestPeer::MakeSubstring(c, 1, c.size() - 1);
     MaybeHarden(sub);
-    EXPECT_EQ(sub.TryFlat(), "ell");
+    EXPECT_EQ(sub.try_flat(), "ell");
 }
 
 TEST_P(CordTest, TryFlatCommonlyAssumedInvariants) {
@@ -1144,8 +1144,8 @@ TEST_P(CordTest, TryFlatCommonlyAssumedInvariants) {
         std::string_view expected = fragments[fragment];
         turbo::Cord subcord1 = c.subcord(offset, sv.length());
         turbo::Cord subcord2 = turbo::Cord::advance_and_read(&itc, sv.size());
-        EXPECT_EQ(subcord1.TryFlat(), expected);
-        EXPECT_EQ(subcord2.TryFlat(), expected);
+        EXPECT_EQ(subcord1.try_flat(), expected);
+        EXPECT_EQ(subcord2.try_flat(), expected);
         ++fragment;
         offset += sv.length();
     }
@@ -1162,7 +1162,7 @@ static void VerifyFlatten(turbo::Cord c) {
     if (already_flat_and_non_empty) {
         old_flat = *c.chunk_begin();
     }
-    std::string_view new_flat = c.Flatten();
+    std::string_view new_flat = c.flatten();
 
     // Verify that the contents of the flattened Cord are correct.
     EXPECT_EQ(new_flat, old_contents);
@@ -1179,7 +1179,7 @@ static void VerifyFlatten(turbo::Cord c) {
     EXPECT_TRUE(IsFlat(c));
 }
 
-TEST_P(CordTest, Flatten) {
+TEST_P(CordTest, flatten) {
     VerifyFlatten(turbo::Cord());
     VerifyFlatten(MaybeHardened(turbo::Cord("small cord")));
     VerifyFlatten(
@@ -1466,7 +1466,7 @@ namespace {
             : lhs_cord(lhs)
             , rhs_cord(rhs) {
             if (use_crc) {
-                lhs_cord.SetExpectedChecksum(1);
+                lhs_cord.set_expected_checksum(1);
             }
         }
 
@@ -2047,7 +2047,7 @@ namespace {
         turbo::Cord shared = MakeCord(1000, 'a');
         turbo::Cord cord(shared);
         const size_t flat_size = turbo::CordTestPeer::Tree(cord)->flat()->AllocatedSize();
-        cord.SetExpectedChecksum(1);
+        cord.set_expected_checksum(1);
         EXPECT_EQ(cord.estimated_memory_usage(),
             sizeof(turbo::Cord) + sizeof(CordRepCrc) + flat_size);
         EXPECT_EQ(cord.estimated_memory_usage(kFairShare),
@@ -2465,28 +2465,28 @@ TEST_P(CordTest, AdvanceAndReadOnDataEdge) {
 
         turbo::Cord cord = as_flat ? turbo::Cord(data)
                                    : turbo::make_cord_from_external(data, [](std::string_view) { });
-        auto it = cord.Chars().begin();
+        auto it = cord.chars().begin();
 #if !defined(NDEBUG) || KUMO_OPTION_HARDENED
         EXPECT_DEATH_IF_SUPPORTED(cord.advance_and_read(&it, 2001), ".*");
 #endif
 
-        it = cord.Chars().begin();
+        it = cord.chars().begin();
         turbo::Cord frag = cord.advance_and_read(&it, 2000);
         EXPECT_EQ(frag, data);
-        EXPECT_TRUE(it == cord.Chars().end());
+        EXPECT_TRUE(it == cord.chars().end());
 
-        it = cord.Chars().begin();
+        it = cord.chars().begin();
         frag = cord.advance_and_read(&it, 200);
         EXPECT_EQ(frag, data.substr(0, 200));
-        EXPECT_FALSE(it == cord.Chars().end());
+        EXPECT_FALSE(it == cord.chars().end());
 
         frag = cord.advance_and_read(&it, 1500);
         EXPECT_EQ(frag, data.substr(200, 1500));
-        EXPECT_FALSE(it == cord.Chars().end());
+        EXPECT_FALSE(it == cord.chars().end());
 
         frag = cord.advance_and_read(&it, 300);
         EXPECT_EQ(frag, data.substr(1700, 300));
-        EXPECT_TRUE(it == cord.Chars().end());
+        EXPECT_TRUE(it == cord.chars().end());
     }
 }
 
@@ -2501,28 +2501,28 @@ TEST_P(CordTest, AdvanceAndReadOnSubstringDataEdge) {
         cord = cord.subcord(200, 2000);
         const std::string substr = data.substr(200, 2000);
 
-        auto it = cord.Chars().begin();
+        auto it = cord.chars().begin();
 #if !defined(NDEBUG) || KUMO_OPTION_HARDENED
         EXPECT_DEATH_IF_SUPPORTED(cord.advance_and_read(&it, 2001), ".*");
 #endif
 
-        it = cord.Chars().begin();
+        it = cord.chars().begin();
         turbo::Cord frag = cord.advance_and_read(&it, 2000);
         EXPECT_EQ(frag, substr);
-        EXPECT_TRUE(it == cord.Chars().end());
+        EXPECT_TRUE(it == cord.chars().end());
 
-        it = cord.Chars().begin();
+        it = cord.chars().begin();
         frag = cord.advance_and_read(&it, 200);
         EXPECT_EQ(frag, substr.substr(0, 200));
-        EXPECT_FALSE(it == cord.Chars().end());
+        EXPECT_FALSE(it == cord.chars().end());
 
         frag = cord.advance_and_read(&it, 1500);
         EXPECT_EQ(frag, substr.substr(200, 1500));
-        EXPECT_FALSE(it == cord.Chars().end());
+        EXPECT_FALSE(it == cord.chars().end());
 
         frag = cord.advance_and_read(&it, 300);
         EXPECT_EQ(frag, substr.substr(1700, 300));
-        EXPECT_TRUE(it == cord.Chars().end());
+        EXPECT_TRUE(it == cord.chars().end());
     }
 }
 
@@ -2562,7 +2562,7 @@ static void VerifyCharIterator(const turbo::Cord& cord) {
     EXPECT_EQ(cord.char_begin() == cord.char_end(), cord.empty());
     EXPECT_EQ(cord.char_begin() != cord.char_end(), !cord.empty());
 
-    turbo::Cord::CharRange range = cord.Chars();
+    turbo::Cord::CharRange range = cord.chars();
     EXPECT_EQ(range.begin() == range.end(), cord.empty());
     EXPECT_EQ(range.begin() != range.end(), !cord.empty());
     EXPECT_EQ(turbo::Cord::distance(range.begin(), range.end()),
@@ -2760,7 +2760,7 @@ TEST_P(CordTest, SmallBufferAssignFromOwnData) {
         for (size_t count = contents.size() - pos; count > 0; --count) {
             turbo::Cord c(contents);
             MaybeHarden(c);
-            std::string_view flat = c.Flatten();
+            std::string_view flat = c.flatten();
             c = flat.substr(pos, count);
             EXPECT_EQ(c, contents.substr(pos, count))
                 << "pos = " << pos << "; count = " << count;
@@ -2960,7 +2960,7 @@ PopulatedCordFactory cord_factories[] = {
   {"flat", [] {
     // Too large to live in SSO space, but small enough to be a simple FLAT.
     turbo::Cord flat(turbo::str_cat("abcde", std::string(1000, 'x')));
-    flat.Flatten();
+    flat.flatten();
     return flat;
   }},
   {"external", [] {
@@ -2976,7 +2976,7 @@ PopulatedCordFactory cord_factories[] = {
   }},
   {"substring", [] {
     turbo::Cord flat(turbo::str_cat("-abcde", std::string(1000, 'x')));
-    flat.Flatten();
+    flat.flatten();
     return flat.subcord(1, 998);
   }},
   {"fragmented", [] {
@@ -3031,7 +3031,7 @@ CordMutator cord_mutators[] = {
     "append checksummed cord",
     [](turbo::Cord& c) {
       turbo::Cord to_append = turbo::MakeFragmentedCord({"12345", "67890"});
-      to_append.SetExpectedChecksum(999);
+      to_append.set_expected_checksum(999);
       c.append(to_append);
     },
     [](turbo::Cord& c) { c.remove_suffix(10); }
@@ -3055,7 +3055,7 @@ CordMutator cord_mutators[] = {
     "append empty checksummed cord",
     [](turbo::Cord& c) {
       turbo::Cord to_append;
-      to_append.SetExpectedChecksum(999);
+      to_append.set_expected_checksum(999);
       c.append(to_append);
     },
     [](turbo::Cord& c) { }
@@ -3076,7 +3076,7 @@ CordMutator cord_mutators[] = {
     "prepend checksummed cord",
     [](turbo::Cord& c) {
       turbo::Cord to_prepend = turbo::MakeFragmentedCord({"98765", "43210"});
-      to_prepend.SetExpectedChecksum(999);
+      to_prepend.set_expected_checksum(999);
       c.prepend(to_prepend);
     },
     [](turbo::Cord& c) { c.remove_prefix(10); }
@@ -3095,7 +3095,7 @@ CordMutator cord_mutators[] = {
     "prepend empty checksummed cord",
     [](turbo::Cord& c) {
       turbo::Cord to_prepend;
-      to_prepend.SetExpectedChecksum(999);
+      to_prepend.set_expected_checksum(999);
       c.prepend(to_prepend);
     },
     [](turbo::Cord& c) { }
@@ -3128,7 +3128,7 @@ CordMutator cord_mutators[] = {
     // clang-format on
 } // namespace
 
-TEST_P(CordTest, ExpectedChecksum) {
+TEST_P(CordTest, expected_checksum) {
     for (const PopulatedCordFactory& factory : cord_factories) {
         SCOPED_TRACE(factory.Name());
         for (bool shared : { false, true }) {
@@ -3140,34 +3140,34 @@ TEST_P(CordTest, ExpectedChecksum) {
             };
 
             const turbo::Cord base_value = factory.Generate();
-            const std::string base_value_as_string(factory.Generate().Flatten());
+            const std::string base_value_as_string(factory.Generate().flatten());
 
             turbo::Cord c1 = make_instance();
-            EXPECT_FALSE(c1.ExpectedChecksum().has_value());
+            EXPECT_FALSE(c1.expected_checksum().has_value());
 
             // Setting an expected checksum works, and retains the cord's bytes
-            c1.SetExpectedChecksum(12345);
-            EXPECT_EQ(c1.ExpectedChecksum().value_or(0), 12345);
+            c1.set_expected_checksum(12345);
+            EXPECT_EQ(c1.expected_checksum().value_or(0), 12345);
             EXPECT_EQ(c1, base_value);
 
             // Test that setting an expected checksum again doesn't crash or leak
             // memory.
-            c1.SetExpectedChecksum(12345);
-            EXPECT_EQ(c1.ExpectedChecksum().value_or(0), 12345);
+            c1.set_expected_checksum(12345);
+            EXPECT_EQ(c1.expected_checksum().value_or(0), 12345);
             EXPECT_EQ(c1, base_value);
 
             // CRC persists through copies, assignments, and moves:
             turbo::Cord c1_copy_construct = c1;
-            EXPECT_EQ(c1_copy_construct.ExpectedChecksum().value_or(0), 12345);
+            EXPECT_EQ(c1_copy_construct.expected_checksum().value_or(0), 12345);
 
             turbo::Cord c1_copy_assign;
             c1_copy_assign = c1;
-            EXPECT_EQ(c1_copy_assign.ExpectedChecksum().value_or(0), 12345);
+            EXPECT_EQ(c1_copy_assign.expected_checksum().value_or(0), 12345);
 
             turbo::Cord c1_move(std::move(c1_copy_assign));
-            EXPECT_EQ(c1_move.ExpectedChecksum().value_or(0), 12345);
+            EXPECT_EQ(c1_move.expected_checksum().value_or(0), 12345);
 
-            EXPECT_EQ(c1.ExpectedChecksum().value_or(0), 12345);
+            EXPECT_EQ(c1.expected_checksum().value_or(0), 12345);
 
             // A CRC Cord compares equal to its non-CRC value.
             EXPECT_EQ(c1, make_instance());
@@ -3177,7 +3177,7 @@ TEST_P(CordTest, ExpectedChecksum) {
 
                 // Test that mutating a cord removes its stored checksum
                 turbo::Cord c2 = make_instance();
-                c2.SetExpectedChecksum(24680);
+                c2.set_expected_checksum(24680);
 
                 mutator.Mutate(c2);
 
@@ -3187,18 +3187,18 @@ TEST_P(CordTest, ExpectedChecksum) {
                     continue;
                 }
 
-                EXPECT_EQ(c2.ExpectedChecksum(), std::nullopt);
+                EXPECT_EQ(c2.expected_checksum(), std::nullopt);
 
                 if (mutator.CanUndo()) {
                     // Undoing an operation should not restore the checksum
                     mutator.Undo(c2);
                     EXPECT_EQ(c2, base_value);
-                    EXPECT_EQ(c2.ExpectedChecksum(), std::nullopt);
+                    EXPECT_EQ(c2.expected_checksum(), std::nullopt);
                 }
             }
 
             turbo::Cord c3 = make_instance();
-            c3.SetExpectedChecksum(999);
+            c3.set_expected_checksum(999);
             const turbo::Cord& cc3 = c3;
 
             // Test that all cord reading operations function in the face of an
@@ -3232,7 +3232,7 @@ TEST_P(CordTest, ExpectedChecksum) {
                 first_pass = false;
             }
             first_pass = true;
-            for (char ch : cc3.Chars()) {
+            for (char ch : cc3.chars()) {
                 if (first_pass) {
                     EXPECT_EQ(ch, 'a');
                 }
@@ -3260,32 +3260,32 @@ TEST_P(CordTest, ExpectedChecksum) {
 // Test the special cases encountered with an empty checksummed cord.
 TEST_P(CordTest, ChecksummedEmptyCord) {
     turbo::Cord c1;
-    EXPECT_FALSE(c1.ExpectedChecksum().has_value());
+    EXPECT_FALSE(c1.expected_checksum().has_value());
 
     // Setting an expected checksum works.
-    c1.SetExpectedChecksum(12345);
-    EXPECT_EQ(c1.ExpectedChecksum().value_or(0), 12345);
+    c1.set_expected_checksum(12345);
+    EXPECT_EQ(c1.expected_checksum().value_or(0), 12345);
     EXPECT_EQ(c1, "");
     EXPECT_TRUE(c1.empty());
 
     // Test that setting an expected checksum again doesn't crash or leak memory.
-    c1.SetExpectedChecksum(12345);
-    EXPECT_EQ(c1.ExpectedChecksum().value_or(0), 12345);
+    c1.set_expected_checksum(12345);
+    EXPECT_EQ(c1.expected_checksum().value_or(0), 12345);
     EXPECT_EQ(c1, "");
     EXPECT_TRUE(c1.empty());
 
     // CRC persists through copies, assignments, and moves:
     turbo::Cord c1_copy_construct = c1;
-    EXPECT_EQ(c1_copy_construct.ExpectedChecksum().value_or(0), 12345);
+    EXPECT_EQ(c1_copy_construct.expected_checksum().value_or(0), 12345);
 
     turbo::Cord c1_copy_assign;
     c1_copy_assign = c1;
-    EXPECT_EQ(c1_copy_assign.ExpectedChecksum().value_or(0), 12345);
+    EXPECT_EQ(c1_copy_assign.expected_checksum().value_or(0), 12345);
 
     turbo::Cord c1_move(std::move(c1_copy_assign));
-    EXPECT_EQ(c1_move.ExpectedChecksum().value_or(0), 12345);
+    EXPECT_EQ(c1_move.expected_checksum().value_or(0), 12345);
 
-    EXPECT_EQ(c1.ExpectedChecksum().value_or(0), 12345);
+    EXPECT_EQ(c1.expected_checksum().value_or(0), 12345);
 
     // A CRC Cord compares equal to its non-CRC value.
     EXPECT_EQ(c1, turbo::Cord());
@@ -3296,14 +3296,14 @@ TEST_P(CordTest, ChecksummedEmptyCord) {
         // Exercise mutating an empty checksummed cord to catch crashes and exercise
         // memory sanitizers.
         turbo::Cord c2;
-        c2.SetExpectedChecksum(24680);
+        c2.set_expected_checksum(24680);
         mutator.Mutate(c2);
 
         if (c2.empty()) {
             // Not a mutation
             continue;
         }
-        EXPECT_EQ(c2.ExpectedChecksum(), std::nullopt);
+        EXPECT_EQ(c2.expected_checksum(), std::nullopt);
 
         if (mutator.CanUndo()) {
             mutator.Undo(c2);
@@ -3311,7 +3311,7 @@ TEST_P(CordTest, ChecksummedEmptyCord) {
     }
 
     turbo::Cord c3;
-    c3.SetExpectedChecksum(999);
+    c3.set_expected_checksum(999);
     const turbo::Cord& cc3 = c3;
 
     // Test that all cord reading operations function in the face of an
@@ -3341,13 +3341,13 @@ TEST_P(CordTest, ChecksummedEmptyCord) {
     }
     EXPECT_TRUE(cc3.chunk_begin() == cc3.chunk_end());
 
-    for (char ch : cc3.Chars()) { // NOLINT(unreachable loop)
+    for (char ch : cc3.chars()) { // NOLINT(unreachable loop)
         static_cast<void>(ch);
         GTEST_FAIL() << "no chars expected";
     }
     EXPECT_TRUE(cc3.char_begin() == cc3.char_end());
 
-    EXPECT_EQ(cc3.TryFlat(), "");
+    EXPECT_EQ(cc3.try_flat(), "");
     EXPECT_EQ(turbo::HashOf(c3), turbo::HashOf(turbo::Cord()));
     EXPECT_EQ(turbo::HashOf(c3), turbo::HashOf(std::string_view()));
 }
@@ -3375,7 +3375,7 @@ TEST(CordSanitizerTest, SanitizesCordFalseReport) {
 
 TEST(CrcCordTest, ChecksummedEmptyCordEstimateMemoryUsage) {
     turbo::Cord cord;
-    cord.SetExpectedChecksum(0);
+    cord.set_expected_checksum(0);
     EXPECT_NE(cord.estimated_memory_usage(), 0);
 }
 
@@ -3413,34 +3413,34 @@ const char* MASanDeathExpr() {
 
 TEST(CordSanitizerTest, SanitizesEmptyCord) {
     turbo::Cord cord;
-    const char* data = cord.Flatten().data();
+    const char* data = cord.flatten().data();
     EXPECT_DEATH(EXPECT_EQ(data[0], 0), MASanDeathExpr());
 }
 
 TEST(CordSanitizerTest, SanitizesSmallCord) {
     turbo::Cord cord("Hello");
-    const char* data = cord.Flatten().data();
+    const char* data = cord.flatten().data();
     EXPECT_DEATH(EXPECT_EQ(data[5], 0), MASanDeathExpr());
 }
 
 TEST(CordSanitizerTest, SanitizesCordOnSetSSOValue) {
     turbo::Cord cord("String that is too big to be an SSO value");
     cord = "Hello";
-    const char* data = cord.Flatten().data();
+    const char* data = cord.flatten().data();
     EXPECT_DEATH(EXPECT_EQ(data[5], 0), MASanDeathExpr());
 }
 
 TEST(CordSanitizerTest, SanitizesCordOnCopyCtor) {
     turbo::Cord src("hello");
     turbo::Cord dst(src);
-    const char* data = dst.Flatten().data();
+    const char* data = dst.flatten().data();
     EXPECT_DEATH(EXPECT_EQ(data[5], 0), MASanDeathExpr());
 }
 
 TEST(CordSanitizerTest, SanitizesCordOnMoveCtor) {
     turbo::Cord src("hello");
     turbo::Cord dst(std::move(src));
-    const char* data = dst.Flatten().data();
+    const char* data = dst.flatten().data();
     EXPECT_DEATH(EXPECT_EQ(data[5], 0), MASanDeathExpr());
 }
 
@@ -3448,7 +3448,7 @@ TEST(CordSanitizerTest, SanitizesCordOnAssign) {
     turbo::Cord src("hello");
     turbo::Cord dst;
     dst = src;
-    const char* data = dst.Flatten().data();
+    const char* data = dst.flatten().data();
     EXPECT_DEATH(EXPECT_EQ(data[5], 0), MASanDeathExpr());
 }
 
@@ -3456,7 +3456,7 @@ TEST(CordSanitizerTest, SanitizesCordOnMoveAssign) {
     turbo::Cord src("hello");
     turbo::Cord dst;
     dst = std::move(src);
-    const char* data = dst.Flatten().data();
+    const char* data = dst.flatten().data();
     EXPECT_DEATH(EXPECT_EQ(data[5], 0), MASanDeathExpr());
 }
 
@@ -3464,7 +3464,7 @@ TEST(CordSanitizerTest, SanitizesCordOnSsoAssign) {
     turbo::Cord src("hello");
     turbo::Cord dst("String that is too big to be an SSO value");
     dst = src;
-    const char* data = dst.Flatten().data();
+    const char* data = dst.flatten().data();
     EXPECT_DEATH(EXPECT_EQ(data[5], 0), MASanDeathExpr());
 }
 

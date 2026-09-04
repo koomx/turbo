@@ -28,23 +28,22 @@
 
 namespace turbo {
 
-   WptUri WptParser::parse_url_with_base_impl(std::string_view user_input,
-        const WptUri& base_uri) {
+   void WptParser::parse_url_with_base_impl(std::string_view user_input,
+        const WptUri& base_uri, WptUri&uri) {
 
         turbo::WptState state = turbo::WptState::SCHEME_START;
-        WptUri url { };
 
         // We refuse to parse URL strings that exceed 4GB. Such strings are almost
         // surely the result of a bug or are otherwise a security concern.
         if (user_input.size() > std::numeric_limits<uint32_t>::max()) {
-            url.uri_error = { UriErrorCode::kUriOverflow, 0, "input overflow" };
+            uri.uri_error() = { UriErrorCode::kUriOverflow, 0, "input overflow" };
         }
         // Going forward, user_input.size() is in [0,
         // std::numeric_limits<uint32_t>::max). If we are provided with an invalid
         // base, or the optional_url was invalid, we must return.
-        url.uri_error &= base_uri.uri_error;
-        if (!url.ok()) {
-            return url;
+        uri.uri_error() &= base_uri.uri_error();
+        if (!uri.ok()) {
+            return;
         }
         std::string tmp_buffer;
         std::string_view internal_input;
@@ -103,28 +102,28 @@ namespace turbo {
                     std::string scheme;
                     auto scheme_view = url_data.substr(0, input_position);
                     if (!turbo::uri_wpt::parse_scheme(
-                            scheme_view, url.type, &scheme)) {
-                        return url;
+                            scheme_view, uri.type, &scheme)) {
+                        return;
                     }
-                    if (url.type == turbo::SchemaType::NOT_SPECIAL) {
-                        url.set_scheme(std::move(scheme));
+                    if (uri.type == turbo::SchemaType::NOT_SPECIAL) {
+                        uri.set_scheme(std::move(scheme));
                     }
 
                     // If url's scheme is "file", then:
-                    if (url.type == turbo::SchemaType::FILE) {
+                    if (uri.type == turbo::SchemaType::FILE) {
                         // Set state to file state.
                         state = turbo::WptState::FILE;
                     }
                     // Otherwise, if url is special, base is non-null, and base's scheme
                     // is url's scheme: Note: Doing base_url->scheme is unsafe if base_url
                     // != nullptr is false.
-                    else if (url.is_special() && base_uri.type == url.type) {
+                    else if (uri.is_special() && base_uri.type == uri.type) {
                         // Set state to special relative or authority state.
                         state = turbo::WptState::SPECIAL_RELATIVE_OR_AUTHORITY;
                     }
                     // Otherwise, if url is special, set state to special authority
                     // slashes state.
-                    else if (url.is_special()) {
+                    else if (uri.is_special()) {
                         state = turbo::WptState::SPECIAL_AUTHORITY_SLASHES;
                     }
                     // Otherwise, if remaining starts with an U+002F (/), set state to
@@ -154,19 +153,19 @@ namespace turbo {
                 // If base is null, or base has an opaque path and c is not U+0023 (#),
                 // validation error, return failure.
                 if (base_uri.has_opaque_path() && !fragment.has_value()) {
-                    url.uri_error = { UriErrorCode::kUriNotComplete, 0, "no schema" };
-                    return url;
+                    uri.uri_error() = { UriErrorCode::kUriNotComplete, 0, "no schema" };
+                    return;
                 } else if (base_uri.has_opaque_path() && fragment.has_value() && input_position == input_size) {
                     // Otherwise, if base has an opaque path and c is U+0023 (#),
                     // set url's scheme to base's scheme, url's path to base's path, url's
                     // query to base's query, and set state to fragment state.
-                    url.copy_scheme(base_uri);
-                    url.has_opaque_path() = base_uri.has_opaque_path();
+                    uri.copy_scheme(base_uri);
+                    uri.has_opaque_path() = base_uri.has_opaque_path();
 
-                    url.path = base_uri.path;
-                    url.query = base_uri.query;
-                    url.update_unencoded_base_hash(*fragment);
-                    return url;
+                    uri.path = base_uri.path;
+                    uri.query = base_uri.query;
+                    uri.update_unencoded_base_hash(*fragment);
+                    return;
                 }else if (base_uri.type != turbo::SchemaType::FILE) {
                     // Otherwise, if base's scheme is not "file", set state to relative
                     // state and decrease pointer by 1.
@@ -202,7 +201,7 @@ namespace turbo {
                 do {
                     std::string_view view = turbo::subview(url_data, input_position);
                     // The delimiters are @, /, ? \\.
-                    size_t location = url.is_special() ? turbo::find_authority_delimiter_special(view)
+                    size_t location = uri.is_special() ? turbo::find_authority_delimiter_special(view)
                                                        : turbo::find_authority_delimiter(view);
                     std::string_view authority_view(view.data(), location);
                     size_t end_of_authority = input_position + authority_view.size();
@@ -211,9 +210,9 @@ namespace turbo {
                         // If atSignSeen is true, then prepend "%40" to buffer.
                         if (at_sign_seen) {
                             if (password_token_seen) {
-                                url.password += "%40";
+                                uri.password += "%40";
                             } else {
-                                url.username += "%40";
+                                uri.username += "%40";
                             }
                         }
 
@@ -224,22 +223,23 @@ namespace turbo {
                             password_token_seen = password_token_location != std::string_view::npos;
 
                             if (!password_token_seen) {
-                                url.username += turbo::percent_encode(
+                                uri.username += turbo::percent_encode(
                                     authority_view,
                                     turbo::uri_charsets::USERINFO_PERCENT_ENCODE);
                             } else {
-                                url.username += turbo::percent_encode(
+                                uri.username += turbo::percent_encode(
                                     authority_view.substr(0, password_token_location),
                                     turbo::uri_charsets::USERINFO_PERCENT_ENCODE);
-                                url.password += turbo::percent_encode(
+                                uri.password += turbo::percent_encode(
                                     authority_view.substr(password_token_location + 1),
                                     turbo::uri_charsets::USERINFO_PERCENT_ENCODE);
                             }
                         } else {
-                            url.password += turbo::percent_encode(
+                            uri.password += turbo::percent_encode(
                                 authority_view, turbo::uri_charsets::USERINFO_PERCENT_ENCODE);
                         }
-                    } else if (end_of_authority == input_size || url_data[end_of_authority] == '/' || url_data[end_of_authority] == '?' || (url.is_special() && url_data[end_of_authority] == '\\')) {
+                    } else if (end_of_authority == input_size || url_data[end_of_authority] == '/' ||
+                        url_data[end_of_authority] == '?' || (uri.is_special() && url_data[end_of_authority] == '\\')) {
                         // Otherwise, if one of the following is true:
                         // - c is the EOF code point, U+002F (/), U+003F (?), or U+0023 (#)
                         // - url is special and c is U+005C (\)
@@ -247,17 +247,17 @@ namespace turbo {
                         // If atSignSeen is true and authority_view is the empty string,
                         // validation error, return failure.
                         if (at_sign_seen && authority_view.empty()) {
-                            url.uri_error = { UriErrorCode::kUriNotComplete, 0, "no authority" };
-                            return url;
+                            uri.uri_error() = { UriErrorCode::kUriNotComplete, 0, "no authority" };
+                            return;
                         }
                         state = turbo::WptState::HOST;
                         break;
                     }
                     if (end_of_authority == input_size) {
                         if (fragment.has_value()) {
-                            url.update_unencoded_base_hash(*fragment);
+                            uri.update_unencoded_base_hash(*fragment);
                         }
-                        return url;
+                        return;
                     }
                     input_position = end_of_authority + 1;
                 } while (true);
@@ -297,12 +297,12 @@ namespace turbo {
             case turbo::WptState::RELATIVE_SCHEME: {
 
                 // Set url's scheme to base's scheme.
-                url.copy_scheme(base_uri);
+                uri.copy_scheme(base_uri);
 
                 // If c is U+002F (/), then set state to relative slash state.
                 if ((input_position != input_size) && (url_data[input_position] == '/')) {
                     state = turbo::WptState::RELATIVE_SLASH;
-                } else if (url.is_special() && (input_position != input_size) && (url_data[input_position] == '\\')) {
+                } else if (uri.is_special() && (input_position != input_size) && (url_data[input_position] == '\\')) {
                     // Otherwise, if url is special and c is U+005C (\), validation error,
                     // set state to relative slash state.
                     state = turbo::WptState::RELATIVE_SLASH;
@@ -311,15 +311,15 @@ namespace turbo {
                     // password, url's host to base's host, url's port to base's port,
                     // url's path to a clone of base's path, and url's query to base's
                     // query.
-                    url.username = base_uri.username;
-                    url.password = base_uri.password;
-                    url.host = base_uri.host;
-                    url.port = base_uri.port;
+                    uri.username = base_uri.username;
+                    uri.password = base_uri.password;
+                    uri.host = base_uri.host;
+                    uri.port = base_uri.port;
                     // cloning the base path includes cloning the has_opaque_path flag
-                    url.path = base_uri.path;
-                    url.query = base_uri.query;
+                    uri.path = base_uri.path;
+                    uri.query = base_uri.query;
 
-                    url.has_opaque_path() = base_uri.has_opaque_path();
+                    uri.has_opaque_path() = base_uri.has_opaque_path();
 
                     // If c is U+003F (?), then set url's query to the empty string, and
                     // state to query state.
@@ -329,9 +329,9 @@ namespace turbo {
                     // Otherwise, if c is not the EOF code point:
                     else if (input_position != input_size) {
                         // Set url's query to null.
-                        url.clear_search();
+                        uri.clear_search();
                         // Shorten url's path.
-                        turbo::shorten_path(url.path, url.type);
+                        turbo::shorten_path(uri.path, uri.type);
 
                         // Set state to path state and decrease pointer by 1.
                         state = turbo::WptState::PATH;
@@ -344,7 +344,7 @@ namespace turbo {
             case turbo::WptState::RELATIVE_SLASH: {
 
                 // If url is special and c is U+002F (/) or U+005C (\), then:
-                if (url.is_special() && (input_position != input_size) && (url_data[input_position] == '/' || url_data[input_position] == '\\')) {
+                if (uri.is_special() && (input_position != input_size) && (url_data[input_position] == '/' || url_data[input_position] == '\\')) {
                     // Set state to special authority ignore slashes state.
                     state = turbo::WptState::SPECIAL_AUTHORITY_IGNORE_SLASHES;
                 }
@@ -358,10 +358,10 @@ namespace turbo {
                     // - url's host to base's host,
                     // - url's port to base's port,
                     // - state to path state, and then, decrease pointer by 1.
-                    url.username = base_uri.username;
-                    url.password = base_uri.password;
-                    url.host = base_uri.host;
-                    url.port = base_uri.port;
+                    uri.username = base_uri.username;
+                    uri.password = base_uri.password;
+                    uri.host = base_uri.host;
+                    uri.port = base_uri.port;
                     state = turbo::WptState::PATH;
                     break;
                 }
@@ -395,23 +395,23 @@ namespace turbo {
             case turbo::WptState::QUERY: {
                 // Let queryPercentEncodeSet be the special-query percent-encode set
                 // if url is special; otherwise the query percent-encode set.
-                const uint8_t* query_percent_encode_set = url.is_special()
+                const uint8_t* query_percent_encode_set = uri.is_special()
                     ? turbo::uri_charsets::SPECIAL_QUERY_PERCENT_ENCODE
                     : turbo::uri_charsets::QUERY_PERCENT_ENCODE;
 
                 // Percent-encode after encoding, with encoding, buffer, and
                 // queryPercentEncodeSet, and append the result to url's query.
-                url.update_base_search(turbo::subview(url_data, input_position),
+                uri.update_base_search(turbo::subview(url_data, input_position),
                     query_percent_encode_set);
                 if (fragment.has_value()) {
-                    url.update_unencoded_base_hash(*fragment);
+                    uri.update_unencoded_base_hash(*fragment);
                 }
-                return url;
+                return;
             }
             case turbo::WptState::HOST: {
 
                 std::string_view host_view = turbo::subview(url_data, input_position);
-                auto [location, found_colon] = turbo::get_host_delimiter_location(url.is_special(), host_view);
+                auto [location, found_colon] = uri_wpt::get_host_delimiter_location(uri.is_special(), host_view);
                 input_position = (location != std::string_view::npos)
                     ? input_position + location
                     : input_size;
@@ -423,11 +423,11 @@ namespace turbo {
                     // Let host be the result of host parsing buffer with url is not
                     // special.
                     std::string tmp_host;
-                    url.uri_error = turbo::uri_wpt::parse_host(host_view, url.is_special(), url.host_type(), &tmp_host);
-                    if (!url.ok()) {
-                        return url;
+                    uri.uri_error() = turbo::uri_wpt::parse_host(host_view, uri.is_special(), uri.host_type(), &tmp_host);
+                    if (!uri.ok()) {
+                        return;
                     }
-                    url.host = std::move(tmp_host);
+                    uri.host = std::move(tmp_host);
                     // Set url's host to host, buffer to the empty string, and state to
                     // port state.
                     state = turbo::WptState::PORT;
@@ -441,22 +441,22 @@ namespace turbo {
                 else {
                     // If url is special and host_view is the empty string, validation
                     // error, return failure.
-                    if (url.is_special() && host_view.empty()) {
-                        url.uri_error = { UriErrorCode::kUriNotComplete, 0, "no host" };
+                    if (uri.is_special() && host_view.empty()) {
+                        uri.uri_error() = { UriErrorCode::kUriNotComplete, 0, "no host" };
                         ;
-                        return url;
+                        return;
                     }
                     // Let host be the result of host parsing host_view with url is not
                     // special.
                     if (host_view.empty()) {
-                        url.update_base_hostname("");
+                        uri.update_base_hostname("");
                     } else {
                         std::string tmp_host;
-                        url.uri_error = turbo::uri_wpt::parse_host(host_view, url.is_special(), url.host_type(), &tmp_host);
-                        if (!url.ok()) {
-                            return url;
+                        uri.uri_error() = turbo::uri_wpt::parse_host(host_view, uri.is_special(), uri.host_type(), &tmp_host);
+                        if (!uri.ok()) {
+                            return;
                         }
-                        url.host = tmp_host;
+                        uri.host = tmp_host;
                     }
 
                     // Set url's host to host, and state to path start state.
@@ -477,40 +477,40 @@ namespace turbo {
                 } else {
                     input_position = input_size + 1;
                 }
-                url.has_opaque_path() = true;
+                uri.has_opaque_path() = true;
                 // This is a really unlikely scenario in real world. We should not seek
                 // to optimize it.
-                url.update_base_pathname(turbo::percent_encode(
+                uri.update_base_pathname(turbo::percent_encode(
                     view, turbo::uri_charsets::C0_CONTROL_PERCENT_ENCODE));
                 break;
             }
             case turbo::WptState::PORT: {
                 std::string_view port_view = turbo::subview(url_data, input_position);
                 std::optional<uint16_t> tmp_port;
-                url.uri_error = uri_wpt::parse_port(port_view, url.is_special(), url.type, true, tmp_port);
-                input_position += url.uri_error.error_pos;
-                if (!url.ok()) {
-                    return url;
+                uri.uri_error() = uri_wpt::parse_port(port_view, uri.is_special(), uri.type, true, tmp_port);
+                input_position += uri.uri_error().error_pos;
+                if (!uri.ok()) {
+                    return;
                 }
-                url.port = tmp_port;
+                uri.port = tmp_port;
                 state = turbo::WptState::PATH_START;
                 [[fallthrough]];
             }
             case turbo::WptState::PATH_START: {
 
                 // If url is special, then:
-                if (url.is_special()) {
+                if (uri.is_special()) {
                     // Set state to path state.
                     state = turbo::WptState::PATH;
 
                     // Optimization: Avoiding going into PATH state improves the
                     // performance of urls ending with /.
                     if (input_position == input_size) {
-                        url.update_base_pathname("/");
+                        uri.update_base_pathname("/");
                         if (fragment.has_value()) {
-                            url.update_unencoded_base_hash(*fragment);
+                            uri.update_unencoded_base_hash(*fragment);
                         }
-                        return url;
+                        return;
                     }
                     // If c is neither U+002F (/) nor U+005C (\), then decrease pointer
                     // by 1. We know that (input_position == input_size) is impossible
@@ -518,14 +518,12 @@ namespace turbo {
                     if ((url_data[input_position] != '/') && (url_data[input_position] != '\\')) {
                         break;
                     }
-                }
-                // Otherwise, if state override is not given and c is U+003F (?),
-                // set url's query to the empty string and state to query state.
-                else if ((input_position != input_size) && (url_data[input_position] == '?')) {
+                } else if ((input_position != input_size) && (url_data[input_position] == '?')) {
+                    // Otherwise, if state override is not given and c is U+003F (?),
+                    // set url's query to the empty string and state to query state.
                     state = turbo::WptState::QUERY;
-                }
-                // Otherwise, if c is not the EOF code point:
-                else if (input_position != input_size) {
+                } else if (input_position != input_size) {
+                    // Otherwise, if c is not the EOF code point:
                     // Set state to path state.
                     state = turbo::WptState::PATH;
 
@@ -552,7 +550,7 @@ namespace turbo {
                     input_position = input_size + 1;
                 }
 
-                turbo::parse_prepared_path(view, url.type, url.path);
+                turbo::parse_prepared_path(view, uri.type, uri.path);
                 break;
             }
             case turbo::WptState::FILE_SLASH: {
@@ -568,7 +566,7 @@ namespace turbo {
                     // base_url_has_value() is true.
                     if (base_uri.type == turbo::SchemaType::FILE) {
                         // Set url's host to base's host.
-                        url.host = base_uri.host;
+                        uri.host = base_uri.host;
 
                         // If the code point substring from pointer to the end of input does
                         // not start with a Windows drive letter and base's path[0] is a
@@ -584,8 +582,8 @@ namespace turbo {
                                 }
                                 if (turbo::is_normalized_windows_drive_letter(
                                         first_base_url_path)) {
-                                    url.path += '/';
-                                    url.path += first_base_url_path;
+                                    uri.path += '/';
+                                    uri.path += first_base_url_path;
                                 }
                             }
                         }
@@ -609,7 +607,7 @@ namespace turbo {
                     state = turbo::WptState::PATH;
                 } else if (file_host_buffer.empty()) {
                     // Set url's host to the empty string.
-                    url.host = "";
+                    uri.host = "";
                     // Set state to path start state.
                     state = turbo::WptState::PATH_START;
                 } else {
@@ -618,16 +616,16 @@ namespace turbo {
                     // Let host be the result of host parsing buffer with url is not
                     // special.
                     std::string tmp_host;
-                    url.uri_error = turbo::uri_wpt::parse_host(file_host_buffer, url.is_special(), url.host_type(), &tmp_host);
-                    if (!url.ok()) {
-                        return url;
+                    uri.uri_error() = turbo::uri_wpt::parse_host(file_host_buffer, uri.is_special(), uri.host_type(), &tmp_host);
+                    if (!uri.ok()) {
+                        return;
                     }
 
-                    url.host = std::move(tmp_host);
+                    uri.host = std::move(tmp_host);
 
                     // If host is "localhost", then set host to the empty string.
-                    if (url.host.has_value() && url.host.value() == "localhost") {
-                        url.host = "";
+                    if (uri.host.has_value() && uri.host.value() == "localhost") {
+                        uri.host = "";
                     }
 
                     // Set buffer to the empty string and state to path start state.
@@ -639,9 +637,9 @@ namespace turbo {
             case turbo::WptState::FILE: {
                 std::string_view file_view = turbo::subview(url_data, input_position);
 
-                url.set_protocol_as_file();
+                uri.set_protocol_as_file();
                 // Set url's host to the empty string.
-                url.host = "";
+                uri.host = "";
                 // If c is U+002F (/) or U+005C (\), then:
                 if (input_position != input_size && (url_data[input_position] == '/' || url_data[input_position] == '\\')) {
                     // Set state to file slash state.
@@ -650,10 +648,10 @@ namespace turbo {
                     // Otherwise, if base is non-null and base's scheme is "file":
                     // Set url's host to base's host, url's path to a clone of base's
                     // path, and url's query to base's query.
-                    url.host = base_uri.host;
-                    url.path = base_uri.path;
-                    url.query = base_uri.query;
-                    url.has_opaque_path() = base_uri.has_opaque_path();
+                    uri.host = base_uri.host;
+                    uri.path = base_uri.path;
+                    uri.query = base_uri.query;
+                    uri.has_opaque_path() = base_uri.has_opaque_path();
 
                     // If c is U+003F (?), then set url's query to the empty string and
                     // state to query state.
@@ -663,18 +661,18 @@ namespace turbo {
                     // Otherwise, if c is not the EOF code point:
                     else if (input_position != input_size) {
                         // Set url's query to null.
-                        url.clear_search();
+                        uri.clear_search();
                         // If the code point substring from pointer to the end of input does
                         // not start with a Windows drive letter, then shorten url's path.
                         if (!turbo::is_windows_drive_letter(file_view)) {
-                            turbo::shorten_path(url.path, url.type);
+                            turbo::shorten_path(uri.path, uri.type);
 
                         }
                         // Otherwise:
                         else {
                             // Set url's path to an empty list.
-                            url.clear_pathname();
-                            url.has_opaque_path() = true;
+                            uri.clear_pathname();
+                            uri.has_opaque_path() = true;
                         }
 
                         // Set state to path state and decrease pointer by 1.
@@ -696,25 +694,24 @@ namespace turbo {
         }
 
         if (fragment.has_value()) {
-            url.update_unencoded_base_hash(*fragment);
+            uri.update_unencoded_base_hash(*fragment);
         }
-        return url;
+        return;
     }
 
 
     //////////////////////////////////////////////////////////////////////
-    WptUri WptParser::parse_url_no_base_impl(std::string_view user_input) {
+    void WptParser::parse_url_no_base_impl(std::string_view user_input, WptUri& uri) {
 
         turbo::WptState state = turbo::WptState::SCHEME_START;
-        WptUri url { };
-
+       
         // We refuse to parse URL strings that exceed 4GB. Such strings are almost
         // surely the result of a bug or are otherwise a security concern.
         if (user_input.size() > std::numeric_limits<uint32_t>::max()) {
-            url.uri_error = { UriErrorCode::kUriOverflow, 0, "input overflow" };
+            uri.uri_error() = { UriErrorCode::kUriOverflow, 0, "input overflow" };
         }
-        if (!url.ok()) {
-            return url;
+        if (!uri.ok()) {
+            return;
         }
         std::string tmp_buffer;
         std::string_view internal_input;
@@ -773,21 +770,21 @@ namespace turbo {
                     std::string scheme;
                     auto scheme_view = url_data.substr(0, input_position);
                     if (!turbo::uri_wpt::parse_scheme(
-                            scheme_view, url.type, &scheme)) {
-                        return url;
+                            scheme_view, uri.type, &scheme)) {
+                        return;
                     }
-                    if (url.type == turbo::SchemaType::NOT_SPECIAL) {
-                        url.set_scheme(std::move(scheme));
+                    if (uri.type == turbo::SchemaType::NOT_SPECIAL) {
+                        uri.set_scheme(std::move(scheme));
                     }
 
                     // If url's scheme is "file", then:
-                    if (url.type == turbo::SchemaType::FILE) {
+                    if (uri.type == turbo::SchemaType::FILE) {
                         // Set state to file state.
                         state = turbo::WptState::FILE;
                     }
                     // Otherwise, if url is special, set state to special authority
                     // slashes state.
-                    else if (url.is_special()) {
+                    else if (uri.is_special()) {
                         state = turbo::WptState::SPECIAL_AUTHORITY_SLASHES;
                     }
                     // Otherwise, if remaining starts with an U+002F (/), set state to
@@ -816,8 +813,8 @@ namespace turbo {
             case turbo::WptState::NO_SCHEME: {
                 // If base is null, or base has an opaque path and c is not U+0023 (#),
                 // validation error, return failure.
-                url.uri_error = { UriErrorCode::kUriNotComplete, 0, "no schema" };
-                return url;
+                uri.uri_error() = { UriErrorCode::kUriNotComplete, 0, "no schema" };
+                return;
                 break;
             }
             case turbo::WptState::AUTHORITY: {
@@ -845,7 +842,7 @@ namespace turbo {
                 do {
                     std::string_view view = turbo::subview(url_data, input_position);
                     // The delimiters are @, /, ? \\.
-                    size_t location = url.is_special() ? turbo::find_authority_delimiter_special(view)
+                    size_t location = uri.is_special() ? turbo::find_authority_delimiter_special(view)
                                                        : turbo::find_authority_delimiter(view);
                     std::string_view authority_view(view.data(), location);
                     size_t end_of_authority = input_position + authority_view.size();
@@ -854,9 +851,9 @@ namespace turbo {
                         // If atSignSeen is true, then prepend "%40" to buffer.
                         if (at_sign_seen) {
                             if (password_token_seen) {
-                                url.password += "%40";
+                                uri.password += "%40";
                             } else {
-                                url.username += "%40";
+                                uri.username += "%40";
                             }
                         }
 
@@ -867,40 +864,40 @@ namespace turbo {
                             password_token_seen = password_token_location != std::string_view::npos;
 
                             if (!password_token_seen) {
-                                url.username += turbo::percent_encode(
+                                uri.username += turbo::percent_encode(
                                     authority_view,
                                     turbo::uri_charsets::USERINFO_PERCENT_ENCODE);
                             } else {
-                                url.username += turbo::percent_encode(
+                                uri.username += turbo::percent_encode(
                                     authority_view.substr(0, password_token_location),
                                     turbo::uri_charsets::USERINFO_PERCENT_ENCODE);
-                                url.password += turbo::percent_encode(
+                                uri.password += turbo::percent_encode(
                                     authority_view.substr(password_token_location + 1),
                                     turbo::uri_charsets::USERINFO_PERCENT_ENCODE);
                             }
                         } else {
-                            url.password += turbo::percent_encode(
+                            uri.password += turbo::percent_encode(
                                 authority_view, turbo::uri_charsets::USERINFO_PERCENT_ENCODE);
                         }
                     }
                     // Otherwise, if one of the following is true:
                     // - c is the EOF code point, U+002F (/), U+003F (?), or U+0023 (#)
                     // - url is special and c is U+005C (\)
-                    else if (end_of_authority == input_size || url_data[end_of_authority] == '/' || url_data[end_of_authority] == '?' || (url.is_special() && url_data[end_of_authority] == '\\')) {
+                    else if (end_of_authority == input_size || url_data[end_of_authority] == '/' || url_data[end_of_authority] == '?' || (uri.is_special() && url_data[end_of_authority] == '\\')) {
                         // If atSignSeen is true and authority_view is the empty string,
                         // validation error, return failure.
                         if (at_sign_seen && authority_view.empty()) {
-                            url.uri_error = { UriErrorCode::kUriNotComplete, 0, "no authority" };
-                            return url;
+                            uri.uri_error() = { UriErrorCode::kUriNotComplete, 0, "no authority" };
+                            return;
                         }
                         state = turbo::WptState::HOST;
                         break;
                     }
                     if (end_of_authority == input_size) {
                         if (fragment.has_value()) {
-                            url.update_unencoded_base_hash(*fragment);
+                            uri.update_unencoded_base_hash(*fragment);
                         }
-                        return url;
+                        return;
                     }
                     input_position = end_of_authority + 1;
                 } while (true);
@@ -946,23 +943,23 @@ namespace turbo {
             case turbo::WptState::QUERY: {
                 // Let queryPercentEncodeSet be the special-query percent-encode set
                 // if url is special; otherwise the query percent-encode set.
-                const uint8_t* query_percent_encode_set = url.is_special()
+                const uint8_t* query_percent_encode_set = uri.is_special()
                     ? turbo::uri_charsets::SPECIAL_QUERY_PERCENT_ENCODE
                     : turbo::uri_charsets::QUERY_PERCENT_ENCODE;
 
                 // Percent-encode after encoding, with encoding, buffer, and
                 // queryPercentEncodeSet, and append the result to url's query.
-                url.update_base_search(turbo::subview(url_data, input_position),
+                uri.update_base_search(turbo::subview(url_data, input_position),
                     query_percent_encode_set);
                 if (fragment.has_value()) {
-                    url.update_unencoded_base_hash(*fragment);
+                    uri.update_unencoded_base_hash(*fragment);
                 }
-                return url;
+                return;
             }
             case turbo::WptState::HOST: {
 
                 std::string_view host_view = turbo::subview(url_data, input_position);
-                auto [location, found_colon] = turbo::get_host_delimiter_location(url.is_special(), host_view);
+                auto [location, found_colon] = uri_wpt::get_host_delimiter_location(uri.is_special(), host_view);
                 input_position = (location != std::string_view::npos)
                     ? input_position + location
                     : input_size;
@@ -974,11 +971,11 @@ namespace turbo {
                     // Let host be the result of host parsing buffer with url is not
                     // special.
                     std::string tmp_host;
-                    url.uri_error = turbo::uri_wpt::parse_host(host_view, url.is_special(), url.host_type(), &tmp_host);
-                    if (!url.ok()) {
-                        return url;
+                    uri.uri_error() = turbo::uri_wpt::parse_host(host_view, uri.is_special(), uri.host_type(), &tmp_host);
+                    if (!uri.ok()) {
+                        return;
                     }
-                    url.host = std::move(tmp_host);
+                    uri.host = std::move(tmp_host);
                     // Set url's host to host, buffer to the empty string, and state to
                     // port state.
                     state = turbo::WptState::PORT;
@@ -991,22 +988,22 @@ namespace turbo {
                     // the colon outside of the bracket, or to one of those characters.
                     // If url is special and host_view is the empty string, validation
                     // error, return failure.
-                    if (url.is_special() && host_view.empty()) {
-                        url.uri_error = { UriErrorCode::kUriNotComplete, 0, "no host" };
+                    if (uri.is_special() && host_view.empty()) {
+                        uri.uri_error() = { UriErrorCode::kUriNotComplete, 0, "no host" };
                         ;
-                        return url;
+                        return;
                     }
                     // Let host be the result of host parsing host_view with url is not
                     // special.
                     if (host_view.empty()) {
-                        url.update_base_hostname("");
+                        uri.update_base_hostname("");
                     } else {
                         std::string tmp_host;
-                        url.uri_error = turbo::uri_wpt::parse_host(host_view, url.is_special(), url.host_type(), &tmp_host);
-                        if (!url.ok()) {
-                            return url;
+                        uri.uri_error() = turbo::uri_wpt::parse_host(host_view, uri.is_special(), uri.host_type(), &tmp_host);
+                        if (!uri.ok()) {
+                            return;
                         }
-                        url.host = tmp_host;
+                        uri.host = tmp_host;
                     }
 
                     // Set url's host to host, and state to path start state.
@@ -1027,40 +1024,40 @@ namespace turbo {
                 } else {
                     input_position = input_size + 1;
                 }
-                url.has_opaque_path() = true;
+                uri.has_opaque_path() = true;
                 // This is a really unlikely scenario in real world. We should not seek
                 // to optimize it.
-                url.update_base_pathname(turbo::percent_encode(
+                uri.update_base_pathname(turbo::percent_encode(
                     view, turbo::uri_charsets::C0_CONTROL_PERCENT_ENCODE));
                 break;
             }
             case turbo::WptState::PORT: {
                 std::string_view port_view = turbo::subview(url_data, input_position);
                 std::optional<uint16_t> tmp_port;
-                url.uri_error = uri_wpt::parse_port(port_view, url.is_special(), url.type, true, tmp_port);
-                input_position += url.uri_error.error_pos;
-                if (!url.ok()) {
-                    return url;
+                uri.uri_error() = uri_wpt::parse_port(port_view, uri.is_special(), uri.type, true, tmp_port);
+                input_position += uri.uri_error().error_pos;
+                if (!uri.ok()) {
+                    return;
                 }
-                url.port = tmp_port;
+                uri.port = tmp_port;
                 state = turbo::WptState::PATH_START;
                 [[fallthrough]];
             }
             case turbo::WptState::PATH_START: {
 
                 // If url is special, then:
-                if (url.is_special()) {
+                if (uri.is_special()) {
                     // Set state to path state.
                     state = turbo::WptState::PATH;
 
                     // Optimization: Avoiding going into PATH state improves the
                     // performance of urls ending with /.
                     if (input_position == input_size) {
-                        url.update_base_pathname("/");
+                        uri.update_base_pathname("/");
                         if (fragment.has_value()) {
-                            url.update_unencoded_base_hash(*fragment);
+                            uri.update_unencoded_base_hash(*fragment);
                         }
-                        return url;
+                        return;
                     }
                     // If c is neither U+002F (/) nor U+005C (\), then decrease pointer
                     // by 1. We know that (input_position == input_size) is impossible
@@ -1102,7 +1099,7 @@ namespace turbo {
                     input_position = input_size + 1;
                 }
 
-                turbo::parse_prepared_path(view, url.type, url.path);
+                turbo::parse_prepared_path(view, uri.type, uri.path);
                 break;
             }
             case turbo::WptState::FILE_SLASH: {
@@ -1131,7 +1128,7 @@ namespace turbo {
                     state = turbo::WptState::PATH;
                 } else if (file_host_buffer.empty()) {
                     // Set url's host to the empty string.
-                    url.host = "";
+                    uri.host = "";
                     // Set state to path start state.
                     state = turbo::WptState::PATH_START;
                 } else {
@@ -1140,16 +1137,16 @@ namespace turbo {
                     // Let host be the result of host parsing buffer with url is not
                     // special.
                     std::string tmp_host;
-                    url.uri_error = turbo::uri_wpt::parse_host(file_host_buffer, url.is_special(), url.host_type(), &tmp_host);
-                    if (!url.ok()) {
-                        return url;
+                    uri.uri_error() = turbo::uri_wpt::parse_host(file_host_buffer, uri.is_special(), uri.host_type(), &tmp_host);
+                    if (!uri.ok()) {
+                        return;
                     }
 
-                    url.host = std::move(tmp_host);
+                    uri.host = std::move(tmp_host);
 
                     // If host is "localhost", then set host to the empty string.
-                    if (url.host.has_value() && url.host.value() == "localhost") {
-                        url.host = "";
+                    if (uri.host.has_value() && uri.host.value() == "localhost") {
+                        uri.host = "";
                     }
 
                     // Set buffer to the empty string and state to path start state.
@@ -1161,9 +1158,9 @@ namespace turbo {
             case turbo::WptState::FILE: {
                 std::string_view file_view = turbo::subview(url_data, input_position);
 
-                url.set_protocol_as_file();
+                uri.set_protocol_as_file();
                 // Set url's host to the empty string.
-                url.host = "";
+                uri.host = "";
                 // If c is U+002F (/) or U+005C (\), then:
                 if (input_position != input_size && (url_data[input_position] == '/' || url_data[input_position] == '\\')) {
                     // Set state to file slash state.
@@ -1183,20 +1180,31 @@ namespace turbo {
         }
 
         if (fragment.has_value()) {
-            url.update_unencoded_base_hash(*fragment);
+            uri.update_unencoded_base_hash(*fragment);
         }
-        return url;
+        return;
     }
 
     WptUri parse_wpt_uri(std::string_view user_input,
         const WptUri* base_url) {
+       WptUri ret;
        if (base_url) {
-           return WptParser::parse_url_with_base_impl(user_input, *base_url);
+           WptParser::parse_url_with_base_impl(user_input, *base_url, ret);
        } else {
-           return WptParser::parse_url_no_base_impl(user_input);
+           WptParser::parse_url_no_base_impl(user_input, ret);
        }
-
+        return ret;
     }
+
+    bool parse_wpt_uri(std::string_view user_input,WptUri&uri,
+       const WptUri* base_url) {
+       if (base_url) {
+           WptParser::parse_url_with_base_impl(user_input, *base_url, uri);
+       } else {
+           WptParser::parse_url_no_base_impl(user_input, uri);
+       }
+       return uri.ok();
+   }
 
     std::string href_from_file(std::string_view input) {
         // This is going to be much faster than constructing a URL.

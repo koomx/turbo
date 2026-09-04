@@ -17,20 +17,84 @@
 
 #include <optional>
 #include <string_view>
+#include <turbo/strings/substring.h>
 
 namespace turbo {
 
-    /**
-     * @brief URL Component representations using offsets.
-     *
-     * @details We design the UriComponents struct so that it is as small
-     * and simple as possible. This version uses 32 bytes.
-     *
-     * This struct is used to extract components from a single 'href'.
-     */
-    struct UriComponents {
-        constexpr static uint32_t omitted = uint32_t(-1);
+    ///////////////////////////////////////////////////////////////////////
+    ///@brief URL Component representations using offsets.
+    ///
+    /// @details We design the UriComponents struct so that it is as small
+    /// and simple as possible. This version uses 32 bytes.
+    ///
+    /// This struct is used to extract components from a single 'href'.
+    /// [start, end)
+    struct UriComponent {
+        constexpr static uint32_t npos = std::numeric_limits<uint32_t>::max();
+        uint32_t start{npos};
+        uint32_t end{npos};
 
+        [[nodiscard]] bool is_null() const noexcept {
+            return start == npos && end == npos;
+        }
+
+        [[nodiscard]] bool is_valid() const noexcept {
+            return start != npos && end != npos && start <= end;
+        }
+
+        constexpr bool has_value() const {
+            return start!= npos && end != npos;
+        }
+
+        constexpr bool empty() const {
+            return has_value() && start == end;
+        }
+
+        constexpr void set_empty(uint32_t off) {
+            start = off;
+            end = off;
+        }
+        constexpr void clear() {
+            start = npos;
+            end = npos;
+        }
+
+        static UriComponent null_value() {
+            return {};
+        }
+
+        constexpr size_t size() const {
+            return end - start;
+        }
+
+        std::string_view extract_view(std::string_view input) const {
+            if (!has_value()) {
+                return {};
+            }
+            return subview(input,start, end);
+        }
+
+        std::string extract_string(std::string_view input) const {
+            if (!has_value()) {
+                return {};
+            }
+            return substring(input,start, end);
+        }
+
+        void append_to(std::string_view src, std::string * out) const {
+            auto str = extract_view(src);
+            out->append(str);
+        }
+
+        void refine_to(std::string_view src, std::string * out) {
+            auto str = extract_view(src);
+            start = static_cast<uint32_t>(out->size());
+            out->append(str);
+            end = static_cast<uint32_t>(out->size());
+        }
+
+    };
+    struct UriComponents {
         UriComponents() = default;
         UriComponents(const UriComponents& u) = default;
         UriComponents(UriComponents&& u) noexcept = default;
@@ -38,49 +102,24 @@ namespace turbo {
         UriComponents& operator=(const UriComponents& u) = default;
         ~UriComponents() = default;
 
-        /*
-         * By using 32-bit integers, we implicitly assume that the URL string
-         * cannot exceed 4 GB.
-         *
-         * https://user:pass@example.com:1234/foo/bar?baz#quux
-         *       |     |    |          | ^^^^|       |   |
-         *       |     |    |          | |   |       |   `----- hash_start
-         *       |     |    |          | |   |       `--------- search_start
-         *       |     |    |          | |   `----------------- pathname_start
-         *       |     |    |          | `--------------------- port
-         *       |     |    |          `----------------------- host_end
-         *       |     |    `---------------------------------- host_start
-         *       |     `--------------------------------------- username_end
-         *       `--------------------------------------------- protocol_end
-         */
-        uint32_t protocol_end { 0 };
-        /**
-         * Username end is not `omitted` by default to make username and password
-         * getters less costly to implement.
-         */
-        uint32_t username_end { 0 };
-        uint32_t host_start { 0 };
-        uint32_t host_end { 0 };
-        uint32_t port { omitted };
-        uint32_t pathname_start { 0 };
-        uint32_t search_start { omitted };
-        uint32_t hash_start { omitted };
+        UriComponent schema;
+        UriComponent username;
+        UriComponent password;
+        UriComponent host;
+        UriComponent port;
+        UriComponent pathname;
+        UriComponent query;
+        UriComponent fragment;
 
-        /**
-         * Check the following conditions:
-         * protocol_end < username_end < ... < hash_start,
-         * expect when a value is omitted. It also computes
-         * a lower bound on  the possible string length that may match these
-         * offsets.
-         * @return true if the offset values are
-         *  consistent with a possible URL string
-         */
+
+        // Only meaningful after format(); dirty working-buffer offsets are unordered.
         [[nodiscard]] bool check_offset_consistency() const noexcept;
 
-        /**
-         * Converts a UriComponents to JSON stringified version.
-         */
+
         [[nodiscard]] std::string to_string() const;
+
+        // Strict href into dst; rewrites this object's offsets onto dst.
+        bool refine_to(std::string_view src, std::string& dst, UriComponents& dst_com) const;
 
     }; // struct UriComponents
 

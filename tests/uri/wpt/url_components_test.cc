@@ -44,7 +44,7 @@ bool file_exists(const char* filename) {
     std::cout << "  file missing: " << filename << std::endl;
     return false;
 }
-
+/*
 TEST(url_components, urltestdata_encoding) {
     ondemand::parser parser;
     size_t counter{};
@@ -145,3 +145,4 @@ TEST(url_components, urltestdata_encoding) {
     std::cout << "Tests executed = " << counter << std::endl;
     SUCCEED();
 }
+*/

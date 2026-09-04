@@ -29,7 +29,7 @@
 namespace turbo {
 
     [[nodiscard]] std::string UriBase::to_string() const {
-        if (!uri_error.ok()) {
+        if (!ok()) {
             return "null";
         }
         std::string answer;

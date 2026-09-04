@@ -263,7 +263,7 @@ bool Base64UnescapeInternal(const char* turbo_nullable src, size_t slen,
         const size_t dest_len = 3 * (slen / 4) + (slen % 4);
 
         bool ok;
-        StringResizeAndOverwrite(
+        string_resize_and_overwrite(
             *dest, dest_len, [src, slen, unbase64, &ok](char* buf, size_t buf_size) {
                 size_t len;
                 ok = Base64UnescapeInternal(src, slen, buf, buf_size, unbase64, &len);
@@ -541,7 +541,7 @@ bool Base64UnescapeInternal(const char* turbo_nullable src, size_t slen,
         const char* base64_chars) {
         std::string escaped;
         const size_t calc_escaped_size = CalculateBase64EscapedLenInternal(szsrc, do_padding);
-        StringResizeAndOverwrite(
+        string_resize_and_overwrite(
             escaped, calc_escaped_size,
             [src, szsrc, base64_chars, do_padding](char* buf, size_t buf_size) {
                 const size_t escaped_len = Base64EscapeInternal(

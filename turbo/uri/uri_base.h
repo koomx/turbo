@@ -88,7 +88,6 @@ namespace turbo {
 
         [[nodiscard]] KUMO_FORCE_INLINE bool has_credentials() const noexcept;
 
-        [[nodiscard]] KUMO_FORCE_INLINE turbo::UriComponents get_components() const noexcept;
         [[nodiscard]] inline bool has_hash() const noexcept override;
         [[nodiscard]] inline bool has_search() const noexcept override;
 
@@ -97,6 +96,8 @@ namespace turbo {
         inline void clear_search() override;
 
         //////////////////////////////////////////////////////////////////////////////
+
+        inline void set_scheme(std::string&& new_scheme) noexcept;
 
         inline void update_base_hostname(std::string_view input);
         inline void update_base_search(std::string_view input);
@@ -136,7 +137,6 @@ namespace turbo {
         inline void copy_scheme(const UriBase& u);
         inline void set_protocol_as_file();
 
-        inline void set_scheme(std::string&& new_scheme) noexcept;
         inline void copy_scheme(UriBase&& u) noexcept;
 
     };
@@ -168,76 +168,6 @@ namespace turbo {
 
     [[nodiscard]] size_t UriBase::get_pathname_length() const noexcept {
         return path.size();
-    }
-
-    [[nodiscard]] KUMO_FORCE_INLINE turbo::UriComponents UriBase::get_components()
-        const noexcept {
-        turbo::UriComponents out { };
-
-        // protocol ends with ':'. for example: "https:"
-        out.protocol_end = uint32_t(get_protocol().size());
-
-        // Trailing index is always the next character of the current one.
-        size_t running_index = out.protocol_end;
-
-        if (host.has_value()) {
-            // 2 characters for "//" and 1 character for starting index
-            out.host_start = out.protocol_end + 2;
-
-            if (has_credentials()) {
-                out.username_end = uint32_t(out.host_start + username.size());
-
-                out.host_start += uint32_t(username.size());
-
-                if (!password.empty()) {
-                    out.host_start += uint32_t(password.size() + 1);
-                }
-
-                out.host_end = uint32_t(out.host_start + host.value().size());
-            } else {
-                out.username_end = out.host_start;
-
-                // Host does not start with "@" if it does not include credentials.
-                out.host_end = uint32_t(out.host_start + host.value().size()) - 1;
-            }
-
-            running_index = out.host_end + 1;
-        } else {
-            // Update host start and end date to the same index, since it does not
-            // exist.
-            out.host_start = out.protocol_end;
-            out.host_end = out.host_start;
-
-            if (_standard == StandType::STD_WPT && !has_opaque_path()
-                && turbo::starts_with(path, "//")) {
-                running_index = out.protocol_end + 2;
-            } else {
-                running_index = out.protocol_end;
-            }
-        }
-
-        if (port.has_value()) {
-            out.port = *port;
-            running_index += turbo::format_internal::fast_digit_count(*port) + 1; // Port omits ':'
-        }
-
-        out.pathname_start = uint32_t(running_index);
-
-        running_index += path.size();
-
-        if (query.has_value()) {
-            out.search_start = uint32_t(running_index);
-            running_index += get_search().size();
-            if (get_search().empty()) {
-                running_index++;
-            }
-        }
-
-        if (hash.has_value()) {
-            out.hash_start = uint32_t(running_index);
-        }
-
-        return out;
     }
 
     inline void UriBase::update_base_hostname(std::string_view input) {

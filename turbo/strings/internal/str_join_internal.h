@@ -252,7 +252,7 @@ namespace turbo {
                     constexpr uint64_t kMaxSize = uint64_t { (std::numeric_limits<size_t>::max)() };
                     TURBO_INTERNAL_CHECK(result_size <= kMaxSize, "size_t overflow");
 
-                    StringResizeAndOverwrite(
+                    string_resize_and_overwrite(
                         result, static_cast<size_t>(result_size),
                         [&start, &end, &start_value, s](char* result_buf,
                             size_t result_buf_size) {

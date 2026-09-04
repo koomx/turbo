@@ -13,16 +13,14 @@
 # limitations under the License.
 #
 
-
-set(TYPES_TESTS
-        query_map_test
-        ip_test
+set(URI_RFC_TESTS
+        uriparser_parse_test
 )
 
-foreach (case IN LISTS TYPES_TESTS)
+foreach (case IN LISTS URI_RFC_TESTS)
     kmcmake_cc_test(
             NAME ${case}
-            MODULE uri
+            MODULE uri_rfc
             SOURCES
             ${case}.cc
             CXXOPTS
@@ -37,6 +35,3 @@ foreach (case IN LISTS TYPES_TESTS)
             ${KMCMAKE_DEPS_LINK}
     )
 endforeach ()
-
-add_subdirectory(wpt)
-add_subdirectory(rfc)

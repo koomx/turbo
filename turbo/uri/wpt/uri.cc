@@ -59,7 +59,7 @@ namespace turbo {
         if (non_special_scheme == "blob") {
             if (!path.empty()) {
                 auto result = parse_wpt_uri(path);
-                if (result.uri_error.ok() && (result.type == turbo::SchemaType::HTTP ||
+                if (result.ok() && (result.type == turbo::SchemaType::HTTP ||
                     result.type == turbo::SchemaType::HTTPS)) {
                     // If pathURL's scheme is not "http" and not "https", then return a
                     // new opaque origin.
@@ -90,7 +90,7 @@ namespace turbo {
         // host state.
         if (type != turbo::SchemaType::FILE) {
             std::string_view host_view(_host.data(), _host.length());
-            auto [location, found_colon] = turbo::get_host_delimiter_location(is_special(), host_view);
+            auto [location, found_colon] = uri_wpt::get_host_delimiter_location(is_special(), host_view);
 
             // Otherwise, if c is U+003A (:) and insideBrackets is false, then:
             // Note: the 'found_colon' value is true if and only if a colon was
@@ -208,7 +208,7 @@ namespace turbo {
             return false;
         }
         port = tmp_port;
-        uri_error = {};
+        uri_error() = {};
         return true;
     }
 
@@ -297,7 +297,7 @@ namespace turbo {
     bool WptUri::set_href(const std::string_view input) {
         auto out = parse_wpt_uri(input);
 
-        if (out.uri_error.ok()) {
+        if (out.ok()) {
             username = out.username;
             password = out.password;
             host = out.host;
@@ -310,7 +310,7 @@ namespace turbo {
             has_opaque_path() = out.has_opaque_path();
         }
 
-        return out.uri_error.ok();
+        return out.ok();
     }
 
 } // namespace turbo

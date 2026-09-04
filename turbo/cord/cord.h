@@ -504,9 +504,9 @@ namespace turbo {
 
             // Removes `n` bytes from `current_chunk_`. Expects `n` to be smaller than
             // `current_chunk_.size()`.
-            void RemoveChunkPrefix(size_t n);
-            Cord AdvanceAndReadBytes(size_t n);
-            void AdvanceBytes(size_t n);
+            void remove_chunk_prefix(size_t n);
+            Cord advance_and_read_bytes(size_t n);
+            void advance_bytes(size_t n);
 
             // Btree specific operator++
             ChunkIterator& advance_btree();
@@ -614,7 +614,7 @@ namespace turbo {
         // a `Cord`.
         //
         // Generally, you do not instantiate a `Cord::CharIterator` directly; instead,
-        // you create one implicitly through use of the `Cord::Chars()` member
+        // you create one implicitly through use of the `Cord::chars()` member
         // function.
         //
         // A `Cord::CharIterator` has the following properties:
@@ -688,7 +688,7 @@ namespace turbo {
         //
         // Returns an iterator to the first character of the `Cord`.
         //
-        // Generally, prefer using `Cord::Chars()` within a range-based for loop for
+        // Generally, prefer using `Cord::chars()` within a range-based for loop for
         // iterating over the chunks of a Cord. This method may be useful for getting
         // a `CharIterator` where range-based for-loops may not be available.
         CharIterator char_begin() const KUMO_ATTRIBUTE_LIFETIME_BOUND;
@@ -697,7 +697,7 @@ namespace turbo {
         //
         // Returns an iterator to one past the last character of the `Cord`.
         //
-        // Generally, prefer using `Cord::Chars()` within a range-based for loop for
+        // Generally, prefer using `Cord::chars()` within a range-based for loop for
         // iterating over the chunks of a Cord. This method may be useful for getting
         // a `CharIterator` where range-based for-loops are not useful.
         CharIterator char_end() const KUMO_ATTRIBUTE_LIFETIME_BOUND;
@@ -708,7 +708,7 @@ namespace turbo {
         // producing an iterator which can be used within a range-based for loop.
         // Construction of a `CharRange` will return an iterator pointing to the first
         // character of the Cord. Generally, do not construct a `CharRange` directly;
-        // instead, prefer to use the `Cord::Chars()` method shown below.
+        // instead, prefer to use the `Cord::chars()` method shown below.
         //
         // Implementation note: `CharRange` is simply a convenience wrapper over
         // `Cord::char_begin()` and `Cord::char_end()`.
@@ -734,26 +734,26 @@ namespace turbo {
             const Cord* turbo_nonnull cord_;
         };
 
-        // Cord::Chars()
+        // Cord::chars()
         //
         // Returns a `Cord::CharRange` for iterating over the characters of a `Cord`
         // with a range-based for-loop. For most character-based iteration tasks on a
-        // Cord, use `Cord::Chars()` to retrieve this iterator.
+        // Cord, use `Cord::chars()` to retrieve this iterator.
         //
         // Example:
         //
         //   void ProcessCord(const Cord& cord) {
-        //     for (char c : cord.Chars()) { ... }
+        //     for (char c : cord.chars()) { ... }
         //   }
         //
         // Note that the ordinary caveats of temporary lifetime extension apply:
         //
         //   void Process() {
-        //     for (char c : CordFactory().Chars()) {
+        //     for (char c : CordFactory().chars()) {
         //       // The temporary Cord returned by CordFactory has been destroyed!
         //     }
         //   }
-        CharRange Chars() const KUMO_ATTRIBUTE_LIFETIME_BOUND;
+        CharRange chars() const KUMO_ATTRIBUTE_LIFETIME_BOUND;
 
         // Cord::operator[]
         //
@@ -767,27 +767,27 @@ namespace turbo {
         // repeatedly in a loop.
         char operator[](size_t i) const;
 
-        // Cord::TryFlat()
+        // Cord::try_flat()
         //
         // If this cord's representation is a single flat array, returns a
         // std::string_view referencing that array.  Otherwise returns nullopt.
-        std::optional<std::string_view> TryFlat() const
+        std::optional<std::string_view> try_flat() const
             KUMO_ATTRIBUTE_LIFETIME_BOUND;
 
-        // Cord::Flatten()
+        // Cord::flatten()
         //
         // Flattens the cord into a single array and returns a view of the data.
         //
         // If the cord was already flat, the contents are not modified.
-        std::string_view Flatten() KUMO_ATTRIBUTE_LIFETIME_BOUND;
+        std::string_view flatten() KUMO_ATTRIBUTE_LIFETIME_BOUND;
 
         // Cord::Find()
         //
         // Returns an iterator to the first occurrence of the substring `needle`.
         //
         // If the substring `needle` does not occur, `Cord::char_end()` is returned.
-        CharIterator Find(std::string_view needle) const;
-        CharIterator Find(const turbo::Cord& needle) const;
+        CharIterator find(std::string_view needle) const;
+        CharIterator find(const turbo::Cord& needle) const;
 
         // Supports turbo::Cord as a sink object for turbo::str_printf_to().
         friend void turbo_format_flush(turbo::Cord* turbo_nonnull cord,
@@ -803,7 +803,7 @@ namespace turbo {
             }
         }
 
-        // Cord::SetExpectedChecksum()
+        // Cord::set_expected_checksum()
         //
         // Stores a checksum value with this non-empty cord instance, for later
         // retrieval.
@@ -820,15 +820,15 @@ namespace turbo {
         // does no CRC validation, and assigns no meaning to this number.
         //
         // This call has no effect if this cord is empty.
-        void SetExpectedChecksum(uint32_t crc);
+        void set_expected_checksum(uint32_t crc);
 
         // Returns this cord's expected checksum, if it has one.  Otherwise, returns
         // nullopt.
-        std::optional<uint32_t> ExpectedChecksum() const;
+        std::optional<uint32_t> expected_checksum() const;
 
         template <typename H>
         friend H TurboHashValue(H hash_state, const turbo::Cord& c) {
-            std::optional<std::string_view> maybe_flat = c.TryFlat();
+            std::optional<std::string_view> maybe_flat = c.try_flat();
             if (maybe_flat.has_value()) {
                 return H::combine(std::move(hash_state), *maybe_flat);
             }
@@ -891,7 +891,7 @@ namespace turbo {
         void for_each_chunk(turbo::FunctionRef<void(std::string_view)>) const;
 
         // Allocates new contiguous storage for the contents of the cord. This is
-        // called by Flatten() when the cord was not already flat.
+        // called by flatten() when the cord was not already flat.
         std::string_view flatten_slow_path();
 
         // Actual cord contents are hidden inside the following simple
@@ -1005,7 +1005,7 @@ namespace turbo {
         };
         InlineRep contents_;
 
-        // Helper for GetFlat() and TryFlat().
+        // Helper for GetFlat() and try_flat().
         static bool get_flat_aux(turbo::cord_internal::CordRep* turbo_nonnull rep,
             std::string_view* turbo_nonnull fragment);
 
@@ -1018,7 +1018,7 @@ namespace turbo {
         void DestroyCordSlow();
 
         // Out-of-line implementation of slower parts of logic.
-        void CopyToArraySlowPath(char* turbo_nonnull dst) const;
+        void copy_to_array_slow_path(char* turbo_nonnull dst) const;
         int CompareSlowPath(std::string_view rhs, size_t compared_size,
             size_t size_to_compare) const;
         int CompareSlowPath(const Cord& rhs, size_t compared_size,
@@ -1367,7 +1367,7 @@ namespace turbo {
         return result;
     }
 
-    inline std::optional<std::string_view> Cord::TryFlat() const
+    inline std::optional<std::string_view> Cord::try_flat() const
         KUMO_ATTRIBUTE_LIFETIME_BOUND {
         turbo::cord_internal::CordRep* rep = contents_.tree();
         if (rep == nullptr) {
@@ -1380,7 +1380,7 @@ namespace turbo {
         return std::nullopt;
     }
 
-    inline std::string_view Cord::Flatten() KUMO_ATTRIBUTE_LIFETIME_BOUND {
+    inline std::string_view Cord::flatten() KUMO_ATTRIBUTE_LIFETIME_BOUND {
         turbo::cord_internal::CordRep* rep = contents_.tree();
         if (rep == nullptr) {
             return std::string_view(contents_.data(), contents_.size());
@@ -1474,7 +1474,7 @@ namespace turbo {
             if (!empty())
                 contents_.CopyToArray(dst);
         } else {
-            CopyToArraySlowPath(dst);
+            copy_to_array_slow_path(dst);
         }
     }
 
@@ -1571,16 +1571,16 @@ namespace turbo {
         return &current_chunk_;
     }
 
-    inline void Cord::ChunkIterator::RemoveChunkPrefix(size_t n) {
+    inline void Cord::ChunkIterator::remove_chunk_prefix(size_t n) {
         assert(n < current_chunk_.size());
         current_chunk_.remove_prefix(n);
         bytes_remaining_ -= n;
     }
 
-    inline void Cord::ChunkIterator::AdvanceBytes(size_t n) {
+    inline void Cord::ChunkIterator::advance_bytes(size_t n) {
         assert(bytes_remaining_ >= n);
         if (KUMO_LIKELY(n < current_chunk_.size())) {
-            RemoveChunkPrefix(n);
+            remove_chunk_prefix(n);
         } else if (n != 0) {
             if (btree_reader_) {
                 advance_bytes_btree(n);
@@ -1612,7 +1612,7 @@ namespace turbo {
 
     inline Cord::CharIterator& Cord::CharIterator::operator++() {
         if (KUMO_LIKELY(chunk_iterator_->size() > 1)) {
-            chunk_iterator_.RemoveChunkPrefix(1);
+            chunk_iterator_.remove_chunk_prefix(1);
         } else {
             ++chunk_iterator_;
         }
@@ -1640,12 +1640,12 @@ namespace turbo {
     inline Cord Cord::advance_and_read(CharIterator* turbo_nonnull it,
         size_t n_bytes) {
         assert(it != nullptr);
-        return it->chunk_iterator_.AdvanceAndReadBytes(n_bytes);
+        return it->chunk_iterator_.advance_and_read_bytes(n_bytes);
     }
 
     inline void Cord::advance(CharIterator* turbo_nonnull it, size_t n_bytes) {
         assert(it != nullptr);
-        it->chunk_iterator_.AdvanceBytes(n_bytes);
+        it->chunk_iterator_.advance_bytes(n_bytes);
     }
 
     inline std::string_view Cord::chunk_remaining(const CharIterator& it) {
@@ -1673,7 +1673,7 @@ namespace turbo {
         return cord_->char_end();
     }
 
-    inline Cord::CharRange Cord::Chars() const {
+    inline Cord::CharRange Cord::chars() const {
         return CharRange(this);
     }
 

@@ -50,7 +50,7 @@ namespace turbo {
         friend class RfcParser;
     protected:
         explicit UriCommonBase(StandType t) :_standard(t){}
-        UriError uri_error { };
+        UriError _uri_error { };
 
         bool _opaque_path { false };
 
@@ -88,9 +88,16 @@ namespace turbo {
         [[nodiscard]] virtual bool has_valid_domain() const noexcept = 0;
 
         [[nodiscard]] bool ok() const {
-            return uri_error.ok();
+            return _uri_error.ok();
         }
 
+        const UriError& uri_error() const {
+            return _uri_error;
+        }
+
+        UriError& uri_error() {
+            return _uri_error;
+        }
         [[nodiscard]] inline uint16_t get_special_port() const noexcept;
 
         [[nodiscard]] KUMO_FORCE_INLINE uint16_t scheme_default_port() const noexcept;

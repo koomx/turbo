@@ -507,7 +507,7 @@ namespace turbo {
             // with 22 bytes (including NULL at the end).
             constexpr size_t kMaxDigits10 = 22;
             std::string result;
-            StringResizeAndOverwrite(
+            string_resize_and_overwrite(
                 result, kMaxDigits10, [i](char* start, size_t buf_size) {
                     // Note: This can be optimized to not write last zero.
                     char* end = format_internal::fast_int_to_buffer(i, start);
@@ -521,7 +521,7 @@ namespace turbo {
         template <typename Float>
         std::string FloatToString(Float f) {
             std::string result;
-            StringResizeAndOverwrite(result, format_internal::kSixDigitsToBufferSize,
+            string_resize_and_overwrite(result, format_internal::kSixDigitsToBufferSize,
                 [f](char* start, size_t buf_size) {
                     size_t size = format_internal::six_digits_to_buffer(f, start);
                     KUMO_ASSERT(size < buf_size);

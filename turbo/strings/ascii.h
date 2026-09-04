@@ -70,7 +70,7 @@ namespace turbo {
     // Creates a lowercase string from a given std::string_view.
     [[nodiscard]] inline std::string str_to_lower(std::string_view s) {
         std::string result;
-        StringResizeAndOverwrite(result, s.size(), [s](char* buf, size_t buf_size) {
+        string_resize_and_overwrite(result, s.size(), [s](char* buf, size_t buf_size) {
             ascii_internal::str_to_lower(buf, s.data(), s.size());
             return buf_size;
         });
@@ -101,7 +101,7 @@ namespace turbo {
     // Creates an uppercase string from a given std::string_view.
     [[nodiscard]] inline std::string str_to_upper(std::string_view s) {
         std::string result;
-        StringResizeAndOverwrite(result, s.size(), [s](char* buf, size_t buf_size) {
+        string_resize_and_overwrite(result, s.size(), [s](char* buf, size_t buf_size) {
             ascii_internal::str_to_upper(buf, s.data(), s.size());
             return buf_size;
         });

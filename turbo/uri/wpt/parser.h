@@ -20,13 +20,11 @@
 #include <turbo/uri/wpt/uri.h>
 
 namespace turbo {
-    /**
-     * Parses a url. The parameter user_input is the input to be parsed:
-     * it should be a valid UTF-8 string. The parameter base_url is an optional
-     * parameter that can be used to resolve relative URLs. If the base_url is
-     * provided, the user_input is resolved against the base_url.
-     */
+
     WptUri parse_wpt_uri(std::string_view user_input,
+        const WptUri* base_url = nullptr);
+
+    bool parse_wpt_uri(std::string_view user_input,WptUri&uri,
         const WptUri* base_url = nullptr);
 
     std::string href_from_file(std::string_view path);
@@ -34,10 +32,10 @@ namespace turbo {
     class WptParser {
     public:
         /// private
-       static WptUri parse_url_no_base_impl(std::string_view user_input);
+       static void parse_url_no_base_impl(std::string_view user_input, WptUri& uri);
 
         /// private
-       static WptUri parse_url_with_base_impl(std::string_view user_input, const WptUri& base_url);
+       static void parse_url_with_base_impl(std::string_view user_input, const WptUri& base_url, WptUri& uri);
     };
 
 

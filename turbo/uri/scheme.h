@@ -141,4 +141,21 @@ namespace turbo {
         }
     }
 
+    KUMO_FORCE_INLINE constexpr bool is_valid_schema_alnum(const char c) noexcept {
+        // std::isalnum(c) || c == '+' || c == '-' || c == '.') is true for
+        constexpr static std::array<bool, 256> is_alnum_plus_table = []() constexpr {
+            std::array<bool, 256> result{};
+            for (size_t c = 0; c < 256; c++) {
+                result[c] = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') ||
+                            (c >= 'A' && c <= 'Z') || c == '+' || c == '-' || c == '.';
+            }
+            return result;
+        }();
+
+        return is_alnum_plus_table[uint8_t(c)];
+        // A table is almost surely much faster than the
+        // following under most compilers: return
+        // return (std::isalnum(c) || c == '+' || c == '-' || c == '.');
+    }
+
 }  // namespace turbo

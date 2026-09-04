@@ -310,7 +310,8 @@ set(URI_SRC
         uri/wpt/uri.cc
         uri/wpt/parser.cc
         uri/wpt/parse_components.cc
-        uri/rfc/uri_view.cc
+        uri/rfc/uri.cc
+        uri/rfc/parser.cc
         uri/uri_components.cc
         uri/uri_base.cc
         uri/utility.cc

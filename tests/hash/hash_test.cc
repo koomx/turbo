@@ -385,7 +385,7 @@ struct WrapInTuple {
 
 turbo::Cord FlatCord(std::string_view sv) {
   turbo::Cord c(sv);
-  c.Flatten();
+  c.flatten();
   return c;
 }
 

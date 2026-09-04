@@ -33,10 +33,10 @@ struct ResizeAndOverwriteParam {
 using StringResizeAndOverwriteTest =
     ::testing::TestWithParam<ResizeAndOverwriteParam>;
 
-TEST_P(StringResizeAndOverwriteTest, StringResizeAndOverwrite) {
+TEST_P(StringResizeAndOverwriteTest, string_resize_and_overwrite) {
   const auto& param = GetParam();
   std::string s(param.initial_size, 'a');
-  turbo::StringResizeAndOverwrite(
+  turbo::string_resize_and_overwrite(
       s, param.requested_capacity, [&](char* p, size_t n) {
         TURBO_CHECK_EQ(n, param.requested_capacity);
         if (param.final_size >= param.initial_size) {
@@ -110,7 +110,7 @@ TEST_P(StringResizeAndOverwriteTest, Initialized) {
   std::string s(param.initial_size, 'a');
 
   auto op = [&]() {
-    turbo::StringResizeAndOverwrite(s, param.requested_capacity,
+    turbo::string_resize_and_overwrite(s, param.requested_capacity,
                                    [&](char*, size_t) {
                                      // Fail to initialize the buffer in full.
                                      return param.final_size;

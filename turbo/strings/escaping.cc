@@ -563,10 +563,10 @@ constexpr std::array<int8_t, 256> kHexValueStrict = {
         bool success;
 
         // `c_unescape()` allows for in-place unescaping, which means `source` may
-        // alias `*dest`.  However, turbo::StringResizeAndOverwrite() invalidates all
+        // alias `*dest`.  However, turbo::string_resize_and_overwrite() invalidates all
         // iterators, pointers, and references into the string, regardless whether
         // reallocation occurs. Therefore we need to avoid calling
-        // turbo::StringResizeAndOverwrite() when `source.data() ==
+        // turbo::string_resize_and_overwrite() when `source.data() ==
         // dest->data()`. Comparing the sizes is sufficient to cover this case.
         if (dest->size() >= source.size()) {
             size_t dest_size = 0;
@@ -575,7 +575,7 @@ constexpr std::array<int8_t, 256> kHexValueStrict = {
             KUMO_ASSERT(dest_size <= dest->size());
             dest->erase(dest_size);
         } else {
-            StringResizeAndOverwrite(
+            string_resize_and_overwrite(
                 *dest, source.size(),
                 [source, error, &success](char* buf, size_t buf_size) {
                     size_t dest_size = 0;
@@ -613,7 +613,7 @@ constexpr std::array<int8_t, 256> kHexValueStrict = {
             return false;
         }
 
-        StringResizeAndOverwrite(
+        string_resize_and_overwrite(
             output, num_bytes, [hex](char* buf, size_t buf_size) {
                 auto hex_p = hex.cbegin();
                 for (size_t i = 0; i < buf_size; ++i) {
@@ -639,7 +639,7 @@ constexpr std::array<int8_t, 256> kHexValueStrict = {
     std::string hex_string_to_bytes(std::string_view from) {
         std::string result;
         const auto num = from.size() / 2;
-        StringResizeAndOverwrite(result, num, [from](char* buf, size_t buf_size) {
+        string_resize_and_overwrite(result, num, [from](char* buf, size_t buf_size) {
             turbo::HexStringToBytesInternal<char*>(from.data(), buf, buf_size);
             return buf_size;
         });
@@ -650,7 +650,7 @@ constexpr std::array<int8_t, 256> kHexValueStrict = {
         std::string result;
         TURBO_INTERNAL_CHECK(from.size() <= std::numeric_limits<size_t>::max() / 2,
             "bytes_to_hex_string() overflow");
-        StringResizeAndOverwrite(
+        string_resize_and_overwrite(
             result, 2 * from.size(), [from](char* buf, size_t buf_size) {
                 turbo::BytesToHexStringInternal(
                     reinterpret_cast<const unsigned char*>(from.data()), buf,
