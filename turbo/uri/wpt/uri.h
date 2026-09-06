@@ -45,7 +45,16 @@ namespace turbo {
         [[nodiscard]] bool has_valid_domain() const noexcept override;
 
         [[nodiscard]] std::string get_origin() const noexcept override;
-
+    private:
+        /////////////////////////////////////////////////////////////////
+        /// for parsers
+        void parse_schema(std::string_view input) override{};
+        void parse_username(std::string_view input) override{};
+        void parse_password(std::string_view input) override{};
+        void parse_host(std::string_view input) override{};
+        void parse_port(std::string_view input) override{};
+        void parse_query(std::string_view input) override{};
+        void parse_fragment(std::string_view input) override{};
     private:
         bool set_username(std::string_view input) override;
 
@@ -75,10 +84,11 @@ namespace turbo {
 
         inline void update_unencoded_base_hash(std::string_view input);
 
-        inline void update_base_search(std::string_view input,const uint8_t query_percent_encode_set[]);
+        inline void update_search(std::string_view input,const uint8_t query_percent_encode_set[]);
 
         bool set_host_or_hostname(std::string_view input, bool override_hostname);
 
+        inline void set_protocol_as_file();
 
     }; // struct url
 
@@ -88,10 +98,13 @@ namespace turbo {
             turbo::uri_charsets::FRAGMENT_PERCENT_ENCODE);
     }
 
-    inline void WptUri::update_base_search(std::string_view input,
+    inline void WptUri::update_search(std::string_view input,
         const uint8_t   query_percent_encode_set[]) {
         query = turbo::percent_encode(input, query_percent_encode_set);
     }
 
+    inline void WptUri::set_protocol_as_file() {
+        type = turbo::SchemaType::FILE;
+    }
 
 }  // namespace turbo

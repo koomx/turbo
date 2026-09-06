@@ -44,7 +44,7 @@ namespace turbo {
         while (!path.empty() && path.back() == ' ') {
             path.resize(path.size() - 1);
         }
-        update_base_pathname(path);
+        update_pathname(path);
     }
 
      [[nodiscard]] std::string WptUri::get_origin() const noexcept {
@@ -122,7 +122,7 @@ namespace turbo {
             bool succeeded = turbo::uri_wpt::parse_host(host_view, is_special(), host_type(),&tmp_host).ok();
             if (!succeeded) {
                 host = previous_host;
-                update_base_port(previous_port);
+                update_port(previous_port);
                 return false;
             }
             host = std::move(tmp_host);
@@ -143,7 +143,7 @@ namespace turbo {
 
             if (!turbo::uri_wpt::parse_host(new_host, is_special(), host_type(), &tmp_host).ok()) {
                 host = previous_host;
-                update_base_port(previous_port);
+                update_port(previous_port);
                 return false;
             }
 
@@ -285,7 +285,7 @@ namespace turbo {
                 return false;
                 }
             if (tmp_type == turbo::SchemaType::NOT_SPECIAL) {
-                set_scheme(std::move(tmp_proto));
+                update_scheme(std::move(tmp_proto));
             } else {
                 type = tmp_type;
             }

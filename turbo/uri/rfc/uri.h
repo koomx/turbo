@@ -47,6 +47,16 @@ namespace turbo {
         [[nodiscard]] std::string get_origin() const noexcept override;
 
     private:
+        /////////////////////////////////////////////////////////////////
+        /// for parsers
+        void parse_schema(std::string_view input) override{};
+        void parse_username(std::string_view input) override{};
+        void parse_password(std::string_view input) override{};
+        void parse_host(std::string_view input) override{};
+        void parse_port(std::string_view input) override{};
+        void parse_query(std::string_view input) override{};
+        void parse_fragment(std::string_view input) override{};
+    private:
         bool set_username(std::string_view input) override;
 
         bool set_password(std::string_view input) override;

@@ -132,7 +132,7 @@ namespace {
         }
         if ((pos != end) && (*pos == ':')) {
             std::string schema(ctx.start,pos);
-            uri.set_scheme(std::move(schema));
+            uri.update_scheme(std::move(schema));
             ++pos;
             chain_parse_url_hier_part(ctx, uri);
         } else {
@@ -204,7 +204,7 @@ namespace {
         }
 
         if (r.error_pos > 0) {
-            uri.update_base_hostname(std::string_view(pos, r.error_pos));
+            uri.update_hostname(std::string_view(pos, r.error_pos));
             if (ip.has_value()) {
                 if (ip->type == IpType::IP_V4) {
                     uri.host_type() = UriHostType::IPV4;
@@ -220,7 +220,7 @@ namespace {
                     static_cast<uint32_t>((pos - ctx.start) + r.error_pos), r.payload};
                 return;
             }
-            uri.update_base_hostname(std::string_view(pos, r.error_pos));
+            uri.update_hostname(std::string_view(pos, r.error_pos));
             uri.host_type() = UriHostType::DEFAULT;
             pos += r.error_pos;
         }
@@ -271,7 +271,7 @@ namespace {
                     return;
                 }
             }
-            uri.update_base_port(static_cast<uint16_t>(value));
+            uri.update_port(static_cast<uint16_t>(value));
         }
 
         if (pos == end) {
@@ -350,7 +350,7 @@ namespace {
             break;
         }
 
-        uri.update_base_pathname(std::string_view(path_start, pos - path_start));
+        uri.update_pathname(std::string_view(path_start, pos - path_start));
 
         if (pos == end) {
             return;
@@ -416,7 +416,7 @@ namespace {
             break;
         }
 
-        uri.update_base_search(std::string_view(query_start, pos - query_start));
+        uri.update_search(std::string_view(query_start, pos - query_start));
 
         if (pos == end) {
             return;
@@ -503,7 +503,7 @@ namespace {
             }
             if (p != end && *p == ':') {
                 uri = RfcUri{};
-                uri.set_scheme(std::string(ctx.start, p));
+                uri.update_scheme(std::string(ctx.start, p));
                 pos = p + 1;
                 chain_parse_url_hier_part(ctx, uri);
                 return;
@@ -531,7 +531,7 @@ namespace {
                 --pos;
                 chain_parse_path_abs_empty(ctx, uri);
                 if (uri.ok()) {
-                    uri.update_base_pathname(remove_dot_segments(uri.path));
+                    uri.update_pathname(remove_dot_segments(uri.path));
                 }
             }
             break;
@@ -567,7 +567,7 @@ namespace {
                     merged = base_path.substr(0, slash + 1) + rel;
                 }
             }
-            uri.update_base_pathname(remove_dot_segments(merged));
+            uri.update_pathname(remove_dot_segments(merged));
             break;
         }
         }
@@ -685,7 +685,7 @@ namespace {
             break;
         }
 
-        uri.update_base_pathname(std::string_view(path_start, pos - path_start));
+        uri.update_pathname(std::string_view(path_start, pos - path_start));
 
         if (pos == end) {
             return;

@@ -96,15 +96,26 @@ namespace turbo {
 
         //////////////////////////////////////////////////////////////////////////////
 
-        inline void set_scheme(std::string&& new_scheme) noexcept;
+        inline void update_scheme(std::string&& new_scheme) noexcept;
 
-        inline void update_base_hostname(std::string_view input);
-        inline void update_base_search(std::string_view input);
-        inline void update_base_search(std::optional<std::string> input);
-        inline void update_base_pathname(std::string_view input);
-        inline void update_base_username(std::string_view input);
-        inline void update_base_password(std::string_view input);
-        inline void update_base_port(std::optional<uint16_t> input);
+        inline void update_hostname(std::string_view input);
+        inline void update_search(std::string_view input);
+        inline void update_search(std::optional<std::string> input);
+        inline void update_pathname(std::string_view input);
+        inline void update_username(std::string_view input);
+        inline void update_password(std::string_view input);
+        inline void update_port(std::optional<uint16_t> input);
+
+    private:
+        /////////////////////////////////////////////////////////////////
+        /// for parsers
+        virtual void parse_schema(std::string_view input) = 0;
+        virtual void parse_username(std::string_view input) = 0;
+        virtual void parse_password(std::string_view input) = 0;
+        virtual void parse_host(std::string_view input) = 0;
+        virtual void parse_port(std::string_view input) = 0;
+        virtual void parse_query(std::string_view input) = 0;
+        virtual void parse_fragment(std::string_view input) = 0;
     private:
         /// for parsers
         virtual bool set_username(std::string_view input) = 0;
@@ -134,8 +145,6 @@ namespace turbo {
         [[nodiscard]] inline bool cannot_have_credentials_or_port() const;
 
         inline void copy_scheme(const UriBase& u);
-        inline void set_protocol_as_file();
-
         inline void copy_scheme(UriBase&& u) noexcept;
 
     };
@@ -170,32 +179,32 @@ namespace turbo {
     }
 
 
-    inline void UriBase::update_base_hostname(std::string_view input) {
+    inline void UriBase::update_hostname(std::string_view input) {
         host = input;
     }
 
-    inline void UriBase::update_base_search(std::optional<std::string> input) {
+    inline void UriBase::update_search(std::optional<std::string> input) {
         query = input;
     }
 
-    inline void UriBase::update_base_search(std::string_view input) {
+    inline void UriBase::update_search(std::string_view input) {
         std::string s(input);
         query = s;
     }
 
-    inline void UriBase::update_base_pathname(const std::string_view input) {
+    inline void UriBase::update_pathname(const std::string_view input) {
         path = input;
     }
 
-    inline void UriBase::update_base_username(const std::string_view input) {
+    inline void UriBase::update_username(const std::string_view input) {
         username = input;
     }
 
-    inline void UriBase::update_base_password(const std::string_view input) {
+    inline void UriBase::update_password(const std::string_view input) {
         password = input;
     }
 
-    inline void UriBase::update_base_port(std::optional<uint16_t> input) {
+    inline void UriBase::update_port(std::optional<uint16_t> input) {
         port = input;
     }
 
@@ -215,11 +224,8 @@ namespace turbo {
         return query.has_value();
     }
 
-    inline void UriBase::set_protocol_as_file() {
-        type = turbo::SchemaType::FILE;
-    }
 
-    inline void UriBase::set_scheme(std::string&& new_scheme) noexcept {
+    inline void UriBase::update_scheme(std::string&& new_scheme) noexcept {
         type = turbo::get_scheme_type(new_scheme);
         // We only move the 'scheme' if it is non-special.
         if (!is_special()) {

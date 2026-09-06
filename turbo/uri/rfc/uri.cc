@@ -25,12 +25,12 @@ namespace turbo {
     }
 
     bool RfcUri::set_username(std::string_view input) {
-        update_base_username(input);
+        update_username(input);
         return true;
     }
 
     bool RfcUri::set_password(std::string_view input) {
-        update_base_password(input);
+        update_password(input);
         return true;
     }
 
@@ -43,21 +43,21 @@ namespace turbo {
     }
 
     void RfcUri::set_search(std::string_view input) {
-        update_base_search(input);
+        update_search(input);
     }
 
     bool RfcUri::set_pathname(std::string_view input) {
-        update_base_pathname(input);
+        update_pathname(input);
         return true;
     }
 
     bool RfcUri::set_host(std::string_view input) {
-        update_base_hostname(input);
+        update_hostname(input);
         return true;
     }
 
     bool RfcUri::set_hostname(std::string_view input) {
-        update_base_hostname(input);
+        update_hostname(input);
         return true;
     }
 

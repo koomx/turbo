@@ -106,7 +106,7 @@ namespace turbo {
                         return;
                     }
                     if (uri.type == turbo::SchemaType::NOT_SPECIAL) {
-                        uri.set_scheme(std::move(scheme));
+                        uri.update_scheme(std::move(scheme));
                     }
 
                     // If url's scheme is "file", then:
@@ -401,7 +401,7 @@ namespace turbo {
 
                 // Percent-encode after encoding, with encoding, buffer, and
                 // queryPercentEncodeSet, and append the result to url's query.
-                uri.update_base_search(turbo::subview(url_data, input_position),
+                uri.update_search(turbo::subview(url_data, input_position),
                     query_percent_encode_set);
                 if (fragment.has_value()) {
                     uri.update_unencoded_base_hash(*fragment);
@@ -449,7 +449,7 @@ namespace turbo {
                     // Let host be the result of host parsing host_view with url is not
                     // special.
                     if (host_view.empty()) {
-                        uri.update_base_hostname("");
+                        uri.update_hostname("");
                     } else {
                         std::string tmp_host;
                         uri.uri_error() = turbo::uri_wpt::parse_host(host_view, uri.is_special(), uri.host_type(), &tmp_host);
@@ -480,7 +480,7 @@ namespace turbo {
                 uri.has_opaque_path() = true;
                 // This is a really unlikely scenario in real world. We should not seek
                 // to optimize it.
-                uri.update_base_pathname(turbo::percent_encode(
+                uri.update_pathname(turbo::percent_encode(
                     view, turbo::uri_charsets::C0_CONTROL_PERCENT_ENCODE));
                 break;
             }
@@ -506,7 +506,7 @@ namespace turbo {
                     // Optimization: Avoiding going into PATH state improves the
                     // performance of urls ending with /.
                     if (input_position == input_size) {
-                        uri.update_base_pathname("/");
+                        uri.update_pathname("/");
                         if (fragment.has_value()) {
                             uri.update_unencoded_base_hash(*fragment);
                         }
@@ -774,7 +774,7 @@ namespace turbo {
                         return;
                     }
                     if (uri.type == turbo::SchemaType::NOT_SPECIAL) {
-                        uri.set_scheme(std::move(scheme));
+                        uri.update_scheme(std::move(scheme));
                     }
 
                     // If url's scheme is "file", then:
@@ -898,7 +898,7 @@ namespace turbo {
                             uri.update_unencoded_base_hash(*fragment);
                         }
                         return;
-                    }
+                     }
                     input_position = end_of_authority + 1;
                 } while (true);
 
@@ -949,7 +949,7 @@ namespace turbo {
 
                 // Percent-encode after encoding, with encoding, buffer, and
                 // queryPercentEncodeSet, and append the result to url's query.
-                uri.update_base_search(turbo::subview(url_data, input_position),
+                uri.update_search(turbo::subview(url_data, input_position),
                     query_percent_encode_set);
                 if (fragment.has_value()) {
                     uri.update_unencoded_base_hash(*fragment);
@@ -996,7 +996,7 @@ namespace turbo {
                     // Let host be the result of host parsing host_view with url is not
                     // special.
                     if (host_view.empty()) {
-                        uri.update_base_hostname("");
+                        uri.update_hostname("");
                     } else {
                         std::string tmp_host;
                         uri.uri_error() = turbo::uri_wpt::parse_host(host_view, uri.is_special(), uri.host_type(), &tmp_host);
@@ -1027,7 +1027,7 @@ namespace turbo {
                 uri.has_opaque_path() = true;
                 // This is a really unlikely scenario in real world. We should not seek
                 // to optimize it.
-                uri.update_base_pathname(turbo::percent_encode(
+                uri.update_pathname(turbo::percent_encode(
                     view, turbo::uri_charsets::C0_CONTROL_PERCENT_ENCODE));
                 break;
             }
@@ -1053,7 +1053,7 @@ namespace turbo {
                     // Optimization: Avoiding going into PATH state improves the
                     // performance of urls ending with /.
                     if (input_position == input_size) {
-                        uri.update_base_pathname("/");
+                        uri.update_pathname("/");
                         if (fragment.has_value()) {
                             uri.update_unencoded_base_hash(*fragment);
                         }

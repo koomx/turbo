@@ -314,6 +314,7 @@ set(URI_SRC
         uri/rfc/parser.cc
         uri/uri_base.cc
         uri/utility.cc
+        uri/uri_view.cc
         uri/ip.cc
 )
 
