@@ -1,36 +1,77 @@
+// Copyright (C) 2026 Kumo inc. and its affiliates. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
 
-#include <turbo/uri/uri_view.h>
+
 #include <turbo/strings/substring.h>
+#include <turbo/uri/uri_view.h>
 namespace turbo {
 
     namespace {
         std::string_view component_slice(std::string_view data,
-            const std::optional<ComponentView> &comp) {
+            const std::optional<ComponentView>& comp) {
             if (!comp.has_value()) {
                 return "";
             }
             return subview(data, comp.value().start, comp.value().end);
         }
-    }  // namespace
+    } // namespace
 
-    UriView::UriView(std::string &&s)
-        : _type(StandType::STD_NONE), _encode(EnodeType::PLAIN) {
-        _store = std::move(s);
+    UriView::UriView(std::string_view s)
+        : _uri_data(s) {
+    }
+
+    void UriView::make_ownd() {
+        _store = std::string(_uri_data);
         _uri_data = *_store;
     }
 
-    UriView::UriView(std::string_view s)
-        : _uri_data(s),
-          _type(StandType::STD_NONE),
-          _encode(EnodeType::PLAIN) {}
+    void UriView::set_ownd(std::string&& str) {
+        _store = std::move(str);
+        _uri_data = *_store;
+    }
+
+    void UriView::release(std::string &out) {
+        if (_store.has_value()) {
+            out = std::move(*_store);
+            _store.reset();
+            _uri_data = {};
+        } else {
+            out.assign(_uri_data);
+        }
+    }
+
+    std::string UriView::release() {
+        std::string out;
+        release(out);
+        return out;
+    }
+
+    void UriView::release_append(std::string &out) const {
+        out.append(_uri_data);
+    }
 
     std::string_view UriView::shema() const {
         return component_slice(_uri_data, _schema);
+    }
+
+    std::string_view UriView::username() const {
+        return component_slice(_uri_data, _username);
+    }
+
+    std::string_view UriView::password() const {
+        return component_slice(_uri_data, _password);
     }
 
     bool UriView::ok() const noexcept {
@@ -43,6 +84,10 @@ namespace turbo {
 
     EnodeType UriView::encode_type() const noexcept {
         return _encode;
+    }
+
+    UriHostType UriView::host_type() const noexcept {
+        return _host_type;
     }
 
     const UriError& UriView::uri_error() const noexcept {
@@ -77,23 +122,71 @@ namespace turbo {
         return *_query_params;
     }
 
-    EnodeType& UriView::encode_type(EnodeType et) {
+    std::string_view UriView::origin() const {
+        return _uri_data;
+    }
+    bool UriView::has_shema() const noexcept {
+        return _schema.has_value();
+    }
+
+    bool UriView::has_username() const noexcept {
+        return _username.has_value();
+    }
+
+    bool UriView::has_password() const noexcept {
+        return _password.has_value();
+    }
+
+    bool UriView::has_host() const noexcept {
+        return _host.has_value();
+    }
+
+    bool UriView::has_port() const noexcept {
+        return _port.has_value();
+    }
+
+    bool UriView::has_path() const noexcept {
+        return _path.has_value();
+    }
+
+    bool UriView::has_query() const noexcept {
+        return _query.has_value();
+    }
+
+    bool UriView::has_fragment() const noexcept {
+        return _fragment.has_value();
+    }
+
+    bool UriView::has_query_params() const noexcept {
+        return _query_params.has_value();
+    }
+
+    void UriView::encode_type(EnodeType et) {
         _encode = et;
-        return _encode;
     }
 
-    StandType& UriView::standard(StandType st) {
+    void UriView::standard(StandType st) {
         _type = st;
-        return _type;
     }
 
-    UriError& UriView::uri_error(UriError err) {
+    void UriView::host_type(UriHostType ht) {
+        _host_type = ht;
+    }
+
+    void UriView::uri_error(UriError err) {
         _error = std::move(err);
-        return _error;
     }
 
     void UriView::shema(ComponentView view) {
         _schema = view;
+    }
+
+    void UriView::username(ComponentView view) {
+        _username = view;
+    }
+
+    void UriView::password(ComponentView view) {
+        _password = view;
     }
 
     void UriView::host(ComponentView view) {
@@ -124,6 +217,14 @@ namespace turbo {
         _schema = std::nullopt;
     }
 
+    void UriView::reset_username() {
+        _username = std::nullopt;
+    }
+
+    void UriView::reset_password() {
+        _password = std::nullopt;
+    }
+
     void UriView::reset_host() {
         _host = std::nullopt;
     }
@@ -149,10 +250,12 @@ namespace turbo {
     }
 
     void UriView::reset() {
-        _uri_data = {};
+        _uri_data = { };
         _store.reset();
-        _error = {};
+        _error = { };
         _schema = std::nullopt;
+        _username = std::nullopt;
+        _password = std::nullopt;
         _host = std::nullopt;
         _port = std::nullopt;
         _path = std::nullopt;
@@ -160,4 +263,4 @@ namespace turbo {
         _fragment = std::nullopt;
         _query_params = std::nullopt;
     }
-}  // namespace turbo
+} // namespace turbo

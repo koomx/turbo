@@ -316,6 +316,7 @@ set(URI_SRC
         uri/utility.cc
         uri/uri_view.cc
         uri/ip.cc
+        uri/uri.cc
 )
 
 set(TURBO_SRC

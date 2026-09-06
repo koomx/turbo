@@ -22,32 +22,32 @@
 #include <turbo/strings/ascii.h>
 #include <turbo/uri/ip.h>
 #include <turbo/uri/rfc/parser.h>
-#include <turbo/uri/rfc/uri.h>
+#include <turbo/uri/uri_view.h>
 #include <turbo/uri/scheme.h>
 
 namespace {
 
 bool parse_ok(std::string_view input) {
-    turbo::RfcUri uri;
-    return turbo::parse_rfc_uri(input, uri);
+    return turbo::parse_rfc_uri(input).ok();
 }
 
-bool parse_ok(std::string_view input, turbo::RfcUri &uri) {
-    return turbo::parse_rfc_uri(input, uri);
+bool parse_ok(std::string_view input, turbo::UriView &uri) {
+    uri = turbo::parse_rfc_uri(input);
+    return uri.ok();
 }
 
-bool parse_ok_with_base(std::string_view input, const turbo::RfcUri &base) {
-    turbo::RfcUri uri;
-    return turbo::parse_rfc_uri(input, uri, base);
+bool parse_ok_with_base(std::string_view input, const turbo::UriView &base) {
+    return turbo::parse_rfc_uri(input, base).ok();
 }
 
-bool parse_ok_with_base(std::string_view input, const turbo::RfcUri &base,
-    turbo::RfcUri &uri) {
-    return turbo::parse_rfc_uri(input, uri, base);
+bool parse_ok_with_base(std::string_view input, const turbo::UriView &base,
+    turbo::UriView &uri) {
+    uri = turbo::parse_rfc_uri(input, base);
+    return uri.ok();
 }
 
 // Absolute (scheme:) → no base; relative-ref → with base.
-bool parse_ref_ok(std::string_view input, const turbo::RfcUri &base) {
+bool parse_ref_ok(std::string_view input, const turbo::UriView &base) {
     if (input.empty()) {
         return parse_ok_with_base(input, base);
     }
@@ -64,17 +64,61 @@ bool parse_ref_ok(std::string_view input, const turbo::RfcUri &base) {
     return parse_ok_with_base(input, base);
 }
 
-bool add_base_href(std::string_view base, std::string_view rel,
-    std::string_view expected) {
-    turbo::RfcUri b;
+bool parse_rel_ok(std::string_view base, std::string_view rel) {
+    turbo::UriView b(base);
     if (!parse_ok(base, b)) {
         return false;
     }
-    turbo::RfcUri out;
-    if (!parse_ok_with_base(rel, b, out)) {
-        return false;
+    turbo::UriView out(rel);
+    return parse_ok_with_base(rel, b, out);
+}
+
+std::string view_href(const turbo::UriView &u) {
+    std::string out;
+    out.append(u.shema());
+    out.push_back(':');
+    if (u.has_host()) {
+        out.append("//");
+        if (!u.username().empty() || !u.password().empty()) {
+            out.append(u.username());
+            if (!u.password().empty()) {
+                out.push_back(':');
+                out.append(u.password());
+            }
+            out.push_back('@');
+        }
+        out.append(u.host());
+        if (!u.port().empty()) {
+            out.push_back(':');
+            out.append(u.port());
+        }
     }
-    return out.get_href() == expected;
+    out.append(u.path());
+    if (u.has_query()) {
+        out.push_back('?');
+        out.append(u.query());
+    }
+    if (u.has_fragment()) {
+        out.push_back('#');
+        out.append(u.fragment());
+    }
+    return out;
+}
+
+void ExpectMerge(std::string_view base, std::string_view rel,
+    std::string_view expected) {
+    turbo::UriView b;
+    ASSERT_TRUE(parse_ok(base, b)) << base;
+    turbo::UriView out = turbo::merge_rfc_uri(rel, b);
+    ASSERT_TRUE(out.ok()) << rel;
+    EXPECT_EQ(view_href(out), expected) << rel;
+}
+
+void ExpectHref(std::string_view base, std::string_view rel,
+    std::string_view expected) {
+    turbo::UriView b;
+    ASSERT_TRUE(parse_ok(base, b)) << base;
+    EXPECT_EQ(turbo::get_rfc_href(b, turbo::UriView(rel)), expected) << rel;
 }
 
 bool rfc_ipv4_ok(std::string_view input) {
@@ -94,7 +138,7 @@ bool rfc_ipv6_ok(std::string_view inner) {
 
 // UriSuite::TestUri
 TEST(UriSuite, TestUri) {
-    turbo::RfcUri base;
+    turbo::UriView base("http://a/b/c/d;p?q");
     ASSERT_TRUE(parse_ok("http://a/b/c/d;p?q", base));
 
     EXPECT_TRUE(parse_ok_with_base(
@@ -258,58 +302,59 @@ TEST(UriSuite, TestIpSixFail) {
 
 // UriSuite::TestUriComponents
 TEST(UriSuite, TestUriComponents) {
-    turbo::RfcUri uri;
-    ASSERT_TRUE(parse_ok(
-        "http://sourceforge.net/project/platformdownload.php?group_id=182840", uri));
-    EXPECT_EQ(uri.get_protocol(), "http:");
-    EXPECT_TRUE(uri.get_username().empty());
-    EXPECT_TRUE(uri.get_password().empty());
-    EXPECT_EQ(uri.get_hostname(), "sourceforge.net");
-    EXPECT_FALSE(uri.has_port());
-    EXPECT_EQ(uri.get_pathname(), "/project/platformdownload.php");
-    EXPECT_EQ(uri.get_search(), "?group_id=182840");
-    EXPECT_FALSE(uri.has_hash());
+    constexpr std::string_view kIn =
+        "http://sourceforge.net/project/platformdownload.php?group_id=182840";
+    turbo::UriView uri(kIn);
+    ASSERT_TRUE(parse_ok(kIn, uri));
+    EXPECT_EQ(uri.shema(), "http");
+    EXPECT_TRUE(uri.username().empty());
+    EXPECT_TRUE(uri.password().empty());
+    EXPECT_EQ(uri.host(), "sourceforge.net");
+    EXPECT_TRUE(uri.port().empty());
+    EXPECT_EQ(uri.path(), "/project/platformdownload.php");
+    EXPECT_EQ(uri.query(), "group_id=182840");
+    EXPECT_TRUE(uri.fragment().empty());
 }
 
 // UriSuite::TestUriComponentsBug20070701
 TEST(UriSuite, TestUriComponentsBug20070701) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("a:b");
     ASSERT_TRUE(parse_ok("a:b", uri));
-    EXPECT_EQ(uri.get_protocol(), "a:");
-    EXPECT_FALSE(uri.has_hostname());
-    EXPECT_EQ(uri.get_pathname(), "b");
-    EXPECT_FALSE(uri.has_search());
-    EXPECT_FALSE(uri.has_hash());
+    EXPECT_EQ(uri.shema(), "a");
+    EXPECT_TRUE(uri.host().empty());
+    EXPECT_EQ(uri.path(), "b");
+    EXPECT_TRUE(uri.query().empty());
+    EXPECT_TRUE(uri.fragment().empty());
 }
 
 // UriSuite::TestUriUserInfoHostPort1
 TEST(UriSuite, TestUriUserInfoHostPort1) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://abc:def@localhost");
     ASSERT_TRUE(parse_ok("http://abc:def@localhost", uri));
-    EXPECT_EQ(uri.get_username(), "abc");
-    EXPECT_EQ(uri.get_password(), "def");
-    EXPECT_EQ(uri.get_hostname(), "localhost");
-    EXPECT_FALSE(uri.has_port());
+    EXPECT_EQ(uri.username(), "abc");
+    EXPECT_EQ(uri.password(), "def");
+    EXPECT_EQ(uri.host(), "localhost");
+    EXPECT_TRUE(uri.port().empty());
 }
 
 // UriSuite::TestUriUserInfoHostPort2
 TEST(UriSuite, TestUriUserInfoHostPort2) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://abc:def@localhost:123");
     ASSERT_TRUE(parse_ok("http://abc:def@localhost:123", uri));
-    EXPECT_EQ(uri.get_username(), "abc");
-    EXPECT_EQ(uri.get_password(), "def");
-    EXPECT_EQ(uri.get_hostname(), "localhost");
-    EXPECT_EQ(uri.get_port(), "123");
+    EXPECT_EQ(uri.username(), "abc");
+    EXPECT_EQ(uri.password(), "def");
+    EXPECT_EQ(uri.host(), "localhost");
+    EXPECT_EQ(uri.port(), "123");
 }
 
 // UriSuite::TestUriUserInfoHostPort22Bug1948038
 TEST(UriSuite, TestUriUserInfoHostPort22Bug1948038) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://user:21@host/");
     ASSERT_TRUE(parse_ok("http://user:21@host/", uri));
-    EXPECT_EQ(uri.get_username(), "user");
-    EXPECT_EQ(uri.get_password(), "21");
-    EXPECT_EQ(uri.get_hostname(), "host");
-    EXPECT_FALSE(uri.has_port());
+    EXPECT_EQ(uri.username(), "user");
+    EXPECT_EQ(uri.password(), "21");
+    EXPECT_EQ(uri.host(), "host");
+    EXPECT_TRUE(uri.port().empty());
 
     EXPECT_TRUE(parse_ok("http://user:1234@192.168.0.1:1234/foo.com"));
     EXPECT_FALSE(parse_ok("http://moo:21@moo:21@moo/"));
@@ -318,211 +363,316 @@ TEST(UriSuite, TestUriUserInfoHostPort22Bug1948038) {
 
 // UriSuite::TestUriUserInfoHostPort23Bug3510198One
 TEST(UriSuite, TestUriUserInfoHostPort23Bug3510198One) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://user:%2F21@host/");
     ASSERT_TRUE(parse_ok("http://user:%2F21@host/", uri));
-    EXPECT_EQ(uri.get_username(), "user");
-    EXPECT_EQ(uri.get_password(), "%2F21");
-    EXPECT_EQ(uri.get_hostname(), "host");
-    EXPECT_FALSE(uri.has_port());
+    EXPECT_EQ(uri.username(), "user");
+    EXPECT_EQ(uri.password(), "%2F21");
+    EXPECT_EQ(uri.host(), "host");
+    EXPECT_TRUE(uri.port().empty());
 }
 
 // UriSuite::TestUriUserInfoHostPort23Bug3510198Two
 TEST(UriSuite, TestUriUserInfoHostPort23Bug3510198Two) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://%2Fuser:%2F21@host/");
     ASSERT_TRUE(parse_ok("http://%2Fuser:%2F21@host/", uri));
-    EXPECT_EQ(uri.get_username(), "%2Fuser");
-    EXPECT_EQ(uri.get_password(), "%2F21");
-    EXPECT_EQ(uri.get_hostname(), "host");
+    EXPECT_EQ(uri.username(), "%2Fuser");
+    EXPECT_EQ(uri.password(), "%2F21");
+    EXPECT_EQ(uri.host(), "host");
 }
 
 // UriSuite::TestUriUserInfoHostPort23Bug3510198Three
 TEST(UriSuite, TestUriUserInfoHostPort23Bug3510198Three) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://user:!$&'()*+,;=@host/");
     ASSERT_TRUE(parse_ok("http://user:!$&'()*+,;=@host/", uri));
-    EXPECT_EQ(uri.get_username(), "user");
-    EXPECT_EQ(uri.get_password(), "!$&'()*+,;=");
-    EXPECT_EQ(uri.get_hostname(), "host");
+    EXPECT_EQ(uri.username(), "user");
+    EXPECT_EQ(uri.password(), "!$&'()*+,;=");
+    EXPECT_EQ(uri.host(), "host");
 }
 
 // UriSuite::TestUriUserInfoHostPort23Bug3510198Four
 TEST(UriSuite, TestUriUserInfoHostPort23Bug3510198Four) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://!$&'()*+,;=:password@host/");
     ASSERT_TRUE(parse_ok("http://!$&'()*+,;=:password@host/", uri));
-    EXPECT_EQ(uri.get_username(), "!$&'()*+,;=");
-    EXPECT_EQ(uri.get_password(), "password");
-    EXPECT_EQ(uri.get_hostname(), "host");
+    EXPECT_EQ(uri.username(), "!$&'()*+,;=");
+    EXPECT_EQ(uri.password(), "password");
+    EXPECT_EQ(uri.host(), "host");
 }
 
 // UriSuite::TestUriUserInfoHostPort23Bug3510198RelatedOne
 TEST(UriSuite, TestUriUserInfoHostPort23Bug3510198RelatedOne) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://@host/");
     ASSERT_TRUE(parse_ok("http://@host/", uri));
-    EXPECT_TRUE(uri.get_username().empty());
-    EXPECT_TRUE(uri.get_password().empty());
-    EXPECT_EQ(uri.get_hostname(), "host");
+    EXPECT_TRUE(uri.username().empty());
+    EXPECT_TRUE(uri.password().empty());
+    EXPECT_EQ(uri.host(), "host");
 }
 
 // UriSuite::TestUriUserInfoHostPort23Bug3510198RelatedOneTwo
 TEST(UriSuite, TestUriUserInfoHostPort23Bug3510198RelatedOneTwo) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://%2Fhost/");
     ASSERT_TRUE(parse_ok("http://%2Fhost/", uri));
-    EXPECT_TRUE(uri.get_username().empty());
-    EXPECT_EQ(uri.get_hostname(), "%2Fhost");
+    EXPECT_TRUE(uri.username().empty());
+    EXPECT_EQ(uri.host(), "%2Fhost");
 }
 
 // UriSuite::TestUriUserInfoHostPort23Bug3510198RelatedTwo
 TEST(UriSuite, TestUriUserInfoHostPort23Bug3510198RelatedTwo) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://::@host/");
     ASSERT_TRUE(parse_ok("http://::@host/", uri));
-    EXPECT_TRUE(uri.get_username().empty());
-    EXPECT_EQ(uri.get_password(), ":");
-    EXPECT_EQ(uri.get_hostname(), "host");
+    EXPECT_TRUE(uri.username().empty());
+    EXPECT_EQ(uri.password(), ":");
+    EXPECT_EQ(uri.host(), "host");
 }
 
 // UriSuite::TestUriUserInfoHostPort3
 TEST(UriSuite, TestUriUserInfoHostPort3) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://abcdefg@localhost");
     ASSERT_TRUE(parse_ok("http://abcdefg@localhost", uri));
-    EXPECT_EQ(uri.get_username(), "abcdefg");
-    EXPECT_TRUE(uri.get_password().empty());
-    EXPECT_EQ(uri.get_hostname(), "localhost");
-    EXPECT_FALSE(uri.has_port());
+    EXPECT_EQ(uri.username(), "abcdefg");
+    EXPECT_TRUE(uri.password().empty());
+    EXPECT_EQ(uri.host(), "localhost");
+    EXPECT_TRUE(uri.port().empty());
 }
 
 // UriSuite::TestUriUserInfoHostPort4
 TEST(UriSuite, TestUriUserInfoHostPort4) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://abcdefg@localhost:123");
     ASSERT_TRUE(parse_ok("http://abcdefg@localhost:123", uri));
-    EXPECT_EQ(uri.get_username(), "abcdefg");
-    EXPECT_TRUE(uri.get_password().empty());
-    EXPECT_EQ(uri.get_hostname(), "localhost");
-    EXPECT_EQ(uri.get_port(), "123");
+    EXPECT_EQ(uri.username(), "abcdefg");
+    EXPECT_TRUE(uri.password().empty());
+    EXPECT_EQ(uri.host(), "localhost");
+    EXPECT_EQ(uri.port(), "123");
 }
 
 // UriSuite::TestUriUserInfoHostPort5
 TEST(UriSuite, TestUriUserInfoHostPort5) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://localhost");
     ASSERT_TRUE(parse_ok("http://localhost", uri));
-    EXPECT_TRUE(uri.get_username().empty());
-    EXPECT_EQ(uri.get_hostname(), "localhost");
-    EXPECT_FALSE(uri.has_port());
+    EXPECT_TRUE(uri.username().empty());
+    EXPECT_EQ(uri.host(), "localhost");
+    EXPECT_TRUE(uri.port().empty());
 }
 
 // UriSuite::TestUriUserInfoHostPort6
 TEST(UriSuite, TestUriUserInfoHostPort6) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://localhost:123");
     ASSERT_TRUE(parse_ok("http://localhost:123", uri));
-    EXPECT_TRUE(uri.get_username().empty());
-    EXPECT_EQ(uri.get_hostname(), "localhost");
-    EXPECT_EQ(uri.get_port(), "123");
+    EXPECT_TRUE(uri.username().empty());
+    EXPECT_EQ(uri.host(), "localhost");
+    EXPECT_EQ(uri.port(), "123");
 }
 
 // UriSuite::TestUriHostRegname
 TEST(UriSuite, TestUriHostRegname) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://example.com");
     ASSERT_TRUE(parse_ok("http://example.com", uri));
-    EXPECT_EQ(uri.get_hostname(), "example.com");
+    EXPECT_EQ(uri.host(), "example.com");
     EXPECT_EQ(uri.host_type(), turbo::UriHostType::DEFAULT);
 }
 
 // UriSuite::TestUriHostIpFour1
 TEST(UriSuite, TestUriHostIpFour1) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://1.2.3.4:80");
     ASSERT_TRUE(parse_ok("http://1.2.3.4:80", uri));
-    EXPECT_EQ(uri.get_hostname(), "1.2.3.4");
+    EXPECT_EQ(uri.host(), "1.2.3.4");
     EXPECT_EQ(uri.host_type(), turbo::UriHostType::IPV4);
-    EXPECT_EQ(uri.get_port(), "80");
+    EXPECT_EQ(uri.port(), "80");
 }
 
 // UriSuite::TestUriHostIpFour2
 TEST(UriSuite, TestUriHostIpFour2) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://1.2.3.4");
     ASSERT_TRUE(parse_ok("http://1.2.3.4", uri));
-    EXPECT_EQ(uri.get_hostname(), "1.2.3.4");
+    EXPECT_EQ(uri.host(), "1.2.3.4");
     EXPECT_EQ(uri.host_type(), turbo::UriHostType::IPV4);
 }
 
 // UriSuite::TestUriHostIpSix1
 TEST(UriSuite, TestUriHostIpSix1) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://[::1]:80");
     ASSERT_TRUE(parse_ok("http://[::1]:80", uri));
-    EXPECT_EQ(uri.get_hostname(), "[::1]");
+    EXPECT_EQ(uri.host(), "[::1]");
     EXPECT_EQ(uri.host_type(), turbo::UriHostType::IPV6);
-    EXPECT_EQ(uri.get_port(), "80");
+    EXPECT_EQ(uri.port(), "80");
 }
 
 // UriSuite::TestUriHostIpSix2
 TEST(UriSuite, TestUriHostIpSix2) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://[::1]");
     ASSERT_TRUE(parse_ok("http://[::1]", uri));
-    EXPECT_EQ(uri.get_hostname(), "[::1]");
+    EXPECT_EQ(uri.host(), "[::1]");
     EXPECT_EQ(uri.host_type(), turbo::UriHostType::IPV6);
 }
 
 // UriSuite::TestUriHostEmpty
 TEST(UriSuite, TestUriHostEmpty) {
-    turbo::RfcUri uri;
+    turbo::UriView uri("http://:123");
     ASSERT_TRUE(parse_ok("http://:123", uri));
-    EXPECT_TRUE(uri.has_hostname());
-    EXPECT_TRUE(uri.get_hostname().empty());
-    EXPECT_EQ(uri.get_port(), "123");
+    EXPECT_TRUE(uri.host().empty());
+    EXPECT_EQ(uri.port(), "123");
 }
 
-// UriSuite::TestAddBase — RFC 3986 §5.4 via parse_url_with_base
+// UriSuite::TestAddBase — RFC 3986 §5.4 merge_rfc_uri
 TEST(UriSuite, TestAddBase) {
     constexpr std::string_view kBase = "http://a/b/c/d;p?q";
 
-    EXPECT_TRUE(add_base_href(kBase, "g:h", "g:h"));
-    EXPECT_TRUE(add_base_href(kBase, "g", "http://a/b/c/g"));
-    EXPECT_TRUE(add_base_href(kBase, "./g", "http://a/b/c/g"));
-    EXPECT_TRUE(add_base_href(kBase, "g/", "http://a/b/c/g/"));
-    EXPECT_TRUE(add_base_href(kBase, "/g", "http://a/g"));
-    EXPECT_TRUE(add_base_href(kBase, "//g", "http://g"));
-    EXPECT_TRUE(add_base_href(kBase, "?y", "http://a/b/c/d;p?y"));
-    EXPECT_TRUE(add_base_href(kBase, "g?y", "http://a/b/c/g?y"));
-    EXPECT_TRUE(add_base_href(kBase, "#s", "http://a/b/c/d;p?q#s"));
-    EXPECT_TRUE(add_base_href(kBase, "g#s", "http://a/b/c/g#s"));
-    EXPECT_TRUE(add_base_href(kBase, "g?y#s", "http://a/b/c/g?y#s"));
-    EXPECT_TRUE(add_base_href(kBase, ";x", "http://a/b/c/;x"));
-    EXPECT_TRUE(add_base_href(kBase, "g;x", "http://a/b/c/g;x"));
-    EXPECT_TRUE(add_base_href(kBase, "g;x?y#s", "http://a/b/c/g;x?y#s"));
-    EXPECT_TRUE(add_base_href(kBase, "", "http://a/b/c/d;p?q"));
-    EXPECT_TRUE(add_base_href(kBase, ".", "http://a/b/c/"));
-    EXPECT_TRUE(add_base_href(kBase, "./", "http://a/b/c/"));
-    EXPECT_TRUE(add_base_href(kBase, "..", "http://a/b/"));
-    EXPECT_TRUE(add_base_href(kBase, "../", "http://a/b/"));
-    EXPECT_TRUE(add_base_href(kBase, "../g", "http://a/b/g"));
-    EXPECT_TRUE(add_base_href(kBase, "../..", "http://a/"));
-    EXPECT_TRUE(add_base_href(kBase, "../../", "http://a/"));
-    EXPECT_TRUE(add_base_href(kBase, "../../g", "http://a/g"));
+    // §5.4.1 Normal Examples
 
-    EXPECT_TRUE(add_base_href(kBase, "../../../g", "http://a/g"));
-    EXPECT_TRUE(add_base_href(kBase, "../../../../g", "http://a/g"));
-    EXPECT_TRUE(add_base_href(kBase, "/./g", "http://a/g"));
-    EXPECT_TRUE(add_base_href(kBase, "/../g", "http://a/g"));
-    EXPECT_TRUE(add_base_href(kBase, "g.", "http://a/b/c/g."));
-    EXPECT_TRUE(add_base_href(kBase, ".g", "http://a/b/c/.g"));
-    EXPECT_TRUE(add_base_href(kBase, "g..", "http://a/b/c/g.."));
-    EXPECT_TRUE(add_base_href(kBase, "..g", "http://a/b/c/..g"));
-    EXPECT_TRUE(add_base_href(kBase, "./../g", "http://a/b/g"));
-    EXPECT_TRUE(add_base_href(kBase, "./g/.", "http://a/b/c/g/"));
-    EXPECT_TRUE(add_base_href(kBase, "g/./h", "http://a/b/c/g/h"));
-    EXPECT_TRUE(add_base_href(kBase, "g/../h", "http://a/b/c/h"));
-    EXPECT_TRUE(add_base_href(kBase, "g;x=1/./y", "http://a/b/c/g;x=1/y"));
-    EXPECT_TRUE(add_base_href(kBase, "g;x=1/../y", "http://a/b/c/y"));
-    EXPECT_TRUE(add_base_href(kBase, "g?y/./x", "http://a/b/c/g?y/./x"));
-    EXPECT_TRUE(add_base_href(kBase, "g?y/../x", "http://a/b/c/g?y/../x"));
-    EXPECT_TRUE(add_base_href(kBase, "g#s/./x", "http://a/b/c/g#s/./x"));
-    EXPECT_TRUE(add_base_href(kBase, "g#s/../x", "http://a/b/c/g#s/../x"));
-    EXPECT_TRUE(add_base_href(kBase, "http:g", "http:g"));
+    ExpectMerge(kBase, "g:h", "g:h");
+    ExpectMerge(kBase, "g", "http://a/b/c/g");
+    ExpectMerge(kBase, "./g", "http://a/b/c/g");
+    ExpectMerge(kBase, "g/", "http://a/b/c/g/");
+    ExpectMerge(kBase, "/g", "http://a/g");
+    ExpectMerge(kBase, "//g", "http://g");
+    ExpectMerge(kBase, "?y", "http://a/b/c/d;p?y");
+    ExpectMerge(kBase, "g?y", "http://a/b/c/g?y");
+    ExpectMerge(kBase, "#s", "http://a/b/c/d;p?q#s");
+    ExpectMerge(kBase, "g#s", "http://a/b/c/g#s");
+    ExpectMerge(kBase, "g?y#s", "http://a/b/c/g?y#s");
+    ExpectMerge(kBase, ";x", "http://a/b/c/;x");
+    ExpectMerge(kBase, "g;x", "http://a/b/c/g;x");
+    ExpectMerge(kBase, "g;x?y#s", "http://a/b/c/g;x?y#s");
+    ExpectMerge(kBase, "", "http://a/b/c/d;p?q");
+    ExpectMerge(kBase, ".", "http://a/b/c/");
+    ExpectMerge(kBase, "./", "http://a/b/c/");
+    ExpectMerge(kBase, "..", "http://a/b/");
+    ExpectMerge(kBase, "../", "http://a/b/");
+    ExpectMerge(kBase, "../g", "http://a/b/g");
+    ExpectMerge(kBase, "../..", "http://a/");
+    ExpectMerge(kBase, "../../", "http://a/");
+    ExpectMerge(kBase, "../../g", "http://a/g");
 
-    EXPECT_TRUE(add_base_href(kBase, "/", "http://a/"));
-    EXPECT_TRUE(add_base_href(kBase, "/g/", "http://a/g/"));
+    // §5.4.2 Abnormal Examples
+    ExpectMerge(kBase, "../../../g", "http://a/g");
+    ExpectMerge(kBase, "../../../../g", "http://a/g");
+    ExpectMerge(kBase, "/./g", "http://a/g");
+    ExpectMerge(kBase, "/../g", "http://a/g");
+    ExpectMerge(kBase, "g.", "http://a/b/c/g.");
+    ExpectMerge(kBase, ".g", "http://a/b/c/.g");
+    ExpectMerge(kBase, "g..", "http://a/b/c/g..");
+    ExpectMerge(kBase, "..g", "http://a/b/c/..g");
+    ExpectMerge(kBase, "./../g", "http://a/b/g");
+    ExpectMerge(kBase, "./g/.", "http://a/b/c/g/");
+    ExpectMerge(kBase, "g/./h", "http://a/b/c/g/h");
+    ExpectMerge(kBase, "g/../h", "http://a/b/c/h");
+    ExpectMerge(kBase, "g;x=1/./y", "http://a/b/c/g;x=1/y");
+    ExpectMerge(kBase, "g;x=1/../y", "http://a/b/c/y");
+    ExpectMerge(kBase, "g?y/./x", "http://a/b/c/g?y/./x");
+    ExpectMerge(kBase, "g?y/../x", "http://a/b/c/g?y/../x");
+    ExpectMerge(kBase, "g#s/./x", "http://a/b/c/g#s/./x");
+    ExpectMerge(kBase, "g#s/../x", "http://a/b/c/g#s/../x");
+    ExpectMerge(kBase, "http:g", "http:g");
+
+    ExpectMerge(kBase, "/", "http://a/");
+    ExpectMerge(kBase, "/g/", "http://a/g/");
+}
+
+TEST(UriSuite, TestEncodeDecodeRfcUri) {
+    turbo::UriView none;
+    EXPECT_FALSE(turbo::encode_rfc_uri(none).ok());
+    EXPECT_FALSE(turbo::decode_rfc_uri(none).ok());
+
+    turbo::UriView uri;
+    ASSERT_TRUE(parse_ok("http://user:pass@a/b%20c?x=%79#f%61", uri));
+    EXPECT_EQ(uri.standard(), turbo::StandType::STD_RFC);
+    EXPECT_EQ(uri.encode_type(), turbo::EnodeType::PRECENT);
+
+    turbo::UriView enc = turbo::encode_rfc_uri(uri);
+    ASSERT_TRUE(enc.ok());
+    EXPECT_EQ(enc.encode_type(), turbo::EnodeType::PRECENT);
+    EXPECT_EQ(view_href(enc), view_href(uri));
+
+    turbo::UriView dec = turbo::decode_rfc_uri(uri);
+    ASSERT_TRUE(dec.ok());
+    EXPECT_EQ(dec.encode_type(), turbo::EnodeType::PLAIN);
+    EXPECT_EQ(dec.username(), "user");
+    EXPECT_EQ(dec.password(), "pass");
+    EXPECT_EQ(dec.host(), "a");
+    EXPECT_EQ(dec.path(), "/b c");
+    EXPECT_EQ(dec.query(), "x=y");
+    EXPECT_EQ(dec.fragment(), "fa");
+
+    turbo::UriView dec2 = turbo::decode_rfc_uri(dec);
+    ASSERT_TRUE(dec2.ok());
+    EXPECT_EQ(dec2.encode_type(), turbo::EnodeType::PLAIN);
+    EXPECT_EQ(view_href(dec2), view_href(dec));
+
+    turbo::UriView enc2 = turbo::encode_rfc_uri(dec);
+    ASSERT_TRUE(enc2.ok());
+    EXPECT_EQ(enc2.encode_type(), turbo::EnodeType::PRECENT);
+    EXPECT_EQ(enc2.path(), "/b%20c");
+    EXPECT_EQ(enc2.query(), "x=y");
+    EXPECT_EQ(enc2.fragment(), "fa");
+}
+
+TEST(UriSuite, TestGetRfcHref) {
+    constexpr std::string_view kBase = "http://a/b/c/d;p?q";
+
+    turbo::UriView bad;
+    EXPECT_TRUE(turbo::get_rfc_href(bad).empty());
+
+    turbo::UriView abs;
+    ASSERT_TRUE(parse_ok("http://a/b/c/g?y#s", abs));
+    EXPECT_EQ(turbo::get_rfc_href(abs), "http://a/b/c/g?y#s");
+
+    turbo::UriView base;
+    ASSERT_TRUE(parse_ok(kBase, base));
+    turbo::UriView rel;
+    ASSERT_TRUE(parse_ok_with_base("g", base, rel));
+    EXPECT_TRUE(turbo::get_rfc_href(rel).empty());
+
+    // §5.4.1
+    ExpectHref(kBase, "g:h", "g:h");
+    ExpectHref(kBase, "g", "http://a/b/c/g");
+    ExpectHref(kBase, "./g", "http://a/b/c/g");
+    ExpectHref(kBase, "g/", "http://a/b/c/g/");
+    ExpectHref(kBase, "/g", "http://a/g");
+    ExpectHref(kBase, "//g", "http://g");
+    ExpectHref(kBase, "?y", "http://a/b/c/d;p?y");
+    ExpectHref(kBase, "g?y", "http://a/b/c/g?y");
+    ExpectHref(kBase, "#s", "http://a/b/c/d;p?q#s");
+    ExpectHref(kBase, "g#s", "http://a/b/c/g#s");
+    ExpectHref(kBase, "g?y#s", "http://a/b/c/g?y#s");
+    ExpectHref(kBase, ";x", "http://a/b/c/;x");
+    ExpectHref(kBase, "g;x", "http://a/b/c/g;x");
+    ExpectHref(kBase, "g;x?y#s", "http://a/b/c/g;x?y#s");
+    ExpectHref(kBase, "", "http://a/b/c/d;p?q");
+    ExpectHref(kBase, ".", "http://a/b/c/");
+    ExpectHref(kBase, "./", "http://a/b/c/");
+    ExpectHref(kBase, "..", "http://a/b/");
+    ExpectHref(kBase, "../", "http://a/b/");
+    ExpectHref(kBase, "../g", "http://a/b/g");
+    ExpectHref(kBase, "../..", "http://a/");
+    ExpectHref(kBase, "../../", "http://a/");
+    ExpectHref(kBase, "../../g", "http://a/g");
+
+    // §5.4.2
+    ExpectHref(kBase, "../../../g", "http://a/g");
+    ExpectHref(kBase, "../../../../g", "http://a/g");
+    ExpectHref(kBase, "/./g", "http://a/g");
+    ExpectHref(kBase, "/../g", "http://a/g");
+    ExpectHref(kBase, "g.", "http://a/b/c/g.");
+    ExpectHref(kBase, ".g", "http://a/b/c/.g");
+    ExpectHref(kBase, "g..", "http://a/b/c/g..");
+    ExpectHref(kBase, "..g", "http://a/b/c/..g");
+    ExpectHref(kBase, "./../g", "http://a/b/g");
+    ExpectHref(kBase, "./g/.", "http://a/b/c/g/");
+    ExpectHref(kBase, "g/./h", "http://a/b/c/g/h");
+    ExpectHref(kBase, "g/../h", "http://a/b/c/h");
+    ExpectHref(kBase, "g;x=1/./y", "http://a/b/c/g;x=1/y");
+    ExpectHref(kBase, "g;x=1/../y", "http://a/b/c/y");
+    ExpectHref(kBase, "g?y/./x", "http://a/b/c/g?y/./x");
+    ExpectHref(kBase, "g?y/../x", "http://a/b/c/g?y/../x");
+    ExpectHref(kBase, "g#s/./x", "http://a/b/c/g#s/./x");
+    ExpectHref(kBase, "g#s/../x", "http://a/b/c/g#s/../x");
+    ExpectHref(kBase, "http:g", "http:g");
+    ExpectHref(kBase, "/", "http://a/");
+    ExpectHref(kBase, "/g/", "http://a/g/");
 }
 
 // FourSuite::GoodUriReferences
 TEST(FourSuite, GoodUriReferences) {
-    turbo::RfcUri base;
+    turbo::UriView base("http://a/b/c/d;p?q");
     ASSERT_TRUE(parse_ok("http://a/b/c/d;p?q", base));
 
     EXPECT_TRUE(parse_ref_ok("file:///foo/bar", base));
