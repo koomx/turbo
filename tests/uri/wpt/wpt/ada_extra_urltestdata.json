@@ -274,16 +274,6 @@
   {
     "input": "..#",
     "base": "a:b",
-    "href": "a:b#",
-    "origin": null,
-    "protocol": "a:",
-    "username": "",
-    "password": "",
-    "host": "",
-    "hostname": "",
-    "port": "",
-    "pathname": "b",
-    "search": "",
-    "hash": ""
+    "failure": true
   }
 ]

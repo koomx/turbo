@@ -306,13 +306,9 @@ set(URI_SRC
         uri/idna/canonical.cc
         uri/idna/composition.cc
         uri/idna/label.cc
-        uri/wpt/state.cc
-        uri/wpt/uri.cc
         uri/wpt/parser.cc
         uri/wpt/parse_components.cc
-        uri/rfc/uri.cc
         uri/rfc/parser.cc
-        uri/uri_base.cc
         uri/utility.cc
         uri/uri_view.cc
         uri/ip.cc

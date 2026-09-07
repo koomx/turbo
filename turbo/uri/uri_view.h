@@ -43,10 +43,10 @@ namespace turbo {
     public:
         UriView() = default;
         UriView(std::string_view);
-        UriView(const UriView& u) = default;
-        UriView(UriView&& u) noexcept = default;
-        UriView& operator=(UriView&& u) noexcept = default;
-        UriView& operator=(const UriView& u) = default;
+        UriView(const UriView& u);
+        UriView(UriView&& u) noexcept;
+        UriView& operator=(UriView&& u) noexcept;
+        UriView& operator=(const UriView& u);
         ~UriView() = default;
 
 
@@ -55,6 +55,8 @@ namespace turbo {
         void release(std::string &out);
         std::string release();
         void release_append(std::string &out) const;
+
+        [[nodiscard]] bool is_special() const noexcept;
         ///////////////////////
         /// getters
         [[nodiscard]] bool ok() const noexcept;
@@ -62,6 +64,7 @@ namespace turbo {
         [[nodiscard]] EnodeType encode_type() const noexcept;
         [[nodiscard]] UriHostType host_type() const noexcept;
         [[nodiscard]] const UriError& uri_error() const noexcept;
+        SchemaType schema_type() const;
 
         std::string_view origin() const;
         std::string_view shema() const;
@@ -93,6 +96,9 @@ namespace turbo {
         friend UriView merge_rfc_uri(std::string_view user_input, const UriView& base_url);
         friend UriView encode_rfc_uri(const UriView& uri);
         friend UriView decode_rfc_uri(const UriView& uri);
+        friend UriView merge_wpt_uri(std::string_view user_input, const UriView& base_url);
+        friend UriView encode_wpt_uri(const UriView& uri);
+        friend UriView decode_wpt_uri(const UriView& uri);
         ///////////////////////
         /// cleaner
         void reset();
@@ -120,6 +126,7 @@ namespace turbo {
         void query(ComponentView view);
         void fragment(ComponentView view);
         void query_params(QueryParams params);
+        void schema_type(SchemaType type);
     protected:
         std::optional<std::string>   _store;
         std::string_view             _uri_data;
@@ -127,7 +134,7 @@ namespace turbo {
         EnodeType                    _encode{EnodeType::PRECENT};
         UriHostType                  _host_type{UriHostType::DEFAULT};
         UriError                     _error;
-
+        SchemaType                   _schema_type{SchemaType::NOT_SPECIAL};
 
         std::optional<ComponentView> _schema;
         std::optional<ComponentView> _username;

@@ -17,58 +17,60 @@
 #include <turbo/uri/checkers.h>
 #include <turbo/uri/utility.h>
 #include <turbo/uri/ip.h>
-#include <charconv>
+#include <turbo/strings/ascii.h>
 #include <turbo/strings/str_cat.h>
 
 namespace turbo::uri_wpt {
 
     UriError check_opaque_host(std::string_view input) {
-        auto it = std::find_if(input.begin(), input.end(), turbo::is_forbidden_host_code_point);
-        if (it != input.end()) {
-            return {UriErrorCode::kUriForbiddenHostCodePoint,
-                    static_cast<uint32_t>(it - input.begin()), ""};
+        for (size_t i = 0; i < input.size(); ++i) {
+            if (turbo::is_ascii_tab_or_newline(input[i])) {
+                continue;
+            }
+            if (turbo::is_forbidden_host_code_point(input[i])) {
+                return {UriErrorCode::kUriForbiddenHostCodePoint,
+                        static_cast<uint32_t>(i), ""};
+            }
         }
         return {};
     }
 
     std::string encode_opaque_host(std::string_view input) {
-        // Return the result of running UTF-8 percent-encode on input using the C0
-        // control percent-encode set.
-        auto ret = turbo::percent_encode(
-            input, turbo::uri_charsets::C0_CONTROL_PERCENT_ENCODE);
-        return ret;
+        // Skip tab/LF/CR while scanning; percent-encode remaining with C0 set.
+        std::string out;
+        out.reserve(input.size());
+        for (unsigned char c : input) {
+            if (turbo::is_ascii_tab_or_newline(static_cast<char>(c))) {
+                continue;
+            }
+            if (turbo::uri_charsets::bit_at(
+                    turbo::uri_charsets::C0_CONTROL_PERCENT_ENCODE, c)) {
+                out.append(turbo::uri_charsets::hex + c * 4, 3);
+            } else {
+                out.push_back(static_cast<char>(c));
+            }
+        }
+        return out;
     }
 
 
 
     std::string parse_path(std::string_view input, bool is_special, bool have_host, turbo::SchemaType type) {
-        std::string tmp_buffer;
-        std::string_view internal_input;
         std::string path;
-        if (turbo::has_tabs_or_newline(input)) {
-            tmp_buffer = input;
-            // Optimization opportunity: Instead of copying and then pruning, we could
-            // just directly build the string from user_input.
-            turbo::remove_ascii_tab_or_newline(tmp_buffer);
-            internal_input = tmp_buffer;
-        } else {
-            internal_input = input;
-        }
-
-        // If url is special, then:
+        // Tab/LF/CR are skipped inside parse_prepared_path while scanning — no pre-copy.
         if (is_special) {
-            if (internal_input.empty()) {
+            if (input.empty()) {
                 path = "/";
-            } else if ((internal_input[0] == '/') || (internal_input[0] == '\\')) {
-                turbo::parse_prepared_path(internal_input.substr(1), type, path);
+            } else if ((input[0] == '/') || (input[0] == '\\')) {
+                turbo::parse_prepared_path(input.substr(1), type, path);
             } else {
-                turbo::parse_prepared_path(internal_input, type, path);
+                turbo::parse_prepared_path(input, type, path);
             }
-        } else if (!internal_input.empty()) {
-            if (internal_input[0] == '/') {
-                turbo::parse_prepared_path(internal_input.substr(1), type, path);
+        } else if (!input.empty()) {
+            if (input[0] == '/') {
+                turbo::parse_prepared_path(input.substr(1), type, path);
             } else {
-                turbo::parse_prepared_path(internal_input, type, path);
+                turbo::parse_prepared_path(input, type, path);
             }
         } else {
             if (!have_host) {
@@ -80,9 +82,19 @@ namespace turbo::uri_wpt {
 
     UriError parse_host(std::string_view input, bool is_special, UriHostType& ht, std::string * result) {
         ht = UriHostType::DEFAULT;
-        if (input.empty()) {
+        // Scan once into host buffer, skipping tab/LF/CR (no whole-URL pre-strip).
+        std::string buffer;
+        buffer.reserve(input.size());
+        for (char c : input) {
+            if (!turbo::is_ascii_tab_or_newline(c)) {
+                buffer.push_back(c);
+            }
+        }
+        if (buffer.empty()) {
             return {UriErrorCode::kUriNotComplete, 0, "inout empty"};
-        } // technically unnecessary.
+        }
+        input = buffer;
+
         // If input starts with U+005B ([), then:
         if (input[0] == '[') {
             // If input does not end with U+005D (]), validation error, return failure.
@@ -118,17 +130,16 @@ namespace turbo::uri_wpt {
         // to ASCII with domain and false. The most common case is an ASCII input, in
         // which case we do not need to call the expensive 'to_ascii' if a few
         // conditions are met: no '%' and no 'xn-' subsequence.
-        std::string buffer = std::string(input);
-        // This next function checks that the result is ascii, but we are going to
-        // to check anyhow with is_forbidden.
-        // bool is_ascii =
-        turbo::to_lower_ascii(buffer.data(), buffer.size());
+        //
+        // to_lower only for the ASCII fast path — never mutate UTF-8 before to_ascii.
+        std::string lowered = buffer;
+        turbo::to_lower_ascii(lowered.data(), lowered.size());
         bool is_forbidden = turbo::contains_forbidden_domain_code_point(
-            buffer.data(), buffer.size());
-        if (is_forbidden == 0 && buffer.find("xn-") == std::string_view::npos) {
+            lowered.data(), lowered.size());
+        if (is_forbidden == 0 && lowered.find("xn-") == std::string_view::npos) {
             // fast path
-            if (is_wpt_ipv4(buffer)) {
-                auto r = parse_wpt_ipv4(buffer, result);
+            if (is_wpt_ipv4(lowered)) {
+                auto r = parse_wpt_ipv4(lowered, result);
                 if (r.ok()) {
                     ht = UriHostType::IPV4;
                 }
@@ -136,14 +147,14 @@ namespace turbo::uri_wpt {
             }
 
             if (result) {
-                *result = std::move(buffer);
+                *result = std::move(lowered);
             }
 
             return {};
         }
 
         std::optional<std::string> tmp_host;
-        auto valid = turbo::to_ascii(tmp_host, input, input.find('%'));
+        auto valid = turbo::to_ascii(tmp_host, buffer, buffer.find('%'));
         if (!valid) {
             return {UriErrorCode::kUriNotComplete, 0, "parse_host to_ascii returns false"};
         }
@@ -284,32 +295,51 @@ namespace turbo::uri_wpt {
 
 
     UriError parse_port(std::string_view view, bool is_special,SchemaType type, bool check_trailing_content, std::optional<uint16_t> &port) noexcept {
-        if (!view.empty() && view[0] == '-') {
+        const char *p = view.data();
+        const char *const e = view.data() + view.size();
+        skip_ascii_tab_or_newline(p, e);
+        if (p != e && *p == '-') {
             return {UriErrorCode::kUriInvalidArgs, 0, ""};
         }
-        uint16_t parsed_port { };
-        auto r = std::from_chars(view.data(), view.data() + view.size(), parsed_port);
-        if (r.ec == std::errc::result_out_of_range) {
-            return {UriErrorCode::kUriOverflow, 0, ""};
-        }
 
-        const size_t consumed = size_t(r.ptr - view.data());
+        uint32_t value = 0;
+        bool saw_digit = false;
+        while (p != e) {
+            if (is_ascii_tab_or_newline(*p)) {
+                ++p;
+                continue;
+            }
+            if (!turbo::ascii_isdigit(static_cast<unsigned char>(*p))) {
+                break;
+            }
+            saw_digit = true;
+            value = value * 10u + static_cast<uint32_t>(*p - '0');
+            if (value > 65535u) {
+                return {UriErrorCode::kUriOverflow, 0, ""};
+            }
+            ++p;
+        }
 
         if (check_trailing_content) {
-            auto valid = (consumed == view.size() || view[consumed] == '/' || view[consumed] == '?' || (is_special && view[consumed] == '\\'));
-           if (!valid) {
-               return {UriErrorCode::kUriInvalidArgs, static_cast<uint32_t>(consumed), ""};
-           }
+            skip_ascii_tab_or_newline(p, e);
+            const bool valid =
+                (p == e || *p == '/' || *p == '?' || (is_special && *p == '\\'));
+            if (!valid) {
+                return {UriErrorCode::kUriInvalidArgs,
+                    static_cast<uint32_t>(p - view.data()), ""};
+            }
         }
 
-        // scheme_default_port can return 0, and we should allow 0 as a base port.
         auto default_port = turbo::get_special_port(type);
-        bool is_port_valid = (default_port == 0 && parsed_port == 0) || (default_port != parsed_port);
-        port = (r.ec == std::errc() && is_port_valid)
+        const uint16_t parsed_port = static_cast<uint16_t>(value);
+        bool is_port_valid = (default_port == 0 && parsed_port == 0) ||
+            (default_port != parsed_port);
+        port = (saw_digit && is_port_valid)
             ? std::optional<uint16_t>(parsed_port)
             : std::nullopt;
 
-        return {UriErrorCode::kUriSuccess, static_cast<uint32_t>(consumed), ""};
+        return {UriErrorCode::kUriSuccess,
+            static_cast<uint32_t>(p - view.data()), ""};
     }
 }  // namespace turbo::uri_wpt
 

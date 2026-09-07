@@ -32,6 +32,111 @@ namespace turbo {
         : _uri_data(s) {
     }
 
+    UriView::UriView(const UriView &u)
+        : _type(u._type)
+        , _encode(u._encode)
+        , _host_type(u._host_type)
+        , _error(u._error)
+        , _schema_type(u._schema_type)
+        , _schema(u._schema)
+        , _username(u._username)
+        , _password(u._password)
+        , _host(u._host)
+        , _port(u._port)
+        , _path(u._path)
+        , _query(u._query)
+        , _fragment(u._fragment)
+        , _query_params(u._query_params) {
+        if (u._store.has_value()) {
+            _store = u._store;
+            _uri_data = *_store;
+        } else {
+            _uri_data = u._uri_data;
+        }
+    }
+
+    UriView::UriView(UriView &&u) noexcept
+        : _store(std::move(u._store))
+        , _type(u._type)
+        , _encode(u._encode)
+        , _host_type(u._host_type)
+        , _error(std::move(u._error))
+        , _schema_type(u._schema_type)
+        , _schema(u._schema)
+        , _username(u._username)
+        , _password(u._password)
+        , _host(u._host)
+        , _port(u._port)
+        , _path(u._path)
+        , _query(u._query)
+        , _fragment(u._fragment)
+        , _query_params(std::move(u._query_params)) {
+        if (_store.has_value()) {
+            _uri_data = *_store;
+        } else {
+            _uri_data = u._uri_data;
+        }
+        u._uri_data = {};
+        u._store.reset();
+    }
+
+    UriView &UriView::operator=(const UriView &u) {
+        if (this == &u) {
+            return *this;
+        }
+        _type = u._type;
+        _encode = u._encode;
+        _host_type = u._host_type;
+        _error = u._error;
+        _schema_type = u._schema_type;
+        _schema = u._schema;
+        _username = u._username;
+        _password = u._password;
+        _host = u._host;
+        _port = u._port;
+        _path = u._path;
+        _query = u._query;
+        _fragment = u._fragment;
+        _query_params = u._query_params;
+        if (u._store.has_value()) {
+            _store = u._store;
+            _uri_data = *_store;
+        } else {
+            _store.reset();
+            _uri_data = u._uri_data;
+        }
+        return *this;
+    }
+
+    UriView &UriView::operator=(UriView &&u) noexcept {
+        if (this == &u) {
+            return *this;
+        }
+        _store = std::move(u._store);
+        _type = u._type;
+        _encode = u._encode;
+        _host_type = u._host_type;
+        _error = std::move(u._error);
+        _schema_type = u._schema_type;
+        _schema = u._schema;
+        _username = u._username;
+        _password = u._password;
+        _host = u._host;
+        _port = u._port;
+        _path = u._path;
+        _query = u._query;
+        _fragment = u._fragment;
+        _query_params = std::move(u._query_params);
+        if (_store.has_value()) {
+            _uri_data = *_store;
+        } else {
+            _uri_data = u._uri_data;
+        }
+        u._uri_data = {};
+        u._store.reset();
+        return *this;
+    }
+
     void UriView::make_ownd() {
         _store = std::string(_uri_data);
         _uri_data = *_store;
@@ -249,6 +354,17 @@ namespace turbo {
         _query_params = std::nullopt;
     }
 
+    bool UriView::is_special() const noexcept {
+        return _schema_type != turbo::SchemaType::NOT_SPECIAL;
+    }
+
+    SchemaType UriView::schema_type() const {
+        return _schema_type;
+    }
+
+    void UriView::schema_type(SchemaType type) {
+        _schema_type = type;
+    }
     void UriView::reset() {
         _uri_data = { };
         _store.reset();

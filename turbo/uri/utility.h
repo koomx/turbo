@@ -207,7 +207,14 @@ namespace turbo {
     KUMO_FORCE_INLINE bool has_tabs_or_newline(std::string_view user_input) noexcept {
         auto begin = user_input.data();
         auto end = user_input.data() + user_input.size();
-        find_first_symbols<'\t', '\n', '\r'>(begin, end) != end;
+        return find_first_symbols<'\t', '\n', '\r'>(begin, end) != end;
+    }
+
+    KUMO_FORCE_INLINE void skip_ascii_tab_or_newline(const char *&p,
+        const char *end) noexcept {
+        while (p != end && is_ascii_tab_or_newline(*p)) {
+            ++p;
+        }
     }
 
     // credit: @the-moisrex recommended a table-based approach

@@ -61,10 +61,17 @@ namespace turbo {
 
 
     inline constexpr bool is_windows_drive_letter(std::string_view input) noexcept {
-        return input.size() >= 2 &&
-               (turbo::ascii_isalpha(input[0]) && ((input[1] == ':') || (input[1] == '|'))) &&
-               ((input.size() == 2) || (input[2] == '/' || input[2] == '\\' ||
-                                        input[2] == '?' || input[2] == '#'));
+        if (input.size() < 2 || !turbo::ascii_isalpha(input[0]) ||
+            (input[1] != ':' && input[1] != '|')) {
+            return false;
+        }
+        size_t i = 2;
+        while (i < input.size() &&
+            (input[i] == '\t' || input[i] == '\n' || input[i] == '\r')) {
+            ++i;
+        }
+        return i == input.size() || input[i] == '/' || input[i] == '\\' ||
+            input[i] == '?' || input[i] == '#';
     }
 
     inline constexpr bool is_normalized_windows_drive_letter(std::string_view input) noexcept {
@@ -102,17 +109,27 @@ namespace turbo {
         size_t i = 0;
         uint8_t accumulator{};
         for (; i + 7 < input.size(); i += 8) {
-            accumulator |= uint8_t(path_signature_table[uint8_t(input[i])] |
-                                   path_signature_table[uint8_t(input[i + 1])] |
-                                   path_signature_table[uint8_t(input[i + 2])] |
-                                   path_signature_table[uint8_t(input[i + 3])] |
-                                   path_signature_table[uint8_t(input[i + 4])] |
-                                   path_signature_table[uint8_t(input[i + 5])] |
-                                   path_signature_table[uint8_t(input[i + 6])] |
-                                   path_signature_table[uint8_t(input[i + 7])]);
+            auto acc_one = [&](unsigned char c) {
+                if (c == '\t' || c == '\n' || c == '\r') {
+                    return static_cast<uint8_t>(0);
+                }
+                return path_signature_table[c];
+            };
+            accumulator |= uint8_t(acc_one(uint8_t(input[i])) |
+                                   acc_one(uint8_t(input[i + 1])) |
+                                   acc_one(uint8_t(input[i + 2])) |
+                                   acc_one(uint8_t(input[i + 3])) |
+                                   acc_one(uint8_t(input[i + 4])) |
+                                   acc_one(uint8_t(input[i + 5])) |
+                                   acc_one(uint8_t(input[i + 6])) |
+                                   acc_one(uint8_t(input[i + 7])));
         }
         for (; i < input.size(); i++) {
-            accumulator |= uint8_t(path_signature_table[uint8_t(input[i])]);
+            unsigned char c = uint8_t(input[i]);
+            if (c == '\t' || c == '\n' || c == '\r') {
+                continue;
+            }
+            accumulator |= uint8_t(path_signature_table[c]);
         }
         return accumulator;
     }

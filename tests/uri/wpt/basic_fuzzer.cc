@@ -20,8 +20,8 @@
 #include <string_view>
 
 #include <turbo/bits/bits.h>
+#include <turbo/uri/uri_view.h>
 #include <turbo/uri/wpt/parser.h>
-#include <turbo/uri/wpt/uri.h>
 
 std::string url_examples[] = {
     "https://www.google.com/"
@@ -38,8 +38,6 @@ std::string url_examples[] = {
     "41Gc3C8UysL.css?AUIClients/AmazonGatewayAuiAssets",
     "https://www.reddit.com/?after=t3_zvz1ze",
     "https://www.reddit.com/login/?dest=https%3A%2F%2Fwww.reddit.com%2F",
-    "postgresql://other:9818274x1!!@localhost:5432/"
-    "otherdb?connect_timeout=10&application_name=myapp",
     "http://192.168.1.1",
     "http://[2606:4700:4700::1111]",
     "https://static.files.bbci.co.uk/orbit/737a4ee2bed596eb65afc4d2ce9af568/js/"
@@ -61,7 +59,7 @@ std::string url_examples[] = {
     "20220908-1153-091014d07889c842a7bdc06e00fa711c9e04f049/modules/vendor/"
     "bower/modernizr/modernizr.js"};
 
-turbo::WptUri wpt_parse(std::string_view view) {
+turbo::UriView wpt_parse(std::string_view view) {
     std::unique_ptr<char[]> buffer(new char[view.size()]);
     memcpy(buffer.get(), view.data(), view.size());
     return turbo::parse_wpt_uri(std::string_view(buffer.get(), view.size()));

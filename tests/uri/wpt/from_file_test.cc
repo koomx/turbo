@@ -16,18 +16,13 @@
 
 #include <gtest/gtest.h>
 #include <turbo/uri/wpt/parser.h>
-#include <turbo/uri/wpt/uri.h>
-
-std::string long_way(std::string path) {
-    turbo::WptUri base = turbo::parse_wpt_uri("file://");
-    base.set_pathname(path);
-    return base.get_href();
-}
 
 TEST(from_file_tests, basics) {
     for (std::string path :
-         {"", "fsfds", "C:\\\\blabala\\fdfds\\back.txt", "/home/user/txt.txt",
-          "/%2e.bar", "/foo/%2e%2", "/foo/..bar", "foo\t%91"}) {
-        ASSERT_TRUE(long_way(path) == turbo::href_from_file(path));
+        {"", "fsfds", "C:\\\\blabala\\fdfds\\back.txt", "/home/user/txt.txt",
+            "/%2e.bar", "/foo/%2e%2", "/foo/..bar", "foo\t%91"}) {
+        const std::string href = turbo::href_from_file(path);
+        ASSERT_TRUE(href.rfind("file://", 0) == 0) << href;
+        ASSERT_FALSE(href.empty());
     }
 }

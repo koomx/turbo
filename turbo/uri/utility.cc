@@ -22,6 +22,28 @@ namespace turbo {
     void parse_prepared_path(std::string_view input,
                                            turbo::SchemaType type,
                                            std::string& path) {
+  // Skip tab/LF/CR while scanning; never pre-copy the whole input to strip them.
+  auto append_skipping_tnr = [](std::string &out, std::string_view sv) {
+    for (char c : sv) {
+      if (!is_ascii_tab_or_newline(c)) {
+        out.push_back(c);
+      }
+    }
+  };
+  auto path_equals_skipping_tnr = [](std::string_view sv, std::string_view expect) {
+    size_t i = 0;
+    for (char c : sv) {
+      if (is_ascii_tab_or_newline(c)) {
+        continue;
+      }
+      if (i >= expect.size() || c != expect[i]) {
+        return false;
+      }
+      ++i;
+    }
+    return i == expect.size();
+  };
+
   uint8_t accumulator = turbo::path_signature(input);
   // Let us first detect a trivial case.
   // If it is special, we check that we have no dot, no %,  no \ and no
@@ -61,7 +83,7 @@ namespace turbo {
   }
   if (trivial_path) {
     path += '/';
-    path += input;
+    append_skipping_tnr(path, input);
     return;
   }
   // We are going to need to look a bit at the path, but let us see if we can
@@ -84,7 +106,7 @@ namespace turbo {
       //  We process the last segment separately:
       if (new_location == std::string_view::npos) {
         std::string_view path_view = input.substr(previous_location);
-        if (path_view == "..") {  // The path ends with ..
+        if (path_equals_skipping_tnr(path_view, "..")) {  // The path ends with ..
           // e.g., if you receive ".." with an empty path, you go to "/".
           if (path.empty()) {
             path = '/';
@@ -100,8 +122,8 @@ namespace turbo {
           return;
         }
         path += '/';
-        if (path_view != ".") {
-          path.append(path_view);
+        if (!path_equals_skipping_tnr(path_view, ".")) {
+          append_skipping_tnr(path, path_view);
         }
         return;
       } else {
@@ -109,14 +131,14 @@ namespace turbo {
         std::string_view path_view =
             input.substr(previous_location, new_location - previous_location);
         previous_location = new_location + 1;
-        if (path_view == "..") {
+        if (path_equals_skipping_tnr(path_view, "..")) {
           size_t last_delimiter = path.rfind('/');
           if (last_delimiter != std::string::npos) {
             path.erase(last_delimiter);
           }
-        } else if (path_view != ".") {
+        } else if (!path_equals_skipping_tnr(path_view, ".")) {
           path += '/';
-          path.append(path_view);
+          append_skipping_tnr(path, path_view);
         }
       }
     } while (true);
@@ -134,13 +156,22 @@ namespace turbo {
         input.remove_prefix(location + 1);
       }
       // path_buffer is either path_view or it might point at a percent encoded
-      // temporary file.
-      std::string_view path_buffer =
-          (needs_percent_encoding &&
-           percent_encode<false>(
-               path_view, turbo::uri_charsets::PATH_PERCENT_ENCODE, path_buffer_tmp))
-              ? path_buffer_tmp
-              : path_view;
+      // temporary file. Encode while skipping tab/LF/CR.
+      std::string_view path_buffer = path_view;
+      if (needs_percent_encoding || has_tabs_or_newline(path_view)) {
+        path_buffer_tmp.clear();
+        for (unsigned char c : path_view) {
+          if (is_ascii_tab_or_newline(static_cast<char>(c))) {
+            continue;
+          }
+          if (uri_charsets::bit_at(uri_charsets::PATH_PERCENT_ENCODE, c)) {
+            path_buffer_tmp.append(uri_charsets::hex + c * 4, 3);
+          } else {
+            path_buffer_tmp.push_back(static_cast<char>(c));
+          }
+        }
+        path_buffer = path_buffer_tmp;
+      }
       if (is_double_dot_path_segment(path_buffer)) {
         if ((turbo::shorten_path(path, type) || special) &&
             location == std::string_view::npos) {

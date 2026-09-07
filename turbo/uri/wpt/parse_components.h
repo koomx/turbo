@@ -12,13 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+// Host/path/port helpers used by the WPT chain parser. Some scanning strategies
+// were informed by Ada (https://github.com/ada-url/ada); not a vendored copy.
+//
 
 #pragma once
 
 #include <turbo/uri/uri_error.h>
 #include <turbo/uri/scheme.h>
 #include <turbo/uri/utility.h>
-#include <turbo/uri/uri_common_base.h>
+#include <turbo/uri/types.h>
 
 namespace turbo::uri_wpt {
 
