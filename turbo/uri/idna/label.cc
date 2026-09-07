@@ -11,7 +11,7 @@
 // limitations under the License.
 //
 
-
+#include <algorithm>
 #include <turbo/uri/idna/idna.h>
 #include <turbo/uri/idna/tables.h>
 
