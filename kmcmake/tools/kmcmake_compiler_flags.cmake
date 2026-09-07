@@ -95,6 +95,7 @@ set(_KMCMAKE_LLVM_FLAGS
 
 set(_KMCMAKE_MSVC_FLAGS
     "/W3"
+    "/utf-8"
     "/DNOMINMAX"
     "/DWIN32_LEAN_AND_MEAN"
     "/D_CRT_SECURE_NO_WARNINGS"
