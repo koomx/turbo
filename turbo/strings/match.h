@@ -34,7 +34,7 @@
 #define TURBO_STRINGS_MATCH_H_
 
 #include <cstring>
-
+#include <cstdint>
 #include <string_view>
 
 namespace turbo {
