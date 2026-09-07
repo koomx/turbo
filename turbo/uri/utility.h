@@ -188,13 +188,17 @@ namespace turbo {
         return true;
     }
 
-    unsigned constexpr convert_hex_to_binary(const char c) noexcept {
-         static const char hex_to_binary_table[] = {
+    namespace uri_utility_detail {
+        inline constexpr char hex_to_binary_table[] = {
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, 0, 10, 11,
             12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 11, 12, 13, 14, 15
         };
-        return hex_to_binary_table[c - '0'];
+    }  // namespace uri_utility_detail
+
+    unsigned constexpr convert_hex_to_binary(const char c) noexcept {
+        return static_cast<unsigned>(
+            uri_utility_detail::hex_to_binary_table[c - '0']);
     }
 
     std::string percent_decode(std::string_view input, size_t first_percent);

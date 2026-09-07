@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstring>
 #include <string_view>
 #include <turbo/macros/macros.h>
@@ -22,6 +23,80 @@
 #include <turbo/strings/match.h>
 
 namespace turbo {
+namespace uri_checkers_detail {
+
+    // Tables live at namespace scope: C++17 forbids static locals in constexpr fns.
+    inline constexpr std::array<uint8_t, 256> make_path_signature_table() noexcept {
+        std::array<uint8_t, 256> result{};
+        for (size_t i = 0; i < 256; i++) {
+            if (i <= 0x20 || i == 0x22 || i == 0x23 || i == 0x3c || i == 0x3e ||
+                i == 0x3f || i == 0x60 || i == 0x7b || i == 0x7d || i > 0x7e) {
+                result[i] = 1;
+            } else if (i == 0x25) {
+                result[i] = 8;
+            } else if (i == 0x2e) {
+                result[i] = 4;
+            } else if (i == 0x5c) {
+                result[i] = 2;
+            } else {
+                result[i] = 0;
+            }
+        }
+        return result;
+    }
+
+    inline constexpr std::array<uint8_t, 256> make_forbidden_domain_table() noexcept {
+        std::array<uint8_t, 256> result{};
+        for (uint8_t c : {'\0', '\x09', '\x0a', '\x0d', ' ', '#', '/', ':', '<',
+                          '>', '?', '@', '[', '\\', ']', '^', '|', '%'}) {
+            result[c] = true;
+        }
+        for (uint8_t c = 0; c <= 32; c++) {
+            result[c] = true;
+        }
+        for (size_t c = 127; c < 255; c++) {
+            result[c] = true;
+        }
+        return result;
+    }
+
+    inline constexpr std::array<uint8_t, 256>
+    make_forbidden_domain_or_upper_table() noexcept {
+        std::array<uint8_t, 256> result{};
+        for (uint8_t c : {'\0', '\x09', '\x0a', '\x0d', ' ', '#', '/', ':', '<',
+                          '>', '?', '@', '[', '\\', ']', '^', '|', '%'}) {
+            result[c] = 1;
+        }
+        for (uint8_t c = 'A'; c <= 'Z'; c++) {
+            result[c] = 2;
+        }
+        for (uint8_t c = 0; c <= 32; c++) {
+            result[c] = 1;
+        }
+        for (size_t c = 127; c < 255; c++) {
+            result[c] = 1;
+        }
+        return result;
+    }
+
+    inline constexpr std::array<uint8_t, 256> make_forbidden_host_table() noexcept {
+        std::array<uint8_t, 256> result{};
+        for (uint8_t c : {'\0', '\x09', '\x0a', '\x0d', ' ', '#', '/', ':', '<',
+                          '>', '?', '@', '[', '\\', ']', '^', '|'}) {
+            result[c] = true;
+        }
+        return result;
+    }
+
+    inline constexpr auto path_signature_table = make_path_signature_table();
+    inline constexpr auto is_forbidden_domain_code_point_table =
+        make_forbidden_domain_table();
+    inline constexpr auto is_forbidden_domain_code_point_table_or_upper =
+        make_forbidden_domain_or_upper_table();
+    inline constexpr auto is_forbidden_host_code_point_table =
+        make_forbidden_host_table();
+
+}  // namespace uri_checkers_detail
 
     /**
      * Returns true if the length of the domain name and its labels are according to
@@ -80,56 +155,30 @@ namespace turbo {
 
 
     KUMO_FORCE_INLINE constexpr uint8_t path_signature(std::string_view input) noexcept {
-        // for use with path_signature, we include all characters that need percent
-        // encoding.
-        static const std::array<uint8_t, 256> path_signature_table =
-            []() constexpr {
-            std::array<uint8_t, 256> result{};
-            for (size_t i = 0; i < 256; i++) {
-                if (i <= 0x20 || i == 0x22 || i == 0x23 || i == 0x3c || i == 0x3e ||
-                    i == 0x3f || i == 0x60 || i == 0x7b || i == 0x7d || i > 0x7e) {
-                    result[i] = 1;
-                    } else if (i == 0x25) {
-                        result[i] = 8;
-                    } else if (i == 0x2e) {
-                        result[i] = 4;
-                    } else if (i == 0x5c) {
-                        result[i] = 2;
-                    } else {
-                        result[i] = 0;
-                    }
-            }
-            return result;
-            }();
         // The path percent-encode set is the query percent-encode set and U+003F (?),
         // U+0060 (`), U+007B ({), and U+007D (}). The query percent-encode set is the
         // C0 control percent-encode set and U+0020 SPACE, U+0022 ("), U+0023 (#),
         // U+003C (<), and U+003E (>). The C0 control percent-encode set are the C0
         // controls and all code points greater than U+007E (~).
+        // Tab/LF/CR are skipped (WPT ignores them while scanning).
+        const auto &path_signature_table = uri_checkers_detail::path_signature_table;
         size_t i = 0;
         uint8_t accumulator{};
         for (; i + 7 < input.size(); i += 8) {
-            auto acc_one = [&](unsigned char c) {
+            for (size_t j = 0; j < 8; ++j) {
+                unsigned char c = uint8_t(input[i + j]);
                 if (c == '\t' || c == '\n' || c == '\r') {
-                    return static_cast<uint8_t>(0);
+                    continue;
                 }
-                return path_signature_table[c];
-            };
-            accumulator |= uint8_t(acc_one(uint8_t(input[i])) |
-                                   acc_one(uint8_t(input[i + 1])) |
-                                   acc_one(uint8_t(input[i + 2])) |
-                                   acc_one(uint8_t(input[i + 3])) |
-                                   acc_one(uint8_t(input[i + 4])) |
-                                   acc_one(uint8_t(input[i + 5])) |
-                                   acc_one(uint8_t(input[i + 6])) |
-                                   acc_one(uint8_t(input[i + 7])));
+                accumulator |= path_signature_table[c];
+            }
         }
         for (; i < input.size(); i++) {
             unsigned char c = uint8_t(input[i]);
             if (c == '\t' || c == '\n' || c == '\r') {
                 continue;
             }
-            accumulator |= uint8_t(path_signature_table[c]);
+            accumulator |= path_signature_table[c];
         }
         return accumulator;
     }
@@ -137,23 +186,8 @@ namespace turbo {
 
 
     KUMO_FORCE_INLINE constexpr bool contains_forbidden_domain_code_point(const char* input, size_t length) noexcept {
-
-        static const std::array<uint8_t, 256> is_forbidden_domain_code_point_table =
-        []() constexpr {
-            std::array<uint8_t, 256> result{};
-            for (uint8_t c : {'\0', '\x09', '\x0a', '\x0d', ' ', '#', '/', ':', '<',
-                              '>', '?', '@', '[', '\\', ']', '^', '|', '%'}) {
-                result[c] = true;
-                              }
-            for (uint8_t c = 0; c <= 32; c++) {
-                result[c] = true;
-            }
-            for (size_t c = 127; c < 255; c++) {
-                result[c] = true;
-            }
-            return result;
-        }();
-
+        const auto &is_forbidden_domain_code_point_table =
+            uri_checkers_detail::is_forbidden_domain_code_point_table;
         static_assert(sizeof(is_forbidden_domain_code_point_table) == 256);
         size_t i = 0;
         uint8_t accumulator{};
@@ -170,29 +204,14 @@ namespace turbo {
     }
 
     KUMO_FORCE_INLINE constexpr bool is_forbidden_domain_code_point(const char c) noexcept {
-        return is_forbidden_domain_code_point_table[uint8_t(c)];
+        return uri_checkers_detail::is_forbidden_domain_code_point_table[uint8_t(c)];
     }
 
 
     KUMO_FORCE_INLINE constexpr uint8_t contains_forbidden_domain_code_point_or_upper(const char* input,
                                                   size_t length) noexcept {
-        static const std::array<uint8_t, 256> is_forbidden_domain_code_point_table_or_upper = []() constexpr {
-            std::array<uint8_t, 256> result{};
-            for (uint8_t c : {'\0', '\x09', '\x0a', '\x0d', ' ', '#', '/', ':', '<',
-                              '>', '?', '@', '[', '\\', ']', '^', '|', '%'}) {
-                result[c] = 1;
-                              }
-            for (uint8_t c = 'A'; c <= 'Z'; c++) {
-                result[c] = 2;
-            }
-            for (uint8_t c = 0; c <= 32; c++) {
-                result[c] = 1;
-            }
-            for (size_t c = 127; c < 255; c++) {
-                result[c] = 1;
-            }
-            return result;
-        }();
+        const auto &is_forbidden_domain_code_point_table_or_upper =
+            uri_checkers_detail::is_forbidden_domain_code_point_table_or_upper;
         size_t i = 0;
         uint8_t accumulator{};
         for (; i + 4 <= length; i += 4) {
@@ -272,17 +291,7 @@ namespace turbo {
         // U+0020 SPACE, U+0023 (#), U+002F (/), U+003A (:), U+003C (<), U+003E (>),
         // U+003F (?), U+0040 (@), U+005B ([), U+005C (\), U+005D (]), U+005E (^), or
         // U+007C (|).
-        static const std::array<uint8_t, 256> is_forbidden_host_code_point_table =
-            []() constexpr {
-            std::array<uint8_t, 256> result{};
-            for (uint8_t c : {'\0', '\x09', '\x0a', '\x0d', ' ', '#', '/', ':', '<',
-                              '>', '?', '@', '[', '\\', ']', '^', '|'}) {
-                result[c] = true;
-                              }
-            return result;
-            }();
-
-        return is_forbidden_host_code_point_table[uint8_t(c)];
+        return uri_checkers_detail::is_forbidden_host_code_point_table[uint8_t(c)];
     }
 
     KUMO_FORCE_INLINE constexpr bool is_single_dot_path_segment(std::string_view input) noexcept {
