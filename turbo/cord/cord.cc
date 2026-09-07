@@ -689,7 +689,7 @@ namespace turbo {
             sub_cord.contents_.set_inline_size(new_size);
             char* dest = sub_cord.contents_.data_.as_chars();
             Cord::ChunkIterator it = chunk_begin();
-            it.AdvanceBytes(pos);
+            it.advance_bytes(pos);
             size_t remaining_size = new_size;
             while (remaining_size > it->size()) {
                 cord_internal::SmallMemmove(dest, it->data(), it->size());
@@ -811,7 +811,7 @@ namespace turbo {
         }
     }
 
-    void Cord::SetExpectedChecksum(uint32_t crc) {
+    void Cord::set_expected_checksum(uint32_t crc) {
         // Construct a CrcCordState with a single chunk.
         crc_internal::CrcCordState state;
         state.mutable_rep()->prefix_crc.push_back(
@@ -827,7 +827,7 @@ namespace turbo {
         return &contents_.tree()->crc()->crc_cord_state;
     }
 
-    std::optional<uint32_t> Cord::ExpectedChecksum() const {
+    std::optional<uint32_t> Cord::expected_checksum() const {
         if (!contents_.is_tree() || !contents_.tree()->IsCrc()) {
             return std::nullopt;
         }
@@ -1004,9 +1004,9 @@ namespace turbo {
         if (!src.contents_.is_tree()) {
             src.contents_.CopyTo(dst);
         } else {
-            StringResizeAndOverwrite(*dst, src.size(),
+            string_resize_and_overwrite(*dst, src.size(),
                 [&src](char* buf, size_t buf_size) {
-                    src.CopyToArraySlowPath(buf);
+                    src.copy_to_array_slow_path(buf);
                     return buf_size;
                 });
         }
@@ -1020,7 +1020,7 @@ namespace turbo {
             });
     }
 
-    void Cord::CopyToArraySlowPath(char* turbo_nonnull dst) const {
+    void Cord::copy_to_array_slow_path(char* turbo_nonnull dst) const {
         assert(contents_.is_tree());
         std::string_view fragment;
         if (get_flat_aux(contents_.tree(), &fragment) && !fragment.empty()) {
@@ -1051,13 +1051,13 @@ namespace turbo {
         return result;
     }
 
-    Cord Cord::ChunkIterator::AdvanceAndReadBytes(size_t n) {
+    Cord Cord::ChunkIterator::advance_and_read_bytes(size_t n) {
         // Failure of this assertion indicates an attempt to iterate past `end()`.
         turbo::base_internal::HardeningAssertGE(bytes_remaining_, n);
         Cord subcord;
 
         if (n <= InlineRep::kMaxInline) {
-            // Range to read fits in inline data. Flatten it.
+            // Range to read fits in inline data. flatten it.
             char* data = subcord.contents_.set_data(n);
             while (n > current_chunk_.size()) {
                 memcpy(data, current_chunk_.data(), current_chunk_.size());
@@ -1067,7 +1067,7 @@ namespace turbo {
             }
             memcpy(data, current_chunk_.data(), n);
             if (n < current_chunk_.size()) {
-                RemoveChunkPrefix(n);
+                remove_chunk_prefix(n);
             } else if (n > 0) {
                 ++*this;
             }
@@ -1176,8 +1176,8 @@ namespace turbo {
     } // namespace
 
     // A few options how this could be implemented:
-    // (a) Flatten the Cord and find, i.e.
-    //       haystack.Flatten().find(needle)
+    // (a) flatten the Cord and find, i.e.
+    //       haystack.flatten().find(needle)
     //     For large 'haystack' (where Cord makes sense to be used), this copies
     //     the whole 'haystack' and can be slow.
     // (b) Use std::search, i.e.
@@ -1233,7 +1233,7 @@ namespace turbo {
         return char_end();
     }
 
-    turbo::Cord::CharIterator turbo::Cord::Find(std::string_view needle) const {
+    turbo::Cord::CharIterator turbo::Cord::find(std::string_view needle) const {
         if (needle.empty()) {
             return char_begin();
         }
@@ -1282,7 +1282,7 @@ namespace turbo {
 
     } // namespace
 
-    turbo::Cord::CharIterator turbo::Cord::Find(const turbo::Cord& needle) const {
+    turbo::Cord::CharIterator turbo::Cord::find(const turbo::Cord& needle) const {
         if (needle.empty()) {
             return char_begin();
         }
@@ -1326,11 +1326,11 @@ namespace turbo {
     }
 
     bool Cord::contains(std::string_view rhs) const {
-        return rhs.empty() || Find(rhs) != char_end();
+        return rhs.empty() || find(rhs) != char_end();
     }
 
     bool Cord::contains(const turbo::Cord& rhs) const {
-        return rhs.empty() || Find(rhs) != char_end();
+        return rhs.empty() || find(rhs) != char_end();
     }
 
     std::string_view Cord::flatten_slow_path() {
@@ -1345,10 +1345,10 @@ namespace turbo {
             new_rep = CordRepFlat::New(total_size);
             new_rep->length = total_size;
             new_buffer = new_rep->flat()->Data();
-            CopyToArraySlowPath(new_buffer);
+            copy_to_array_slow_path(new_buffer);
         } else {
             new_buffer = std::allocator<char>().allocate(total_size);
-            CopyToArraySlowPath(new_buffer);
+            copy_to_array_slow_path(new_buffer);
             new_rep = turbo::cord_internal::NewExternalRep(
                 std::string_view(new_buffer, total_size), [](std::string_view s) {
                     std::allocator<char>().deallocate(const_cast<char*>(s.data()),

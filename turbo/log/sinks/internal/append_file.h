@@ -46,7 +46,7 @@ namespace log_internal {
         std::string _path;
         char _buffer[64 * 1024]{};
         size_t _written{0};
-        FILE *_file{nullptr};
+        std::FILE *_file{nullptr};
     };
 
 }  // namespace log_internal

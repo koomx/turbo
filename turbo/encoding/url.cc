@@ -47,7 +47,7 @@ namespace turbo {
         TURBO_INTERNAL_CHECK(
             (input.size() - initial_portion) <= (std::numeric_limits<size_t>::max() - initial_portion) / 3,
             "url_encode() overflow");
-        StringResizeAndOverwrite(
+        string_resize_and_overwrite(
             output, initial_portion + 3 * (input.size() - initial_portion),
             [&](char* buf, size_t) {
                 char* out = buf;
@@ -89,7 +89,7 @@ namespace turbo {
             return std::string(input);
         }
 
-        StringResizeAndOverwrite(output, input.size(), [&](char* buf, size_t) {
+        string_resize_and_overwrite(output, input.size(), [&](char* buf, size_t) {
             char* out = buf;
 
             // Copy the initial portion that did not need unescaping.

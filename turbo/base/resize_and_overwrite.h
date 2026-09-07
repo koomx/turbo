@@ -22,7 +22,7 @@
 // The polyfill takes the form of a free function:
 
 // template<typename T, typename Op>
-// void StringResizeAndOverwrite(T& str, typename T::size_type count, Op op);
+// void string_resize_and_overwrite(T& str, typename T::size_type count, Op op);
 //
 // This avoids the cost of initializing a suitably-sized std::string when it is
 // intended to be used as a char array, for example, to be populated by a
@@ -33,7 +33,7 @@
 // std::string IntToString(int n) {
 //   std::string result;
 //   constexpr size_t kMaxIntChars = 10;
-//   turbo::StringResizeAndOverwrite(
+//   turbo::string_resize_and_overwrite(
 //       result, kMaxIntChars, [n](char* buffer, size_t buffer_size) {
 //         return snprintf(buffer, buffer_size, "%d", n);
 //       });
@@ -120,7 +120,7 @@ namespace turbo {
         template <typename T, typename Op>
         void StringResizeAndOverwriteFallback(T& str, typename T::size_type n, Op op) {
             if (KUMO_UNLIKELY(n > str.max_size())) {
-                ThrowStdLengthError("turbo::StringResizeAndOverwrite");
+                ThrowStdLengthError("turbo::string_resize_and_overwrite");
             }
 #if KUMO_HAVE_MEMORY_SANITIZER
             auto old_size = str.size();
@@ -177,7 +177,7 @@ namespace turbo {
     // `basic_string::resize_and_overwrite()`, which allows writing an abitrary
     // value to `buf[buf_size]`.
     template <typename T, typename Op>
-    void StringResizeAndOverwrite(T& str, typename T::size_type n, Op op) {
+    void string_resize_and_overwrite(T& str, typename T::size_type n, Op op) {
         strings_internal::StringResizeAndOverwriteImpl(str, n, std::move(op));
 #if KUMO_HAVE_MEMORY_SANITIZER
         __msan_check_mem_is_initialized(str.data(), str.size());

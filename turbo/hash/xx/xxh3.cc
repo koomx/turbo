@@ -47,7 +47,6 @@ namespace turbo {
     }
 
     KUMO_DLL XxHash128 xxhash_128bits_with_seed(KUMO_ATTRIBUTE_NOESCAPE const uint8_t* input, size_t len, uint64_t seed) {
-        KUMO_DASSERT(secretLen >= xxhash::kXxh3SecretSizeMin);
         return XXHashRegistry::get_best_isa()->xxhash_128bits_with_seed(input,len,seed);
     }
 
@@ -106,7 +105,7 @@ namespace turbo {
         if (totalLen > xxhash::kXxh3MidsizeMax) {
             alignas(KUMO_CACHELINE_SIZE) uint64_t acc[xxhash::kXxhAccNb];
             XXHashRegistry::get_best_isa()->internal_digest_long(acc, this, secret);
-            KUMO_DASSERT(statePtr->secretLimit + xxhash::kXxhStripeLen >= sizeof(acc) + xxhash::kXxhSecretMergeAccsStart);
+            KUMO_DASSERT(secret_limit + xxhash::kXxhStripeLen >= sizeof(acc) + xxhash::kXxhSecretMergeAccsStart);
             return turbo::xxhash::xxhash_finalize_long_128b(acc, secret, secret_limit + xxhash::kXxhStripeLen, (uint64_t)totalLen);
         }
         if (use_seed)

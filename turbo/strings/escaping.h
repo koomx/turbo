@@ -133,7 +133,6 @@ namespace turbo {
     // Converts binary data into an ASCII text string, returning a string of size
     // `2*from.size()`.
     std::string bytes_to_hex_string(std::string_view from);
-
 } // namespace turbo
 
 #endif // TURBO_STRINGS_ESCAPING_H_

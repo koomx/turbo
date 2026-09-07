@@ -71,6 +71,8 @@ set(CLI_SRC
 
 set(CRC_SRC
         crc/crc32c.cc
+        crc/crc16_redis.cc
+        crc/checksum.cc
         crc/internal/crc.cc
         crc/internal/crc_cord_state.cc
         crc/internal/crc_memcpy_fallback.cc
@@ -296,6 +298,23 @@ set(UNICODE_SRC
         unicode/engine/lsx/implementation.cc
 )
 
+set(URI_SRC
+        uri/idna/idna.cc
+        uri/idna/tables.cc
+        uri/idna/mapping.cc
+        uri/idna/decomposition.cc
+        uri/idna/canonical.cc
+        uri/idna/composition.cc
+        uri/idna/label.cc
+        uri/wpt/parser.cc
+        uri/wpt/parse_components.cc
+        uri/rfc/parser.cc
+        uri/utility.cc
+        uri/uri_view.cc
+        uri/ip.cc
+        uri/uri.cc
+)
+
 set(TURBO_SRC
         ${ARCH_SRC}
         ${BASE_SRC}
@@ -317,6 +336,7 @@ set(TURBO_SRC
         ${CCTZ_SRC}
         ${TYPES_SRC}
         ${UNICODE_SRC}
+        ${URI_SRC}
 )
 
 kmcmake_cc_library(

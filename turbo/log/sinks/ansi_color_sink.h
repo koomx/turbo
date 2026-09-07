@@ -25,7 +25,7 @@ namespace turbo {
     // No per-sink mutex: LogSinkSet serializes send/flush.
     class AnsiColorSink : public LogSink {
     public:
-        explicit AnsiColorSink(FILE *file);
+        explicit AnsiColorSink(std::FILE *file);
 
         void send(const turbo::LogEntry &entry) override;
         void flush() override;
@@ -39,7 +39,7 @@ namespace turbo {
         static constexpr std::string_view white = "\033[37m";
 
     private:
-        FILE *_file{nullptr};
+        std::FILE *_file{nullptr};
         bool _color_active{false};
     };
 

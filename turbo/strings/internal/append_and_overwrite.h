@@ -24,7 +24,7 @@ namespace turbo {
 
     namespace strings_internal {
 
-        // An internal-only variant similar to `turbo::StringResizeAndOverwrite()`
+        // An internal-only variant similar to `turbo::string_resize_and_overwrite()`
         // optimized for repeated appends to a string that uses exponential growth so
         // that the amortized complexity of increasing the string size by a small amount
         // is O(1), in contrast to O(str.size()) in the case of precise growth. Use of
@@ -61,9 +61,9 @@ namespace turbo {
                 }
             }
 
-            // Avoid calling StringResizeAndOverwrite() here since it does an MSAN
+            // Avoid calling string_resize_and_overwrite() here since it does an MSAN
             // verification on the entire string. StringResizeAndOverwriteImpl() is
-            // StringResizeAndOverwrite() without the MSAN verification.
+            // string_resize_and_overwrite() without the MSAN verification.
             StringResizeAndOverwriteImpl(
                 str, resize,
                 [old_size, append_n, do_append = std::move(append_op)](

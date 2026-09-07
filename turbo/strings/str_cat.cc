@@ -82,7 +82,7 @@ namespace turbo {
         constexpr uint64_t kMaxSize = uint64_t { std::numeric_limits<size_t>::max() };
         const uint64_t result_size = static_cast<uint64_t>(a.size()) + static_cast<uint64_t>(b.size());
         TURBO_INTERNAL_CHECK(result_size <= kMaxSize, "size_t overflow");
-        turbo::StringResizeAndOverwrite(result, static_cast<size_t>(result_size),
+        turbo::string_resize_and_overwrite(result, static_cast<size_t>(result_size),
             [&a, &b](char* const begin, size_t buf_size) {
                 char* out = begin;
                 out = Append(out, a);
@@ -100,7 +100,7 @@ namespace turbo {
         constexpr uint64_t kMaxSize = uint64_t { std::numeric_limits<size_t>::max() };
         const uint64_t result_size = static_cast<uint64_t>(a.size()) + static_cast<uint64_t>(b.size()) + static_cast<uint64_t>(c.size());
         TURBO_INTERNAL_CHECK(result_size <= kMaxSize, "size_t overflow");
-        turbo::StringResizeAndOverwrite(
+        turbo::string_resize_and_overwrite(
             result, static_cast<size_t>(result_size),
             [&a, &b, &c](char* const begin, size_t buf_size) {
                 char* out = begin;
@@ -121,7 +121,7 @@ namespace turbo {
         constexpr uint64_t kMaxSize = uint64_t { std::numeric_limits<size_t>::max() };
         const uint64_t result_size = static_cast<uint64_t>(a.size()) + static_cast<uint64_t>(b.size()) + static_cast<uint64_t>(c.size()) + static_cast<uint64_t>(d.size());
         TURBO_INTERNAL_CHECK(result_size <= kMaxSize, "size_t overflow");
-        turbo::StringResizeAndOverwrite(
+        turbo::string_resize_and_overwrite(
             result, static_cast<size_t>(result_size),
             [&a, &b, &c, &d](char* const begin, size_t buf_size) {
                 char* out = begin;
@@ -148,7 +148,7 @@ namespace turbo {
                 total_size += piece.size();
             }
             TURBO_INTERNAL_CHECK(total_size <= kMaxSize, "size_t overflow");
-            turbo::StringResizeAndOverwrite(result, static_cast<size_t>(total_size),
+            turbo::string_resize_and_overwrite(result, static_cast<size_t>(total_size),
                 [&pieces](char* const begin, size_t buf_size) {
                     char* out = begin;
                     for (std::string_view piece : pieces) {

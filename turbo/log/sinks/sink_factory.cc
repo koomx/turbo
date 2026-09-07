@@ -20,7 +20,7 @@ namespace turbo {
         return std::make_unique<NullSink>();
     }
 
-    std::unique_ptr<AnsiColorSink> create_ansi_color_sink(FILE *file) {
+    std::unique_ptr<AnsiColorSink> create_ansi_color_sink(std::FILE *file) {
         return std::make_unique<AnsiColorSink>(file);
     }
 

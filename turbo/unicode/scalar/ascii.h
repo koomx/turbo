@@ -9,8 +9,7 @@ namespace turbo {
             namespace ascii {
 
                 template <class InputPtr>
-                 [[nodiscard]]  bool validate(InputPtr data,
-                    size_t len) noexcept {
+                 [[nodiscard]]  bool validate(InputPtr data,size_t len) noexcept {
                     uint64_t pos = 0;
                     // process in blocks of 16 bytes when possible
                     {
@@ -21,7 +20,7 @@ namespace turbo {
                             std::memcpy(&v2, data + pos + sizeof(uint64_t), sizeof(uint64_t));
                             uint64_t v { v1 | v2 };
                             if ((v & 0x8080808080808080) != 0) {
-                                return false;
+                                 return false;
                             }
                         }
                     }
@@ -35,8 +34,7 @@ namespace turbo {
                     return true;
                 }
                 template <class InputPtr>
-                 [[nodiscard]]  UnicodeResult
-                validate_with_errors(InputPtr data, size_t len) noexcept {
+                [[nodiscard]]  UnicodeResult validate_with_errors(InputPtr data, size_t len) noexcept {
                     size_t pos = 0;
                     {
                         // process in blocks of 16 bytes when possible

@@ -171,7 +171,6 @@ namespace turbo {
 
     /// @ingroup xxhash32_family
     void ScalarHash32::reset(uint32_t seed) {
-        KUMO_DASSERT(statePtr != nullptr);
         memset(this, 0, sizeof(*this));
         xxhash32_initAccs(acc, seed);
     }
@@ -374,7 +373,6 @@ namespace turbo {
 
     /// @ingroup xxhash64_family
     void ScalarHash64::reset(uint64_t seed) {
-        KUMO_DASSERT(statePtr != nullptr);
         memset(this, 0, sizeof(*this));
         xxhash64_initAccs(this->acc, seed);
     }

@@ -38,4 +38,5 @@ namespace turbo {
     constexpr std::string_view NullSafeStringView(const char* turbo_nullable p) {
         return p ? std::string_view(p) : std::string_view();
     }
+
 } // namespace turbo

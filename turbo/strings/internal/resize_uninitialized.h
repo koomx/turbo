@@ -88,10 +88,10 @@ namespace turbo {
                     }
                 }
                 // This calls turbo::strings_internal::StringResizeAndOverwriteImpl() because
-                // the public API turbo::StringResizeAndOverwrite() verifies that the
+                // the public API turbo::string_resize_and_overwrite() verifies that the
                 // required range has been initialized. No other code should be calling
                 // turbo::strings_internal::StringResizeAndOverwriteImpl(). Instead it should
-                // be implemented correctly with turbo::StringResizeAndOverwrite().
+                // be implemented correctly with turbo::string_resize_and_overwrite().
                 turbo::strings_internal::StringResizeAndOverwriteImpl(
                     *s, new_size, [](typename string_type::value_type*, size_t buf_size) {
                         // TODO: b/446221957 - It is undefined behavior if any character in
