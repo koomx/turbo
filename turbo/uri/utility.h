@@ -189,7 +189,7 @@ namespace turbo {
     }
 
     unsigned constexpr convert_hex_to_binary(const char c) noexcept {
-        constexpr static char hex_to_binary_table[] = {
+         static const char hex_to_binary_table[] = {
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, 0, 10, 11,
             12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 11, 12, 13, 14, 15
@@ -220,7 +220,7 @@ namespace turbo {
     // credit: @the-moisrex recommended a table-based approach
     KUMO_FORCE_INLINE size_t find_authority_delimiter_special(std::string_view view) noexcept {
         // @ / \\ ?
-        static constexpr std::array<uint8_t, 256> authority_delimiter_special =
+        static const std::array<uint8_t, 256> authority_delimiter_special =
             []() constexpr {
                 std::array<uint8_t, 256> result { };
                 for (uint8_t i : { '@', '/', '\\', '?' }) {
