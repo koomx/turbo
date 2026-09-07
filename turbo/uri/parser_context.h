@@ -30,19 +30,19 @@ namespace turbo {
         const char* end{nullptr};
 
         std::string_view context() const {
-            return std::string_view{pos, end - pos};
+            return std::string_view{pos, static_cast<size_t>(end - pos)};
         }
 
         std::string_view origin() const {
-            return std::string_view{start, end - start};
+            return std::string_view{start, static_cast<size_t>(end - start)};
         }
 
         constexpr size_t offset() const {
-            return pos - start;
+            return static_cast<size_t>(pos - start);
         }
 
         constexpr size_t remain() const {
-            return end - pos;
+            return static_cast<size_t>(end - pos);
         }
     };
 }  // namespace turbo
