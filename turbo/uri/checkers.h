@@ -82,7 +82,7 @@ namespace turbo {
     KUMO_FORCE_INLINE constexpr uint8_t path_signature(std::string_view input) noexcept {
         // for use with path_signature, we include all characters that need percent
         // encoding.
-        static constexpr std::array<uint8_t, 256> path_signature_table =
+        static const std::array<uint8_t, 256> path_signature_table =
             []() constexpr {
             std::array<uint8_t, 256> result{};
             for (size_t i = 0; i < 256; i++) {
@@ -136,25 +136,25 @@ namespace turbo {
 
 
 
-    constexpr static std::array<uint8_t, 256> is_forbidden_domain_code_point_table =
+    KUMO_FORCE_INLINE constexpr bool contains_forbidden_domain_code_point(const char* input, size_t length) noexcept {
+
+        static const std::array<uint8_t, 256> is_forbidden_domain_code_point_table =
         []() constexpr {
-        std::array<uint8_t, 256> result{};
-        for (uint8_t c : {'\0', '\x09', '\x0a', '\x0d', ' ', '#', '/', ':', '<',
-                          '>', '?', '@', '[', '\\', ']', '^', '|', '%'}) {
-            result[c] = true;
-                          }
-        for (uint8_t c = 0; c <= 32; c++) {
-            result[c] = true;
-        }
-        for (size_t c = 127; c < 255; c++) {
-            result[c] = true;
-        }
-        return result;
+            std::array<uint8_t, 256> result{};
+            for (uint8_t c : {'\0', '\x09', '\x0a', '\x0d', ' ', '#', '/', ':', '<',
+                              '>', '?', '@', '[', '\\', ']', '^', '|', '%'}) {
+                result[c] = true;
+                              }
+            for (uint8_t c = 0; c <= 32; c++) {
+                result[c] = true;
+            }
+            for (size_t c = 127; c < 255; c++) {
+                result[c] = true;
+            }
+            return result;
         }();
 
-    static_assert(sizeof(is_forbidden_domain_code_point_table) == 256);
-
-    KUMO_FORCE_INLINE constexpr bool contains_forbidden_domain_code_point(const char* input, size_t length) noexcept {
+        static_assert(sizeof(is_forbidden_domain_code_point_table) == 256);
         size_t i = 0;
         uint8_t accumulator{};
         for (; i + 4 <= length; i += 4) {
@@ -173,27 +173,26 @@ namespace turbo {
         return is_forbidden_domain_code_point_table[uint8_t(c)];
     }
 
-    constexpr static std::array<uint8_t, 256>
-    is_forbidden_domain_code_point_table_or_upper = []() constexpr {
-        std::array<uint8_t, 256> result{};
-        for (uint8_t c : {'\0', '\x09', '\x0a', '\x0d', ' ', '#', '/', ':', '<',
-                          '>', '?', '@', '[', '\\', ']', '^', '|', '%'}) {
-            result[c] = 1;
-                          }
-        for (uint8_t c = 'A'; c <= 'Z'; c++) {
-            result[c] = 2;
-        }
-        for (uint8_t c = 0; c <= 32; c++) {
-            result[c] = 1;
-        }
-        for (size_t c = 127; c < 255; c++) {
-            result[c] = 1;
-        }
-        return result;
-    }();
 
     KUMO_FORCE_INLINE constexpr uint8_t contains_forbidden_domain_code_point_or_upper(const char* input,
                                                   size_t length) noexcept {
+        static const std::array<uint8_t, 256> is_forbidden_domain_code_point_table_or_upper = []() constexpr {
+            std::array<uint8_t, 256> result{};
+            for (uint8_t c : {'\0', '\x09', '\x0a', '\x0d', ' ', '#', '/', ':', '<',
+                              '>', '?', '@', '[', '\\', ']', '^', '|', '%'}) {
+                result[c] = 1;
+                              }
+            for (uint8_t c = 'A'; c <= 'Z'; c++) {
+                result[c] = 2;
+            }
+            for (uint8_t c = 0; c <= 32; c++) {
+                result[c] = 1;
+            }
+            for (size_t c = 127; c < 255; c++) {
+                result[c] = 1;
+            }
+            return result;
+        }();
         size_t i = 0;
         uint8_t accumulator{};
         for (; i + 4 <= length; i += 4) {
@@ -213,11 +212,12 @@ namespace turbo {
         return accumulator;
     }
 
-    constexpr std::string_view table_is_double_dot_path_segment[] = {
-        "..", "%2e.", ".%2e", "%2e%2e"};
+
 
     KUMO_FORCE_INLINE bool is_double_dot_path_segment(
         std::string_view input) noexcept {
+        static const std::string_view table_is_double_dot_path_segment[] = {
+            "..", "%2e.", ".%2e", "%2e%2e"};
         // This will catch most cases:
         // The length must be 2,4 or 6.
         // We divide by two and require
@@ -272,7 +272,7 @@ namespace turbo {
         // U+0020 SPACE, U+0023 (#), U+002F (/), U+003A (:), U+003C (<), U+003E (>),
         // U+003F (?), U+0040 (@), U+005B ([), U+005C (\), U+005D (]), U+005E (^), or
         // U+007C (|).
-        constexpr static std::array<uint8_t, 256> is_forbidden_host_code_point_table =
+        static const std::array<uint8_t, 256> is_forbidden_host_code_point_table =
             []() constexpr {
             std::array<uint8_t, 256> result{};
             for (uint8_t c : {'\0', '\x09', '\x0a', '\x0d', ' ', '#', '/', ':', '<',
